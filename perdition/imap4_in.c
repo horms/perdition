@@ -26,6 +26,7 @@
  **********************************************************************/
 
 #include "imap4_in.h"
+#include "options.h"
 
 #ifdef WITH_PAM_SUPPORT
 
@@ -297,7 +298,10 @@ int imap4_in_logout_cmd(io_t *io, const token_t *tag){
  **********************************************************************/
 
 int imap4_in_capability_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, NULL, "CAPABILITY", IMAP4_CAPABILITIES)<0){
+  extern options_t opt;
+
+  if(imap4_write(io, NULL_FLAG, NULL, "CAPABILITY", 
+			  str_null_safe(opt.imap_capability))<0){
     PERDITION_DEBUG("imap4_write 1");
     return(-1);
   }

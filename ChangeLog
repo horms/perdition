@@ -32,6 +32,10 @@ xxx
   - compatibility for systems without parse_printf_format()
     Ronny Cook <ronny@ronnycook.org>
   - Separate .spec files for Redhat and LSB (SuSE)
+  - -I/--imap_capability option so that the IMAP capabilities
+    can be specified more easily. Added to help resolve a problem
+    when using Perdition with Solaris 8 + Netscape 4 + Cyrus IMAPD
+    discovered by Cristalle Azundris Sabon <cristalle@azundris.com>
 
 
 

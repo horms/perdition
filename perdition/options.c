@@ -120,7 +120,6 @@ options_t opt;
   else { \
     PERDITION_ERR_UNSAFE("unknown state for %s: %s", id_str, optarg_copy); \
     if(f&OPT_ERR) { \
-      sleep(1); \
       usage(-1); \
     } \
   }
@@ -178,7 +177,6 @@ options_t opt;
     else { \
      PERDITION_ERR_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
       if(f&OPT_ERR) { \
-        sleep(1); \
         usage(-1); \
       } \
     } \
@@ -236,6 +234,7 @@ int options(int argc, char **argv, flag_t f){
     {"group",                       'g',  POPT_ARG_STRING, NULL, 'g'},
     {"help",                        'h',  POPT_ARG_NONE,   NULL, 'h'},
     {"inetd_mode",                  'i',  POPT_ARG_NONE,   NULL, 'i'},
+    {"imap_capability",             'I',  POPT_ARG_STRING, NULL, 'I'},
     {"jain",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
     {"jane",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
     {"jayne",                       'j',  POPT_ARG_NONE,   NULL, 'j'},
@@ -302,6 +301,7 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.config_file,     DEFAULT_CONFIG_FILE,         i, 0, OPT_NOT_SET);
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
     opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
+    opt_p(opt.imap_capability, DEFAULT_IMAP_CAPABILITY,     i, 0, OPT_NOT_SET);
     opt_p(opt.listen_port,     PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.map_library,     DEFAULT_MAP_LIB,             i, 0, OPT_NOT_SET);
     opt_p(opt.map_library_opt, DEFAULT_MAP_LIB_OPT,         i, 0, OPT_NOT_SET);
@@ -344,7 +344,6 @@ int options(int argc, char **argv, flag_t f){
       PERDITION_DEBUG(
 	"-a|--authenticate is only supported when compiled against libpam");
       if(f&OPT_ERR){
-        sleep(1);
         usage(-1);
       }
       else{
@@ -392,6 +391,9 @@ int options(int argc, char **argv, flag_t f){
 	  usage(0); 
 	}
 	break;
+      case 'I':
+	opt_p(opt.imap_capability,optarg,opt.mask,MASK_IMAP_CAPABILITY,f);
+	break;
       case 'i':
         opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
         break;
@@ -427,6 +429,8 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'P':
         if((index=protocol_index(optarg))<0){
+		PERDITION_ERR_UNSAFE("Unknown protocol: \"%s\"", optarg);
+		usage(-1);
         }
         else {
           opt_i(opt.protocol,index,opt.mask,MASK_PROTOCOL,f);
@@ -494,7 +498,6 @@ int options(int argc, char **argv, flag_t f){
         PERDITION_DEBUG(
 	  "--ssl_mode is only supported when ssl support is compiled in");
         if(f&OPT_ERR){
-          sleep(1);
           usage(-1);
         }
         else{
@@ -510,7 +513,6 @@ int options(int argc, char **argv, flag_t f){
       PERDITION_DEBUG(
 	"--ssl_cert_file is only supported when ssl support is compiled in");
       if(f&OPT_ERR){
-        sleep(1);
         usage(-1);
       }
       else{
@@ -526,7 +528,6 @@ int options(int argc, char **argv, flag_t f){
       PERDITION_DEBUG(
 	"--ssl_key_file is only supported when ssl support is compiled in");
       if(f&OPT_ERR){
-        sleep(1);
         usage(-1);
       }
       else{
@@ -549,7 +550,6 @@ int options(int argc, char **argv, flag_t f){
     );
       
     if(f&OPT_ERR){
-      sleep(1);
       usage(-1);
     }
     else{
@@ -707,6 +707,7 @@ int log_options(void){
     "domain_delimiter=\"%s\", "
     "group=\"%s\", "
     "inetd_mode=%s, "
+    "imap_capability=\"%s\", "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
     "lower_case=\"%s\", "
@@ -744,6 +745,7 @@ int log_options(void){
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
     BIN_OPT_STR(opt.inetd_mode),
+    str_null_safe(opt.imap_capability),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
     str_null_safe(lower_case),
@@ -791,8 +793,12 @@ void usage(int exit_status){
   char *available_protocols=NULL;
   char *default_protocol_str=NULL;
 
+  if(exit_status < 0) {
+	  sleep(1);
+  }
+
   stream=(exit_status)?stderr:stdout;
-  
+
   if((available_protocols=protocol_list(
     available_protocols, 
     ", ", 
@@ -869,6 +875,9 @@ void usage(int exit_status){
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
     "    Display this message\n"
+    " -I|--imap_capability:\n"
+    "    Capabilities string returned when running the IMAP4 protocol\n"
+    "    (default \"%s\")\n"
     " -i|--inetd_mode:\n"
     "    Run in inetd mode\n"
     " -L|--connection_limit number:\n"
@@ -951,6 +960,7 @@ void usage(int exit_status){
     str_null_safe(DEFAULT_LOG_FACILITY),
     str_null_safe(DEFAULT_CONFIG_FILE),
     str_null_safe(DEFAULT_GROUP),
+    str_null_safe(DEFAULT_IMAP_CAPABILITY),
     DEFAULT_CONNECTION_LIMIT,
     str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     str_null_safe(DEFAULT_MAP_LIB),

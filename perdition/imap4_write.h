@@ -42,11 +42,6 @@
 #define IMAP4_DEFAULT_PORT "143"
 #define IMAP4_ONE_TIME_TAG "flim7"
 
-#ifndef IMAP4_CAPABILITIES
-#define IMAP4_CAPABILITIES "IMAP4 IMAP4REV1"
-#endif
-
-
 /**********************************************************************
  * imap4_write
  * Display an message of the form [<tag> <type> ]<string>
