@@ -26,8 +26,8 @@
  **********************************************************************/
 
 
-#ifndef IO_FRUB_H
-#define IO_FRUB_H
+#ifndef PERDITION_IO_H
+#define PERDITION_IO_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -36,6 +36,14 @@
 #include <unistd.h>
 
 typedef struct io_t_struct io_t;
+
+typedef enum {
+  io_type_fd,
+#ifdef WITH_SSL_SUPPORT
+  io_type_ssl,
+#endif /* WITH_SSL_SUPPORT */
+  io_type_none
+} io_type_t;
 
 
 /**********************************************************************
@@ -128,6 +136,16 @@ int io_get_rfd(io_t *io);
 
 int io_get_wfd(io_t *io);
 
+
+/**********************************************************************
+ * io_get_type
+ * Get type of an io
+ * pre: io: io_t to get the type object of
+ * return: type of io
+ *         io_type_none if on error
+ **********************************************************************/
+
+io_type_t io_get_type(io_t *io);
 
 #ifdef WITH_SSL_SUPPORT
 /**********************************************************************

@@ -63,14 +63,6 @@ typedef union {
 #endif /* WITH_SSL_SUPPORT */
 } __io_data_t;
 
-typedef enum {
-  __io_fd,
-#ifdef WITH_SSL_SUPPORT
-  __io_ssl,
-#endif /* WITH_SSL_SUPPORT */
-  __io_none
-} io_type_t;
-
 struct io_t_struct {
   io_type_t type;
   __io_data_t data;
@@ -105,7 +97,7 @@ io_t *io_create_fd(int read_fd, int write_fd){
     return(NULL);
   }
 
-  io->type=__io_fd;
+  io->type=io_type_fd;
   io->data.d_fd=io_fd;
 
   return(io);
@@ -146,7 +138,7 @@ io_t *io_create_ssl(SSL *ssl, int read_fd, int write_fd){
     return(NULL);
   }
 
-  io->type=__io_ssl;
+  io->type=io_type_ssl;
   io->data.d_ssl=io_ssl;
 
   return(io);
@@ -169,14 +161,14 @@ void io_destroy(io_t *io){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
       if(io->data.d_fd != NULL) {
         free(io->data.d_fd);
       }
       io->data.d_fd = NULL;
       break;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       if(io->data.d_ssl != NULL) {
         SSL_free(io->data.d_ssl->ssl);
         free(io->data.d_ssl);
@@ -210,14 +202,14 @@ ssize_t io_write(io_t *io, const void *buf, size_t count){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
       if((bytes=write(io->data.d_fd->write, buf, count))<0){
 	PERDITION_DEBUG_ERRNO("write");
 	return(-1);
       }
       break;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       if((bytes=(ssize_t)SSL_write(io->data.d_ssl->ssl, buf, (int)count))<=0){
         if(bytes==0 && errno &&
             SSL_get_error(io->data.d_ssl->ssl, bytes)==SSL_ERROR_SYSCALL){
@@ -259,14 +251,14 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
       if((bytes=read(io->data.d_fd->read, buf, count))<0){
 	PERDITION_DEBUG_ERRNO("read");
 	return(-1);
       }
       break;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       if((bytes=(ssize_t)SSL_read(io->data.d_ssl->ssl, buf, (int)count))<=0){
         if(bytes==0 && errno &&
             SSL_get_error(io->data.d_ssl->ssl, bytes)==SSL_ERROR_SYSCALL){
@@ -306,11 +298,11 @@ int io_get_rfd(io_t *io){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
       fd=io->data.d_fd->read;
       break;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       fd=io->data.d_ssl->read;
       break;
 #endif /* WITH_SSL_SUPPORT */
@@ -341,11 +333,11 @@ int io_get_wfd(io_t *io){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
       fd=io->data.d_fd->write;
       break;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       fd=io->data.d_ssl->write;
       break;
 #endif /* WITH_SSL_SUPPORT */
@@ -356,6 +348,24 @@ int io_get_wfd(io_t *io){
    }
   
   return(fd);
+}
+
+
+/**********************************************************************
+ * io_get_type
+ * Get type of an io
+ * pre: io: io_t to get the type object of
+ * return: type of io
+ *         io_type_none if on error
+ **********************************************************************/
+
+io_type_t io_get_type(io_t *io){
+  if(io==NULL){
+    PERDITION_DEBUG("NULL io");
+    return(io_type_none);
+  }
+
+  return(io->type);
 }
 
 
@@ -377,7 +387,7 @@ SSL *io_get_ssl(io_t *io){
   }
 
   switch(io->type){
-    case __io_ssl:
+    case io_type_ssl:
       ssl=io->data.d_ssl->ssl;
       break;
     default:
@@ -410,7 +420,7 @@ int io_close(io_t *io){
   }
 
   switch(io->type){
-    case __io_fd:
+    case io_type_fd:
 
     read_fd=io_get_rfd(io);
     write_fd=io_get_wfd(io);
@@ -426,7 +436,7 @@ int io_close(io_t *io){
 
     break;;
 #ifdef WITH_SSL_SUPPORT
-    case __io_ssl:
+    case io_type_ssl:
       /* 
        * This seems to return errors for no reason, so let's ignore them
        *

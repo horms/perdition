@@ -82,6 +82,9 @@ static SSL *__io_select_get_ssl(io_select_t *s, int fd) {
 	if(io == NULL) {
 		return(NULL);
 	}
+	if(io_get_type(io) != io_type_ssl) {
+		return(NULL);
+	}
 
 	ssl = io_get_ssl(io);
 
