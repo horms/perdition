@@ -13,6 +13,8 @@ XXX
      version (fools!). 
    - Removed acconfig.h as it is no longer needed
    - Minor cleanup of ssl check in configure
+   - Fixed minor typo in debian init script
+   - Tidied up ssl variables in configure
 
 ----------------------------------------------------------------------
 
