@@ -38,67 +38,61 @@ perdition \- POP3 and IMAP4 proxy server
 .br
 \fBperdition.imaps\fP [options]
 .SH DESCRIPTION
-\fBperdition\fP allows users to connect to a content\-free POP3 or
-IMAP4 server that will redirect them to their real POP3 or IMAP4
-server respectively. This enables mail retrieval for a domain to
-be split across multiple real mail servers on a per user basis.
-This can also be used to as a POP3 or IMAP4 proxy especially in
-firewall applications.
+\fBperdition\fP allows users to connect to a content\-free POP3 or IMAP4
+server that will redirect them to their real POP3 or IMAP4 server
+respectively. This enables mail retrieval for a domain to be split across
+multiple real mail servers on a per user basis.  This can also be used to
+as a POP3 or IMAP4 proxy especially in firewall applications.
 .P
-When a connection is made to perdition in POP3 mode, it reads the
-USER and PASS commands and then refers to its popmap to find
-where the user's connection should be forwarded to. A connection
-to the foreign pop server, perdition then enters the USER and
-PASS commands to the foreign server. If authentication is
-successful then perdition pipes data between the client and the
-foreign server.  If authentication fails then the foreign server
-connection is closed and the client connection is reset to the
-state it was in on initial connection. That is new USER and PASS
-commands are expected. Similarly in IMAP4 mode, perdition accepts
-the LOGIN command and passes the username and password onto the
-back\-end IMAP4 server specified in the popmap for authentication.
+When a connection is made to perdition in POP3 mode, it reads the USER and
+PASS commands and then refers to its popmap to find the real-server that
+the user's connection should be forwarded to.  A connection is made to the
+real-server and perdition then enters the USER and PASS commands. If
+authentication is successful then perdition pipes data between the end-user
+and the real-server.  If authentication fails then the real-server
+connection is closed and the client connection is reset to the state it was
+in on initial connection. That is new USER and PASS commands are expected.
+Similarly in IMAP4 mode, perdition accepts the LOGIN command and passes the
+username and password onto the real-server or authentication.
 .P
-At this stage the only capabilities supported by perdition in
-IMAP4 mode is IMAP4 and no authentication schemes, other than
-the LOGIN command are accepted.
+No IMAP authentication schemes, other than the LOGIN command are
+accepted.
 .P
 When invoked as \fBperdition.pop3\fP, \fBperdition.pop3s\fP,
-\fBperdition.imap4\fP or \fBperdition.imap4s\fP then perdition
-will run in POP3, POP3S, IMAP4 or IMAP4S mode respectively,
-unless overriden on the command line or in the configuration file.
-\fBperdition.imaps\fP also runs perdition in IMAP4S mode and is
-provided to get around the truncation of process names in
-the /proc filesystem on Linux which can cause init scripts to
-fail to stop perdition correctly.
+\fBperdition.imap4\fP or \fBperdition.imap4s\fP then perdition will run in
+POP3, POP3S, IMAP4 or IMAP4S mode respectively, unless overriden on the
+command line or in the configuration file.  \fBperdition.imaps\fP also runs
+perdition in IMAP4S mode and is provided to get around the truncation of
+process names in the /proc filesystem on Linux which can cause init scripts
+to fail to stop perdition correctly.
 .SH OPTIONS
 .TP
-.B \-A|\-\-add_domain:
+.B \-A|\-\-add_domain STATE[,STATE...]:
 Appends a domain to the USER based on the IP address connected to
 in given state(s). The domain name to append will be the reverse-lookup
 of the IP address connected to. If there is no reverse lookup for
 this IP address, then a domain will not be appended. Probably the easiest
 way to enforce this mapping is to add entries to /etc/hosts.
 .sp
-State may be one of servername_lookup, local_authentication, 
-remote_login and all.
+The valid states are servername_lookup, local_authentication, 
+remote_login and all
 .sp
 .B servername_lookup:
 Append the domain to the username for lookup of username in
-Popmap. Will not take effect if \-c|\-\-client_server_specification
-is specified.
+Popmap. Will not take effect if client_server_specification is in effect.
 .sp
 .B local_authentication:
 Append the domain to the username for use in local
-authentication. Only has effect if \-a|\-\-authenticate_in is specified.
+authentication. Only has effect if authenticate_in is in effect.
 .sp
 .B remote_login:
-Send the username with the domain appended to the back-end
-server for authentication.
+Send the username with the domain appended to the real-server for 
+authentication.
 .sp
 .B all:
 Short-Hand for all of above states.
 .sp
-(default "(null)")
+(default "")
 .TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end
@@ -106,12 +100,12 @@ server is made. Only available if perdition is compiled with pam
 support.
 .TP
 .B \-B, \-\-no_bind_banner:
-If \-b|\-\-bind_address is specified, then the address will be resolved
+If bind_address is specified, then the address will be resolved
 and the reverse\-lookup of this will be used in the greeting. This
 option disables this behaviour an reverts to using the uname to
 derive the hostname for the greeting.
 .TP
-.B \-b, \-\-bind_address ip_address|hostname:
+.B \-b, \-\-bind_address IP_ADDRESS|HOSTNAME:
 Bind to interfaces with this address. In non\-inetd mode, connections
 will only be accepted on interfaces with this address. If NULL
 connections will be accepted from all interfaces. In inetd and
@@ -119,7 +113,7 @@ non\-inetd mode the source address of connections to real servers
 will be this address, if NULL then the operating system will select
 a source address.
 .br
-(default "(null)")
+(default "")
 .TP
 .B \-C|\-\-connection_logging:
 Log interaction between clients, perdition and servers during
@@ -130,7 +124,7 @@ authentication phase.
 .B \-\-connect_relog SECONDS:
 How often to relog the connection.
 For use in conjunction with POP and IMAP before SMTP.
-If zero, then the connection will not be reloged.
+If zero then the connection will not be reloged.
 .br
 (default 300)
 .TP
@@ -139,8 +133,7 @@ Allow USER of the form user<delimiter>server[:port] to specify the
 server and port for a user.
 .TP
 .B \-D, \-\-domain_delimiter STRING:
-Delimiter used for \-c|\-\-client_server_specification and
-\-S|\-\-strip_domain options. Multi\-character delimiters are permitted.
+Delimiter between username and domain.
 .br
 (default "@")
 .TP
@@ -148,40 +141,41 @@ Delimiter used for \-c|\-\-client_server_specification and
 Turn on verbose debugging.
 .TP
 .B \-F, \-\-log_facility FACILITY:
-Syslog facility to log to. If the facility has a leading '/' then it will
+Facility to log to. If the facility has a leading '/' then it will
 be treated as a file. If is "-" or "+" then log to stdout or stderr 
-respectivley.
+respectivley. Otherewise it is assumed to be the name
+of a syslog facility. See syslog.conf(5) for valid syslog facility
+names.
 .br
 (default "mail")
 .br 
 Notes: If an error occurs before options are read it may be logged to 
-stdout. If stdout or stderr are used, then the process will not fork
-and detach from the terminal.
+stderr. If stdout or stderr is specified as the facility, then the 
+process will not fork and detach from the terminal.
 .TP
 .B \-f, \-\-config_file FILENAME:
-Name of config file to read. If set to "" no config file will be
-used. Command line options override options set in config file.
+Name of config file to read.
+Command line options override options set in config file.
 .sp
 The default is derived as follows:
 .sp
-The sysconfig dir ("/usr/local/etc/perdition by default")
+The sysconfig dir ("/etc/perdition" for example)
 is checked for <basename>.conf. If this is found then it is used.
-So if perdition is invoked as /usr/local/sbin/perdition.pop3,
-and /usr/local/etc/perdition/perdition.pop3.conf exists then
+So if perdition is invoked as /usr/sbin/perdition.pop3,
+and /etc/perdition/perdition.pop3.conf exists then
 it will be used.
 .sp
 Next the sysconfig dir is checked for peridtion.<protocol>.conf,
 where protocol is the ascii representation of the protocol
 being used, one of "imap4", "imap4s", "pop3", or "pop3s".
 So if perdition is being run in imap4 mode, and
-/usr/local/etc/perdition/perdition.imap4.conf exists, then
-it is used.
+/etc/perdition/perdition.imap4.conf exists, then
+it is used. Note that the protocol name is lowercase.
 .sp
 Next the sysconfig dir is checked for perdition.conf,
 if it is found then it is used.
 .sp
-If none of these files are found then the default is not
-to use a configuration file.
+If none of these files are found then no configuration file is used.
 .TP
 .B \-g, \-\-group GROUP:
 Group to run as.
@@ -196,12 +190,12 @@ Capabilities for the protocol.
 .sp
 When using a POP3 based protocol, the capabilities should be
 delimited by two spaces. This is because the capabilities themselves
-may contain single spaces. The default is: "UIDL  USER".
+may contain single spaces. The default is "UIDL  USER".
 .sp
 When using an IMAP4 based protocol, this string is taken as a string
 literal that will be returned when a client issues the CAPABILITY
 command. As such the capabilities should be space delimited.
-The default is: "IMAP4 IMAP4REV1". However perdition does
+The default is "IMAP4 IMAP4REV1". However, perdition does
 support RFC 2088 non-synchronising string literals, if the real
 servers also support this then the capability may be set to
 "IMAP4 IMAP4REV1 LITERAL+".
@@ -212,6 +206,11 @@ appended to the list of capabilities if it is not already
 present. Simmilarly these capabilities will be removed from
 the list of capabilities if they are present and perdition is not
 listening for TLS connections.
+.sp
+Perdition may also manipulate the capability in IMAP mode
+to add and remove the LOGINDISABLED capability if the no_login capability
+is in effect or if the ssl_mode includes tls_listen_force or
+tls_outgoing_force.
 .TP
 .B \-i, \-\-inetd_mode:
 Run in inetd mode
@@ -222,79 +221,77 @@ zero sets no limit on the number of simultaneous connections.
 .br
 (default 0)
 .TP
-.B \-l, \-\-listen_port port:
+.B \-l, \-\-listen_port PORT_NUMBER|PORT_NAME:
 Port to listen on.
+.sp
+The default is 110, 995, 143 and 993 in POP3, POP3S, IMAP4 and
+IMAP4S mode respectively.
 .TP
-.B \-\-lookup_domain:
-If the username is not found on a popmap lookup, and the domain-delimiter
-is part of the username, then lookup up the domain portion of the username,
-prefixed by the domain_delimiter in the database. Allows different default
-servers to be defined for different domains. Overriden by
-\-c|\-\-client_server_specification.
+.B \-\-lower_case state[,state...]:
+Convert usernames to lower case according the the locale in given
+state(s). See A|add_domain for a description of the states.
 .br
-(default "protocol dependent")
+(default "(null)")
 .TP
 .B \-M, \-\-map_library FILENAME:
 Library to open that provides functions to look up the server for a
-user. A null library mean no library will be accessed and hence, no
-lookup will take place.
+user. An empty ("") library means that no library will be accessed 
+and hence, no lookup will take place.
 .br
 (default "/usr/lib/libperditiondb_gdbm.so.0")
 .TP
 .B \-m, \-\-map_library_opt STRING:
 String option to pass to database access function provided by the
-library specified by the \-M|\-\-map_library option. The treatment of
-this string is up to the library, in the case of perditiondb_gdbm
-the gdbm map to access is set.
+library specified by the map_library directive. The treatment of
+this string is up to the library. See perditiondb(5) for more details
+of how individual map_libraries handle this string.
 .br
-(default "(null)")
+(default "")
 .TP
 .B \-\-no_daemon:
-Do not detach from terminal. Makes no sense if \-i|\-\-inetd_mode
-is in opperation.
+Do not detach from terminal. Makes no sense if inetd_mode is in effect.
 .TP
 .B \-n, \-\-no_lookup:
-Disable host and port lookup Implies \-B|\-\-no_bind_banner.
+Disable host and port lookup, implies no_bind_banner.
 Please note that if this option is enabled, then perdition will
-not resolve hostnames returned by popmap lookups, thus your popmap
-must return ip addresses instead.
+not resolve host or port names returned by popmap lookups, thus, your popmap
+must return ip addresses and port numbers.
 .TP
 .B \-o, \-\-server_ok_line:
-If authentication with the back\-end server is successful then send
+If authentication with the real\-server is successful then send
 the servers +OK line to the client, instead of generating one.
 .TP
 .B \-P, \-\-protocol PROTOCOL:
 Protocol to use.
 .br
 (default "POP3")
-available protocols: "POP3, IMAP4"
+available protocols: "POP3, POP3S, IMAP4, IMAP4S"
 .TP
 .B \-p, \-\-outgoing_port PORT:
-Define a port to use if a port is not defined for a user in popmap,
-or a default server if it is used.
+Default real-server port.
 .br
-(default "protocol dependent")
+See listen_port for defaults.
 .TP
-.B \-s, \-\-outgoing_server servername[,servername...]:
+.B \-s, \-\-outgoing_server SERVER[,SERVER...]:
 Define a server to use if a user is not in the popmap. Format is
-servername[:port]. Multiple servers can be delimited by a ','. If
-multiple servers are specified then they are used in a round robin.
+servername|ip_address[:portname|portnumber]. Multiple servers may be 
+delimited by a ','. If multiple servers are specified then they are 
+used in a round robin fashion.
 .br
-(default "(null)")
+(default "")
 .TP
 .B \-S, \-\-strip_domain STATE[,STATE]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain
-will be striped off in given state(s). State may be one of servername_lookup,
-local_authentication, remote_login and all. See \-A|\-\-add_domain for a
+will be striped off in given state(s).See add_domain for a
 description of the states.
 .TP
-.B \-t, \-\-timeout TIMEOUT:
-Idle timeout in seconds. Value of zero sets infinite timeout.
+.B \-t, \-\-timeout SECONDS:
+Idle timeout. Zero for infinite timeout.
 .br
 (default 1800)
 .TP
 .B \-u, \-\-username USERNAME:
-Username to run as.
+User to run as.
 .br
 (default "nobody")
 .TP
@@ -302,27 +299,18 @@ Username to run as.
 If the servername in the popmap specified in the form:
 user<delimiter>domain then use the username given by the servername.  If a
 servername is given in this form then the domain will be used as the server
-to connect to, regardless of it the \-U|\-\-username_from_database option is
-specified or not.
+to connect to, regardless of this option.
 .TP
 .B \-q, \-\-quiet:
-Only log errors. Overridden by \-d|\-\-debug
+Only log errors. Overridden by debug
 .TP
 .B \-\-login_disabled:
 Do not allow users to log in.
-Add LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
-.TP
-.B \-\-lower_case state[,state...]:
-Convert usernames to lower case according the the locale in given
-state(s). State may be one of servername_lookup,
-local_authentication, remote_login and all. See \-A|\-\-add_domain for a
-description of the states.
-.br
-(default "(null)")
+Also adds LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
 .TP
 .B \-\-query_key FORMAT[,FORMAT...]:
 Instead of using the username as supplied by the end user, possibly
-modified by \-\-strip_domain, use the formats specified. The formats
+modified by strip_domain, use the formats specified. The formats
 will be used in order to querey the popmap. The result from the first 
 successful lookup will be used. The format is comprised of a string
 of characters, delimited by ','. The following escape codes
@@ -374,13 +362,16 @@ Use the destination IP address
 Escape codes interspersed with literals
 .br
 \\u\\da_domain,\\da_domain
+.P
+The options below relate to SSL/TLS support.
+They are not available if perdition is compiled without SSL support.
 .TP
 .B \-\-ssl_mode MODE:
 Use SSL and or TLS for the listening and/or outgoing connections.
 A comma delimited list of: none, ssl_listen, ssl_outgoing,
 ssl_all, tls_listen, tls_outgoing, tls_all, tls_listen_force,
 tls_outgoing_force, tls_all_force. TLS is defined
-in RFC 2595. Only available if perdition is compiled with SSL support.
+in RFC 2595.
 .br
 (default "(null)")
 .sp
@@ -427,40 +418,82 @@ Short-Hand for tls_listen_force,tls_outgoing_force.
 .B \-\-ssl_ca_file FILENAME:
 Certificate Authorities to use when verifying certificates of
 real servers. Used for SSL or TLS outgoing connections.
-If  then verification will not take place
+See SSL_CTX_load_verify_locations(3) for format details.
 .br
 (default "/etc/perdition/perdition.ca.pem")
 .TP
+.B \-\-ssl_ca_path PATHNAME:
+Certificate Authorities to use when verifying certificates of real servers.
+Used for SSL or TLS outgoing connections.  "openssh c_rehash" should be run
+in this directory when new certificates are added.  See
+SSL_CTX_load_verify_locations(3) for details.
+.br
+(default "/etc/perdition/perdition.ca/")
+.TP
+.B \-\-ssl_ca_accept_self_signed:
+Accept self-signed certificates.
+.TP
 .B \-\-ssl_cert_file FILENAME:
-Certificate to use when listening for SSL or TLS connections. Only
-available if perdition is compiled with SSL support.
+Certificate to use when listening for SSL or TLS connections. 
+Should be in PEM format.
 .br
 (default "/etc/perdition/perdition.key.pem")
+.TP 
+.B \-\-ssl_cert_accept_self_signed:
+Accept self-signed certificates.
+Used for SSL or TLS outgoing connections.
+.TP
+.B \-\-ssl_cert_accept_expired:
+Accept expired certificates. This includes server certificates
+and certificats authority certificates.
+Used for SSL or TLS outgoing connections.
+.TP
+.B \-\-ssl_cert_accept_not_yet_valid:
+Accept certificates that are not yet valid. This includes server
+certificates and certificats authority certificates.
+Used for SSL or TLS outgoing connections.
+.TP
+.B \-\-ssl_cert_verify_depth DEPTH:
+Chain Depth to recurse to when vierifying certificates.
+Used for SSL or TLS outgoing connections.
+.br
+(default 9)
 .TP
 .B \-\-ssl_key_file FILENAME:
-Public key to use when listening for SSL or TLS connections. Only available
-if perdition is compiled with SSL support.
+Public key to use when listening for SSL or TLS connections. 
+Should be in PEM format.
 .br
 (default "/etc/perdition/perdition.crt.pem")
 .TP
-.B \-\-ssl_listen_ciphers CIPHERS:
+.B \-\-ssl_listen_ciphers STRING:
 Cipher list when listening for SSL or TLS connections as per
-\fBciphers\fP(1). If null then openssl's default will be used.
+ciphers(1). If empty ("") then openssl's default will be used.
 .br
-(default "(null)")
+(default "")
 .TP
-\-\-ssl_outgoing_ciphers CIPHERS:
+.B \-\-ssl_outgoing_ciphers STRING:
 Cipher list when making outgoing SSL or TLS connections as per 
-\fBciphers\fP(1). If null then openssl's default will be used.
+ciphers(1). If empty ("") then openssl's default will be used.
 .br
-(default "(null)")
+(default "")
 .TP
-\-\-ssl_no_cn_verify:
-Don't verify the real-servers common name with the name used.
-to connect to the server. Used for SSL or TLS outgoing
-connections.
+.B \-\-ssl_no_cert_verify:
+Don't cryptographically verify the real-server's certificate.
+Used for SSL or TLS outgoing connections.
 .TP
-\fBNote:\fP Default value for binary flags is off.
+.B \-\-ssl_no_cn_verify:
+Don't verify the real-server's common name with the name used.
+to connect to the server. Used for SSL or TLS outgoing connections.
+.TP
+Notes: 
+Default value for binary flags is off.
+.br
+If a string argument is empty ("") then the option will not
+be used unless noted otherwise.
+.br
+The defaults given refer to the values if perdition is compiled with
+--sysconfdir=/etc as it would for many binary distributions. For the
+actuall defaults of a given perdition binary run "perdition --help"
 .SH USER DATABASE (POPMAP)
 For information on mechanisms for resolving users to a host and port and
 information on the \-M|\-\-map_library and \-m|\-\-map_library_opt flags, please

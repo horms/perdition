@@ -778,7 +778,9 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
 }
 
 
-#define BIN_OPT_STR(opt) ((opt)?"on":"off")
+#define BIN_OPT_STR(_opt) ((_opt)?"on":"off")
+#define OPT_STR(_opt) ((_opt)?(_opt):"")
+
 
 /**********************************************************************
  * log_options_str
@@ -970,54 +972,54 @@ int log_options_str(char *str, size_t n){
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
     "(mask=0x%x)\n",
-    str_null_safe(add_domain),
+    OPT_STR(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
-    str_null_safe(opt.bind_address),
-    str_null_safe(opt.capability),
+    OPT_STR(opt.bind_address),
+    OPT_STR(opt.capability),
     BIN_OPT_STR(opt.client_server_specification),
-    str_null_safe(opt.config_file),
+    OPT_STR(opt.config_file),
     opt.connection_limit,
     BIN_OPT_STR(opt.connection_logging),
     opt.connect_relog,
     BIN_OPT_STR(opt.debug),
-    str_null_safe(opt.domain_delimiter),
-    str_null_safe(opt.group),
+    OPT_STR(opt.domain_delimiter),
+    OPT_STR(opt.group),
     BIN_OPT_STR(opt.inetd_mode),
-    str_null_safe(opt.listen_port),
-    str_null_safe(opt.log_facility),
+    OPT_STR(opt.listen_port),
+    OPT_STR(opt.log_facility),
     BIN_OPT_STR(opt.login_disabled),
-    str_null_safe(lower_case),
-    str_null_safe(opt.map_library),
-    str_null_safe(opt.map_library_opt),
+    OPT_STR(lower_case),
+    OPT_STR(opt.map_library),
+    OPT_STR(opt.map_library_opt),
     BIN_OPT_STR(opt.no_bind_banner),
     BIN_OPT_STR(opt.no_daemon),
     BIN_OPT_STR(opt.no_lookup),
-    str_null_safe(system_uname->nodename),
-    str_null_safe(opt.outgoing_port),
-    str_null_safe(outgoing_server),
+    OPT_STR(system_uname->nodename),
+    OPT_STR(opt.outgoing_port),
+    OPT_STR(outgoing_server),
     protocol,
     BIN_OPT_STR(opt.server_ok_line),
     strip_domain,
     opt.timeout,
-    str_null_safe(opt.username),
+    OPT_STR(opt.username),
     BIN_OPT_STR(opt.username_from_database),
-    str_null_safe(query_key),
+    OPT_STR(query_key),
     BIN_OPT_STR(opt.quiet),
 #ifdef WITH_SSL_SUPPORT
     ssl_mode,
-    str_null_safe(opt.ssl_ca_file),
-    str_null_safe(opt.ssl_ca_path),
+    OPT_STR(opt.ssl_ca_file),
+    OPT_STR(opt.ssl_ca_path),
     BIN_OPT_STR(opt.ssl_ca_accept_self_signed),
-    str_null_safe(opt.ssl_cert_file),
+    OPT_STR(opt.ssl_cert_file),
     BIN_OPT_STR(opt.ssl_cert_accept_expired),
     BIN_OPT_STR(opt.ssl_cert_accept_not_yet_valid),
     BIN_OPT_STR(opt.ssl_cert_accept_self_signed),
     opt.ssl_cert_verify_depth,
-    str_null_safe(opt.ssl_key_file),
-    str_null_safe(opt.ssl_listen_ciphers),
-    str_null_safe(opt.ssl_outgoing_ciphers),
+    OPT_STR(opt.ssl_key_file),
+    OPT_STR(opt.ssl_listen_ciphers),
+    OPT_STR(opt.ssl_outgoing_ciphers),
     BIN_OPT_STR(opt.ssl_no_cert_verify),
     BIN_OPT_STR(opt.ssl_no_cn_verify),
     opt.ssl_mask,
@@ -1107,212 +1109,170 @@ void usage(int exit_status){
     "Usage: perdition [options]\n"
     "\n"
     "Options:\n"
-    " -A|--add_domain:\n"
+    " -A|--add_domain STATE[, STATE[,STATE...]STATE...]:\n"
     "    Appends a domain to the USER based on the IP address connected to\n"
-    "    in given state(s). State may be one of servername_lookup,\n"
-    "    local_authentication, remote_login and all. See manpage for details\n"
-    "    of states.\n"
-    "    (default \"(null)\")\n"
+    "    in given state(s). (default \"\")\n"
 #ifdef WITH_PAM_SUPPORT
     " -a|--authenticate_in:\n"
-    "    User is authenticated by perdition before connection to backend\n"
-    "    server is made.\n"
+    "    User is authenticated by perdition before connection to real-server.\n"
 #endif /* WITH_PAM_SUPPORT */
     " -B|--no_bind_banner:\n"
-    "    If -b|--bind_address is specified, then the address will be resolved\n"
-    "    and the reverse-lookup of this will be used in the greeting. This\n"
-    "    option disables this behaviour an reverts to using the uname to\n"
-    "    derive the hostname for the greeting.\n"
-    " -b|--bind_address ipaddress|hostname:\n"
-    "    Bind to interfaces with this address. In non-inetd mode, connections\n"
-    "    will only be accepted on interfaces with this address. If NULL\n"
-    "    connections will be accepted from all interfaces. In inetd and\n"
-    "    non-inetd mode the source address of connections to real servers\n"
-    "    will be this address, if NULL then the operating system will select\n"
-    "    a source address.\n"
+    "    Use uname to generate banner of even if bind_address is in effect.\n"
+    " -b|--bind_address IP_ADDRESS|HOSTNAME:\n"
+    "    Bind to this address.\n"
     "    (default \"%s\")\n"
     " -C|--connection_logging:\n"
-    "    Log interaction during authentication phase\n"
-    "    Note: -d|--debug must be specified for this option to take effect.\n"
+    "    Log all comminication recieved from end-users or real servers or\n"
+    "    sent from perdition.\n"
+    "    Note: debug must be in effect for this option to take effect.\n"
     " --connect_relog SECONDS:\n"
     "    How often to relog the connection.\n"
-    "    For use in conjunction with POP and IMAP before SMTP.\n"
-    "    If zero, then the connection will not be reloged.\n"
-    "    (default %d)\n"
+    "    Zero for no relogging. (default %d)\n"
     " -c|--client_server_specification:\n"
-    "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
-    "    server and port for a user.\n"
-    " -D|--domain_delimiter string:\n"
-    "    Delimiter used for -c|--client_server_specification and\n"
-    "    -S|--strip_domain options. Multicharacter delimiters are permitted.\n"
-    "    (default \"%s\")\n"
+    "    Allow end-user to specify the real-server.\n"
+    " -D|--domain_delimiter STRING:\n"
+    "    Delimiter between username and domain. (default \"%s\")\n"
     " -d|--debug:\n"
     "    Turn on verbose debuging.\n"
-    " -F|--log_facility facility:\n"
-    "    Syslog facility to log to. If the faclilty has a leading '/' then it\n"
-    "    will be treated as a file to log to. If '-' or '+' then log to\n"
-    "    stdout or stderr respecvitvley.\n"
-    "    (default \"%s\")\n"
-    " -f|--config_file filename:\n"
-    "    Name of config file to read. If set to \"\" no config file will be\n"
-    "    used. Command line options override options set in config file.\n"
-    "    See the manpage for details of how the default is derived\n"
+    " -F|--log_facility FACILITY:\n"
+    "    Facility to log to. (default \"%s\")\n"
+    " -f|--config_file FILENAME:\n"
+    "    Name of config file to read.\n"
+    "    (default is invocation independant)\n"
     " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
-    "    Display this message\n"
-    " -I|--capability|--pop_capability|--imap_capability:\n"
-    "    Capabilities for the protocol. See perdition man page for more\n"
-    "    information on the format of this string.\n"
+    "    Display this message.\n"
+    " -I|--capability|--pop_capability|--imap_capability STRING:\n"
+    "    Capabilities for the protocol.\n"
     "    (default \"%s\")\n"
     " -i|--inetd_mode:\n"
-    "    Run in inetd mode\n"
-    " -L|--connection_limit number:\n"
-    "    Maximum number of connections to accept simultaneously. A value of\n"
-    "    zero sets no limit on the number of simultaneous connections.\n"
-    "    (default %d)\n"
-    " -l|--listen_port:\n"
+    "    Run in inetd mode.\n"
+    " -L|--connection_limit number LIMIT:\n"
+    "    Maximum number of simultaneous connections to accept.\n"
+    "    Zero for no limit. (default %d)\n"
+    " -l|--listen_port PORT_NUMBER|PORT_NAME:\n"
     "    Port to listen on. (default \"%s\")\n"
     " --login_disabled:\n"
     "    Do not allow users to log in.\n"
-    "    Add LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.\n"
-    " --lower_case state[,state...]:\n"
+    " --lower_case STATE[,STATE...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
-    "    state(s). State may be one of servername_lookup, \n"
-    "    local_authentication, remote_login and all see the manpage for\n"
-    "    details of states.\n"
-    "    (default \"(null)\")\n"
-    " -M|--map_library filename:\n"
+    "    state(s). (default \"\")\n"
+    " -M|--map_library FILENAME:\n"
     "    Library to open that provides functions to look up the server for a\n"
-    "    user. A null library mean no library will be accessed and hence, no\n"
-    "    lookup will take place.\n"
+    "    user.\n"
     "    (default \"%s\")\n"
-    " -m|--map_library_opt string:\n"
-    "    String option to pass to database access function provided by the\n"
-    "    library specified by the -M|--map_library option. The treatment of\n"
-    "    this string is up to the library, in the case of perditiondb_gdbm\n"
-    "    the gdbm map to access is set. (default \"%s\")\n"
+    " -m|--map_library_opt STRING:\n"
+    "    String option for the map_library. (default \"%s\")\n"
     " --no_daemon:\n"
-    "    Do not detach from terminal. Makes no sense if -i|--inetd_mode\n"
-    "    is in opperation.\n"
+    "    Do not detach from terminal.\n"
     " -n|--no_lookup:\n"
-    "    Disable host and port lookup. Implies -B|--no_bind_banner\n"
+    "    Disable host and port lookup.\n"
     " -o|--server_ok_line:\n"
     "    If authentication with the back-end server is successful then send\n"
-    "    the servers +OK line to the client, instead of generting one.\n"
-    " -P|--protocol protocol:\n"
+    "    the servers +OK line to the client, instead of generating one.\n"
+    " -P|--protocol PROTOCOL:\n"
     "    Protocol to use.\n"
     "    (default \"%s\")\n"
     "    available protocols: \"%s\"\n"
-    " -p|--outgoing_port port:\n"
-    "    Define a port to use if a port is not defined for a user in popmap,\n"
-    "    or a default server if it is used. (default \"%s\")\n"
-    " -s|--outgoing_server servername[,servername...]:\n"
-    "    Define a server to use if a user is not in the popmap. Format is\n"
-    "    servername[:port]. Multiple servers can be delimited by a ','. If\n"
-    "    multiple servers are specified then they are used in a round robin.\n"
-    "    (default \"%s\")\n"
-    " -S|--strip_domain state[,state...]:\n"
-    "    Allow USER of the from user<delimiter>domain where <delimiter>domain\n"
-    "    will be striped off in given state(s). State may be one of\n"
-    "    servername_lookup, local_authentication, remote_login and all\n"
-    "    See manpage for details of states.\n"
-    "    (default \"(null)\")\n"
-    " -t|--timeout seconds:\n"
-    "    Idle timeout. Value of zero sets infinite timeout.\n"
-    "    (default %d)\n"
-    " -u|--username username:\n"
-    "    Username to run as. (default \"%s\")\n"
+    " -p|--outgoing_port PORT_NAME|PORT_NUMBER:\n"
+    "    Default real-server port. (default \"%s\")\n"
+    " -s|--outgoing_server SERVER[,SERVER...]:\n"
+    "    Default server(s). (default \"%s\")\n"
+    " -S|--strip_domain STATE[,STATE...]:\n"
+    "    Allow domain portion of username to be striped in given state(s).\n"
+    "    (default \"\")\n"
+    " -t|--timeout SECONDS:\n"
+    "    Idle timeout. Zero for infinite timeout. (default %d)\n"
+    " -u|--username USERNAME:\n"
+    "    User to run as. (default \"%s\")\n"
     " -U|--username_from_database:\n"
-    "    If the servername in the popmap specified in the form:\n"
-    "    user<delimiter>domain then use the username given by the servername.\n"
-    "    If a servername is given in this form then the domain will be used\n"
-    "    as the server to connect to, regarless of it the\n"
-    "    -U|--username_from_database option is specified or not.\n"
+    "    Substitute username from popmap lookup.\n"
     " -q|--quiet:\n"
-    "    Only log errors. Overriden by -d|--debug\n"
-    " --query_str format[,format...]:\n"
-    "    Speficy a list of query strings to search for in the popmap,\n"
-    "    in order. See man page for details.\n"
-#ifdef WITH_SSL_SUPPORT
-    " --ssl_mode:\n"
-    "    Use SSL and or TLS for the listening and/or outgoing connections.\n"
-    "    A comma delimited list of: none, ssl_listen, ssl_outgoing,\n"
-    "    ssl_all, tls_listen, tls_outgoing, tls_all. See manpage for\n"
-    "    details of these options.\n"
+    "    Only log errors. Overriden by debug\n"
+    " --query_str FORMAT[,FORMAT...]:\n"
+    "    Speficy a list of query strings to search for in the popmap.\n"
     "    (default \"%s\")\n"
-    " --ssl_ca_file:\n"
-    "    Certificate Authorities to use when verifying certificates of\n"
-    "    real servers. Used for SSL or TLS outgoing connections.\n"
-    "    See the SSL_get_verify_result man page for format details.\n"
+#ifdef WITH_SSL_SUPPORT
+    "\n"
+    "SSL/TLS Specific Options:\n"
+    " --ssl_mode MODE[,MODE ...]:\n"
+    "    Use SSL and or TLS for the listening and/or outgoing connections.\n"
+    "    (default \"%s\")\n"
+    " --ssl_ca_file FILENAME:\n"
+    "    Certificate Authorities to use when verifying certificates.\n"
     "    (default \"%s\")\n"
     "    (recommended location \"%s\")\n"
-    " --ssl_ca_path:\n"
-    "    Certificate Authorities to use when verifying certificates of\n"
-    "    real servers. Used for SSL or TLS outgoing connections.\n"
-    "    See the SSL_get_verify_result man page for format details.\n"
+    " --ssl_ca_path DIRECTORYNAME:\n"
+    "    Certificate Authorities to use when verifying certificates.\n"
     "    (default \"%s\")\n"
     " --ssl_ca_accept_self_signed:\n"
-    "    Accept signed certificate authorities when verifying a certificate\n"
-    " --ssl_cert_file:\n"
+    "    Accept self-signed certificates.\n"
+    " --ssl_cert_file FILENAME:\n"
     "    Certificate chain to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
     " --ssl_cert_accept_self_signed:\n"
-    "    Accept signed certificates\n"
+    "    Accept self-signed certificates.\n"
     " --ssl_cert_accept_expired:\n"
     "    Accept expired certificates. This includes server certificates\n"
     "    and certificats authority certificates.\n"
     " --ssl_cert_accept_not_yet_valid:\n"
     "    Accept certificates that are not yet valid. This includes server\n"
     "    certificates and certificats authority certificates.\n"
-    " --ssl_cert_verify_depth:\n"
+    " --ssl_cert_verify_depth DEPTH:\n"
     "    Chain Depth to recurse to when vierifying certificates.\n"
     "    (default %d)\n"
-    " --ssl_key_file:\n"
+    " --ssl_key_file FILENAME:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
-    " --ssl_listen_ciphers:\n"
+    " --ssl_listen_ciphers STRING:\n"
     "    Cipher list when listening for SSL or TLS connections.\n"
+    "    If empty ("") then openssl's default will be used.\n"
     "    (default \"%s\")\n"
-    " --ssl_outgoing_ciphers:\n"
+    " --ssl_outgoing_ciphers STRING:\n"
     "    Cipher list when making outgoing SSL or TLS connections.\n"
+    "    If empty ("") then openssl's default will be used.\n"
     "    (default \"%s\")\n"
     " --ssl_no_cert_verify:\n"
-    "    Don't cryptographically verify the real-servers certificate.\n"
+    "    Don't cryptographically verify the real-server's certificate.\n"
     " --ssl_no_cn_verify:\n"
-    "    Don't verify the real-servers common name with the name used.\n"
+    "    Don't verify the real-server's common name with the name used\n"
     "    to connect to the server.\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
-    " Note: default value for binary flags is off\n",
+    " Notes: Default value for binary flags is off.\n"
+    "        If a string argument is empty (\"\") then the option will not\n"
+    "        be used unless noted otherwise.\n"
+    "        See the perdition(8) man page for more details.\n",
     VERSION,
-    str_null_safe(DEFAULT_BIND_ADDRESS),
+    OPT_STR(DEFAULT_BIND_ADDRESS),
     DEFAULT_CONNECT_RELOG,
-    str_null_safe(DEFAULT_DOMAIN_DELIMITER),
-    str_null_safe(DEFAULT_LOG_FACILITY),
-    str_null_safe(DEFAULT_GROUP),
-    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
+    OPT_STR(DEFAULT_DOMAIN_DELIMITER),
+    OPT_STR(DEFAULT_LOG_FACILITY),
+    OPT_STR(DEFAULT_GROUP),
+    OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,
-    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
-    str_null_safe(DEFAULT_MAP_LIB),
-    str_null_safe(DEFAULT_MAP_LIB_OPT),
-    str_null_safe(default_protocol_str),
-    str_null_safe(available_protocols),
-    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
-    str_null_safe(DEFAULT_OUTGOING_SERVER),
+    OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
+    OPT_STR(DEFAULT_MAP_LIB),
+    OPT_STR(DEFAULT_MAP_LIB_OPT),
+    OPT_STR(default_protocol_str),
+    OPT_STR(available_protocols),
+    OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
+    OPT_STR(DEFAULT_OUTGOING_SERVER),
     DEFAULT_TIMEOUT,
-    str_null_safe(DEFAULT_USERNAME)
+    OPT_STR(DEFAULT_USERNAME),
+    OPT_STR(DEFAULT_QUERY_KEY)
 #ifdef WITH_SSL_SUPPORT
     ,
-    str_null_safe(NULL),
-    str_null_safe(DEFAULT_SSL_CA_FILE),
-    str_null_safe(RECOMENDED_SSL_CA_FILE),
-    str_null_safe(DEFAULT_SSL_CA_PATH),
-    str_null_safe(DEFAULT_SSL_CERT_FILE),
+    OPT_STR(NULL),
+    OPT_STR(DEFAULT_SSL_CA_FILE),
+    OPT_STR(RECOMENDED_SSL_CA_FILE),
+    OPT_STR(DEFAULT_SSL_CA_PATH),
+    OPT_STR(DEFAULT_SSL_CERT_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
-    str_null_safe(DEFAULT_SSL_KEY_FILE),
-    str_null_safe(DEFAULT_SSL_LISTEN_CIPHERS),
-    str_null_safe(DEFAULT_SSL_OUTGOING_CIPHERS)
+    OPT_STR(DEFAULT_SSL_KEY_FILE),
+    OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
+    OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS)
 #endif /* WITH_SSL_SUPPORT */
   );
 
