@@ -21,6 +21,9 @@ XXX
      options.
    - Fixed bug where connection to server may be closed twice
      resulting in an unecssesary debuging message.
+   - No longer missinterpates some ssl shutdowns as errors.
+   - Reconciled protocol numbers when compiled without SSL.
+     Thanks to Yiu <khyiu@hk.quamnet.com>
 
 
 ----------------------------------------------------------------------

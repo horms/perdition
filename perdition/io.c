@@ -197,8 +197,8 @@ void io_destroy(io_t *io){
 #define __IO_READ_WRITE_SSL_ERROR(_name, _ssl, _bytes) \
 { \
   int error; \
-  error = SSL_get_error(io->data.d_ssl->ssl, bytes); \
-  VANESSA_LOGGER_DEBUG_SSL_IO_ERR(_name, _ssl, _bytes); \
+  error = SSL_get_error((_ssl), bytes); \
+  VANESSA_LOGGER_DEBUG_SSL_IO_ERR(_name, (_ssl), _bytes); \
   if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
     VANESSA_LOGGER_DEBUG(_name ": Warning: wants read or write"); \
     return(0); \
@@ -225,10 +225,11 @@ ssize_t io_write(io_t *io, const void *buf, size_t count){
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
       if((bytes=(ssize_t)SSL_write(io->data.d_ssl->ssl, buf, (int)count))<=0){
-        if(bytes <= 0) {
+        if(bytes < 0) {
 	  __IO_READ_WRITE_SSL_ERROR("SSL_write", io->data.d_ssl->ssl, bytes);
         }
         else {
+
           return(0);
         }
       }
@@ -272,7 +273,7 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
       if((bytes=(ssize_t)SSL_read(io->data.d_ssl->ssl, buf, (int)count))<=0){
-        if(bytes <= 0) {
+        if(bytes < 0) {
 	  __IO_READ_WRITE_SSL_ERROR("SSL_read", io->data.d_ssl->ssl, bytes);
         }
         else {
