@@ -24,6 +24,8 @@ XXX
     for the MySQL, PostgreSQL and ODBC modules. Rayed Alrashed
   - Use uint types instead of u_int types, this should be more portable.
     Andrew McNamara
+  - Changed PERDITION_DEBUG (no longer defined) to VANESSA_LOGGER_DEBUG 
+    Only effects build _without_ SSL. Andrew McNamara
 
 ----------------------------------------------------------------------
 

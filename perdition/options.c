@@ -694,7 +694,7 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.ssl_ca_chain_file,optarg,opt.ssl_mask,
 			MASK_SSL_CA_CHAIN_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      PERDITION_DEBUG(
+      VANESSA_LOGGER_DEBUG(
 	"--ssl_ca_chain_file is only supported when ssl support "
 	"is compiled in");
       if(f&OPT_ERR){
