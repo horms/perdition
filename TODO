@@ -11,8 +11,8 @@ Key: +: highly desired for the next release
 From Horms
 *  Make TLS IMAP and POP Server support RFC 2595 compliant
      * Option to only use tls if advertised by server on a per-user basis
-* Fix up LDAP Bind Credentials
-* Fix up LDAP configuration options
+* Support SSL CRLs (maybey?)
+* Support persistent SSL ID Cache (maybey?)
 
 From Jon Griffiths
 * LDAPS support
