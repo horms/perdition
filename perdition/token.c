@@ -47,7 +47,6 @@ static size_t token_read_bytes=0;
 static int token_fill_buffer(io_t *io, const options_t *opt);
 static int __token_fill_buffer(io_t *io, const options_t *opt);
 
-
 /**********************************************************************
  * token_create
  * create an empty token
@@ -169,6 +168,21 @@ int token_write(io_t *io, const token_t *t){
   }
   
   return(0);
+}
+
+
+/**********************************************************************
+ * token_flush
+ * Flush internal buffers used to read tokens.
+ * pre: none
+ * post: internal buffers are flushed
+ * return: none
+ **********************************************************************/
+
+void token_flush(void) {
+	token_read_offset = 0;
+	token_read_bytes = 0;
+	memset(token_read_buffer, 0, sizeof(token_read_buffer));
 }
 
 

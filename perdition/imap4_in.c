@@ -389,7 +389,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
       else {
 	return_pw->pw_passwd=NULL;
       }
-
+ 
       token_destroy(&t);
       vanessa_queue_destroy(q);
       *return_tag=tag;

@@ -162,6 +162,17 @@ int token_write(io_t *io, const token_t *t);
 
 
 /**********************************************************************
+ * token_flush
+ * Flush internal buffers used to read tokens.
+ * pre: none
+ * post: internal buffers are flushed
+ * return: none
+ **********************************************************************/
+
+void token_flush(void);
+
+
+/**********************************************************************
  * token_read
  * read a token in from fd
  * pre: io: io_t to read from

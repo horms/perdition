@@ -522,6 +522,7 @@ int main (int argc, char **argv, char **envp){
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
+    token_flush();
     if((status=(*(protocol->in_get_pw))(client_io, &pw, &tag))<0){
       PERDITION_DEBUG("protocol->in_get_pw");
       PERDITION_ERR_UNSAFE(
@@ -763,6 +764,7 @@ int main (int argc, char **argv, char **envp){
     if(opt.server_ok_line){
       server_ok_buf_size=MAX_LINE_LENGTH-1;
     }
+    token_flush();
     status = (*(protocol->out_authenticate))(
       server_io, 
       &pw2, 
