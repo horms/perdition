@@ -125,7 +125,8 @@ static char *strip_username_and_add_domain(char *username,
 
 /* Macro to log session just after Authentication */
 #define PERDITION_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
-  PERDITION_INFO( \
+  PERDITION_LOG( \
+    LOG_NOTICE, \
     "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
     from_to_str, \
     str_null_safe(_user), \

@@ -262,18 +262,23 @@ E.g.
 (.*)@(.*): $1_$2@localhost
 .P
 The first matching regular expression will be used. The regular expressions
-are extended posix regulare expressions. The last example illustrates
+are extended posix regular expressions. The last example illustrates
 the ability to expand backreferances.
 .P
-E.g. 
+E.g.
 .P
 For the regex (.*)@(.*): $1_$2@localhost
 .br
 bonis@solution-service.de
 .br
-would return 
+would return
 .br
 bonis_solution-service_de@localhost
+.P
+Note that there is no implcit ^ or $
+around the regular expressions. The popmap entry "flim: localhost" will
+match "flim", "flimstix", "itsflim" and "totallyflimless". To only match
+"flim" you need the popmap entry "^flim$: localhost".
 .P
 The map file is read once on startup and cached. This is to increase
 performance as the regular expressions must be compiled internally before

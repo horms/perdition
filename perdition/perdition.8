@@ -427,7 +427,7 @@ these logs will be written to /var/log/syslog.  Normally each session will
 have two perdition log entries.  Logs are prepended, depending on syslog
 with the date, host, and perdition[<pid>]: .
 .PP
-When the user connects the following is logged:
+When the user connects the following is logged with a priority of info:
 .PP
 Connect: <client_ip>\-><server_ip>[ inetd_pid=<pid>]
 .TP
@@ -445,7 +445,7 @@ of the inetd process that spawned perdition.
 .PP
 .PP
 After the user attemps authentication with the back\-end server
-the following is logged:
+the following is logged with a priority of notice:
 .PP
 Auth: <client_ip>\-><server_ip> username="<username>" server="<server>"
 port="<port>" status="<status>"
@@ -470,7 +470,7 @@ The port to connect to on the server
 "ok" if authentication was successful, "failed" otherwise.
 .PP
 When a user disconnects after a successful connection to
-a back\-end server the following is logged:
+a back\-end server the following is logged with a priority of info:
 .PP
 Closing:  <client_ip>\-><server_ip> username="<username>" received=<bytes_in> sent=<bytes_out>
 .TP
@@ -489,14 +489,15 @@ The number of bytes received from the client to the server
 .B bytes_out:
 The number of bytes sent to the client from the server
 .PP
-Fatal errors are also logged. In stand\-alone mode the startup parameters
-are logged on initialisation.  If the \-d|\-\-debug command line option or
-configuration file directive is used then startup parameters are logged in
-inetd mode and in both stand\-alone and identd mode additional debugging
-messages are logged. As the flag implies, this is useful for debugging but
-is probably too verbose for production systems. If the \-q|\-\-quiet command
-line option or configuration file directive is used, only errors will be
-logged. This is overridden by \-d|\-\-debug.
+Fatal errors are also logged with a prority of err. In stand\-alone mode
+the startup parameters are logged on initialisation.  If the \-d|\-\-debug
+command line option or configuration file directive is used then startup
+parameters are logged in inetd mode and in both stand\-alone and identd
+mode additional debugging messages are logged with a priority of debug. As
+the flag implies, this is useful for debugging but is probably too verbose
+for production systems. If the \-q|\-\-quiet command line option or
+configuration file directive is used, only errors will be logged. This is
+overridden by \-d|\-\-debug.
 .SH SSL/TLS Support
 Perdition supports using SSLv2 and SSLv3 to encrypt sessions between
 end users and perdition and sessions between perdition and real servers.
