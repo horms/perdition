@@ -37,7 +37,4 @@ INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
   -I$(top_srcdir)/libjain \
-  -DPERDITIONDB_GDBM_SYSCONFDIR=\"$(sysconfdir)/perdition\"
-
-
-
+  -DPERDITIONDB_GDBM_SYSCONFDIR=\"$(sysconfdir)/perdition\" @ssl_includes@

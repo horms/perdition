@@ -140,7 +140,7 @@ AC_ARG_WITH(
         break
       fi
     done
-    AC_MSG_RESULT($ssl_inludepath)
+    AC_MSG_RESULT($ssl_includepath)
   ]
 )
 
