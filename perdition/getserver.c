@@ -109,7 +109,7 @@
  **********************************************************************/
 
 server_port_t *getserver(
-  char * key_str, 
+  char *key_str, 
   int (*dbserver_get)(char *, char *, char **, size_t *)
 ){
   server_port_t *server_port=NULL;

@@ -103,10 +103,11 @@ int imap4_out_authenticate(
     NULL_FLAG,
     5, 
     tag_string, 
-    " LOGIN ",
+    " LOGIN \"",
     pw->pw_name,
-    " ",
-    pw->pw_passwd)<0
+    "\" \"",
+    pw->pw_passwd,
+    "\"")<0
   ){
     PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: imap4_write");
     status=-1;

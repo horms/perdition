@@ -429,22 +429,12 @@ fi
 
 
 pg_includes="-I$pg_includepath"
-pg_libs="-lpq -L$pg_libpath"
+pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lpq -L$pg_libpath"
 mysql_includes="-I$mysql_includepath"
-mysql_libs="-lmysqlclient -L$mysql_libpath"
+mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$mysql_libpath -lmysqlclient"
 ldap_includes="-I$ldap_includepath"
-ldap_libs="-L$ldap_libpath -lldap -llber"
-posix_regex_libs="-lvanessa_adt"
-AC_MSG_CHECKING("for Linux style shared object linking")
-if test "$host_os" = "linux" -o "$host_os" = "linux-gnu"; then
-  AC_MSG_RESULT(Yes)
-else
-  AC_MSG_RESULT(No)
-  pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt $pg_libs"
-  mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm $mysql_libs"
-  ldap_libs="$socket_lib $nsl_lib $ldap_libs"
-  posix_regex_libs="-lvanessa_logger $posix_regex_libs"
-fi
+ldap_libs="$socket_lib $nsl_lib -L$ldap_libpath -lldap -llber"
+posix_regex_libs="-lvanessa_logger -lvanessa_adt"
 
 ######################################################################
 # User and Group to run as

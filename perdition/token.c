@@ -273,6 +273,7 @@ token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
   token_t *t;
   size_t literal_offset=0;
   size_t len=0;
+  size_t offset=0;
   int bytes_read;
   int do_literal;
   flag_t flag=TOKEN_NONE;
@@ -298,10 +299,6 @@ token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
         flag=TOKEN_EOL;
         goto end_while;
       case '\r':
-#ifdef __GRR_0__
-      case '\"':  /* At some stage code was added to strip out \" characters
-		     this has been removed as it is not RFC compliand */
-#endif
         break;
       case ' ':
         goto end_while;
@@ -316,17 +313,24 @@ end_while:
     *n=literal_offset;
   }
 
+  /*Unquote quoted strings if we are in imap4 mode*/
+  if(opt.protocol==PROTOCOL_IMAP4 && *buffer=='\"' && *(buffer+len-1)=='\"'){
+    offset++;
+    len--;
+    flag|=TOKEN_HAS_QUOTES;
+  }
+
   /*Create token to return*/
   if((t=token_create())==NULL){
     PERDITION_LOG(LOG_DEBUG, "token_read: token_create");
     return(NULL);
   }
-  if((assign_buffer=(unsigned char*)malloc(sizeof(unsigned char)*len))==NULL){
+  if((assign_buffer=(unsigned char*)malloc(len-offset))==NULL){
     PERDITION_DEBUG_ERRNO("token_read: malloc", errno);
     return(NULL);
   }
-  memcpy(assign_buffer, buffer, len);
-  token_assign(t, assign_buffer, len, flag);
+  memcpy(assign_buffer, buffer+offset, len-offset);
+  token_assign(t, assign_buffer, len-offset, flag);
   return(t);
 }
 
