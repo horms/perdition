@@ -132,6 +132,16 @@ int pop3_in_get_pw(
       break;
     }
 
+    if(!token_len(t)) {
+	    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
+				    "Null command")<0) {
+		    VANESSA_LOGGER_DEBUG("pop3_write null command");
+	    	break;
+	    }
+	    goto loop;
+    }
+
+
     if(strncasecmp(token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
       if(vanessa_queue_length(q)!=0){
         sleep(VANESSA_LOGGER_ERR_SLEEP);

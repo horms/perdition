@@ -251,6 +251,16 @@ int imap4_in_authenticate(
  *        -1: on error
  **********************************************************************/
 
+#define __IMAP4_IN_BAD(_reason)                                             \
+        sleep(VANESSA_LOGGER_ERR_SLEEP);                                    \
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,                       \
+				1, "%s", (_reason)) < 0) {                  \
+		VANESSA_LOGGER_DEBUG("imap4_write syntax error");           \
+		break;                                                      \
+        }                                                                   \
+	goto loop;
+	
+
 #define __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR                                \
         if(return_pw->pw_name) {                                            \
 		free(return_pw->pw_name);                                   \
@@ -260,24 +270,12 @@ int imap4_in_authenticate(
 		free(return_pw->pw_passwd);                                 \
 		return_pw->pw_passwd=NULL;                                  \
 	}                                                                   \
-        sleep(VANESSA_LOGGER_ERR_SLEEP);                                    \
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,                       \
-				0, "Try " IMAP4_CMD_LOGIN                   \
-				" <username> <passwd>")<0){                 \
-		VANESSA_LOGGER_DEBUG("imap4_write syntax error");           \
-		break;                                                      \
-        }
+	__IMAP4_IN_BAD("Try " IMAP4_CMD_LOGIN " <username> <passwd>");
 
 #define __IMAP4_IN_CHECK_NO_ARG(_cmd)                                       \
 	if(vanessa_queue_length(q)) {                                       \
-		sleep(VANESSA_LOGGER_ERR_SLEEP);                            \
-		if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,               \
-					0, "Argument given to " _cmd        \
-					" but there shouldn't be one")<0){  \
-			VANESSA_LOGGER_DEBUG("imap4_write syntax error");   \
-				break;                                      \
-		}                                                           \
-		goto loop;                                                  \
+		__IMAP4_IN_BAD("Argument given to " _cmd                    \
+					" but there shouldn't be one");     \
 	}
 
 int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
@@ -302,18 +300,12 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
 
     if(token_is_eol(tag)){
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
       if(token_is_null(tag)){
-        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, 0, "Null command")<0){
-          VANESSA_LOGGER_DEBUG("imap4_write null command");
-          goto loop;
-        }
+	token_assign(tag, strdup(IMAP4_BAD), strlen(IMAP4_BAD), 0);
+	__IMAP4_IN_BAD("Null tag");
       }
       else {
-        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, 0, "Missing command")){
-          VANESSA_LOGGER_DEBUG("imap4_write missing command");
-          goto loop;
-        }
+	__IMAP4_IN_BAD("Missing command");
       }
       goto loop;
     }
@@ -322,6 +314,10 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       VANESSA_LOGGER_DEBUG("vanessa_queue_pop 2");
       t=NULL;
       break;
+    }
+
+    if(token_is_null(t)){
+      __IMAP4_IN_BAD("Null command");
     }
 
     if(strncasecmp(token_buf(t), IMAP4_CMD_NOOP, token_len(t))==0){
@@ -343,14 +339,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         vanessa_queue_destroy(q);
         return(2);
       }
-      else
-      {
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, 0,
-				"SSL already active")<0){
-          VANESSA_LOGGER_DEBUG("imap4_write ssl already active");
-          break;
-        }
+      else {
+	__IMAP4_IN_BAD("SSL already active");
       }
     }    
 #endif /* WITH_SSL_SUPPORT */
@@ -364,14 +354,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     else if(strncasecmp(token_buf(t), IMAP4_CMD_AUTHENTICATE,
 			    token_len(t))==0){
       if(vanessa_queue_length(q) != 1) {
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,
-			       	0, "Try " IMAP4_CMD_AUTHENTICATE
-				" <mechanism>")<0){
-          VANESSA_LOGGER_DEBUG("imap4_write authenticate");
-          break;
-        }
-        goto loop;
+        __IMAP4_IN_BAD("Try " IMAP4_CMD_AUTHENTICATE " <mechanism>");
       }
       if(imap4_in_authenticate_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop 2");
@@ -479,16 +462,11 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       return(0);
     }
     else {
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-      if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, 0,
-			      "Unrecognised command")<0){
-        VANESSA_LOGGER_DEBUG("imap4_write unrecognised command");
-        break;
-      }
+      __IMAP4_IN_BAD("Unrecognised command");
     }
 
     /*Clean up before looping*/
-    loop:
+loop:
     token_destroy(&t);
     token_destroy(&tag);
     vanessa_queue_destroy(q);
