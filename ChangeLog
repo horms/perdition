@@ -9,6 +9,7 @@ XXX
 (Horms)
    * 1.11beta2 unreleased
    - Fixed handling of POP3 CAPA command
+   - Cleaned up perditiondb(5) man page
 
 ----------------------------------------------------------------------
 
