@@ -12,6 +12,8 @@ XXX
    - Minor updates to databse documentation for MySQL and ODBC
    - Flags should now work correcly in the debian init script.
      Kilian Cavalott
+   - Fixed segmentation fault when using the query_key option
+     with end-users whose usernames are more than 32 characters long.
 
 ----------------------------------------------------------------------
 

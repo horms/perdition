@@ -110,8 +110,8 @@
 
 #define _GSK_STR_ADD(_str, _size) \
 	if(key_str_space < (_size)) { \
-		key_str_size += _GKS_CHUNK_SIZE; \
-		key_str_space += _GKS_CHUNK_SIZE; \
+		key_str_size += (_size) + _GKS_CHUNK_SIZE; \
+		key_str_space += (_size) + _GKS_CHUNK_SIZE; \
 		key_str = (char *)realloc(key_str, key_str_size); \
 		if(key_str == NULL) { \
 			VANESSA_LOGGER_DEBUG_ERRNO("realloc"); \
