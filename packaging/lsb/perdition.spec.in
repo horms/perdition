@@ -27,7 +27,7 @@ Copyright: GPL
 Group: Applications/Internet
 Source: ftp://ftp.vergenet.net/pub/perdition/perdition-%{ver}.tar.gz
 BuildRoot: /var/tmp/perdition-%{PACKAGE_VERSION}-root
-Packager: Horms <horms@vergenet.net>
+Packager: Horms <horms@verge.net.au>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
@@ -174,7 +174,6 @@ install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
   
 
 %clean
-rm -rf $RPM_BUILD_DIR/perdition-%{ver}
 rm -rf $RPM_BUILD_ROOT
 
 %post
@@ -244,8 +243,8 @@ true
 %{_libdir}/libperditiondb_bdb.so
 %{_libdir}/libperditiondb_bdb.so.0
 %{_libdir}/libperditiondb_bdb.so.0.0.0
-%{_bindir}/perditiondb_bdb_makedb
-%{_mandir}/man8/perditiondb_bdb_makedb.*
+%{_bindir}/makebdb
+%{_mandir}/man1/makebdb.*
 
 %files ldap
 %defattr(-,root,root)
@@ -297,58 +296,61 @@ true
 
 
 %changelog
-* Fri Mar 31 2002 Horms <horms@vergenet.net>
+* Fri Oct 30 2002 Horms <horms@verge.net.au>
+- Fixed BDB mess!
+
+* Fri Mar 31 2002 Horms <horms@verge.net.au>
 - added BDB
 
-* Tue Mar 26 2002 Horms <horms@vergenet.net>
+* Tue Mar 26 2002 Horms <horms@verge.net.au>
 - added ODBC
 
-* Sat Dec 29 2001 Horms <horms@vergenet.net>
+* Sat Dec 29 2001 Horms <horms@verge.net.au>
 - Forked SuSE (lsb) spec file
 
-* Fri Dec 14 2001 Horms <horms@vergenet.net>
+* Fri Dec 14 2001 Horms <horms@verge.net.au>
 - Revamped configure to use %{_libdir} and friends. This should be more
   distribution indepentant. With thanks to Scot W. Hetzel <scot@genroco.com>
 
-* Wed Apr 18 2001 Horms <horms@vergenet.net>
+* Wed Apr 18 2001 Horms <horms@verge.net.au>
 - Broke MySQL, PostgreSQL and LDAP back out into separate packages
 
-* Wed Apr 18 2001 Horms <horms@vergenet.net>
+* Wed Apr 18 2001 Horms <horms@verge.net.au>
 - Merged db packages into main package
 
-* Mon Nov 27 2000 Horms <horms@vergenet.net>
+* Mon Nov 27 2000 Horms <horms@verge.net.au>
 - Modified to reflect build process handling instalation of config files
 - Split GDBM and Posix_Regex into separate packages
 
-* Mon Oct 16 2000 Horms <horms@vergenet.net>
+* Mon Oct 16 2000 Horms <horms@verge.net.au>
 - added NIS library
 
-* Mon May 15 2000 Horms <horms@vergenet.net>
+* Mon May 15 2000 Horms <horms@verge.net.au>
 - added sysconfig file
 - split libraries into separate packages so that packages such
   as postgress and mysql don't have to be installed for perdition
   to install cleanly.
 - added sample ldap server configuration
 
-* Thu May  4 2000 Horms <horms@vergenet.net>
+* Thu May  4 2000 Horms <horms@verge.net.au>
 - added perditiondb_ldap files
 - added missing perditiondb_postgresql devel files
 
-* Thu Apr 20 2000 Horms <horms@vergenet.net>
+* Thu Apr 20 2000 Horms <horms@verge.net.au>
 - added perditiondb_postgresql files
 
-* Tue Jan  4 2000 Horms <horms@vergenet.net>
+* Tue Jan  4 2000 Horms <horms@verge.net.au>
 - added libraries
 - added headers
 - made devel package
 - made libtcp_socket and libtcp_socket-devel package
 - Included mysql and posix_regex stuff in /etc
 
-* Mon Nov 29 1999 Horms <horms@vergenet.net>
+* Mon Nov 29 1999 Horms <horms@verge.net.au>
 - Added perdition.conf
 
-* Sat Sep 18 1999 Horms <horms@vergenet.net>
+* Sat Sep 18 1999 Horms <horms@verge.net.au>
 - updated for 0.1.0
 
-* Sat May 29 1999 Horms <horms@vergenet.net>
+* Sat May 29 1999 Horms <horms@verge.net.au>
 - inital release
