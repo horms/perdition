@@ -32,9 +32,7 @@ From Stephen Lombard
 From Erik R. Leo
 BSD/OS login.conf support
 
-From Jure Pecar and others
-* pop-before-smtp support
-* drac support http://mail.cc.umanitoba.ca/drac/
+Document pop-before-smtp support
 
 From Matt Prigge
 * Modify the necessary Makefiles (etc/perdition/Makefile?) to keep 'make
