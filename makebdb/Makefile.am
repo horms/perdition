@@ -1,9 +1,6 @@
 ######################################################################
-# Makefile.popmap                                        February 2000
+# Makefile.am                                            February 2000
 # Horms                                             horms@vergenet.net
-#
-# Make file to build a GDBM popmap.db from an ASCII popmap 
-# using makegdbm.
 #
 # perdition
 # Mail retrieval proxy server
@@ -26,15 +23,18 @@
 #
 ######################################################################
 
-BINDIR=@prefix@/bin
-MAKEGDBM=$(BINDIR)/makegdbm
+bin_PROGRAMS = makebdb
 
-.PHONY = all clean
+man_MANS = makebdb.1
 
-all: popmap.db
+EXTRA_DIST = makebdb.1
 
-popmap.db: popmap
-	$(MAKEGDBM) $@ < $<
+makebdb_SOURCES = \
+        makebdb.c \
+        options.c \
+        options.h
 
-clean:
-	rm -f popmap.db *~ *.bak core
+makebdb_LDADD = -L../libjain -L../libjain/.libs/ -ljain -ldb -lpopt \
+@dmalloc_lib@
+
+INCLUDES=-I$(top_srcdir)/libjain

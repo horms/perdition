@@ -1,12 +1,12 @@
 /**********************************************************************
- * perditiondb_gdbm.h                                     December 1999
- * Horms                                             horms@vergenet.net
+ * perditiondb_gdbm.h                                     February 2002
+ * ChrisS                                              chriss@pipex.net
  *
- * Access a gdbm(3) database
+ * Access a Berkeley DB database
  *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999-2002  Horms
+ * Copyright (C) 1999-2001  Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -29,21 +29,19 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <gdbm.h>
+#include <db.h>
+#include "log.h"
 
-extern gdbm_error gdbm_errno;
-extern char *gdbm_version;
-
-#ifndef PERDITIONDB_GDBM_SYSCONFDIR
-#define PERDITIONDB_GDBM_SYSCONFDIR "/usr/local/etc/perdition"
+#ifndef PERDITIONDB_BDB_SYSCONFDIR
+#define PERDITIONDB_BDB_SYSCONFDIR "/usr/local/etc/perdition"
 #endif
 
-#define PERDITIONDB_GDBM_DEFAULT_MAPNAME \
-  PERDITIONDB_GDBM_SYSCONFDIR "/popmap.gdbm.db"
+#define PERDITIONDB_BDB_DEFAULT_MAPNAME \
+  PERDITIONDB_BDB_SYSCONFDIR "/popmap.bdb.db"
 
 int dbserver_get(
-  const char *key_str, 
-  const char *options_str,
+  char *key_str, 
+  char *options_str,
   char **str_return, 
   int *len_return
 );

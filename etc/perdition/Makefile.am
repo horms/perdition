@@ -23,7 +23,14 @@
 #
 ######################################################################
 
-EXTRA_DIST = perdition.conf
+EXTRA_DIST = perdition.conf Makefile.popmap.in Makefile.popmap
 
 perditionconfdir = $(sysconfdir)/perdition
-perditionconf_DATA = perdition.conf
+perditionconf_DATA = perdition.conf popmap Makefile.popmap
+
+install-data-hook:
+	(cd $(DESTDIR)$(sysconfdir)/perdition/ && rm -f Makefile && \
+		ln -sf Makefile.popmap Makefile)
+
+uninstall-local:
+	(cd $(DESTDIR)$(sysconfdir)/perdition/ && rm -f Makefile)

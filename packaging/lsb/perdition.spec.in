@@ -31,7 +31,7 @@ Packager: Horms <horms@vergenet.net>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam zlib openssl-devel ghostscript tetex-latex tetex-dvips unixODBC-devel
+BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam zlib openssl-devel ghostscript tetex-latex tetex-dvips unixODBC-devel, db3-devel
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
@@ -56,6 +56,19 @@ Perdition allows for arbitrary user database access through
 shared libraries much in the manner of NSS in glibc. This package
 provides headers and libraries that may be useful in the development
 of perditiondb libraries.
+
+
+%package bdb
+Summary: Library to allow perdition to access Berkely DB based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-ldap-%{ver}-%{rel}
+
+%description bdb
+Perdition allows for arbitrary user database access through shared
+libraries much in the manner of NSS in glibc. This package allows a user
+database to be sourced from a Berkely DB.
 
 
 %package ldap
@@ -224,6 +237,16 @@ true
 %{_mandir}/man1/makegdbm.*
 %config /etc/perdition/popmap
 
+%files bdb
+%defattr(-,root,root)
+%{_libdir}/libperditiondb_bdb.a
+%{_libdir}/libperditiondb_bdb.la
+%{_libdir}/libperditiondb_bdb.so
+%{_libdir}/libperditiondb_bdb.so.0
+%{_libdir}/libperditiondb_bdb.so.0.0.0
+%{_bindir}/perditiondb_bdb_makedb
+%{_mandir}/man8/perditiondb_bdb_makedb.*
+
 %files ldap
 %defattr(-,root,root)
 %doc %attr(-, root, root) perdition/db/ldap/doc/perdition_ldap.pdf
@@ -274,6 +297,9 @@ true
 
 
 %changelog
+* Fri Mar 31 2002 Horms <horms@vergenet.net>
+- added BDB
+
 * Tue Mar 26 2002 Horms <horms@vergenet.net>
 - added ODBC
 

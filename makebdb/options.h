@@ -1,8 +1,10 @@
 /**********************************************************************
- * perditiondb_gdbm.h                                     December 1999
+ * options.h                                                   May 1999
  * Horms                                             horms@vergenet.net
  *
- * Access a gdbm(3) database
+ * Parse command line arguments
+ * Code based on man getopt(3), later translated to popt.
+ * Some code based on man popt(3)
  *
  * perdition
  * Mail retrieval proxy server
@@ -25,25 +27,33 @@
  *
  **********************************************************************/
 
+#ifndef ARGUMENTS_BERT
+#define ARGUMENTS_BERT
+
+#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <gdbm.h>
+#include <db.h>
+#include <popt.h>
 
-extern gdbm_error gdbm_errno;
-extern char *gdbm_version;
-
-#ifndef PERDITIONDB_GDBM_SYSCONFDIR
-#define PERDITIONDB_GDBM_SYSCONFDIR "/usr/local/etc/perdition"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
-#define PERDITIONDB_GDBM_DEFAULT_MAPNAME \
-  PERDITIONDB_GDBM_SYSCONFDIR "/popmap.gdbm.db"
+#include "jain.h"
 
-int dbserver_get(
-  const char *key_str, 
-  const char *options_str,
-  char **str_return, 
-  int *len_return
-);
+#define COPYRIGHT \
+  "(c) 1999 Horms <horms@vergenet.net>\nReleased under the GNU GPL\n"
+
+typedef struct {
+  char *mapname;
+  int undo;
+} makebdb_options_t; 
+
+extern char *optarg;
+extern int optind, opterr, optopt;
+
+makebdb_options_t makebdb_options(int argc, char **argv);
+void usage(int exit_status);
+void version(void);
+
+#endif

@@ -38,6 +38,7 @@ AC_PROG_MAKE_SET
 # Checks for libraries.
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
 AC_CHECK_LIB(gdbm, gdbm_open, true, true)
+AC_CHECK_LIB(db, db_create, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
@@ -485,6 +486,50 @@ AC_MSG_WARN(
 )
 fi
 
+######################################################################
+# BerkeleyDB
+
+AC_CHECK_HEADERS(
+  db.h,
+  [ 
+    bdb_build_dir="bdb" 
+    makebdb_build_dir="makebdb" 
+  ],
+  [
+    bdb_build_dir="" 
+    makebdb_build_dir="" 
+    AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_bdb and makebdb will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+
+if [ test -n "$bdb_build_dir" ]; then
+AC_CHECK_LIB(
+  db,
+  db_create,
+  [ 
+    bdb_build_dir="bdb" 
+    makebdb_build_dir="makebdb" 
+  ],
+  [ 
+    bdb_build_dir="" 
+    makebdb_build_dir="" 
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_bdb and makebdb will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+fi
+
 
 ######################################################################
 # Open LDAP
@@ -836,6 +881,8 @@ AC_CHECK_FUNCS(select socket strdup strerror parse_printf_format flim)
 
 AC_SUBST(gdbm_build_dir)
 AC_SUBST(makegdbm_build_dir)
+AC_SUBST(bdb_build_dir)
+AC_SUBST(makebdb_build_dir)
 AC_SUBST(pg_build_dir)
 AC_SUBST(pg_libs)
 AC_SUBST(pg_includes)
@@ -873,7 +920,7 @@ debian/Makefile
 perdition/Makefile 
 perdition/db/Makefile 
 perdition/db/gdbm/Makefile 
-perdition/db/gdbm/Makefile.popmap
+perdition/db/bdb/Makefile 
 perdition/db/posix_regex/Makefile 
 perdition/db/mysql/Makefile 
 perdition/db/nis/Makefile 
@@ -882,9 +929,11 @@ perdition/db/ldap/Makefile
 perdition/db/ldap/doc/Makefile 
 perdition/db/odbc/Makefile 
 makegdbm/Makefile 
+makebdb/Makefile 
 etc/Makefile 
 etc/pam.d/Makefile 
 etc/perdition/Makefile 
+etc/perdition/Makefile.popmap
 etc/rc.d/Makefile 
 etc/rc.d/init.d/Makefile 
 etc/rc.d/init.d/perdition.debian 
