@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+18th December 2003
 (Horms)
-  * XXX
+  * 1.13beta1
   - Added sys/limits.h for ULONG_MAX on FreeBSD. Clement Laforet
   - Fixed bug in callback functions for user_server_port_t
     structure. This caused perdition to segmentation fault when
