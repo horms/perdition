@@ -270,10 +270,10 @@ int main (int argc, char **argv, char **envp){
   /* Set file descriptor to log to, if any */
   fh = NULL;
   if(opt.log_facility!=NULL) {
-    if(strcmp(opt.log_facility, "-") == 0) {
+    if(*(opt.log_facility) == '-') {
       fh = stdout;
     }
-    else if(strcmp(opt.log_facility, "+") == 0) {
+    else if(*(opt.log_facility) == '+') {
       fh = stderr;
     }
   }
@@ -814,13 +814,6 @@ int main (int argc, char **argv, char **envp){
     if(status==0){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
       quit(server_io, protocol);
-      if(io_close(server_io)){
-        VANESSA_LOGGER_DEBUG("io_close 2");
-        VANESSA_LOGGER_ERR(
-	  "Fatal error closing connection to client. Exiting child."
-	);
-	vanessa_socket_daemon_exit_cleanly(-1);
-      }
       if(protocol->write(
         client_io, 
         NULL_FLAG,

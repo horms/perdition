@@ -15,6 +15,12 @@ XXX
      the with-ldap-schema-directory configure option
    - Use loging convenicence macros provided by libvanessa_logger
      rather than providing our own.
+   - Fixed bug in username mangling code, whereby the original username
+     could be freed and subsequently become corupted. Effects
+     the --lower_case, -S|--strip_domain and -A|--add_domain
+     options.
+   - Fixed bug where connection to server may be closed twice
+     resulting in an unecssesary debuging message.
 
 
 ----------------------------------------------------------------------

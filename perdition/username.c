@@ -210,7 +210,7 @@ char *username_mangle(char *username,
     VANESSA_LOGGER_DEBUG("username_add_domain");
     return(NULL);
   }
-  if(old_result != result) {
+  if(old_result != result && old_result != username) {
       free(old_result);
   }
 
@@ -219,7 +219,7 @@ char *username_mangle(char *username,
     VANESSA_LOGGER_DEBUG("username_lower_case");
     return(NULL);
   }
-  if(old_result != result) {
+  if(old_result != result && old_result != username) {
       free(old_result);
   }
 
