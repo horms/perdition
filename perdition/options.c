@@ -1252,7 +1252,7 @@ void usage(int exit_status){
     "    Substitute username from popmap lookup.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by debug\n"
-    " --query_str FORMAT[,FORMAT...]:\n"
+    " --query_key FORMAT[,FORMAT...]:\n"
     "    Speficy a list of query strings to search for in the popmap.\n"
     "    (default \"%s\")\n"
 #ifdef WITH_SSL_SUPPORT
