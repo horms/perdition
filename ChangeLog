@@ -16,6 +16,7 @@ XXX
   - Fixed segmentation fault in ldap module if the zeroth atribute
     returned was NULL. Jay Zh
   - Fixed client_server_specification. It was broken.
+  - Cleaned up wording in sample configuration file - Ged Haywood
 
 ----------------------------------------------------------------------
 
