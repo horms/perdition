@@ -46,8 +46,8 @@ POP3="${POP3:=yes}"
 POP3_FLAGS="${POP3_FLAGS:=}"
 POP3S="${POP3S:=yes}"
 POP3S_FLAGS="${POP3S_FLAGS:=}"
-IMAP4_FLAGS="${IMAP4:=yes}"
-IMAP4="${IMAP4_FLAGS:=}"
+IMAP4="${IMAP4_FLAGS:=yes}"
+IMAP4_FLAGS="${IMAP4:=}"
 IMAP4S="${IMAP4S:=yes}"
 IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
 
@@ -60,19 +60,19 @@ case "$1" in
   start)
     if [ "$POP3" = "yes" ]; then 	
       start-stop-daemon --start --verbose --name perdition.pop3 \
-        --exec @prefix@/sbin/perdition.pop3 -- $FLAGS
+        --exec @prefix@/sbin/perdition.pop3 -- $FLAGS $POP3_FLAGS
     fi
     if [ "$POP3S" = "yes" ]; then 	
       start-stop-daemon --start --verbose --name perdition.pop3s \
-        --exec @prefix@/sbin/perdition.pop3s -- $FLAGS
+        --exec @prefix@/sbin/perdition.pop3s -- $FLAGS $POP3S_FLAGS
     fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --start --verbose --name perdition.imap4 \
-        --exec @prefix@/sbin/perdition.imap4 -- $FLAGS
+        --exec @prefix@/sbin/perdition.imap4 -- $FLAGS $IMAP4_FLAGS
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --start --verbose --name perdition.imaps \
-        --exec @prefix@/sbin/perdition.imaps -- $FLAGS
+        --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
     fi
     ;;
   stop)

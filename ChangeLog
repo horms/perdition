@@ -10,6 +10,8 @@ XXX
    * XXX
    - Fixed capability command for POP3S
    - Minor updates to databse documentation for MySQL and ODBC
+   - Flags should now work correcly in the debian init script.
+     Kilian Cavalott
 
 ----------------------------------------------------------------------
 
