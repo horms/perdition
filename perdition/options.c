@@ -301,6 +301,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_MODE },
     {"ssl_ca_file",                 '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CA_FILE },
+    {"ssl_ca_path",                 '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CA_PATH },
     {"ssl_ca_accept_self_signed",   '\0', POPT_ARG_NONE,   NULL, 
       TAG_SSL_CA_ACCEPT_SELF_SIGNED },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
@@ -319,6 +321,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_LISTEN_CIPHERS },
     {"ssl_outgoing_ciphers",        '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_OUTGOING_CIPHERS },
+    {"ssl_no_cert_verify",          '\0', POPT_ARG_NONE,   NULL, 
+      TAG_SSL_NO_CERT_VERIFY },
     {"ssl_no_cn_verify",            '\0', POPT_ARG_NONE,   NULL, 
       TAG_SSL_NO_CN_VERIFY },
     {NULL,                           0,   0,               NULL, 0 }
@@ -392,6 +396,7 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_SSL_SUPPORT
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_ca_file,     DEFAULT_SSL_CA_FILE,         i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_ca_path,     DEFAULT_SSL_CA_PATH,         i, 0, OPT_NOT_SET);
     opt_i(opt.ssl_ca_accept_self_signed, DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED, 
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
@@ -408,6 +413,8 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
+		                                            i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_no_cert_verify, DEFAULT_SSL_NO_CERT_VERIFY,
 		                                            i, 0, OPT_NOT_SET);
     opt_i(opt.ssl_no_cn_verify,DEFAULT_SSL_NO_CN_VERIFY,    i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
@@ -627,6 +634,13 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_ca_file");
 #endif /* WITH_SSL_SUPPORT */
       break;
+      case TAG_SSL_CA_PATH:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_ca_path,optarg,opt.ssl_mask,MASK_SSL_CA_PATH,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_ca_path");
+#endif /* WITH_SSL_SUPPORT */
+      break;
       case TAG_SSL_CA_ACCEPT_SELF_SIGNED:
 #ifdef WITH_SSL_SUPPORT
         opt_i(opt.ssl_ca_accept_self_signed,1,opt.ssl_mask,
@@ -695,6 +709,13 @@ int options(int argc, char **argv, flag_t f){
 			MASK_SSL_OUTGOING_CIPHERS,f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_outgoing_ciphers");
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      case TAG_SSL_NO_CERT_VERIFY:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_no_cert_verify,1,opt.ssl_mask, MASK_SSL_NO_CERT_VERIFY,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_no_cert_verify");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_NO_CN_VERIFY:
@@ -934,6 +955,7 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_SSL_SUPPORT
     "ssl_mode=\"%s\", "
     "ssl_ca_file=\"%s\", "
+    "ssl_ca_path=\"%s\", "
     "ssl_ca_accept_self_signed=\"%s\", "
     "ssl_cert_file=\"%s\", "
     "ssl_cert_accept_expired=\"%s\", "
@@ -943,6 +965,7 @@ int log_options_str(char *str, size_t n){
     "ssl_key_file=\"%s\", "
     "ssl_listen_ciphers=\"%s\", "
     "ssl_outgoing_ciphers=\"%s\", "
+    "ssl_no_cert_verify=\"%s\", "
     "ssl_no_cn_verify=\"%s\", "
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
@@ -985,6 +1008,7 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_SSL_SUPPORT
     ssl_mode,
     str_null_safe(opt.ssl_ca_file),
+    str_null_safe(opt.ssl_ca_path),
     BIN_OPT_STR(opt.ssl_ca_accept_self_signed),
     str_null_safe(opt.ssl_cert_file),
     BIN_OPT_STR(opt.ssl_cert_accept_expired),
@@ -994,6 +1018,7 @@ int log_options_str(char *str, size_t n){
     str_null_safe(opt.ssl_key_file),
     str_null_safe(opt.ssl_listen_ciphers),
     str_null_safe(opt.ssl_outgoing_ciphers),
+    BIN_OPT_STR(opt.ssl_no_cert_verify),
     BIN_OPT_STR(opt.ssl_no_cn_verify),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
@@ -1219,7 +1244,13 @@ void usage(int exit_status){
     " --ssl_ca_file:\n"
     "    Certificate Authorities to use when verifying certificates of\n"
     "    real servers. Used for SSL or TLS outgoing connections.\n"
-    "    If "" then verification will not take place\n"
+    "    See the SSL_get_verify_result man page for format details.\n"
+    "    (default \"%s\")\n"
+    "    (recommended location \"%s\")\n"
+    " --ssl_ca_path:\n"
+    "    Certificate Authorities to use when verifying certificates of\n"
+    "    real servers. Used for SSL or TLS outgoing connections.\n"
+    "    See the SSL_get_verify_result man page for format details.\n"
     "    (default \"%s\")\n"
     " --ssl_ca_accept_self_signed:\n"
     "    Accept signed certificate authorities when verifying a certificate\n"
@@ -1246,9 +1277,11 @@ void usage(int exit_status){
     " --ssl_outgoing_ciphers:\n"
     "    Cipher list when making outgoing SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_no_cert_verify:\n"
+    "    Don't cryptographically verify the real-servers certificate.\n"
     " --ssl_no_cn_verify:\n"
     "    Don't verify the real-servers common name with the name used.\n"
-    "    to connect to the server. Used for SSL or TLS outgoing connections.\n"
+    "    to connect to the server.\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Note: default value for binary flags is off\n",
@@ -1273,6 +1306,8 @@ void usage(int exit_status){
     ,
     str_null_safe(NULL),
     str_null_safe(DEFAULT_SSL_CA_FILE),
+    str_null_safe(RECOMENDED_SSL_CA_FILE),
+    str_null_safe(DEFAULT_SSL_CA_PATH),
     str_null_safe(DEFAULT_SSL_CERT_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
     str_null_safe(DEFAULT_SSL_KEY_FILE),

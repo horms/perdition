@@ -108,7 +108,10 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
 /**********************************************************************
  * perdition_ssl_ctx
  * Create an SSL context
- * pre: ca: certificat authorities to use. May be NULL or ""
+ * pre: ca_file: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
+ *      ca_path: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
  *      cert: certificate to use. May be NULL if privkey is NULL. 
  *            Should the path to a PEM file if non-NULL and the
  *            first item in the PEM file will be used as the 
@@ -150,6 +153,11 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
 	}                                                                   \
 }
 	
+#define __PERDITION_VERIFY_CALLBACK_WARN(_msg)                              \
+	 VANESSA_LOGGER_DEBUG_RAW("warning: " _msg)
+	
+#define __PERDITION_VERIFY_CALLBACK_ERROR(_msg)                              \
+	 VANESSA_LOGGER_DEBUG_RAW("error: " _msg)
 
 static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
@@ -183,53 +191,61 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 			goto ok;
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"unable to get issuer certificate");
 			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
 				X509_get_issuer_name(ctx->current_cert));
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_CRL: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"unable to get certificate CRL");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE:
-			VANESSA_LOGGER_DEBUG_RAW("unable to decrypt "
+			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decrypt "
 					"certificate's signature");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW("unable to decrypt "
+			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decrypt "
 					"CLR's signature");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
-			VANESSA_LOGGER_DEBUG_RAW("unable to decode "
+			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decode "
 					"issuer public key");
 			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
 				X509_get_issuer_name(ctx->current_cert));
 			break;
 		case X509_V_ERR_CERT_SIGNATURE_FAILURE:
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"certificate signature failure");
 			break;
 		case X509_V_ERR_CRL_SIGNATURE_FAILURE: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"CRL signature failure");
 			break;
 		case X509_V_ERR_CERT_NOT_YET_VALID:
-			VANESSA_LOGGER_DEBUG_RAW("signature not yet valid");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"signature not yet valid");
 			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
 				X509_get_notBefore(ctx->current_cert));
 			break;
 		case X509_V_ERR_CRL_NOT_YET_VALID: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW(
-					"CRL not yet valid");
 			if(opt.ssl_cert_accept_not_yet_valid) {
+				__PERDITION_VERIFY_CALLBACK_WARN(
+						"CRL not yet valid");
 				ok = 1;
 				goto ok;
 			}
+			__PERDITION_VERIFY_CALLBACK_ERROR("CRL not yet valid");
 			break;
 		case X509_V_ERR_CERT_HAS_EXPIRED:
-			VANESSA_LOGGER_DEBUG_RAW(
-					"certificate has expired");
+			if(opt.ssl_cert_accept_expired) {
+				__PERDITION_VERIFY_CALLBACK_WARN(
+						"certificate has expired");
+			}
+			else {
+				__PERDITION_VERIFY_CALLBACK_ERROR(
+						"certificate has expired");
+			}
 			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
 				X509_get_notAfter(ctx->current_cert));
 			if(opt.ssl_cert_accept_expired) {
@@ -238,96 +254,105 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 			}
 			break;
 		case X509_V_ERR_CRL_HAS_EXPIRED: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"CLR has expired");
 			break;
 		case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
-			VANESSA_LOGGER_DEBUG_RAW("format error in "
+			__PERDITION_VERIFY_CALLBACK_ERROR("format error in "
 					"certificate's notBefore field");
 			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
 				X509_get_notBefore(ctx->current_cert));
 			break;
 		case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
-			VANESSA_LOGGER_DEBUG_RAW( "format error in "
+			__PERDITION_VERIFY_CALLBACK_ERROR( "format error in "
 					"certificate's notAfter field");
 			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
 				X509_get_notAfter(ctx->current_cert));
 			break;
 		case X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW("format error in "
+			__PERDITION_VERIFY_CALLBACK_ERROR("format error in "
 					"CRL's lastUpdate field");
 			break;
 		case X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW( "format error in "
+			__PERDITION_VERIFY_CALLBACK_ERROR( "format error in "
 					"CRL's nextUpdate field");
 			break;
 		case X509_V_ERR_OUT_OF_MEM:
-			VANESSA_LOGGER_DEBUG_RAW("out of memory");
+			__PERDITION_VERIFY_CALLBACK_ERROR("out of memory");
 			break;
 		case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-			VANESSA_LOGGER_DEBUG_RAW("self signed certificate");
 			if(opt.ssl_cert_accept_self_signed) {
+				__PERDITION_VERIFY_CALLBACK_WARN(
+						"self signed certificate");
 				ok = 1;
 				goto ok;
 			}
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"self signed certificate");
 			break;
 		case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-			VANESSA_LOGGER_DEBUG_RAW("self signed certificate "
-					"in chain");
 			if(opt.ssl_ca_accept_self_signed) {
+				__PERDITION_VERIFY_CALLBACK_WARN("self signed "
+						"certificate in chain");
 				ok = 1;
 				goto ok;
 			}
+			__PERDITION_VERIFY_CALLBACK_ERROR("self signed "
+					"certificate in chain");
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-			VANESSA_LOGGER_DEBUG_RAW("unable to get local "
-					"issuer certificate");
+			__PERDITION_VERIFY_CALLBACK_ERROR("unable to get "
+					"local issuer certificate");
 			break;
 		case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
-			VANESSA_LOGGER_DEBUG_RAW("unable to verify the "
-					"first certificate");
+			__PERDITION_VERIFY_CALLBACK_ERROR("unable to verify "
+					"the first certificate");
 			break;
 		case X509_V_ERR_CERT_CHAIN_TOO_LONG: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW("certificate chain too long");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"certificate chain too long");
 			break;
 		case X509_V_ERR_CERT_REVOKED: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW("certificate revoked");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"certificate revoked");
 			break;
 		case X509_V_ERR_INVALID_CA:
-			VANESSA_LOGGER_DEBUG_RAW("invalid CA certificate");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"invalid CA certificate");
 			break;
 		case X509_V_ERR_PATH_LENGTH_EXCEEDED:
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"path length constraint exceeded");
 			break;
 		case X509_V_ERR_INVALID_PURPOSE:
-			VANESSA_LOGGER_DEBUG_RAW(
+			__PERDITION_VERIFY_CALLBACK_ERROR(
 					"unsuported certificate purpose");
 			break;
 		case X509_V_ERR_CERT_UNTRUSTED:
-			VANESSA_LOGGER_DEBUG_RAW("certificate not trusted");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"certificate not trusted");
 			break;
 		case X509_V_ERR_SUBJECT_ISSUER_MISMATCH:
-			VANESSA_LOGGER_DEBUG_RAW("subject issuer mismatch");
+			__PERDITION_VERIFY_CALLBACK_ERROR("
+					subject issuer mismatch");
 			__PERDITION_VERIFY_CALLBACK_ELEMENT("subject",
 				X509_get_subject_name(ctx->current_cert));
 			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
 				X509_get_issuer_name(ctx->current_cert));
 			break;
 		case X509_V_ERR_AKID_SKID_MISMATCH:
-			VANESSA_LOGGER_DEBUG_RAW("authority and subject key "
-					"identifier mismatch");
+			__PERDITION_VERIFY_CALLBACK_ERROR("authority and "
+					"subject key identifier mismatch");
 			break;
 		case X509_V_ERR_KEYUSAGE_NO_CERTSIGN:
-			VANESSA_LOGGER_DEBUG_RAW("key usage does not "
-					"include certificate signing");
+			__PERDITION_VERIFY_CALLBACK_ERROR("key usage does "
+					"not include certificate signing");
 			break;
 		case X509_V_ERR_APPLICATION_VERIFICATION: /* Unused */
-			VANESSA_LOGGER_DEBUG_RAW("application verification "
-					"failure");
+			__PERDITION_VERIFY_CALLBACK_ERROR(
+					"application verification failure");
 			break;
 	}
-
 
 fail:
 	ok = 0;
@@ -335,11 +360,13 @@ ok:
 	return(ok);
 }
 
-SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert, 
-		const char *privkey, const char *ciphers)
+SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
+		const char *cert, const char *privkey, const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx;
+	const char *use_ca_file = NULL;
+	const char *use_ca_path = NULL;
 
 	extern options_t opt;
 
@@ -405,14 +432,27 @@ SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert,
 		return (NULL);
 	}
 
+	if(opt.ssl_no_cert_verify) {
+		return(ssl_ctx);
+	}
+
 	/* 
-	 * Load the Certificat Authorities 
+	 * Load the Certificate Authorities 
 	 */
-	if(ca && *ca && !(SSL_CTX_load_verify_locations(ssl_ctx, ca, 0))) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
-		    ("SSL_CTX_load_verify_locations: \"%s\"", ca);
+	use_ca_file = (ca_file && *ca_file) ? ca_file : NULL;
+	use_ca_path = (ca_path && *ca_path) ? ca_path : NULL;
+	if((use_ca_file || use_ca_path) &&
+			!SSL_CTX_load_verify_locations(ssl_ctx, use_ca_file, 
+				use_ca_path)) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE(
+				"SSL_CTX_load_verify_locations: "
+		     		"file=\"%s\" path=\"%s\"", 
+				str_null_safe(use_ca_file), 
+				str_null_safe(use_ca_path));
 		VANESSA_LOGGER_ERR_UNSAFE
-		    ("Error loading certificate authority file \"%s\"", ca);
+		    ("Error loading certificate authority: " 
+		     "file=\"%s\" path=\"%s\"", str_null_safe(use_ca_file),
+		     str_null_safe(use_ca_path)); 
 		SSL_CTX_free(ssl_ctx);
 		return (NULL);
 	}
@@ -452,11 +492,11 @@ static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
 	}
 
 	if(!cert) {
-		VANESSA_LOGGER_DEBUG("no server certificate");
+		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
 		return(-2);
 	}
 	
-	if(X509_NAME_get_text_by_NID(X509_get_issuer_name(cert), 
+	if(X509_NAME_get_text_by_NID(X509_get_subject_name(cert), 
 			NID_commonName, common_name, MAX_LINE_LENGTH) < 0) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
 		return(-1);
@@ -475,7 +515,7 @@ static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
 		}
 	}
 
-	VANESSA_LOGGER_ERR("common name missmatch");
+	VANESSA_LOGGER_DEBUG_RAW("error: common name missmatch");
 	return(-2);
 }
 
@@ -532,8 +572,10 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
  * __perdition_ssl_check_certificate
  * Check the details of a certificate
  * pre: io: connectoion to check certificate of
- *      ca: certificate authority file. Used to verify the server's
- *          certificate. May be NULL or ""
+ *      ca_file: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
+ *      ca_path: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
  *      server: server to match the common name of
  * post: details of cerfificate are loged, if there is one
  *       common name of the certificate is verified
@@ -544,12 +586,14 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
  **********************************************************************/
 
 
-static int __perdition_ssl_check_certificate(io_t * io, const char *ca,
-		const char *server)
+static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
+		const char *ca_path, const char *server)
 {
 	X509 *cert = NULL;
 	SSL *ssl;
 	int status = 0;
+
+	extern options_t opt;
 
 	ssl = io_get_ssl(io);
 	if (!ssl) {
@@ -565,7 +609,9 @@ static int __perdition_ssl_check_certificate(io_t * io, const char *ca,
 		goto leave;
 	}
 
-	if(ca && *ca && SSL_get_verify_result(ssl) != X509_V_OK) {
+	if(!opt.ssl_no_cert_verify &&
+			((ca_file && *ca_file) || (ca_path && *ca_path)) &&
+			SSL_get_verify_result(ssl) != X509_V_OK) {
 		VANESSA_LOGGER_ERR("Certificate was not verified");
 		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_get_verify_result");
 		status = -3;
@@ -669,8 +715,10 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
  * connection.
  * pre: io: io_t to change. A client that has connected to a server, 
  *          SSL_connect() will be called.
- *      ca: Certificate authority file. May be NULL or ""
- *          Used to verify the server's certificate
+ *      ca_file: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
+ *      ca_path: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  *      server: server name to verify with the common name in
@@ -681,13 +729,13 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io, const char *ca,
-		const char *ciphers, const char *server)
+io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
+		const char *ca_path, const char *ciphers, const char *server)
 {
 	SSL_CTX *ssl_ctx;
 	io_t *new_io;
 
-	ssl_ctx = perdition_ssl_ctx(ca, NULL, NULL, ciphers);
+	ssl_ctx = perdition_ssl_ctx(ca_file, ca_path, NULL, NULL, ciphers);
 	if (!ssl_ctx) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
@@ -700,7 +748,8 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ca,
 		return(NULL);
 	}
 
-	if (__perdition_ssl_check_certificate(new_io, ca, server) < 0) {
+	if (__perdition_ssl_check_certificate(new_io, ca_file, ca_path,
+				server) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
 		return(NULL);
@@ -732,7 +781,7 @@ io_t *perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx)
 		return (NULL);
 	}
 
-	if (__perdition_ssl_check_certificate(new_io, NULL, NULL) < 0) {
+	if (__perdition_ssl_check_certificate(new_io, NULL, NULL, NULL) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
 		return(NULL);

@@ -133,8 +133,11 @@
 #define DEFAULT_QUERY_KEY                    NULL
 #define DEFAULT_QUIET                        0
 #ifdef WITH_SSL_SUPPORT
-#define DEFAULT_SSL_CA_FILE                  PERDITION_SYSCONFDIR \
+#define DEFAULT_SSL_CA_FILE                  NULL
+#define RECOMENDED_SSL_CA_FILE               PERDITION_SYSCONFDIR \
                                              "/perdition.ca.pem"
+#define DEFAULT_SSL_CA_PATH                  PERDITION_SYSCONFDIR \
+                                             "/perdition.ca/"
 #define DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED    0
 #define DEFAULT_SSL_CERT_FILE                PERDITION_SYSCONFDIR \
 					     "/perdition.crt.pem"
@@ -147,6 +150,7 @@
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
+#define DEFAULT_SSL_NO_CERT_VERIFY           0
 #define DEFAULT_SSL_NO_CN_VERIFY             0
 #endif /* WITH_SSL_SUPPORT */
 
@@ -191,6 +195,7 @@ typedef struct {
   vanessa_dynamic_array_t *query_key;
   flag_t          mask;
   char            *ssl_ca_file;
+  char            *ssl_ca_path;
   int             ssl_ca_accept_self_signed;
   char            *ssl_cert_file;
   int             ssl_cert_accept_self_signed;
@@ -201,6 +206,7 @@ typedef struct {
   int             ssl_mode;
   char            *ssl_listen_ciphers;
   char            *ssl_outgoing_ciphers;
+  int             ssl_no_cert_verify;
   int             ssl_no_cn_verify;
   flag_t          ssl_mask;
 } options_t;
@@ -244,17 +250,19 @@ typedef struct {
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
 #define MASK_SSL_CA_FILE                       (flag_t) 0x00000001
-#define MASK_SSL_CA_ACCEPT_SELF_SIGNED         (flag_t) 0x00000002
-#define MASK_SSL_CERT_FILE                     (flag_t) 0x00000004
-#define MASK_SSL_CERT_ACCEPT_EXPIRED           (flag_t) 0x00000008
-#define MASK_SSL_CERT_ACCEPT_NOT_YET_VALID     (flag_t) 0x00000010
-#define MASK_SSL_CERT_ACCEPT_SELF_SIGNED       (flag_t) 0x00000020
-#define MASK_SSL_CERT_VERIFY_DEPTH             (flag_t) 0x00000040
-#define MASK_SSL_KEY_FILE                      (flag_t) 0x00000080
-#define MASK_SSL_MODE                          (flag_t) 0x00000100
-#define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000200
-#define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000400
-#define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00000800
+#define MASK_SSL_CA_PATH                       (flag_t) 0x00000002
+#define MASK_SSL_CA_ACCEPT_SELF_SIGNED         (flag_t) 0x00000004
+#define MASK_SSL_CERT_FILE                     (flag_t) 0x00000008
+#define MASK_SSL_CERT_ACCEPT_EXPIRED           (flag_t) 0x00000010
+#define MASK_SSL_CERT_ACCEPT_NOT_YET_VALID     (flag_t) 0x00000020
+#define MASK_SSL_CERT_ACCEPT_SELF_SIGNED       (flag_t) 0x00000040
+#define MASK_SSL_CERT_VERIFY_DEPTH             (flag_t) 0x00000080
+#define MASK_SSL_KEY_FILE                      (flag_t) 0x00000100
+#define MASK_SSL_MODE                          (flag_t) 0x00000200
+#define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000400
+#define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000800
+#define MASK_SSL_NO_CERT_VERIFY                (flag_t) 0x00001000
+#define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00002000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -269,17 +277,19 @@ typedef struct {
 #define TAG_NO_DAEMON                          (int) 131
 #define TAG_QUERY_KEY                          (int) 132
 #define TAG_SSL_CA_FILE                        (int) 133
-#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 134
-#define TAG_SSL_CERT_FILE                      (int) 135
-#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 136
-#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 137
-#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 138
-#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 139
-#define TAG_SSL_KEY_FILE                       (int) 140
-#define TAG_SSL_MODE                           (int) 141
-#define TAG_SSL_LISTEN_CIPHERS                 (int) 142
-#define TAG_SSL_OUTGOING_CIPHERS               (int) 143
-#define TAG_SSL_NO_CN_VERIFY                   (int) 144
+#define TAG_SSL_CA_PATH                        (int) 134
+#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 135
+#define TAG_SSL_CERT_FILE                      (int) 136
+#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 137
+#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 138
+#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 139
+#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 140
+#define TAG_SSL_KEY_FILE                       (int) 141
+#define TAG_SSL_MODE                           (int) 142
+#define TAG_SSL_LISTEN_CIPHERS                 (int) 143
+#define TAG_SSL_OUTGOING_CIPHERS               (int) 144
+#define TAG_SSL_NO_CERT_VERIFY                 (int) 145
+#define TAG_SSL_NO_CN_VERIFY                   (int) 146
 
 
 /*Flag values for options()*/

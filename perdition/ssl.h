@@ -41,7 +41,10 @@
 /**********************************************************************
  * perdition_ssl_ctx
  * Create an SSL context
- * pre: ca: certificat authorities to use. May be NULL
+ * pre: ca_file: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
+ *      ca_path: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
  *      cert: certificate to use. May be NULL if privkey is NULL. 
  *            Should the path to a PEM file if non-NULL and the
  *            first item in the PEM file will be used as the 
@@ -61,8 +64,8 @@
  *       be non-NULL.
  **********************************************************************/
 
-SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert, 
-		const char *privkey, const char *ciphers);
+SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
+		const char *cert, const char *privkey, const char *ciphers);
 
 
 /**********************************************************************
@@ -71,8 +74,10 @@ SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert,
  * connection.
  * pre: io: io_t to change. A client that has connected to a server, 
  *          SSL_connect() will be called.
- *      ca: Certificate authority file. May be NULL or ""
- *          Used to verify the server's certificate
+ *      ca_file: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
+ *      ca_path: certificate authorities to use. May be NULL
+ *               See SSL_CTX_load_verify_locations(3)
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  *      server: server name to verify with the common name in
@@ -83,8 +88,8 @@ SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert,
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io, const char *ca,
-		const char *ciphers, const char *server);
+io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
+		const char *ca_path, const char *ciphers, const char *server);
 
 
 /**********************************************************************
