@@ -63,14 +63,13 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag);
 /**********************************************************************
  * greeting_str
  * Produce greeting string
- * pre: message: unallocated ponter to put greeting string in
- *      protocol: Protocol in use
+ * pre: protocol: Protocol in use
  *      flag: Flags as per greeting.h
  * post: Protocol specific message string is formed
  * return message string on success
  *        NULL on error
  **********************************************************************/
 
-char *greeting_str(char *message, const protocol_t *protocol, flag_t flag);
+char *greeting_str(const protocol_t *protocol, flag_t flag);
 
 #endif

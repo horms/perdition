@@ -52,7 +52,8 @@
 int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
   char *message=NULL;
 
-  if((message=greeting_str(message, protocol, flag))==NULL){
+  message=greeting_str(protocol, flag);
+  if(!message){
     VANESSA_LOGGER_DEBUG("greeting_str");
     return(-1);
   }
@@ -99,15 +100,15 @@ static int greeting_checksum(uint32 *csum)
 /**********************************************************************
  * greeting_str
  * Produce greeting string
- * pre: message: unallocated ponter to put greeting string in
- *      protocol: Protocol in use
+ * pre: protocol: Protocol in use
  *      flag: Flags as per greeting.h
  * post: Protocol specific message string is formed
  * return message string on success
  *        NULL on error
  **********************************************************************/
 
-char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
+char *greeting_str(const protocol_t *protocol, flag_t flag){
+  char *message;
   char *host;
   struct hostent *hp;
   struct in_addr in;

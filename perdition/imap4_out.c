@@ -196,11 +196,8 @@ int imap4_out_setup(
   }
   q = NULL;
 
-  if((greeting_string=greeting_str(
-    greeting_string, 
-    protocol,
-    GREETING_ADD_NODENAME
-  ))==NULL){
+  greeting_string=greeting_str(protocol, GREETING_ADD_NODENAME);
+  if(!greeting_string){
     VANESSA_LOGGER_DEBUG("greeting_str");
     goto leave;
   }
