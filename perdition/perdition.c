@@ -589,9 +589,10 @@ int main (int argc, char **argv, char **envp){
             &(opt.mangled_capability), opt.ssl_mode, tls_state);
       continue;
     }
-    else if((status == 0) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN) &&
+    else if(opt.login_disabled ||
+		    ((status == 0) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN) &&
 		    (opt.ssl_mode & SSL_MODE_TLS_LISTEN_FORCE) &&
-		    !(tls_state & SSL_MODE_TLS_LISTEN)) {
+		    !(tls_state & SSL_MODE_TLS_LISTEN))) {
 	    LOGIN_FAILED(PROTOCOL_NO, "Login Disabled");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;

@@ -308,6 +308,10 @@ specified or not.
 .B \-q, \-\-quiet:
 Only log errors. Overridden by \-d|\-\-debug
 .TP
+.B \-\-login_disabled:
+Do not allow users to log in.
+Add LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
+.TP
 .B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
 state(s). State may be one of servername_lookup,
@@ -405,10 +409,10 @@ Use TLS to connect to real pop/imap servers.
 Short-Hand for tls_listen,tls_outgoing.
 .sp
 .B tls_listen_force:
-Do not accept plain text authentication. In IMAP4 mode,
+Do not accept plain text authentication. In IMAP4 and IMAP4S mode,
 the LOGINDISABLED capability until TLS has been intialised
-by the client issuing a STARTTLS. In both IMAP4 and POP3 mode
-any plain-text authentication is ignored.
+by the client issuing a STARTTLS. In all modes mode
+plain-text authentication is ignored.
 Used in conjunction with tls_listen,(or tls_all),
 ignored otherwise.
 .sp

@@ -79,6 +79,7 @@ XXX
    - Honour IMAP4 LOGINDISABLED capability
    - Added options to enforce TLS negotion on incoming and/or outgoing
      connections.
+   - Added login_disabled option
    - Different configuration files for different basenames and protocols
    - Fixed Posix Regular Expression map library so that it handles
      escape codes properly and tests the regular expressions in

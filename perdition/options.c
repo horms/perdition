@@ -276,6 +276,8 @@ int options(int argc, char **argv, flag_t f){
     {"quiet",                       'q',  POPT_ARG_NONE,   NULL, 'q'},
     {"query_key",                   '\0', POPT_ARG_STRING, NULL,
       TAG_QUERY_KEY},
+    {"login_disabled",              '\0', POPT_ARG_NONE,   NULL,
+      TAG_LOGIN_DISABLED},
     {"lower_case",                  '\0', POPT_ARG_STRING, NULL,
       TAG_LOWER_CASE},
     {"no_daemon",                   '\0', POPT_ARG_NONE,   NULL,
@@ -332,7 +334,9 @@ int options(int argc, char **argv, flag_t f){
     else {
       opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
     }
+    opt_i(opt.no_daemon,       DEFAULT_NO_DAEMON,           i, 0, OPT_NOT_SET);
     opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
+    opt_i(opt.login_disabled,  DEFAULT_LOGIN_DISABLED,      i, 0, OPT_NOT_SET);
     opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
@@ -542,6 +546,9 @@ int options(int argc, char **argv, flag_t f){
         break;
       case TAG_NO_DAEMON:
 	opt_i(opt.no_daemon,1,opt.mask,MASK_NO_DAEMON,f);
+        break;
+      case TAG_LOGIN_DISABLED:
+	opt_i(opt.login_disabled,1,opt.mask,MASK_LOGIN_DISABLED,f);
         break;
       case TAG_LOWER_CASE:
         OPTARG_DUP;
@@ -894,6 +901,7 @@ int log_options_str(char *str, size_t n){
     "inetd_mode=%s, "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
+    "login_disabled=%s, "
     "lower_case=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
@@ -939,6 +947,7 @@ int log_options_str(char *str, size_t n){
     BIN_OPT_STR(opt.inetd_mode),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
+    BIN_OPT_STR(opt.login_disabled),
     str_null_safe(lower_case),
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
@@ -1100,7 +1109,7 @@ void usage(int exit_status){
     " -f|--config_file filename:\n"
     "    Name of config file to read. If set to \"\" no config file will be\n"
     "    used. Command line options override options set in config file.\n"
-    "    (default \"%s\")\n"
+    "    See the manpage for details of how the default is derived\n"
     " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
@@ -1117,11 +1126,14 @@ void usage(int exit_status){
     "    (default %d)\n"
     " -l|--listen_port:\n"
     "    Port to listen on. (default \"%s\")\n"
+    " --login_disabled:\n"
+    "    Do not allow users to log in.\n"
+    "    Add LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.\n"
     " --lower_case state[,state...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). State may be one of servername_lookup, \n"
-    "    local_authentication, remote_login and all See manpage for details\n"
-    "    of states.\n"
+    "    local_authentication, remote_login and all see the manpage for\n"
+    "    details of states.\n"
     "    (default \"(null)\")\n"
     " -M|--map_library filename:\n"
     "    Library to open that provides functions to look up the server for a\n"
@@ -1210,7 +1222,6 @@ void usage(int exit_status){
     DEFAULT_CONNECT_RELOG,
     str_null_safe(DEFAULT_DOMAIN_DELIMITER),
     str_null_safe(DEFAULT_LOG_FACILITY),
-    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     str_null_safe(DEFAULT_GROUP),
     str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,

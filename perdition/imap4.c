@@ -135,6 +135,8 @@ char *imap4_capability(char *capability, char **mangled_capability,
 {
 	flag_t mode;
 
+	extern options_t opt;
+
 	if(!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
 		free(capability);
 		capability = strdup(IMAP4_DEFAULT_CAPABILITY);
@@ -155,8 +157,8 @@ char *imap4_capability(char *capability, char **mangled_capability,
 		return(NULL);
 	}
 
-	if(!(tls_flags & SSL_MODE_TLS_LISTEN) ||
-			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)) {
+	if(!opt.login_disabled && (!(tls_flags & SSL_MODE_TLS_LISTEN) ||
+			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE))) {
 		return(capability);
 	}
 

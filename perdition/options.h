@@ -110,9 +110,10 @@
 #define DEFAULT_GROUP                        "nobody"
 #endif /* WITH_GROUP */
 #define DEFAULT_INETD_MODE                   0
-#define DEFAULT_MAP_LIB \
-  PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"
+#define DEFAULT_MAP_LIB                      PERDITION_LIBDIR \
+			                     "/libperditiondb_gdbm.so.0"
 #define DEFAULT_LOG_FACILITY                 "mail"
+#define DEFAULT_LOGIN_DISABLED               0
 #define DEFAULT_LOWER_CASE                   STATE_NONE
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
@@ -132,12 +133,12 @@
 #define DEFAULT_QUERY_KEY                    NULL
 #define DEFAULT_QUIET                        0
 #ifdef WITH_SSL_SUPPORT
-#define DEFAULT_SSL_CA_FILE                  \
-  PERDITION_SYSCONFDIR "/perdition.ca.pem"
-#define DEFAULT_SSL_CERT_FILE                \
-  PERDITION_SYSCONFDIR "/perdition.crt.pem"
-#define DEFAULT_SSL_KEY_FILE                 \
-  PERDITION_SYSCONFDIR "/perdition.key.pem"
+#define DEFAULT_SSL_CA_FILE                  PERDITION_SYSCONFDIR \
+                                             "/perdition.ca.pem"
+#define DEFAULT_SSL_CERT_FILE                PERDITION_SYSCONFDIR \
+					     "/perdition.crt.pem"
+#define DEFAULT_SSL_KEY_FILE                 PERDITION_SYSCONFDIR \
+					     "/perdition.key.pem"
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
@@ -166,6 +167,7 @@ typedef struct {
   char            *pop_capability;
   char            *listen_port;
   char            *log_facility;
+  int             login_disabled;
   int             lower_case;
   char            *map_library;
   char            *map_library_opt;
@@ -212,23 +214,24 @@ typedef struct {
 #define MASK_GROUP                       (flag_t) 0x00000800
 #define MASK_INETD_MODE                  (flag_t) 0x00001000
 #define MASK_LOG_FACILITY                (flag_t) 0x00002000
-#define MASK_LISTEN_PORT                 (flag_t) 0x00004000
-#define MASK_LOWER_CASE                  (flag_t) 0x00008000
-#define MASK_MAP_LIB                     (flag_t) 0x00010000
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00020000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00040000
-#define MASK_NO_DAEMON                   (flag_t) 0x00080000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00100000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00200000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00400000
-#define MASK_PROTOCOL                    (flag_t) 0x00800000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x01000000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x02000000
-#define MASK_TIMEOUT                     (flag_t) 0x04000000
-#define MASK_USERNAME                    (flag_t) 0x08000000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x10000000
-#define MASK_QUERY_KEY                   (flag_t) 0x20000000
-#define MASK_QUIET                       (flag_t) 0x40000000
+#define MASK_LOGIN_DISABLED              (flag_t) 0x00004000
+#define MASK_LISTEN_PORT                 (flag_t) 0x00008000
+#define MASK_LOWER_CASE                  (flag_t) 0x00010000
+#define MASK_MAP_LIB                     (flag_t) 0x00020000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00040000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00080000
+#define MASK_NO_DAEMON                   (flag_t) 0x00100000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00200000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00400000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00800000
+#define MASK_PROTOCOL                    (flag_t) 0x01000000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x02000000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x04000000
+#define MASK_TIMEOUT                     (flag_t) 0x08000000
+#define MASK_USERNAME                    (flag_t) 0x10000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x20000000
+#define MASK_QUERY_KEY                   (flag_t) 0x40000000
+#define MASK_QUIET                       (flag_t) 0x80000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -248,16 +251,17 @@ typedef struct {
  * of the values we might use for a short value
  */
 #define TAG_CONNECT_RELOG              (int) 128
-#define TAG_LOWER_CASE                 (int) 129
-#define TAG_NO_DAEMON                  (int) 130
-#define TAG_QUERY_KEY                  (int) 131
-#define TAG_SSL_CA_FILE                (int) 132
-#define TAG_SSL_CERT_FILE              (int) 133
-#define TAG_SSL_KEY_FILE               (int) 134
-#define TAG_SSL_MODE                   (int) 135
-#define TAG_SSL_LISTEN_CIPHERS         (int) 136
-#define TAG_SSL_OUTGOING_CIPHERS       (int) 137
-#define TAG_SSL_NO_CN_VERIFY           (int) 138
+#define TAG_LOGIN_DISABLED             (int) 129
+#define TAG_LOWER_CASE                 (int) 130
+#define TAG_NO_DAEMON                  (int) 131
+#define TAG_QUERY_KEY                  (int) 132
+#define TAG_SSL_CA_FILE                (int) 133
+#define TAG_SSL_CERT_FILE              (int) 134
+#define TAG_SSL_KEY_FILE               (int) 135
+#define TAG_SSL_MODE                   (int) 136
+#define TAG_SSL_LISTEN_CIPHERS         (int) 137
+#define TAG_SSL_OUTGOING_CIPHERS       (int) 138
+#define TAG_SSL_NO_CN_VERIFY           (int) 139
 
 
 /*Flag values for options()*/
