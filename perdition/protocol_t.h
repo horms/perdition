@@ -2,7 +2,7 @@
  * protocol_t.h                                          September 1999
  * Horms                                             horms@verge.net.au
  *
- * Types for genetic protoclol layer.
+ * Types for genetic protocol layer.
  *
  * NB: protocol_t.h (this file) and not protocol.h should
  *     be included by other source files

@@ -14,14 +14,14 @@
  * Find the server (value) given the user (key)
  * pre: key_str:     Key as a null terminated string
  *      options_str: Options string. The usage of this is 
- *                   implementation dependant.
+ *                   implementation dependent.
  *      str_return:  Value is returned here
  *      len_return:  Length of value is returned here
  * post: The str_key is looked up and the corresponding value is 
  *       returned in str_return and len_return.
  * return:  0 on success
  *         -1 on db access error
- *            This inclides file, connection and other data access
+ *            This includes file, connection and other data access
  *            errors. It does not cover memory allocation problems.
  *         -2 if key cannot be found in map
  *         -3 on other error
@@ -31,23 +31,23 @@
  *       localhost
  ************************************************************
  *
- * As the library is opened using the dlopen mechanism the libary
+ * As the library is opened using the dlopen mechanism the library
  * may also export functions _init and _fini that will be
  * executed when the library is opened and closed respectively.
  * In addition if the symbols int *(*dbserver_init)(char *) and 
  * int *(*dbserver_fini)(void) are defined then these are run when 
- * the library is opened and closed respectivley.  If defined these 
+ * the library is opened and closed respectively.  If defined these 
  * symbols should have the following semantics.
  *
  ************************************************************
  * dbserver_init
  * Initialise db as necessary
  * pre: options_str: Options string. The usage of this is 
- *                   implementation dependant.
- * post: db is intialised
+ *                   implementation dependent.
+ * post: db is initialised
  * return:  0 on success
  *         -1 on db access error
- *            This inclides file, connection and other data access
+ *            This includes file, connection and other data access
  *            errors. It does not cover memory allocation problems.
  *         -2 if key cannot be found in map
  *         -3 on other error
@@ -58,16 +58,16 @@
  * post: db is shut down
  * return:  0 on success
  *         -1 on db access error
- *            This inclides file, connection and other data access
+ *            This includes file, connection and other data access
  *            errors. It does not cover memory allocation problems.
  *         -2 if key cannot be found in map
  *         -3 on other error
  ************************************************************
  *
- * In additoin, if a SIGHUP is sent to a process then a signal handler
+ * In addition, if a SIGHUP is sent to a process then a signal handler
  * will call dbserver_fini if it is defined and then
  * dbserver_init if it is defined. Note: dbserver_init will be 
- * called if defined, even if dbserver_fini id not defoned.
+ * called if defined, even if dbserver_fini is not defined.
  *
  * Client server specification code courtesy of Daniel Roesen,
  * <droesen@entire-systems.com>. 
@@ -250,7 +250,7 @@ static char *getserver_key_str(const char *query_fmt,
  * dbserver_get. 
  * pre: key_str: key to lookup
  *      dbserver_get: function to do the lookup
- * return: server_port_t stucture containing server and port.
+ * return: server_port_t structure containing server and port.
  *         NULL on error
  **********************************************************************/
 
@@ -441,7 +441,7 @@ int getserver_openlib(
   *handle_return=dlopen(libname, RTLD_LAZY);
   if(!*handle_return) {
     error=dlerror();
-    VANESSA_LOGGER_DEBUG_UNSAFE("dlopen falied: %s", str_null_safe(error));
+    VANESSA_LOGGER_DEBUG_UNSAFE("dlopen failed: %s", str_null_safe(error));
     return(-1);
   }
 

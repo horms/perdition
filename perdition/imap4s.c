@@ -43,8 +43,8 @@ static char *imap4s_port(char *port);
 static flag_t imap4s_encryption(flag_t ssl_flags);
 
 /**********************************************************************
- * imap4s_intitialise_proto
- * Intialialoise the protocol structure for the imap4s protocol
+ * imap4s_initialise_protocol
+ * Initialise the protocol structure for the imap4s protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error
@@ -78,8 +78,8 @@ protocol_t *imap4s_initialise_protocol(protocol_t *protocol){
 
 
 /**********************************************************************
- * imap4s_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
+ * imap4s_destroy_protocol 
+ * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
 static void imap4s_destroy_protocol(protocol_t *protocol)
@@ -108,8 +108,8 @@ static char *imap4s_port(char *port)
 
 /**********************************************************************
  * imap4s_encryption 
- * Return the encription states to be used.
- * pre: ssl_flags: the encryption flags that bave been set
+ * Return the encryption states to be used.
+ * pre: ssl_flags: the encryption flags that have been set
  * post: If ssl_flags != SSL_MODE_EMPTY then return them,
  *       Else return SSL_MODE_SSL_ALL
  **********************************************************************/

@@ -39,7 +39,7 @@
 #define IMAP4_BAD "BAD"
 #define IMAP4_NO "NO"
 #define IMAP4_BYE "BYE"
-#define IMAP4_UNTAGED "*"
+#define IMAP4_UNTAGGED "*"
 #define IMAP4_CONT_TAG "+"
 #define IMAP4_DEFAULT_PORT "143"
 /* #define IMAP4_DEFAULT_CAPABILITY "IMAP4 IMAP4REV1 LITERAL+" */
@@ -50,7 +50,7 @@
 #define IMAP4_CMD_NOOP          "NOOP"
 #define IMAP4_CMD_STARTTLS      "STARTTLS"
 #define IMAP4_CMD_LOGINDISABLED "LOGINDISABLED"
-#define IMAP4_CMD_CAPABILLTY    "CAPABILITY"
+#define IMAP4_CMD_CAPABILITY    "CAPABILITY"
 #define IMAP4_CMD_AUTHENTICATE  "AUTHENTICATE"
 #define IMAP4_CMD_LOGOUT        "LOGOUT"
 #define IMAP4_CMD_LOGIN         "LOGIN"
@@ -63,7 +63,7 @@
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
- *           if NULL, then IMAP4_UNTAGED is used
+ *           if NULL, then IMAP4_UNTAGGED is used
  *      command: command in message sent
  *           if NULL then only string is written, no tag or command
  *      nargs: number of arguments after fmt

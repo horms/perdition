@@ -47,11 +47,11 @@ char *protocol_known[] = {"2", "POP3", "IMAP4"};
 #endif
 
 /**********************************************************************
- * protocol_intitialise
+ * protocol_initialise
  * initialise protocol structure
  * Pre: protocol_type: protocol type to use PROTOCOL_IMAP or PROTOCOL_POP3
- *      protocol: pointer to protocol strucure to be intialised
- * Post: protocol is intialised
+ *      protocol: pointer to protocol structure to be initialised
+ * Post: protocol is initialised
  *       NULL on error
  **********************************************************************/
 
@@ -121,7 +121,7 @@ void protocol_destroy(protocol_t *protocol){
 /**********************************************************************
  * protocol_index
  * Return the index of a protocol in protocol_known
- * Pre: protocol_string: Protocol inn assci: IMAP4 or POP3
+ * Pre: protocol_string: Protocol in ASCII: IMAP4 or POP3
  *                       case insensitive
  * Post: Index of protocol in protocol_known
  *       0 if not found (unrecognised protocol)
@@ -147,7 +147,7 @@ int protocol_index(const char *protocol_string){
  * protocol_list
  * List protocols in protocol_known
  * (known protocols)
- * Pre: string: pointer to  an unalocated string
+ * Pre: string: pointer to  an unallocated string
  *      delimiter: delimiter to use in return string
  *      request: Index of protocol to list.
  *               List all protocols if 0

@@ -62,13 +62,13 @@
  * imap4_token_is_literal
  * Determine if a token is a literal as defined in RFC 1730
  * That is a string of the form "{n}" where n is a positive integral 
- * value. The quotes may be ommitted.
+ * value. The quotes may be omitted.
  * pre: token: token to examine
  *      i: will be seeded with the value of n if token is a literal
  * post: i is seeded with the value of n if token is a literal
  * return: IMAP4_NON_SYNCHRONISING_TOKEN if token is 
- *           a non-synchronising litereal
- *         IMAP4_SYNCHRONISING_TOKEN if token is a sunchronising literal
+ *           a non-synchronising literal
+ *         IMAP4_SYNCHRONISING_TOKEN if token is a synchronising literal
  *         IMAP4_QUOTED_STRING if token is not a literal
  *         -1 on error
  **********************************************************************/
@@ -95,7 +95,7 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 	}
 	*(str+strlen(str)-1) = '\0';
 
-	/* If the traling character is a + then it is a 
+	/* If the trailing character is a + then it is a 
 	 * non_synchronising literal */
 
 	if(*(str+strlen(str)-1) == '+') {
@@ -121,23 +121,23 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 
 /**********************************************************************
  * imap4_token_wrapper
- * Inteprate a token.
+ * Interpret a token.
  * If the token is not a literal, as defined in RFC 1930 then the
  * token nothing is done. Else the number of bytes specified in
  * the literal token are returned as a new input_token and the
  * original input_token is destroyed.
  * Either way, the input_token return can be used as an 8bit clean value.
- * pre: io: IO to read from if neccessary
+ * pre: io: IO to read from if necessary
  *      q: Queue of pending tokens, not including input_token
  *      input_token: token to examine.
  *                   also used to return the token
  * post: If input_token is a literal
- *         inteprate the litereal as a byte-count using
+ *         interpret the literal as a byte-count using
  *             imap4_token_is_literal
  *         Destroy input_token
  *         Make sure the q is empty, else there is a syntax error
  *         Return "+ OK" to the client by writing to io
- *         Read bytes from io, as specifed by input_token
+ *         Read bytes from io, as specified by input_token
  *         Place these bytes in a new input_token
  *         Return
  *      Else
@@ -234,10 +234,10 @@ static char *imap4_token_to_string(token_t *t, int type)
  * pre: pw: passwd structure with username and password to authenticate
  *      io: io_t to write errors to
  *      tag: Tag to use in (Error) responses
- * post: An atempt is made to authenticate the user locallay
+ * post: An attempt is made to authenticate the user locally
  *       If this fails then an tagged response is written to io
  *       Else no output is made
- * return: 1 if authentication succedes
+ * return: 1 if authentication succeeds
  *         0 if authentication fails
  *         -1 if an error occurs
  **********************************************************************/
@@ -290,7 +290,7 @@ int imap4_in_authenticate(
  * Post: pw_return structure with pw_name and pw_passwd set
  * Return: 0: on success
  *         1: if user quits (LOGOUT command)
- *         2: if TLS negotion should be done
+ *         2: if TLS negotiation should be done
  *        -1: on error
  **********************************************************************/
 
@@ -387,8 +387,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       }
     }    
 #endif /* WITH_SSL_SUPPORT */
-    else if(strncasecmp(token_buf(t), IMAP4_CMD_CAPABILLTY, token_len(t))==0){
-      __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_CAPABILLTY);
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_CAPABILITY, token_len(t))==0){
+      __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_CAPABILITY);
       if(imap4_in_capability_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_capability");
         break;
@@ -434,7 +434,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       else if(status != IMAP4_QUOTED_STRING) {
 	token_t *tmp_t;
 
-        /* Read again to get the space and litereal */
+        /* Read again to get the space and literal */
         vanessa_queue_destroy(q);
         q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0, 
 		  PERDITION_LOG_STR_CLIENT);
@@ -529,7 +529,7 @@ loop:
  * imap4_in_noop_cmd
  * Do a response to a NOOP command
  * pre: io: io_t to write to
- * post: Taged response to NOOP is written to io
+ * post: Tagged response to NOOP is written to io
  * return: 0 on success
  *         -1 otherwise
  **********************************************************************/
@@ -549,7 +549,7 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag){
  * Do a response to a LOGOUT command
  * pre: io: io_t to write to
  * post: An untagged response advising of logout is written to io
- *       A tagged response to the LOGGOUT is written to io
+ *       A tagged response to the LOGOUT is written to io
  * return 0 on success
  *        -1 otherwise
  **********************************************************************/
@@ -583,14 +583,14 @@ int imap4_in_logout_cmd(io_t *io, const token_t *tag){
 int imap4_in_capability_cmd(io_t *io, const token_t *tag){
   extern options_t opt;
 
-  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILLTY, 0,
+  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
 			  str_null_safe(opt.capability))<0){
     VANESSA_LOGGER_DEBUG("imap4_write untagged");
     return(-1);
   }
 
   if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
-			  IMAP4_CMD_CAPABILLTY)<0){
+			  IMAP4_CMD_CAPABILITY)<0){
     VANESSA_LOGGER_DEBUG("imap4_write tagged");
     return(-1);
   }
@@ -611,7 +611,7 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag){
 int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
 	if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0, 
 				IMAP4_CMD_AUTHENTICATE 
-				" mechchanism not supported, mate")<0){
+				" mechanism not supported, mate")<0){
 		VANESSA_LOGGER_DEBUG("imap4_write");
 		return(-1);
 	}

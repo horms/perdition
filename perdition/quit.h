@@ -2,7 +2,7 @@
  * quit.h                                                  October 1999
  * Horms                                             horms@verge.net.au
  *
- * Protocol indepentant quit
+ * Protocol independent quit
  *
  * perdition
  * Mail retrieval proxy server

@@ -55,7 +55,7 @@
  * post: none
  * return: NULL if needle is not in haystack
  *         haystack if needle is NULL
- *         last occurance of needle in haystack
+ *         last occurrence of needle in haystack
  **********************************************************************/
 
 char *strrstr(const char *haystack, const char *needle);
@@ -74,7 +74,7 @@ char *strrstr(const char *haystack, const char *needle);
  * post: none
  * return: NULL if needle is not in haystack
  *         haystack if needle is NULL
- *         last occurance of needle in haystack
+ *         last occurrence of needle in haystack
  **********************************************************************/
 
 char *strstr_sw(const char *haystack, const char *needle, int direction);
@@ -86,7 +86,7 @@ char *strstr_sw(const char *haystack, const char *needle, int direction);
  * pre: string:  source string
  *      n:    bytes from string to put in allocated string
  * post: a new string is allocated to hold n bytes of string and 
- *       a teminating '\0'
+ *       a terminating '\0'
  * return: NULL on error
  *         allocated string otherwise
  *
@@ -98,10 +98,10 @@ char *strn_to_str(const char *string, const size_t n);
 
 /**********************************************************************
  * str_vwrite
- * write strings to fd by puting them into tokens and
+ * write strings to fd by putting them into tokens and
  * printing the tokens
  * if !(flag&WRITE_STR_NO_CLLF)
- *   append a CRLF to the output (intput strings should not end in a CRLF)
+ *   append a CRLF to the output (input strings should not end in a CRLF)
  * 
  * pre: io: io_t to write to
  *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
@@ -122,10 +122,10 @@ int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
 
 /**********************************************************************
  * str_write
- * write strings to fd by puting them into tokens and
+ * write strings to fd by putting them into tokens and
  * printing the tokens
  * if !(flag&WRITE_STR_NO_CLLF)
- *   append a CRLF to the output (intput strings should not end in a CRLF)
+ *   append a CRLF to the output (input strings should not end in a CRLF)
  * 
  * pre: io: io_t to write to
  *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
@@ -194,9 +194,9 @@ char *str_cat(const int nostring, ...);
 /**********************************************************************
  * strn_tolower
  * 
- * pre: str: String to change charaters of to lower case
+ * pre: str: String to change characters of to lower case
  *      count: Number of characters in string to change
- * post: count characters in str, from the begining of str, 
+ * post: count characters in str, from the beginning of str, 
  *       are converted to lowercase using tolower(3).
  * return: str with characters converted to lowercase
  *
@@ -209,9 +209,9 @@ char *strn_tolower(char *str, size_t count);
 /**********************************************************************
  * strn_tolower
  * 
- * pre: str: String to change charaters of to lower case
+ * pre: str: String to change characters of to lower case
  *      count: Number of characters in string to change
- * post: count characters in str, from the begining of str, 
+ * post: count characters in str, from the beginning of str, 
  *       are converted to lowercase using tolower(3).
  * return: str with characters converted to lowercase
  *
@@ -224,9 +224,9 @@ char *strn_tolower(char *str, size_t count);
 /**********************************************************************
  * strn_toupper
  * 
- * pre: str: String to change charaters of to upper case
+ * pre: str: String to change characters of to upper case
  *      count: Number of characters in string to change
- * post: count characters in str, from the begining of str, 
+ * post: count characters in str, from the beginning of str, 
  *       are converted to uppercase using toupper(3).
  * return: str with characters converted to uppercase
  *
@@ -239,9 +239,9 @@ char *strn_toupper(char *str, size_t count);
 /**********************************************************************
  * strn_toupper
  * 
- * pre: str: String to change charaters of to upper case
+ * pre: str: String to change characters of to upper case
  *      count: Number of characters in string to change
- * post: count characters in str, from the begining of str, 
+ * post: count characters in str, from the beginning of str, 
  *       are converted to uppercase using toupper(3).
  * return: str with characters converted to uppercase
  *
@@ -318,14 +318,14 @@ uint32 str_rolling32(unsigned char *buf, size_t len);
 /**********************************************************************
  * str_replace
  * Replace elements of a string
- * pre: str: strung to make subsitutions in
+ * pre: str: string to make substitutions in
  *      n: number of strings following
  *      ...: Pairs of strings. The first is the string to match.
- *           The second is the string to substitue it with
+ *           The second is the string to substitute it with
  * post: All instances of the match strings are replaced with 
- *       their corresponding substution.
- *       The match/substiture pairs are processed in order.
- *       Str is processed from begining to end for each match/subsitute
+ *       their corresponding substitution.
+ *       The match/substitute pairs are processed in order.
+ *       Str is processed from beginning to end for each match/substitute
  *       pair.
  *       str may be realloced if more space is needed
  * return: New string. May be the same as the str parameter.

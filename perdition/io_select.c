@@ -150,7 +150,7 @@ void io_select_remove(io_select_t *s, io_t *io)
  * of its file descriptors. The first match will me returned.
  * The order is undefined :)
  * pre: s: io_select_t to retrieve io from
- *      fd: file descriptort to match
+ *      fd: file descriptor to match
  * post: none
  * return: io matching fd
  *         NULL if not found or error

@@ -83,12 +83,12 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 	}
 
 	if(imap4_write(io, NULL_FLAG, tag, 
-				IMAP4_CMD_CAPABILLTY, 0, "")<0){
+				IMAP4_CMD_CAPABILITY, 0, "")<0){
 		VANESSA_LOGGER_DEBUG("imap4_write");
 		goto leave;
 	}
-	token_assign(capability, IMAP4_CMD_CAPABILLTY, 
-			strlen(IMAP4_CMD_CAPABILLTY), 
+	token_assign(capability, IMAP4_CMD_CAPABILITY, 
+			strlen(IMAP4_CMD_CAPABILITY), 
 	      		TOKEN_NONE);
   	if(buf_n) { new_buf_n = *buf_n; }
 	status=imap4_out_response(io, NULL, capability, q, buf, &new_buf_n);
@@ -118,7 +118,7 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 	
   	if(buf_n) { new_buf_n = *buf_n; }
 	if(imap4_out_response(io, tag, ok, q, buf, &new_buf_n) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_out_response capbability ok");
+		VANESSA_LOGGER_DEBUG("imap4_out_response capability ok");
 		goto leave;
 	}
 	imap4_tag_inc(tag);
@@ -147,11 +147,11 @@ leave:
 /**********************************************************************
  * imap4_out_setup
  * Begin interaction with real server by checking that
- * the connection is ok and doing TLS if neccessary.
+ * the connection is ok and doing TLS if necessary.
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
- *      protocol: protocol structiure for imap4
+ *      protocol: protocol structure for imap4
  * post: Read the greeting string from the server
  *       If tls_outgoing is set issue the CAPABILITY command and check
  *       for the STARTTLS capability.
@@ -269,16 +269,16 @@ leave:
 
 /**********************************************************************
  * imap4_authenticate
- * Authenticate user with backend imap4 server
+ * Authenticate user with back-end imap4 server
  * You should call imap4_setup() first
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
- *      protocol: protocol structiure for imap4
+ *      protocol: protocol structure for imap4
  *      buf:    buffer to return response from server in
  *      n:      size of buf in bytes
  * post: The CAPABILITY command is sent to the server and the result is read
- *       If the LOGINDISABLED capability is set porocessing stops
+ *       If the LOGINDISABLED capability is set processing stops
  *       Otherwise the LOGIN command is sent and the result is checked
  * return: 2: if the server has the LOGINDISABLED capability set
  *         1: on success
@@ -382,7 +382,7 @@ int imap4_out_authenticate(
 
 /**********************************************************************
  * imap4_out_response
- * Compare a respnse from a server with the desired response
+ * Compare a response from a server with the desired response
  * pre: io: io_t to read from
  *      tag: tag expected from server. NULL for untagged.
  *      desired_token: token expected from server
@@ -419,7 +419,7 @@ int imap4_out_response(io_t *io, const token_t *tag,
     }
 
     if(tag) {
-      if(!strncmp(token_buf(t), IMAP4_UNTAGED, token_len(t))){
+      if(!strncmp(token_buf(t), IMAP4_UNTAGGED, token_len(t))){
         vanessa_queue_destroy(*q);
         continue;
       }
@@ -429,7 +429,7 @@ int imap4_out_response(io_t *io, const token_t *tag,
       }
     }
     else {
-      if(strncmp(token_buf(t), IMAP4_UNTAGED, token_len(t))) {
+      if(strncmp(token_buf(t), IMAP4_UNTAGGED, token_len(t))) {
 	VANESSA_LOGGER_DEBUG("invalid tag from server 2");
         goto leave;
       }

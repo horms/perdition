@@ -43,8 +43,8 @@ static char *imap4_port(char *port);
 static flag_t imap4_encryption(flag_t ssl_flags);
 
 /**********************************************************************
- * imap4_intitialise_proto
- * Intialialoise the protocol structure for the imap4 protocol
+ * imap4_initialise_protocol
+ * Initialise the protocol structure for the imap4 protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error
@@ -78,8 +78,8 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
 
 
 /**********************************************************************
- * imap4_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
+ * imap4_destroy_protocol 
+ * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
 static void imap4_destroy_protocol(protocol_t *protocol)
@@ -108,8 +108,8 @@ static char *imap4_port(char *port)
 
 /**********************************************************************
  * imap4_encryption 
- * Return the encription states to be used.
- * pre: ssl_flags: the encryption flags that bave been set
+ * Return the encryption states to be used.
+ * pre: ssl_flags: the encryption flags that have been set
  * post: return ssl_flags (does nothing)
  **********************************************************************/
 
@@ -124,7 +124,7 @@ static flag_t imap4_encryption(flag_t ssl_flags)
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
  *      mangled_capability: not used
- *      tls_flags: the encryption flags that bave been set
+ *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
  * post: capability to use, as per protocol_capability
  *       with IMAP4 parameters

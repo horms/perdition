@@ -34,11 +34,11 @@
 
 /**********************************************************************
  * config_file_to_opt
- * Configure opt structire according to options specified in a config
+ * Configure opt structure according to options specified in a config
  * file.
  * pre: filename: file to read options from
  * post: options in global options_t opt are set according to
- *       config file. Options specified onthe command line
+ *       config file. Options specified on the command line
  *       override config file options
  **********************************************************************/
 

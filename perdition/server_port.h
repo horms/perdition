@@ -34,7 +34,7 @@
 
 #define SERVER_PORT_DELIMITER ':'
 
-/* #defines to destroy and dupilcate strings */
+/* #defines to destroy and duplicate strings */
 #define DESTROY_SP   user_server_port_destroy_cb
 #define DUPLICATE_SP user_server_port_dup_cb
 #define DISPLAY_SP   user_server_port_display_cb
@@ -67,7 +67,7 @@ user_server_port_assign(user_server_port_t **usp, char *user,
 
 /**********************************************************************
  * user_server_port_strn_assign
- * Assign the data in a sting, to a port structure
+ * Assign the data in a string, to a port structure
  * pre: str should be of the form 
  *        [<user><domain_delimiter>]<servername>[:<port>]
  * post: <server> is assigned to usp.server
@@ -147,7 +147,7 @@ user_server_port_get_user(const user_server_port_t *usp);
  * Analogous to strcpy for strings
  * pre: dest: allocated string to render user_server_port to
  *      user_server_port: user_server_port_t to render
- * post: user_server_port is rendered to dest with a terminateing '\0'
+ * post: user_server_port is rendered to dest with a terminating '\0'
  *       nothing if user_server_port is NULL
  **********************************************************************/
 
@@ -193,7 +193,7 @@ user_server_port_length_cb(void *p);
  * user_server_port_dup
  * Duplicate a user_server_port
  * pre: src: user_server_port to duplicate
- * post: src is duplicted
+ * post: src is duplicated
  * return: copy of user_server_port
  *         NULL on error or of src is NULL
  **********************************************************************/

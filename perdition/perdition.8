@@ -60,7 +60,7 @@ accepted.
 .P
 When invoked as \fBperdition.pop3\fP, \fBperdition.pop3s\fP,
 \fBperdition.imap4\fP or \fBperdition.imap4s\fP then perdition will run in
-POP3, POP3S, IMAP4 or IMAP4S mode respectively, unless overriden on the
+POP3, POP3S, IMAP4 or IMAP4S mode respectively, unless overridden on the
 command line or in the configuration file.  \fBperdition.imaps\fP also runs
 perdition in IMAP4S mode and is provided to get around the truncation of
 process names in the /proc filesystem on Linux which can cause init scripts
@@ -143,7 +143,7 @@ Turn on verbose debugging.
 .B \-F, \-\-log_facility FACILITY:
 Facility to log to. If the facility has a leading '/' then it will
 be treated as a file. If is "-" or "+" then log to stdout or stderr 
-respectivley. Otherewise it is assumed to be the name
+respectively. Otherwise it is assumed to be the name
 of a syslog facility. See syslog.conf(5) for valid syslog facility
 names.
 .br
@@ -166,7 +166,7 @@ and /etc/perdition/perdition.pop3.conf exists then
 it will be used.
 .sp
 Next the sysconfig dir is checked for peridtion.<protocol>.conf,
-where protocol is the ascii representation of the protocol
+where protocol is the ASCII representation of the protocol
 being used, one of "imap4", "imap4s", "pop3", or "pop3s".
 So if perdition is being run in imap4 mode, and
 /etc/perdition/perdition.imap4.conf exists, then
@@ -203,7 +203,7 @@ servers also support this then the capability may be set to
 If perdition is listening for TLS connections then the
 capability STLS for POP3 or STARTTLS for IMAP4 will be
 appended to the list of capabilities if it is not already 
-present. Simmilarly these capabilities will be removed from
+present. Similarly these capabilities will be removed from
 the list of capabilities if they are present and perdition is not
 listening for TLS connections.
 .sp
@@ -262,7 +262,7 @@ not resolve host or port names returned by popmap lookups, thus, your popmap
 must return ip addresses and port numbers.
 .TP
 .B \-O, \-\-ok_line:
-Use STRING as the OK line to send to the client. Overriden by server_resp_line.
+Use STRING as the OK line to send to the client. Overridden by server_resp_line.
 OK and will be prepended to STRING, and in IMAP mode a tag
 will also be prepended to the string.
 .br
@@ -304,7 +304,7 @@ To allow perdition to remove the pid file after the owner of
 the perdition process is changed to a non-root user, it is advised to
 specify a pid file in a subdirectory of the system var state directory
 (usually /var/run). This subdirectory should be unique to this perdition
-invocation and will be created and have its owner and permitions set to
+invocation and will be created and have its owner and permissions set to
 allow perdition to subsequently removed the pid file.  
 .br
 Empty for no pid file. Not used in inetd mode.
@@ -338,7 +338,7 @@ Only log errors. Overridden by debug
 .B \-\-query_key FORMAT[,FORMAT...]:
 Instead of using the username as supplied by the end user, possibly
 modified by strip_domain, use the formats specified. The formats
-will be used in order to querey the popmap. The result from the first 
+will be used in order to query the popmap. The result from the first 
 successful lookup will be used. The format is comprised of a string
 of characters, delimited by ','. The following escape codes
 are valid:
@@ -350,7 +350,7 @@ are valid:
 \\u: Short Username, the portion Long Username 
     before the domain delimiter.
 .br
-\\D: Domain Delimiter, as spefified by 
+\\D: Domain Delimiter, as specified by 
     \-\-domain_delimiter
 .br
 \\d: Domain the portion Long Username after the
@@ -358,7 +358,7 @@ are valid:
 .br
 \\i: Source IP address of the connection
 .br
-\\I: Destination IP addres of the connection
+\\I: Destination IP address of the connection
 .br
 \\p: Source port of the connection
 .br
@@ -377,7 +377,7 @@ Use the supplied username, the default behaviour
 \\U
 .sp
 Use the user portion of the supplied username, if this
-doesn't work try the domain protion of the supplied 
+doesn't work try the domain portion of the supplied 
 username preceded by the domain delimiter
 .br
 \\u,\\D\\d
@@ -410,7 +410,7 @@ providing no option, the default.
 When listening for incoming connections they will be treated
 as SSL connections.
 .sp
-.B ssl_outoing:
+.B ssl_outgoing:
 Use SSL to connect to real pop/imap servers.
 .sp
 .B ssl_all:
@@ -428,14 +428,14 @@ Short-Hand for tls_listen,tls_outgoing.
 .sp
 .B tls_listen_force:
 Do not accept plain text authentication. In IMAP4 and IMAP4S mode,
-the LOGINDISABLED capability until TLS has been intialised
+the LOGINDISABLED capability until TLS has been initialised
 by the client issuing a STARTTLS. In all modes mode
 plain-text authentication is ignored.
 Used in conjunction with tls_listen,(or tls_all),
 ignored otherwise.
 .sp
 .B tls_outgoing_force:
-Do not send authenticat information if TLS cannot be negotiated.
+Do not send authentication information if TLS cannot be negotiated.
 Used in conjunction with tls_outgoing (or tls_all), ignored otherwise.
 .sp
 .B
@@ -485,16 +485,16 @@ Used for SSL or TLS outgoing connections.
 .TP
 .B \-\-ssl_cert_accept_expired:
 Accept expired certificates. This includes server certificates
-and certificats authority certificates.
+and certificate authority certificates.
 Used for SSL or TLS outgoing connections.
 .TP
 .B \-\-ssl_cert_accept_not_yet_valid:
 Accept certificates that are not yet valid. This includes server
-certificates and certificats authority certificates.
+certificates and certificate authority certificates.
 Used for SSL or TLS outgoing connections.
 .TP
 .B \-\-ssl_cert_verify_depth DEPTH:
-Chain Depth to recurse to when vierifying certificates.
+Chain Depth to recurse to when verifying certificates.
 Used for SSL or TLS outgoing connections.
 .br
 (default 9)
@@ -533,7 +533,7 @@ be used unless noted otherwise.
 .br
 The defaults given refer to the values if perdition is compiled with
 --sysconfdir=/etc as it would for many binary distributions. For the
-actuall defaults of a given perdition binary run "perdition --help"
+actual defaults of a given perdition binary run "perdition --help"
 .SH USER DATABASE (POPMAP)
 For information on mechanisms for resolving users to a host and port and
 information on the \-M|\-\-map_library and \-m|\-\-map_library_opt flags, please
@@ -685,7 +685,7 @@ When a user connects:
 .P
 Connect: <source_ip_address>[inetd_pid=<pid>]
 .P
-When a user is authenticted
+When a user is authenticated
 .P
 Auth: <source_ip_address> user="<username>" server="<servername">
 port="<port>" status=failed|ok
@@ -702,7 +702,7 @@ these logs will be written to /var/log/syslog.  Normally each session will
 have two perdition log entries.  Logs are prepended, depending on syslog
 with the date, host, and perdition[<pid>]: .
 .PP
-Fatal errors are also logged with a prority of err. In stand\-alone mode
+Fatal errors are also logged with a priority of err. In stand\-alone mode
 the startup parameters are logged on initialisation.  If the \-d|\-\-debug
 command line option or configuration file directive is used then startup
 parameters are logged regardless of other configuration directives and in
@@ -718,7 +718,7 @@ SSL may be used for either, both or none of these classes of connections.
 .P
 The public key and certificate files should be in PEM format.
 As a quick guide, the files may be generated using openssl with the
-folling command:
+following command:
 .nf
 .P
 openssl req \-new \-x509 \-nodes \\

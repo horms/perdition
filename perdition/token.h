@@ -177,9 +177,9 @@ void token_flush(void);
  *            If logical or of TOKEN_IMAP4 then spaces inside
  *            quotes will be treated as literals rather than token
  *            delimiters.
- *            If logical or of TOKEN_IMAP4_LITTERAL then m bytes 
+ *            If logical or of TOKEN_IMAP4_LITERAL then m bytes 
  *            will be read as a single token.
- *      m: Bytes to read if flag is TOKEN_IMAP4_LITTERAL
+ *      m: Bytes to read if flag is TOKEN_IMAP4_LITERAL
  *      log_str: logging tag for connection logging
  * post: Token is read from fd into token
  *       ' ' will terminate a token
@@ -192,9 +192,9 @@ void token_flush(void);
  * return: token
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
- *       BUFFER_SIZE will be read and the remander will be
+ *       BUFFER_SIZE will be read and the remainder will be
  *       left (to be handled by an subsequent call to token_read).
- *       The same appies to *n if literal_buf is being filled.
+ *       The same applies to *n if literal_buf is being filled.
  *
  * 8 bit clean
  **********************************************************************/
@@ -251,7 +251,7 @@ token_t *token_read(
  * post: none
  * return: 1 is they are the same
  *         0 otherwise
- * flag field will be ignored if eiter token has eol set to TOKEN_DONT_CARE
+ * flag field will be ignored if either token has eol set to TOKEN_DONT_CARE
  *
  * Not 8 bit clean as it is case insensitive using toupper
  **********************************************************************/
@@ -282,7 +282,7 @@ int token_cmp(const token_t *a, const token_t *b);
  *      strip: Character to strip from first and last character of 
  *             string if it is present. Ignored if TOKEN_NO_STRIP
  *
- * post: a sting is allocated and the contents of t's buffer pluss
+ * post: a string is allocated and the contents of it's buffer plus
  *       a trailing '\0' is placed in the string
  * return: the string
  *         NULL on error

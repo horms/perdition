@@ -36,9 +36,9 @@
 #include "protocol_t.h"
 
 /* This is nasty
- * protocol_known[1]=number oof protocols as a string
+ * protocol_known[1]=number of protocols as a string
  * the rest of the elements are the name of protocols as strings
- * as gan be given as command line arguments to perdtion
+ * as can be given as command line arguments to perdition
  *
  * PROTOCOL_<BLAH> indicates the index of <BLAH> in 
  * protocol_known. This is used internally

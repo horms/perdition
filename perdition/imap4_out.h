@@ -44,11 +44,11 @@
 /**********************************************************************
  * imap4_out_setup
  * Begin interaction with real server by checking that
- * the connection is ok and doing TLS if neccessary.
+ * the connection is ok and doing TLS if necessary.
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
- *      protocol: protocol structiure for imap4
+ *      protocol: protocol structure for imap4
  * post: Read the greeting string from the server
  *       If tls_outgoing is set issue the CAPABILITY command and check
  *       for the STARTTLS capability.
@@ -69,16 +69,16 @@ int imap4_out_setup(
 
 /**********************************************************************
  * imap4_authenticate
- * Authenticate user with backend imap4 server
+ * Authenticate user with back-end imap4 server
  * You should call imap4_setup() first
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
- *      protocol: protocol structiure for imap4
+ *      protocol: protocol structure for imap4
  *      buf:    buffer to return response from server in
  *      n:      size of buf in bytes
  * post: The CAPABILITY command is sent to the server and the result is read
- *       If the LOGINDISABLED capability is set porocessing stops
+ *       If the LOGINDISABLED capability is set processing stops
  *       Otherwise the LOGIN command is sent and the result is checked
  * return: 2: if the server has the LOGINDISABLED capability set
  *         1: on success
@@ -98,9 +98,9 @@ int imap4_out_authenticate(
 
 /**********************************************************************
  * imap4_out_response
- * Compare a respnse from a server with the desired response
+ * Compare a response from a server with the desired response
  * pre: io: io_t to read from
- *      tag: tag expected from server. NULL for untaged.
+ *      tag: tag expected from server. NULL for untagged.
  *      desired_token: token expected from server
  *      q: resulting queue is stored here
  *      buf: buffer to read server response in to

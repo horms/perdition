@@ -47,8 +47,8 @@ static char *pop3_port(char *port);
 static flag_t pop3_encryption(flag_t ssl_flags);
 
 /**********************************************************************
- * pop3_intitialise_protocol
- * Intialialoise the protocol structure for the pop3 protocol
+ * pop3_initialise_protocol
+ * Initialise the protocol structure for the pop3 protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error
@@ -82,8 +82,8 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
 
 
 /**********************************************************************
- * pop3_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
+ * pop3_destroy_protocol 
+ * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
 static void pop3_destroy_protocol(protocol_t *protocol)
@@ -112,8 +112,8 @@ static char *pop3_port(char *port)
 
 /**********************************************************************
  * pop3_encryption 
- * Return the encription states to be used.
- * pre: ssl_flags: the encryption flags that bave been set
+ * Return the encryption states to be used.
+ * pre: ssl_flags: the encryption flags that have been set
  * post: return ssl_flags (does nothing)
  **********************************************************************/
 
@@ -126,8 +126,8 @@ static flag_t pop3_encryption(flag_t ssl_flags)
 /**********************************************************************
  * pop3_mangle_capability 
  * Modify a capability from the single line format used internally,
- * where a double space ("  ") delimites a capability, to the format
- * used ont he wire where a "\r\n" delimits a capability.
+ * where a double space ("  ") delimits a capability, to the format
+ * used on he wire where a "\r\n" delimits a capability.
  * pre: capability: capability string that has been set
  * post: mangled_capability is set to the wire format of capability
  * return: capability on success

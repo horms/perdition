@@ -36,8 +36,8 @@
 
 
 /**********************************************************************
- * pop3s_intitialise_protocol
- * Intialialoise the protocol structure for the pop3s protocol
+ * pop3s_initialise_protocol
+ * Initialise the protocol structure for the pop3s protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error

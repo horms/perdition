@@ -49,8 +49,8 @@ static char *pop3s_capability(char *capability, char **mangled_capability,
 
 
 /**********************************************************************
- * pop3s_intitialise_protocol
- * Intialialoise the protocol structure for the pop3s protocol
+ * pop3s_initialise_protocol
+ * Initialise the protocol structure for the pop3s protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error
@@ -85,7 +85,7 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
 
 /**********************************************************************
  * pop3s_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
+ * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
 static void pop3s_destroy_protocol(protocol_t *protocol)
@@ -114,7 +114,7 @@ static char *pop3s_port(char *port)
 
 /**********************************************************************
  * pop3s_encryption 
- * Return the encription states to be used.
+ * Return the encryption states to be used.
  * pre: ssl_flags: the encryption flags that bave been set
  * post: If ssl_flags != SSL_MODE_EMPTY then return them,
  *       Else return SSL_MODE_SSL_ALL

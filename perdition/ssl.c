@@ -372,7 +372,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 			break;
 		case X509_V_ERR_INVALID_PURPOSE:
 			__PERDITION_VERIFY_RESULT_ERROR(
-					"unsuported certificate purpose");
+					"unsupported certificate purpose");
 			break;
 		case X509_V_ERR_CERT_UNTRUSTED:
 			__PERDITION_VERIFY_RESULT_ERROR(
@@ -471,7 +471,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		PERDITION_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
 		VANESSA_LOGGER_ERR_UNSAFE
-		    ("Error loading pricvate key file \"%s\"", privkey);
+		    ("Error loading private key file \"%s\"", privkey);
 		SSL_CTX_free(ssl_ctx);
 		return NULL;
 	}
@@ -571,7 +571,7 @@ __perdition_ssl_check_common_name(X509 *cert, const char *server)
 		}
 	}
 
-	VANESSA_LOGGER_DEBUG_RAW("error: common name missmatch");
+	VANESSA_LOGGER_DEBUG_RAW("error: common name mismatch");
 	return -2;
 }
 
@@ -581,7 +581,7 @@ __perdition_ssl_check_common_name(X509 *cert, const char *server)
  * Log the details of a certificate
  * pre: ssl: SSL object to log
  *      cert: certificate to log
- * post: details of cerfificate are loged, if there is one
+ * post: details of certificate are logged, if there is one
  * return: 0 on success, including if there was nothing to do
  *         -1 on error
  **********************************************************************/
@@ -626,13 +626,13 @@ __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 /**********************************************************************
  * __perdition_ssl_check_certificate
  * Check the details of a certificate
- * pre: io: connectoion to check certificate of
+ * pre: io: connection to check certificate of
  *      ca_file: certificate authorities to use. May be NULL
  *               See SSL_CTX_load_verify_locations(3)
  *      ca_path: certificate authorities to use. May be NULL
  *               See SSL_CTX_load_verify_locations(3)
  *      server: server to match the common name of
- * post: details of cerfificate are loged, if there is one
+ * post: details of certificate are logged, if there is one
  *       common name of the certificate is verified
  * return: 0 on success, including if there was nothing to do
  *         -1 on error
@@ -691,7 +691,7 @@ leave:
 
 /**********************************************************************
  * __perdition_ssl_connection
- * Change a stdio bassed connection into an SSL connection
+ * Change a stdio based connection into an SSL connection
  * pre: io: io_t to change
  *      ssl_ctx: SSL Context to use
  *      flag: If PERDITION_SSL_CLIENT the io is a client that has 
@@ -699,7 +699,7 @@ leave:
  *            If PERDITION_SSL_SERVER then the io is a server that 
  *            has accepted a connection and SSL_accept will be called.
  *            There are no other valid values for flag.
- * post: io_t has an ssl object associated with it and SSL is intiated
+ * post: io_t has an ssl object associated with it and SSL is initiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
@@ -768,7 +768,7 @@ bail:
 
 /**********************************************************************
  * perdition_ssl_client_connection
- * Change a stdio bassed connection to a remote server, into an SSL 
+ * Change a stdio based connection to a remote server, into an SSL 
  * connection.
  * pre: io: io_t to change. A client that has connected to a server, 
  *          SSL_connect() will be called.
@@ -780,7 +780,7 @@ bail:
  *               May be NULL in which case openssl's default is used.
  *      server: server name to verify with the common name in
  *              the server's certificate
- * post: io_t has an ssl object associated with it and SSL is intiated
+ * post: io_t has an ssl object associated with it and SSL is initiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
@@ -820,11 +820,11 @@ perdition_ssl_client_connection(io_t * io, const char *ca_file,
 
 /**********************************************************************
  * perdition_ssl_server_connection
- * Change a stdio bassed connection that receives client connections,
+ * Change a stdio based connection that receives client connections,
  * into an SSL connection
  * pre: io: io_t to change
  *      ssl_ctx: SSL Context to use
- * post: io_t has an ssl object associated with it and SSL is intiated
+ * post: io_t has an ssl object associated with it and SSL is initiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error

@@ -45,7 +45,7 @@
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
- *           if NULL, then IMAP4_UNTAGED is used
+ *           if NULL, then IMAP4_UNTAGGED is used
  *      command: command in message sent
  *           if NULL then only string is written, no tag or command
  *      nargs: number of arguments after fmt
@@ -76,8 +76,8 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 	memset(__imap4_write_fmt_str, 0, MAX_LINE_LENGTH);
 
       	if(!tag) {
-		tag_str = IMAP4_UNTAGED;
-		tag_str_len = strlen(IMAP4_UNTAGED);
+		tag_str = IMAP4_UNTAGGED;
+		tag_str_len = strlen(IMAP4_UNTAGGED);
 	}
 	else {
 		tag_str = token_buf(tag);

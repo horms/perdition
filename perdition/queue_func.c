@@ -53,7 +53,7 @@
  *       Bytes read from fd are copied to literal_buf.
  * return: token
  *         NULL on error
- * Note: If buf is being filled and space is exausted function will
+ * Note: If buf is being filled and space is exhausted function will
  *       return what has been read so far. (No buffer overflows today)
  **********************************************************************/
 
@@ -125,7 +125,7 @@ vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n,
  * a space ( ) is inserted in the resultant string between each
  * token
  * pre: q queue to dump as a string
- * post: a string is allocated and the quie is dumped to the string
+ * post: a string is allocated and the queue is dumped to the string
  *       the string is '\0' terminated
  * return: allocated string
  *         NULL on error

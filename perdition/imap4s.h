@@ -35,8 +35,8 @@
 #include "protocol_t.h"
 
 /**********************************************************************
- * imap4s_intitialise_proto
- * Intialialoise the protocol structure for the imap4s protocol
+ * imap4s_initialise_protocol
+ * Initialise the protocol structure for the imap4s protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error

@@ -76,7 +76,7 @@ struct io_t_struct {
  * __io_create
  * Create an shell io
  * pre: name: name to associate with io
- * post: shell of io_t is intialised 
+ * post: shell of io_t is initialised 
  * return: new io_t
  *         NULL on error
  **********************************************************************/
@@ -112,7 +112,7 @@ static io_t *__io_create(const char *name){
  * pre: read_fd: File descriptor for reading
  *      write_fd: File descriptor for writing
  *      name: name to associate with io
- * post: io_t is intialised to use fds
+ * post: io_t is initialised to use fds
  * return: new io_t
  *         NULL on error
  **********************************************************************/
@@ -150,7 +150,7 @@ io_t *io_create_fd(int read_fd, int write_fd, const char *name){
  *      read_fd: File descriptor for reading from
  *      write_fd: File descriptor for writing to
  *      name: name to associate with io
- * post: io_t is intialised to use ssl
+ * post: io_t is initialised to use ssl
  * return: new io_t
  *         NULL on error
  **********************************************************************/
@@ -444,7 +444,7 @@ SSL *io_get_ssl(io_t *io){
  * Close the file descriptors in an io_t
  * If it is an SSL io_t then call SSL_shutdown();
  * pre: io: io_t close the file descriptors of
- * post: file descriptors associaded with ssl are closed
+ * post: file descriptors associated with ssl are closed
  *       or the ssl object is shutdown
  * return: 0 on success
  *         -1 on error

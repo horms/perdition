@@ -41,8 +41,8 @@
 
 
 /**********************************************************************
- * imap4_intitialise_proto
- * Intialialoise the protocol structure for the imap4 protocol
+ * imap4_initialise_protocol
+ * Initialise the protocol structure for the imap4 protocol
  * Pre: protocol: pointer to an allocated protocol structure
  * Post: Return seeded protocol stricture
  *              NULL on error
@@ -56,7 +56,7 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol);
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
  *      mangled_capability: not used
- *      tls_flags: the encryption flags that bave been set
+ *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
  * post: capability to use, as per protocol_capability
  *       with IMAP4 parameters

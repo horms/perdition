@@ -49,7 +49,7 @@
 #define PERDITION_LOCALSTATEDIR "/usr/local/var"
 #endif
 
-#define PERDTIOIN_PID_DIR PERDITION_LOCALSTATEDIR "/run"
+#define PERDITION_PID_DIR PERDITION_LOCALSTATEDIR "/run"
 
 #include "log.h"
 #include "protocol.h"
@@ -141,10 +141,10 @@
 #define DEFAULT_QUIET                        0
 #ifdef WITH_SSL_SUPPORT
 #define DEFAULT_SSL_CA_CHAIN_FILE            NULL
-#define RECOMENDED_SSL_CA_CHAIN_FILE         PERDITION_SYSCONFDIR \
+#define RECOMMENDED_SSL_CA_CHAIN_FILE         PERDITION_SYSCONFDIR \
 					     "/perdition.ca.pem"
 #define DEFAULT_SSL_CA_FILE                  NULL
-#define RECOMENDED_SSL_CA_FILE               PERDITION_SYSCONFDIR \
+#define RECOMMENDED_SSL_CA_FILE               PERDITION_SYSCONFDIR \
                                              "/perdition.ca.pem"
 #define DEFAULT_SSL_CA_PATH                  PERDITION_SYSCONFDIR \
                                              "/perdition.ca/"
@@ -321,7 +321,7 @@ typedef struct {
                                            reading options passed*/
 #define OPT_FILE        (flag_t) 0x20 /*Reading an options file*/
 #define OPT_NOT_SET     (flag_t) 0x40 /*Option is not set, don't free*/
-#define OPT_LIT         (flag_t) 0x80 /*Option is a litteral, don't free
+#define OPT_LIT         (flag_t) 0x80 /*Option is a literal, don't free
                                             or copy, over-rides OPT_SET*/
 
 #define OPT_FIRST_CALL  (flag_t) \

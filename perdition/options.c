@@ -95,7 +95,7 @@ options_t opt;
  *      mask_entry: entry of this option in the option mask
  *      flag:  flags as per options.h
  * post: If the mask and options allow as per options_set_mask()
- *       value is addigned to into opt.ss. Any existing value of opt is freed
+ *       value is assigned to opt.ss. Any existing value of opt is freed
  *       The mask may also be altered as per options_set_mask()
  *       Else no change.
  ***********************************************************************/
@@ -402,12 +402,12 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.pid_file,        PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     {
       char *filename;
-      filename = malloc(strlen(PERDTIOIN_PID_DIR) + (2*strlen(basename)) + 7);
+      filename = malloc(strlen(PERDITION_PID_DIR) + (2*strlen(basename)) + 7);
       if (!filename) {
 	      VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 	      return -1;
       }
-      sprintf(filename, "%s/%s/%s.pid", PERDTIOIN_PID_DIR, basename,
+      sprintf(filename, "%s/%s/%s.pid", PERDITION_PID_DIR, basename,
 		      basename);
       opt_p(opt.pid_file,        filename,                  i, 0, OPT_NOT_SET);
       free(filename);
@@ -998,7 +998,7 @@ int log_options_str(char *str, size_t n){
     "outgoing_port=\"%s\", "
     "outgoing_server=\"%s\", "
     "pid_file=\"%s\", "
-    "prototol=\"%s\", "
+    "protocol=\"%s\", "
     "server_resp_line=%s, "
     "strip_domain=\"%s\", "
     "timeout=%d, "
@@ -1176,7 +1176,7 @@ void usage(int exit_status){
     "    Bind to this address.\n"
     "    (default \"%s\")\n"
     " -C|--connection_logging:\n"
-    "    Log all comminication recieved from end-users or real servers or\n"
+    "    Log all communication received from end-users or real servers or\n"
     "    sent from perdition.\n"
     "    Note: debug must be in effect for this option to take effect.\n"
     " --connect_relog SECONDS:\n"
@@ -1187,12 +1187,12 @@ void usage(int exit_status){
     " -D|--domain_delimiter STRING:\n"
     "    Delimiter between username and domain. (default \"%s\")\n"
     " -d|--debug:\n"
-    "    Turn on verbose debuging.\n"
+    "    Turn on verbose debugging.\n"
     " -F|--log_facility FACILITY:\n"
     "    Facility to log to. (default \"%s\")\n"
     " -f|--config_file FILENAME:\n"
     "    Name of config file to read.\n"
-    "    (default is invocation independant)\n"
+    "    (default is invocation independent)\n"
     " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
@@ -1224,7 +1224,7 @@ void usage(int exit_status){
     "    Disable host and port lookup.\n"
     " -O|--ok_line STRING:\n"
     "    Use STRING as the OK line to send to the client.\n"
-    "    Overriden by server_resp_line.\n"
+    "    Overridden by server_resp_line.\n"
     "    (default \"%s\")\n"
     " -o|--server_resp_line:\n"
     "    Use back-end server's authentication response, instead of \n"
@@ -1251,9 +1251,9 @@ void usage(int exit_status){
     " -U|--username_from_database:\n"
     "    Substitute username from popmap lookup.\n"
     " -q|--quiet:\n"
-    "    Only log errors. Overriden by debug\n"
+    "    Only log errors. Overridden by debug\n"
     " --query_key FORMAT[,FORMAT...]:\n"
-    "    Speficy a list of query strings to search for in the popmap.\n"
+    "    Specify a list of query strings to search for in the popmap.\n"
     "    (default \"%s\")\n"
 #ifdef WITH_SSL_SUPPORT
     "\n"
@@ -1287,12 +1287,12 @@ void usage(int exit_status){
     "    Accept self-signed certificates.\n"
     " --ssl_cert_accept_expired:\n"
     "    Accept expired certificates. This includes server certificates\n"
-    "    and certificats authority certificates.\n"
+    "    and certificate authority certificates.\n"
     " --ssl_cert_accept_not_yet_valid:\n"
     "    Accept certificates that are not yet valid. This includes server\n"
-    "    certificates and certificats authority certificates.\n"
+    "    certificates and certificate authority certificates.\n"
     " --ssl_cert_verify_depth DEPTH:\n"
-    "    Chain Depth to recurse to when vierifying certificates.\n"
+    "    Chain Depth to recurse to when verifying certificates.\n"
     "    (default %d)\n"
     " --ssl_key_file FILENAME:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
@@ -1332,7 +1332,7 @@ void usage(int exit_status){
     OPT_STR(available_protocols),
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     OPT_STR(DEFAULT_OUTGOING_SERVER),
-    OPT_STR(PERDTIOIN_PID_DIR),
+    OPT_STR(PERDITION_PID_DIR),
     DEFAULT_TIMEOUT,
     OPT_STR(DEFAULT_USERNAME),
     OPT_STR(DEFAULT_QUERY_KEY)
@@ -1340,9 +1340,9 @@ void usage(int exit_status){
     ,
     OPT_STR(NULL),
     OPT_STR(DEFAULT_SSL_CA_CHAIN_FILE),
-    OPT_STR(RECOMENDED_SSL_CA_CHAIN_FILE),
+    OPT_STR(RECOMMENDED_SSL_CA_CHAIN_FILE),
     OPT_STR(DEFAULT_SSL_CA_FILE),
-    OPT_STR(RECOMENDED_SSL_CA_FILE),
+    OPT_STR(RECOMMENDED_SSL_CA_FILE),
     OPT_STR(DEFAULT_SSL_CA_PATH),
     OPT_STR(DEFAULT_SSL_CERT_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,

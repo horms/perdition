@@ -3,7 +3,7 @@
  * Horms                                             horms@verge.net.au
  *
  * The code in this file, setproctitle.c is heavily based on code from
- * proftpd, please see the licening information below.
+ * proftpd, please see the licensing information below.
  *
  * Code to portably change the title of a programme as displayed
  * by ps(1).

@@ -89,7 +89,7 @@ E.g.
 perdition \-m /etc/my_popmap.gdbm.db
 .P
 This map library is the default. It may also be used
-explicitly, used by specifying the full path to the libary using
+explicitly, used by specifying the full path to the library using
 the \-M|\--map_library command line option or configuration file option.
 .P
 E.g.
@@ -101,12 +101,12 @@ were installed.
 
 .P 
 .B
-Berkely DB
+Berkeley DB
 .P
 This is analogous to the GDBM library, except that a popmap.bdb.db should
 be created using makebdb.
 .P 
-This libary may be used by specifying the full path to the libary using
+This library may be used by specifying the full path to the library using
 the \-M|\--map_library command line option or configuration file option.
 .P
 E.g.
@@ -143,7 +143,7 @@ POSIX REGULAR EXPRESSIONS
 This library allows users to be looked matched against a list
 of regular expressions.
 .P
-This library can be used by specifying the full path to the libary using
+This library can be used by specifying the full path to the library using
 the \-M|\--map_library command line option or configuration file option.
 .P
 E.g.
@@ -155,20 +155,20 @@ were installed.
 .P
 The regular expression is kept in a flat file, by default
 /etc/perdition/popmap.re .  A sample map file is shipped with the source
-and can be found in etc/perdition/popmap.re, this is intalled into
+and can be found in etc/perdition/popmap.re, this is installed into
 /etc/perdition/popmap.re in the RPM and Debian distributions.  
 The format for the flat file is:
 .P
 <regular expression>: [<username><domain_delimiter>]<server>[:<port>]
 .P
-A single colon \fBmay\fP follow a regular_expression Some ammout of white
+A single colon \fBmay\fP follow a regular_expression Some amount of white
 space must follow this colon or the regular_expression if the colon is
 omitted.  Blank lines are ignored, as is anything including and after a #
 (hash) on a line. If a \ precedes a new line then the lines will be
 concatenated.  If a \ precedes any other character, including a # (hash)
 it will be treated as a literal. Anything inside single quotes (') will
-be treated as a litreal. Anything other than a (') inside double quotes
-(") will be treated as a litreal. Whitespace in a regular_expression must
+be treated as a literal. Anything other than a (') inside double quotes
+(") will be treated as a literal. Whitespace in a regular_expression must
 be escaped or quoted. Whitespace in a substitution need not be escaped or
 quoted.
 .P
@@ -189,7 +189,7 @@ The first matching regular expression will be used. The regular expressions
 are extended posix regular expressions. The last example illustrates the
 ability to expand backreferances.  Backreferences may be used by inserting
 $n in the substitution where n is in the range 1..9.
-The backerference substitution code in this library is courtesy
+The backreference substitution code in this library is courtesy
 of Wim Bonis <bonis@solution\-service.de> and in turn the PHP3
 project.
 .P
@@ -203,7 +203,7 @@ would return
 .br
 bonis_solution\-service.de@localhost
 .P
-Note that there is no implcit ^ or $
+Note that there is no implicit ^ or $
 around the regular expressions. The popmap entry "flim: localhost" will
 match "flim", "flimstix", "itsflim" and "totallyflimless". To only match
 "flim" you need the popmap entry "^flim$: localhost".
@@ -223,7 +223,7 @@ perdition \-m /etc/perdition/my_popmap.re
 .B MYSQL
 .P
 This map library can be used by specifying the full path to
-the libary using the \-M|\--map_library command line option or configuration
+the library using the \-M|\--map_library command line option or configuration
 file option.
 .P
 E.g.
@@ -266,19 +266,19 @@ host: hostname or ip address
 .br
 port: port name or number
 .P 
-If the \-n|\-\-no_lookup option is in effect then ip adresses and
+If the \-n|\-\-no_lookup option is in effect then ip addresses and
 port numbers should be used as host and port names will not be resolved.
 .P
 The port is the TCP port to use when connecting to the server. This field
-can be specified if the backend server answers on a non\-standard port
-(standard ports being 110 for POP3 and 143 for IMAP). Only specifiy this
+can be specified if the back-end server answers on a non\-standard port
+(standard ports being 110 for POP3 and 143 for IMAP). Only specify this
 field in the database if you intend to use POP3 or IMAP exclusively as it
 will try to use this port no matter what protocol is being used. If POP3
-and IMAP are both being used on non\-standard backend server ports, those
+and IMAP are both being used on non\-standard back-end server ports, those
 ports can be specified with the \-p argument when you invoke the perdition
 executable.
 .P
-The database is accesed each time perdition needs to find the host and port
+The database is accessed each time perdition needs to find the host and port
 for a user.  The default database values are as follows:
 .P
 database host:     localhost
@@ -338,7 +338,7 @@ them using the ODBC module.
 POSTGRESQL
 .P
 This is a port of the MySQL library to PostgreSQL, The library can be used
-by specifying the full path to the libary using the \-M|\--map_library
+by specifying the full path to the library using the \-M|\--map_library
 command line option or configuration file option.
 .P
 E.g.
@@ -349,7 +349,7 @@ Where /usr/lib is the directory in which the perdition libraries
 were installed.
 A script, perditiondb_postgresql_makedb is provided to initialise the
 database.
-For more information please see the MySQL documentaion above.
+For more information please see the MySQL documentation above.
 
 .P
 .B
@@ -360,7 +360,7 @@ used to access databases that do not have a perditiondb module.
 It may also be used to group database servers into clusters.
 .P
 The library can be used
-by specifying the full path to the libary using the \-M|\--map_library
+by specifying the full path to the library using the \-M|\--map_library
 command line option or configuration file option.
 .P
 E.g.
@@ -370,9 +370,9 @@ perdition \-M /usr/lib/libperditiondb_odbc.so.0
 Where /usr/lib is the directory in which the perdition libraries
 were installed.
 A script, perditiondb_odbc_makedb is provided to seed the.
-For more information please see the MySQL documentaion above.
-The dabase options passed using \-m are the same as for MySQL
-except that the databse name (dbname) is the Datar Source Name (DSN).
+For more information please see the MySQL documentation above.
+The database options passed using \-m are the same as for MySQL
+except that the database name (dbname) is the Data Source Name (DSN).
 .P
 <dbhost>[:<dbport>[:<DSN>[:<dbtable>[:<dbuser>
 .br
@@ -385,12 +385,12 @@ perdition \-m "some.host.com:3306:aDb:bTable:cUser:"\\
 "dPassword:eSrvCol:fUserCol:gPortCol"
 .P
 As per the notes in the MySQL documentation above,
-please avoid ommitting values.
+please avoid omitting values.
 .B
 LDAP
 .P
 This library allows access to LDAP based popmaps. This library can be used
-by specifying the full path to the libary using the \-M|\--map_library
+by specifying the full path to the library using the \-M|\--map_library
 command line option or configuration file option.
 .P
 E.g.
@@ -402,7 +402,7 @@ were installed.
 .P
 A script is provided in etc/perdition/ldap/ to initialise an
 LDAP popmap for the default URL.
-In the RPM and debian distributions this can be found installed in
+In the RPM and Debian distributions this can be found installed in
 /etc/perdition/ldap/ . An alternate URL can be set using the
 \-m|\--map_library_opt command line option or configuration file option.
 .P
@@ -453,7 +453,7 @@ appear.  For full details of this, take a look at RFC2255.
 .P 
 It is possible to specify multiple LDAP servers by specifying
 them, space delimited, in the LDAP UDL. If this is the case an
-attemtp will be made to open a connetion to each host in order,
+attempt will be made to open a connection to each host in order,
 the first host to which a connection is successfully made will be used.
 .P 
 For example: (N.B.: this example has been split over multiple lines
@@ -466,7 +466,7 @@ username,mailhost,port?one?(uid=%s)
 .B perdition.schema
 .P
 A schema has been defined for perdition and is supplied as part of
-perdition. To use this you should insall it on the LDAP server in
+perdition. To use this you should install it on the LDAP server in
 the LDAP daemon's schema directory and include it in slapd.conf,
 after other includes and before any database definitions.
 .SH LIBRARY FUNCTIONS
@@ -484,7 +484,7 @@ Find the server (value) given the user (key)
 Key as a null terminated string
 .sp
 .B options_str:
-Options string. The usage of this is implementation dependant.
+Options string. The usage of this is implementation dependent.
 .sp
 .B str_return:
 Value is returned here
@@ -500,7 +500,7 @@ returned in str_return and len_return.
 0 on success
 .sp
 \-1 on db access error
-This inclides file, connection and other data access
+This includes file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
 \-2 if key cannot be found in map
@@ -524,12 +524,12 @@ user@localhost
 .br
 localhost
 .P
-As the library is opened using the dlopen(3) mechanism the libary
+As the library is opened using the dlopen(3) mechanism the library
 may also export functions _init and _fini that will be
 executed when the library is opened and closed respectively.
 In addition if the symbols following  symbols
 are defined then these are run when 
-the library is opened and closed respectivley.  If defined these 
+the library is opened and closed respectively.  If defined these 
 symbols should have the following semantics.
 .PP
 .B
@@ -543,15 +543,15 @@ Initialise db as necessary
 .TP
 .B pre: 
 .B options_str: 
-Options string. The usage of this is implementation dependant.
+Options string. The usage of this is implementation dependent.
 .TP
 .B post: 
-db is intialised
+db is initialised
 .TP
 .B return:  
 0 on success
 .sp
-\-1 on db access error This inclides file, connection and other data access
+\-1 on db access error This includes file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
 \-2 if key cannot be found in map
@@ -573,7 +573,7 @@ db is shut down
 0 on success
 .sp
 \-1 on db access error
-This inclides file, connection and other data access
+This includes file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
 \-2 if key cannot be found in map
@@ -586,9 +586,9 @@ dbserver_init if it is defined. Note: dbserver_init will be
 called if defined, even if dbserver_fini is not defined.
 .P
 In the case of the posix regular expressions library this will
-cause popmap.re to be reparsed, hence effecting any changes that have been
+cause popmap.re to be re-parsed, hence effecting any changes that have been
 made to that file. For the GDBM library it will reopen the database and for
-the other libraries it will reinitalise its connection to the database,
+the other libraries it will reinitialise its connection to the database,
 LDAP or NIS server.
 .P
 The shared library has access to the following global symbols exported 

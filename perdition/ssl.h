@@ -82,7 +82,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 
 /**********************************************************************
  * perdition_ssl_client_connection
- * Change a stdio bassed connection to a remote server, into an SSL 
+ * Change a stdio based connection to a remote server, into an SSL 
  * connection.
  * pre: io: io_t to change. A client that has connected to a server, 
  *          SSL_connect() will be called.
@@ -94,7 +94,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
  *               May be NULL in which case openssl's default is used.
  *      server: server name to verify with the common name in
  *              the server's certificate
- * post: io_t has an ssl object associated with it and SSL is intiated
+ * post: io_t has an ssl object associated with it and SSL is initiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
@@ -106,11 +106,11 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
 
 /**********************************************************************
  * perdition_ssl_server_connection
- * Change a stdio bassed connection that revieves client connections,
+ * Change a stdio based connection that revieves client connections,
  * into an SSL connection
  * io: io_t to change
  * ssl_ctx: SSL Context to use
- * post: io_t has an ssl object associated with it and SSL is intiated
+ * post: io_t has an ssl object associated with it and SSL is initiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error

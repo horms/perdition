@@ -72,7 +72,7 @@
 #define int32 int
 #elif (SIZEOF_LONG == 4)
 #define int32 long
-#error Cannot determing tupe for int32
+#error Cannot determine type for int32
 #endif
 #endif
 
@@ -82,7 +82,7 @@
 #elif (SIZEOF_LONG == 4)
 #define uint32 unsigned long
 #else
-#error Cannot determing tupe for uint32
+#error Cannot determine type for uint32
 #endif
 #endif
 

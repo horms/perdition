@@ -73,7 +73,7 @@
   if(error == SSL_ERROR_SYSCALL && ERR_peek_error() == 0) {                   \
     if(ret == 0) {                                                            \
       VANESSA_LOGGER_DEBUG(str ": An EOF that violates the protocol "         \
-                      "has occured");                                         \
+                      "has occurred");                                         \
     }                                                                         \
     else if(ret == -1) {                                                      \
       VANESSA_LOGGER_DEBUG_ERRNO(str ": I/O Error");                          \

@@ -56,10 +56,10 @@
  * pre: pw: passwd structure with username and password to authenticate
  *      io: io_t to write errors to
  *      tag: Tag to use in (Error) responses
- * post: An atempt is made to authenticate the user locallay
+ * post: An attempt is made to authenticate the user locally
  *       If this fails then an tagged response is written to io
  *       Else no output is made
- * return: 1 if authentication succedes
+ * return: 1 if authentication succeeds
  *         0 if authentication fails
  *         -1 if an error occurs
  **********************************************************************/
@@ -94,7 +94,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag);
  * imap4_in_noop_cmd
  * Do a response to a NOOP command
  * pre: io: io_t to write to
- * post: Taged response to NOOP is written to io
+ * post: Tagged response to NOOP is written to io
  * return: 0 on success
  *         -1 otherwise
  **********************************************************************/
@@ -107,7 +107,7 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag);
  * Do a response to a LOGOUT command
  * pre: io: io_t to write to
  * post: An untagged response advising of logout is written to io
- *       A tagged response to the LOGGOUT is written to io
+ *       A tagged response to the LOGOUT is written to io
  * return 0 on success
  *        -1 otherwise
  **********************************************************************/

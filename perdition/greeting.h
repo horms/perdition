@@ -2,7 +2,7 @@
  * greeting.h                                              October 1999
  * Horms                                             horms@verge.net.au
  *
- * Protocol indepentant writes
+ * Protocol independent writes
  *
  * perdition
  * Mail retrieval proxy server

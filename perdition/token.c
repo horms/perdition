@@ -196,7 +196,7 @@ void token_flush(void) {
  *      log_str: logging tag for connection logging
  * post: Bytes are read from fd into a buffer, if the buffer is
  *       empty
- * return: number of bytes read, or number of uread bytes in buffer
+ * return: number of bytes read, or number of unread bytes in buffer
  *         -1 on error
  *
  * 8 bit clean
@@ -327,9 +327,9 @@ leave:
  * return: token
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
- *       BUFFER_SIZE will be read and the remander will be
+ *       BUFFER_SIZE will be read and the remainder will be
  *       left (to be handled by an subsequent call to token_read).
- *       The same appies to *n if literal_buf is being filled.
+ *       The same applies to *n if literal_buf is being filled.
  *
  * 8 bit clean
  **********************************************************************/
@@ -430,7 +430,7 @@ end_while:
  * post: none
  * return: 1 is they are the same
  *         0 otherwise
- * flag field will be ignored if eiter token has eol set to TOKEN_DONT_CARE
+ * flag field will be ignored if either token has eol set to TOKEN_DONT_CARE
  *
  * Not 8 bit clean as it is case insensitive using toupper
  **********************************************************************/
@@ -454,7 +454,7 @@ int token_cmp(const token_t *a, const token_t *b){
  * pre: t: token to dump to a string
  *      strip: Character to strip from first and last character of 
  *             string if it is present. Ignored if TOKEN_NO_STRIP
- * post: a sting is allocated and the contents of t's buffer pluss
+ * post: a string is allocated and the contents of it's buffer plus
  *       a trailing '\0' is placed in the string
  * return: the string
  *         NULL on error

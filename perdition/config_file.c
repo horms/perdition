@@ -43,11 +43,11 @@
 
 /**********************************************************************
  * config_file_to_opt
- * Configure opt structire according to options specified in a config
+ * Configure opt structure according to options specified in a config
  * file.
  * pre: filename: file to read options from
  * post: options in global options_t opt are set according to
- *       config file. Options specified onthe command line
+ *       config file. Options specified on the command line
  *       override config file options
  **********************************************************************/
 
@@ -67,7 +67,7 @@ void config_file_to_opt(const char *filename){
   
   /* 
    * Set options according to config file but only if they are not 
-   * Masked (overriden on the command line)
+   * Masked (overridden on the command line)
    */
   options(vanessa_dynamic_array_get_count(a),
     (char **)vanessa_dynamic_array_get_vector(a), OPT_USE_MASK|OPT_FILE);
