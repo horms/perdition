@@ -271,6 +271,7 @@ int dbserver_get(
    }
 
    if((row=mysql_fetch_row(res))==NULL){
+     perditiondb_mysql_log("mysql_fetch_row", &db);
      mysql_close(&db);
      return(-3);
    }

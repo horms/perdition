@@ -79,6 +79,7 @@ void config_file_to_opt(const char *filename){
 
 
 #define __CONFIG_FILE_NAME_EXISTS                                      \
+        status = vanessa_config_file_check_exits(configuration_file);  \
 	if(!status) {                                                  \
 		return(configuration_file);                            \
 	}                                                              \
