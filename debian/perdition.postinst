@@ -3,7 +3,13 @@
 
 #DEBHELPER#
 
-update-rc.d perdition defaults >/dev/null
+if [ "$1" = "configure" ]; then
+    ldconfig
+    if [ -d /usr/doc -a ! -e /usr/doc/perdition -a -d /usr/share/doc/perdition ]; then
+      ln -sf ../share/doc/perdition /usr/doc/perdition
+    fi
+    update-rc.d perdition defaults >/dev/null
+fi
 
 exit 0
 

@@ -110,9 +110,9 @@ int options(int argc, char **argv, flag_t f){
   int index;
   flag_t i;
   char *optarg;
+  char *basename;
   char *optarg_copy;
   poptContext context;
-
 
   static struct poptOption options[] =
   {
@@ -146,6 +146,8 @@ int options(int argc, char **argv, flag_t f){
     {NULL,                           0,   0,               NULL, 0  }
   };
 
+  basename=basename_str(argv[0]);
+
   if(argc==0 || argv==NULL) return(0);
 
   /* i is used as a dummy variable */
@@ -159,7 +161,15 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.connection_limit,DEFAULT_CONNECTION_LIMIT,    i, 0, OPT_NOT_SET);
     opt_i(opt.debug,           DEFAULT_DEBUG,               i, 0, OPT_NOT_SET);
     opt_i(opt.inetd_mode,      DEFAULT_INETD_MODE,          i, 0, OPT_NOT_SET);
-    opt_i(opt.protocol,        DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
+    if(!(f&OPT_FILE) && !strcmp("perdition.imap4", basename)){
+      opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
+    }
+    else if(!(f&OPT_FILE) && !strcmp("perdition.pop3", basename)){
+      opt_i(opt.protocol,      PROTOCOL_POP3,               i, 0, OPT_NOT_SET);
+    }
+    else {
+      opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
+    }
     opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
@@ -180,7 +190,7 @@ int options(int argc, char **argv, flag_t f){
 
   if(f&OPT_CLEAR_MASK) opt.mask=(flag_t)0;
 
-  context= poptGetContext("perdition", argc, argv, options, 0);
+  context= poptGetContext("perdition", argc, (char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
     optarg=poptGetOptArg(context);

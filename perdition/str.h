@@ -83,4 +83,17 @@ char *cat_str(int nostring, ...);
   (string==NULL)?STR_NULL:string
 
 
+/**********************************************************************
+ * basename_str
+ * 
+ * pre: filename: name of file to find basename of
+ * post: basename of filename is returned
+ * return: NULL if filename is NULL
+ *         pointer within filename pointing to basename of filename
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *basename_str(char *filename);
+
 #endif

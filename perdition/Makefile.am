@@ -32,8 +32,8 @@ EXTRA_DIST = perdition.8 perditiondb.5
 sbin_PROGRAMS = perdition
 	          
 install-exec-hook:
-	(cd $(sbindir) && ln -sf perdition perdition.pop3)
-	(cd $(sbindir) && ln -sf perdition perdition.imap4)
+	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.pop3)
+	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4)
 
 
 perdition_SOURCES = \

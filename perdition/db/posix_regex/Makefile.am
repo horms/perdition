@@ -37,7 +37,7 @@ perditiondb_posix_regex.h
 
 libperditiondb_posix_regex_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_posix_regex_la_LIBADD = -lvanessa_adt
+libperditiondb_posix_regex_la_LIBADD = @posix_regex_libs@
 
 INCLUDES=\
   -I$(top_srcdir)/ \

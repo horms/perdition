@@ -37,11 +37,11 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_postgresql_la_LIBADD = -L@pg_libs@
+libperditiondb_postgresql_la_LIBADD = @pg_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain \
--I@pg_includes@
+@pg_includes@
 

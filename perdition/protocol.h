@@ -46,7 +46,7 @@
  * PROTOCOL_<BLAH> indicates the index of <BLAH> in 
  * protocol_known. This is used internally
  *
- * protocol_knownis sefined in protocol.c
+ * protocol_known is defined in protocol.c
  */
 
 #define PROTOCOL_POP3 1

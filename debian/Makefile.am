@@ -31,17 +31,21 @@ perdition-dev.files \
 perdition-gdbm.conffiles \
 perdition-gdbm.files \
 perdition-gdbm.prerm \
+perdition-gdbm.postinst \
 perdition-ldap.files \
+perdition-ldap.postinst \
 perdition-mysql.files \
+perdition-mysql.postinst \
 perdition-nis.files \
+perdition-nis.postinst \
 perdition-posix-regex.conffiles \
 perdition-posix-regex.files \
+perdition-posix-regex.postinst \
 perdition-postgresql.files \
+perdition-postgresql.postinst \
 perdition.conffiles \
 perdition.dirs \
 perdition.files \
 perdition.postinst \
 perdition.postrm \
 rules
-
-m4datadir = $(datadir)/aclocal

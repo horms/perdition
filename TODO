@@ -9,6 +9,9 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
 *  Support for a backup MySQL server
 *  tdb module
 *  Fix perditiondb_ldap_makedb so it is more robust and informative
+*  Test column specification code for MySQL module
+*  Port column specification code for MySQL module to PostgreSQL module
+*  SMTP support
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
@@ -24,3 +27,4 @@ From Mikolaj J. Habryn
 
 From Nathan Neulinger
 * Add SSL IMAP and POP support
+

@@ -67,7 +67,7 @@ Description: Development libraries and headers for perdition
 
 Package: perdition
 Architecture: any
-Depends: ${shlibs:Depends}, perdition-gdbm  (= ${Source-Version})
+Depends: libpopt0, libpam0g, libc6, perdition-gdbm  (= ${Source-Version})
 Description: POP3 and IMAP4 Proxy server
  Perdition is allows users to connect to a content-free POP3 or IMAP4
  server that will redirect them to their real POP3 or IMAP4 server. This

@@ -5,29 +5,19 @@
 export DH_COMPAT=2
 
 pwd:=$(shell pwd)
-cfg:=--prefix=/usr --sysconfdir=/etc --with-group=nogroup
+cfg:=--prefix=/usr --sysconfdir=/etc --with-group=nogroup --mandir=/usr/share/man
 
 build: build-stamp
 build-stamp:
 	dh_testdir
-
-	if test -x autogen.sh; then \
-	  ./autogen.sh $(cfg); \
-	else \
-	  ./configure $(cfg); \
-	fi
-
+	./configure $(cfg)
 	# Lame libtool workaround that lintian seems keen on
 	sed < libtool > libtool-2 \
 		-e 's/^hardcode_libdir_flag_spec.*$$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' \
 		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 	mv libtool-2 libtool 
 	chmod 755 libtool
-
-	./configure $(cfg)
-	
 	$(MAKE)
-
 	touch build-stamp
 
 clean:
@@ -46,8 +36,7 @@ install: build
 	dh_installdirs
 
 	$(MAKE) \
-	  prefix=$(pwd)/debian/tmp/usr \
-	  sysconfdir=$(pwd)/debian/tmp/etc \
+	  DESTDIR=$(pwd)/debian/tmp \
   	  install
 
 	./mkinstalldirs $(pwd)/debian/tmp/etc/init.d
@@ -58,7 +47,8 @@ install: build
 	install -c -m 644 README \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 ChangeLog \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
+	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
 	install -c -m 644 NEWS \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 CODING_LOCATIONS \

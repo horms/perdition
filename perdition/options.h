@@ -69,7 +69,7 @@
 #endif /* WITH_GROUP */
 #define DEFAULT_INETD_MODE                   0
 #define DEFAULT_MAP_LIB \
-  PERDITION_LIBDIR "/libperditiondb_gdbm.so"
+  PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"
 #define DEFAULT_LOG_FACILITY                 "mail"
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0

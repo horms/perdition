@@ -35,26 +35,30 @@ NAME=perdition
 POP3=yes
 # Run perdition listening as an IMAP4 proxy [yes|no]
 IMAP4=yes
+# Additional runtime flags
+FLAGS=
 
 test -f $DAEMON || exit 0
 
 case "$1" in
   start)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --exec @prefix@/perdition.pop3
+      start-stop-daemon --start --verbose --name perdition.pop3 \
+        --exec @prefix@/sbin/perdition.pop3 -- $FLAGS
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --exec @prefix@/perdition.imap4
+      start-stop-daemon --start --verbose --name perdition.imap4 \
+        --exec @prefix@/sbin/perdition.imap4 -- $FLAGS
     fi
     ;;
   stop)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --exec @prefix@/perdition.pop3
-      rm -f /var/run/perdition.pop3.pid
+      start-stop-daemon --stop --verbose --name perdition.pop3 \
+        --exec @prefix@/sbin/perdition.pop3
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --exec @prefix@/perdition.imap4
-      rm -f /var/run/perdition.imap4.pid
+      start-stop-daemon --stop --verbose --name perdition.imap4 \
+        --exec @prefix@/sbin/perdition.imap4
     fi
     ;;
   restart)

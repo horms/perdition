@@ -136,8 +136,7 @@ make
 rm -rf $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}/etc/{rc.d/init.d,sysconfig}
 
-make prefix=$RPM_BUILD_ROOT%{prefix} sysconfdir=$RPM_BUILD_ROOT/etc \
-  install-strip
+make DESTDIR=$RPM_BUILD_ROOT install-strip
 
 install -m755 \
   ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \

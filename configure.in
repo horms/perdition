@@ -114,15 +114,17 @@ AC_ARG_WITH(
   mysql-includes,
   [  --with-mysql-includes=DIR  
                           MySQL include files are in DIR.  ],
-  [ mysql_includes="$withval" ],
+  [ mysql_includepath="-I$withval" ],
   [ 
-    for mysql_includes in /usr/mysql/include /usr/local/mysql/include \
+    AC_MSG_CHECKING(MySQL include path)
+    for mysql_includepath in /usr/mysql/include /usr/local/mysql/include \
         /usr/include/mysql /usr/local/include/mysql \
     	/usr/include /usr/local/include; do
-      if [ test -f "${mysql_includes}/mysql.h" ]; then
+      if test -f "${mysql_includepath}/mysql.h"; then
         break
       fi
     done
+    AC_MSG_RESULT($mysql_includepath)
   ]
 )
 
@@ -130,20 +132,22 @@ AC_ARG_WITH(
   mysql-libraries,
   [  --with-mysql-libraries=DIR 
                           MySQL library files are in DIR.  ],
-  [  mysql_libraries="$withval" ],
+  [  mysql_libpath="$withval" ],
   [ 
-    for mysql_libraries in /usr/mysql/lib /usr/local/mysql/lib \
+    AC_MSG_CHECKING(MySQL include path)
+    for mysql_libpath in /usr/mysql/lib /usr/local/mysql/lib \
         /usr/lib/mysql /usr/local/lib/mysql \
     	/usr/lib /usr/local/lib; do
-      if [ test -f "${mysql_libraries}/libmysqlclient.a" ]; then
+      if test -f "${mysql_libpath}/libmysqlclient.a"; then
         break
       fi
     done
+    AC_MSG_RESULT($mysql_libpath)
   ]
 )
 
 AC_CHECK_FILE(
-  $mysql_includes/mysql.h,
+  $mysql_includepath/mysql.h,
   [ mysql_build_dir="mysql" ],
   [ 
     mysql_build_dir="" 
@@ -153,6 +157,7 @@ AC_CHECK_FILE(
       "* perditiondb_mysql will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 
@@ -169,8 +174,9 @@ AC_CHECK_LIB(
       "* perditiondb_mysql will not be built: $mysql_libraries"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ],
-  -L$mysql_libraries -lz
+  -L$mysql_libpath -lz
 )
 fi
 
@@ -181,40 +187,44 @@ fi
 AC_ARG_WITH(
   pg-includes,
   [  --with-pg-includes=DIR  PostgreSQL include files are in DIR.  ],
-  [ pg_includes="$withval" ],
+  [ pg_includepath="$withval" ],
   [ 
-    for pg_includes in /usr/pgsql/include /usr/local/pgsql/include \
+    AC_MSG_CHECKING(PostgreSQL include path)
+    for pg_includepath in /usr/pgsql/include /usr/local/pgsql/include \
         /usr/include/pgsql /usr/local/include/pgsql \
         /usr/postgresql/include /usr/local/postgresql/include \
         /usr/include/postgresql /usr/local/include/postgresql \
     	/usr/include /usr/local/include; do
-      if [ test -f "${pg_includes}/libpq-fe.h" ]; then
+      if test -f "${pg_includepath}/libpq-fe.h"; then
         break
       fi
     done
+    AC_MSG_RESULT($pg_includepath)
   ]
 )
 
 AC_ARG_WITH(
   pg-libraries,
   [  --with-pg-libraries=DIR PostgreSQL library files are in DIR.  ],
-  [  pg_libraries="$withval" ],
+  [  pg_libpath="$withval" ],
   [ 
-    for pg_libraries in /usr/pgsql/lib /usr/local/pgsql/lib \
+    AC_MSG_CHECKING(PostgreSQL library path)
+    for pg_libpath in /usr/pgsql/lib /usr/local/pgsql/lib \
         /usr/lib/pgsql /usr/local/lib/pgsql \
         /usr/postgresql/lib /usr/local/postgresql/lib \
         /usr/lib/postgresql /usr/local/lib/postgresql \
     	/usr/lib /usr/local/lib; do
-      if [ test -f "${mysql_libraries}/libpg.a" ]; then
+      if test -f "${pg_libpath}/libpq.a"; then
         break
       fi
     done
+    AC_MSG_RESULT($pg_libpath)
   ]
 )
 
 
 AC_CHECK_FILE(
-  $pg_includes/libpq-fe.h,
+  $pg_includepath/libpq-fe.h,
   [ pg_build_dir="postgresql" ],
   [ 
     pg_build_dir="" 
@@ -224,6 +234,7 @@ AC_CHECK_FILE(
       "* perditiondb_postgresql will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 
@@ -240,8 +251,9 @@ AC_CHECK_LIB(
       "* perditiondb_postgresql will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ],
-  -L$pg_libraries
+  -L$pg_libpath
 )
 fi
 
@@ -264,6 +276,7 @@ AC_CHECK_HEADERS(
       "* perditiondb_gdbm and makegdbm will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 
@@ -284,6 +297,7 @@ AC_CHECK_LIB(
       "* perditiondb_gdbm and makegdbm will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 fi
@@ -296,15 +310,17 @@ AC_ARG_WITH(
   ldap-includes,
   [  --with-ldap-includes=DIR  
                           Open LDAP include files are in DIR.  ],
-  [ ldap_includes="$withval" ],
+  [ ldap_includepath="$withval" ],
   [ 
-    for ldap_includes in /usr/openldap/include /usr/local/openldap/include \
+    AC_MSG_CHECKING(OpenLDAP include path)
+    for ldap_includepath in /usr/openldap/include /usr/local/openldap/include \
         /usr/include/openldap /usr/local/include/openldap \
     	/usr/include /usr/local/include; do
-      if [ test -f "${ldap_includes}/ldap.h" ]; then
+      if test -f "${ldap_includepath}/ldap.h"; then
         break
       fi
     done
+    AC_MSG_RESULT($ldap_includepath)
   ]
 )
 
@@ -312,21 +328,23 @@ AC_ARG_WITH(
   ldap-libraries,
   [  --with-ldap-libraries=DIR 
                           Open LDAP library files are in DIR.  ],
-  [  ldap_libraries="$withval" ],
+  [  ldap_libpath="$withval" ],
   [ 
-    for ldap_libraries in /usr/openldap/lib /usr/local/openldap/lib \
+    AC_MSG_CHECKING(OpenLDAP library path)
+    for ldap_libpath in /usr/openldap/lib /usr/local/openldap/lib \
         /usr/lib/openldap /usr/local/lib/openldap \
     	/usr/lib /usr/local/lib; do
-      if [ test -f "${ldap_libraries}/libldap.a" ]; then
+      if test -f "${ldap_libpath}/libldap.a"; then
         break
       fi
     done
+    AC_MSG_RESULT($ldap_libpath)
   ]
 )
 
 
 AC_CHECK_FILE(
-  $ldap_includes/ldap.h,
+  $ldap_includepath/ldap.h,
   [
     ldap_build_dir="ldap"
     ldap_lib="-lldap -llber"
@@ -339,6 +357,7 @@ AC_CHECK_FILE(
       "* perditiondb_ldap will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 
@@ -358,8 +377,9 @@ AC_CHECK_LIB(
       "* perditiondb_ldap will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ],
-  -L$ldap_libraries -llber
+  -L$ldap_libpath -llber
 )
 fi
 
@@ -378,6 +398,7 @@ AC_CHECK_HEADERS(
       "* pam support will not be built"
       "**********************************************************************"
     ) ;\
+    sleep 5
   ]
 )
 if test $pam = yes; then
@@ -392,6 +413,7 @@ if test $pam = yes; then
         "* pam support will not be built"
         "**********************************************************************"
       ) ;\
+      sleep 5
     ]
   )
 fi
@@ -404,6 +426,24 @@ else
   pam_lib=""
   pam_dir=""
   pam_source=""
+fi
+
+pg_includes="-I$pg_includepath"
+pg_libs="-L$pg_libpath"
+mysql_includes="-I$mysql_includepath"
+mysql_libs="-L$mysql_libpath"
+ldap_includes="-I$ldap_includepath"
+ldap_libs="-L$ldap_libpath"
+posix_regex_libs=""
+AC_MSG_CHECKING("for Linux style shared object linking")
+if test "$host_os" = "linux" -o "$host_os" = "linux-gnu"; then
+  AC_MSG_RESULT(Yes)
+else
+  AC_MSG_RESULT(No)
+  pg_libs="-lvanessa_logger -lvanessa_adt -lpq $pg_libs"
+  mysql_libs="-lvanessa_logger -lvanessa_adt -lmysqlclient -lz $mysql_libs"
+  ldap_libs="-lldap -llber $ldap_libs"
+  posix_regex_libs="-lvanessa_logger -lvanessa_adt"
 fi
 
 
@@ -441,12 +481,15 @@ AC_CHECK_FUNCS(select socket strdup strerror flim)
 AC_SUBST(gdbm_build_dir)
 AC_SUBST(makegdbm_build_dir)
 AC_SUBST(pg_build_dir)
-AC_SUBST(pg_libraries)
+AC_SUBST(pg_libs)
 AC_SUBST(pg_includes)
 AC_SUBST(mysql_build_dir)
-AC_SUBST(mysql_libraries)
+AC_SUBST(mysql_libs)
 AC_SUBST(mysql_includes)
 AC_SUBST(ldap_build_dir)
+AC_SUBST(ldap_libs)
+AC_SUBST(ldap_includes)
+AC_SUBST(posix_regex_libs)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
 AC_SUBST(nsl_lib)

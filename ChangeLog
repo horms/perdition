@@ -17,6 +17,8 @@ xxx
      itself to fix compile problems under solaris
    - Added ability to specify columns in MySQL module
      Geoff Mitchell <g.mitchell@videonetworks.com>
+   - Running perdition.pop3 and perdition.imap4 now automatically
+     runs perdition in POP3 or IMAP4 mode respectively
 
 ----------------------------------------------------------------------
 

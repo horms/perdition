@@ -35,14 +35,12 @@ libperditiondb_mysql_la_SOURCES = \
 perditiondb_mysql.c \
 perditiondb_mysql.h
 
-libperditiondb_mysql_la_LDFLAGS    = -version-info 0:0:0
+libperditiondb_mysql_la_LDFLAGS = -version-info 0:0:0
 
-libperditiondb_mysql_la_LIBADD =  -lvanessa_adt -lmysqlclient -lz\
-  -L@mysql_libraries@
+libperditiondb_mysql_la_LIBADD =  @mysql_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain \
--I@mysql_includes@
-
+@mysql_includes@

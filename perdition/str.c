@@ -27,33 +27,6 @@
 
 #include "str.h"
 
-/**********************************************************************
- * vanessa_socket_str_is_digit
- * Test if a null terminated string is composed entirely of digits (0-9)
- *
- * pre: str
- * return: 1 if string contains only digits and null teminator
- *         0 otherwise
- *
- * Not 8 bit clean
- **********************************************************************/
-
-int vanessa_socket_str_is_digit(const char *str){
-  size_t offset;
-  size_t top;
-
-  top=strlen(str);
-  for(offset=0;offset<strlen(str);offset++){
-    /*Is digit on solaris appears to be broken and expect an int as
-      the argument, a typecast should aviod a compiler warning */
-    if(!isdigit((int)*(str+offset))){
-      break;
-    }
-  }
-
-  return((offset<top)?0:1);
-}
-
 
 /**********************************************************************
  * strn_to_str
@@ -214,3 +187,27 @@ char *cat_str(int nostring, ...){
 
   return(dest);
 }
+
+/**********************************************************************
+ * basename_str
+ * 
+ * pre: filename: name of file to find basename of
+ * post: basename of filename is returned
+ * return: NULL if filename is NULL
+ *         pointer within filename pointing to basename of filename
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *basename_str(char *filename){
+    char *result;
+
+    if(filename==NULL){
+      return(NULL);
+    }
+    
+    result=strrchr(filename, '/');
+
+    return((result==NULL)?filename:result+1);
+}
+

@@ -83,8 +83,8 @@ int dbserver_fini(void){
 /**********************************************************************
  * dbserver_init
  * Parse options string.
- * pre: options_str: Options string. Sting is of the form
- * [dbhost[:port[:dbname[:dbtable[:dbuser[:dbpwd]]]]]]
+ * pre: options_str: Options string. String is of the form
+ * [dbhost[:port[:dbname[:dbtable[:dbuser[:dbpwd[:dbusercol[:dbsrvcol[:dbportcol]]]]]]]]]
  * post: Options string is parsed if not null into 
  *       static vanessa_dynamic_array_t a and 
  *       static char *dbhost, *dbname, *dbtable, *dbuser, *dbpwd are
@@ -105,10 +105,7 @@ int dbserver_init(char *options_str){
        options_str, 
        PERDITIONDB_MYSQL_FIELD_DELIMITER
      ))==NULL){
-       PERDITION_LOG(
-	 LOG_DEBUG, 
-	 "dbserver_init: vanessa_dynamic_array_split_str"
-       );
+       PERDITION_DEBUG("dbserver_init: vanessa_dynamic_array_split_str");
        a=NULL;
        return(-1);
      }
@@ -133,13 +130,22 @@ int dbserver_init(char *options_str){
        dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPWD); 
      }
      if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
-       db_user_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBUSERCOL); 
+       db_user_col=vanessa_dynamic_array_get_element(
+	 a, 
+	 PERDITIONDB_MYSQL_DBUSERCOL
+       ); 
      }
      if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
-       db_srv_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBSRVCOL); 
+       db_srv_col=vanessa_dynamic_array_get_element(
+	 a, 
+	 PERDITIONDB_MYSQL_DBSRVCOL
+       ); 
      }
      if(count>PERDITIONDB_MYSQL_DBPORTCOL){ 
-       db_port_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPORTCOL); 
+       db_port_col=vanessa_dynamic_array_get_element(
+	 a, 
+	 PERDITIONDB_MYSQL_DBPORTCOL
+       ); 
      }
    }
 
@@ -182,7 +188,7 @@ int dbserver_get(
    long rc;
    MYSQL_RES *res;
    MYSQL_ROW row;
-   char sqlstr[256];
+   char sqlstr[PERDITIONDB_MYSQL_QUERY_LENGTH];
    size_t servername_len;
 
    (MYSQL*)rc = mysql_init(&db);
@@ -199,34 +205,35 @@ int dbserver_get(
      return(-1);
    }
 
-   if (db_port_col && db_port_col[0])
-		{
-   		if(snprintf(
-     	sqlstr, 
-     	256, 
-     	"select %s,%s,%s from %s where %s='%s';",
-	 	db_user_col, db_srv_col, db_port_col,
-     	dbtable, db_user_col,
-     	key_str
-   		)<0){
-   		PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
-		return(-3);
-   		}
-		}
-   else
-		{
-   		if(snprintf(
-     	sqlstr, 
-     	256, 
-     	"select %s,%s from %s where %s='%s';",
-	 	db_user_col, db_srv_col,
-     	dbtable, db_user_col,
-     	key_str
-   		)<0){
-   		PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
-		return(-3);
-   		}
-		}
+   if (db_port_col && db_port_col[0]) {
+     if(snprintf(
+       sqlstr, 
+       PERDITIONDB_MYSQL_QUERY_LENGTH, 
+       "select %s,%s,%s from %s where %s='%s';",
+       db_user_col, 
+       db_srv_col, 
+       db_port_col,
+       dbtable, 
+       db_user_col,
+       key_str
+     )<0){
+       PERDITION_DEBUG("db_server_get: query truncated, aborting");
+       return(-3);
+     }
+   }
+   else {
+     if(snprintf(
+       sqlstr, 
+       PERDITIONDB_MYSQL_QUERY_LENGTH, 
+       "select %s,%s from %s where %s='%s';",
+       db_user_col, db_srv_col,
+       dbtable, db_user_col,
+       key_str
+     )<0){
+       PERDITION_DEBUG("db_server_get: query truncated, aborting");
+       return(-3);
+     }
+   }
 
    rc = mysql_query(&db,sqlstr);
    if(rc){  
@@ -248,35 +255,33 @@ int dbserver_get(
    }
 
    if(row[1]==NULL || row[1][0]=='\0'){  
-     PERDITION_LOG(LOG_DEBUG,"db_server_get: row[1] is empty");
+     PERDITION_DEBUG("db_server_get: row[1] is empty");
      mysql_free_result(res);
      mysql_close(&db);
      return(-3);
    }
    servername_len=*len_return=1+strlen(row[1]);
 
-   if (db_port_col && db_port_col[0])
-   		if(row[2]!=NULL && row[2][0]!='\0'){
-     	*len_return+=1+strlen(row[2]);
-   		}
+   if (db_port_col && db_port_col[0]){
+     if(row[2]!=NULL && row[2][0]!='\0'){
+       *len_return+=1+strlen(row[2]);
+     }
+   }
 
+   if((*str_return=(char *)malloc(*len_return))==NULL){  
+     PERDITION_DEBUG_ERRNO("db_server_get: servername malloc: %s", errno);
+     mysql_free_result(res);
+     mysql_close(&db);
+     return(-3);
+   }
 
-	   if((*str_return=(char *)malloc(*len_return))==NULL){  
-    	 PERDITION_LOG(LOG_DEBUG,
-       	"db_server_get: servername malloc: %s",
-       	strerror(errno)
-     	);
-     	mysql_free_result(res);
-     	mysql_close(&db);
-     	return(-3);
-   		}
-
-   		strcpy(*str_return,row[1]);
-   if (db_port_col && db_port_col[0])
-   		if(row[2]!=NULL && row[2][0]!='\0'){
-     		*((*str_return)+servername_len-1)=PERDITIONDB_MYSQL_FIELD_DELIMITER;
-     		strcpy((*str_return)+servername_len,row[2]);
-   		}
+   strcpy(*str_return,row[1]);
+   if (db_port_col && db_port_col[0]){
+     if(row[2]!=NULL && row[2][0]!='\0'){
+       *((*str_return)+servername_len-1)=PERDITIONDB_MYSQL_FIELD_DELIMITER;
+       strcpy((*str_return)+servername_len,row[2]);
+     }
+   }
    
    mysql_free_result(res);
    mysql_close(&db);
