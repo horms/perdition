@@ -25,6 +25,9 @@ xxx
      incompatibility with Outlook 5. Thanks to Valtteri Vuorikoski
    - LDAP popmax fix for values with only one attribute
      courtesy of Jeremy Nelson 
+   - Added perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@ to
+     perdition/Makefile.am to aid finding modules.
+     Thanks to Arvid Requate
 
 ----------------------------------------------------------------------
 

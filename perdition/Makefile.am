@@ -79,6 +79,8 @@ perdition_SOURCES = \
 
 INCLUDES= -I$(top_srcdir)/libjain
 
+perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@
+
 perdition_LDADD = \
 -L../libjain \
 -L../libjain/.libs/ \
