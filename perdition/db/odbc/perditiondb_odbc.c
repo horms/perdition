@@ -213,7 +213,8 @@ int dbserver_init(char *options_str)
 int dbserver_get(const char *key_str, const char *options_str, 
 		char **str_return, size_t * len_return)
 {
-	long rc;
+	SQLINTEGER rc;
+	SQLINTEGER rc2;
 	int status = -1;
 	SQLHENV env;
 	SQLHDBC hdbc;
@@ -228,7 +229,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 	/* Allocate environment handle */
 	rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
-		VANESSA_LOGGER_DEBUG("QLAllocHandle: environment handle");
+		VANESSA_LOGGER_DEBUG("SQLAllocHandle: environment handle");
 		return (-1);
 	}
 
@@ -267,6 +268,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 	}
 
 	/* Form Query */
+	memset(sqlstr, 0, PERDITIONDB_ODBC_QUERY_LENGTH);
 	if (db_port_col && db_port_col[0]) {
 		rc = snprintf(sqlstr, PERDITIONDB_ODBC_QUERY_LENGTH-1, 
 				"select %s, %s, %s from %s "
@@ -275,10 +277,10 @@ int dbserver_get(const char *key_str, const char *options_str,
 				db_user_col, key_str);
 	}
 	else {
-		rc = snprintf( sqlstr, PERDITIONDB_ODBC_QUERY_LENGTH-1, 
+		rc = snprintf(sqlstr, PERDITIONDB_ODBC_QUERY_LENGTH-1, 
 				" select %s, %s from %s where %s = '%s'; ",
 				db_user_col, db_srv_col, dbtable, db_user_col,
-				key_str)<0;
+				key_str);
 	}
 	if (rc < 0) {
 		VANESSA_LOGGER_DEBUG(" query truncated, aborting ");
@@ -287,19 +289,19 @@ int dbserver_get(const char *key_str, const char *options_str,
 
 	/* Bind Columns */
 	rc = SQLBindCol(hstmt, 1, SQL_C_CHAR, &user_res, 
-			PERDITIONDB_ODBC_QUERY_LENGTH, &rc);
+			PERDITIONDB_ODBC_QUERY_LENGTH, &rc2);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
 		perditiondb_odbc_log("SQLBindCol: 1", hdbc);
 		goto err_hstmt;
 	}
 	SQLBindCol(hstmt, 2, SQL_C_CHAR, &server_res, 
-			PERDITIONDB_ODBC_QUERY_LENGTH, &rc);
+			PERDITIONDB_ODBC_QUERY_LENGTH, &rc2);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
 		perditiondb_odbc_log("SQLBindCol: 2", hdbc);
 		goto err_hstmt;
 	}
 	SQLBindCol(hstmt, 3, SQL_C_CHAR, &port_res, 
-			PERDITIONDB_ODBC_QUERY_LENGTH, &rc);
+			PERDITIONDB_ODBC_QUERY_LENGTH, &rc2);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
 		perditiondb_odbc_log("SQLBindCol: 3", hdbc);
 		goto err_hstmt;
