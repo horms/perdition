@@ -513,9 +513,13 @@ SSL may be used for either, both or none of these classes of connections.
 TLS support will be added at a later date.
 .P
 The public key and certificate files should be in PEM format.
-The mod_SSL faq contains comprehensive information on how
-to generate public keys and certificates. See
-http://www.modssl.org/docs/2.8/ssl_faq.html#ToC27.
+As a quick guide, the files may be generated using openssl with the
+folling command:
+.nf
+.P
+openssl req \-new \-x509 \-nodes \\
+  \-out perdition.crt.pem \-keyout perdition.key.pem \-days 365
+.ni
 .SH FILES
 .TP
 \fC/etc/perdition/perdition.conf
