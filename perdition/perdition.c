@@ -271,7 +271,7 @@ int main (int argc, char **argv, char **envp){
     vanessa_socket_daemon_inetd_process();
   }
   else{
-    // flim vanessa_socket_daemon_process();
+    vanessa_socket_daemon_process();
   }
 
   /*
