@@ -1238,7 +1238,7 @@ void usage(int exit_status){
     " -s|--outgoing_server SERVER[,SERVER...]:\n"
     "    Default server(s). (default \"%s\")\n"
     " --pid_file FILENAME\n"
-    "    Path for pidfile. Must be a full path starting with a '/'\n"
+    "    Path for pidfile. Must be a full path starting with a '/'.\n"
     "    Empty for no pid file. Not used in inetd mode.\n"
     "    (default \"%s/ARGV[0]\")\n"
     " -S|--strip_domain STATE[,STATE...]:\n"
