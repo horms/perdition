@@ -386,6 +386,7 @@ perdition \-m "some.host.com:3306:aDb:bTable:cUser:"\\
 .P
 As per the notes in the MySQL documentation above,
 please avoid omitting values.
+.P
 .B
 LDAP
 .P
@@ -400,12 +401,9 @@ perdition \-M /usr/lib/libperditiondb_ldap.so.0
 Where /usr/lib is the directory in which the perdition libraries
 were installed.
 .P
-A script is provided in etc/perdition/ldap/ to initialise an
-LDAP popmap for the default URL.
-In the RPM and Debian distributions this can be found installed in
-/etc/perdition/ldap/ . An alternate URL can be set using the
+The search is doine using an LDAP URL.
+An alternate URL can be set using the
 \-m|\--map_library_opt command line option or configuration file option.
-.P
 The default URL is as follows. Note that this has been split onto
 multiple lines for ease of reading.
 .P
@@ -415,8 +413,14 @@ username,mailhost,port?one?(uid=%s)
 .P
 Perdition will replace any instance of %s with the key being used
 for the lookup. Optionally, there may be an integer between the % and the
-s , in which case the key will be white-space padded to this width, with
+s, in which case the key will be white-space padded to this width, with
 the key right justified.
+.P
+The attribute names (username, mailhost and port) may be changed.
+But the first attribute will be used as the username, the second attribute
+as the host and the thrid atribute as the port. Any subsequent attributes
+will be ignored.  Trailing attributes may also be omitted. So if there 
+are only two attributes the port will not be read from the database. 
 .P
 A script, perditiondb_ldap_makedb is provided to initialise LDAP.
 .P
