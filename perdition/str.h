@@ -71,6 +71,8 @@ char *strn_to_str(const char *string, const size_t n);
  * 
  * pre: io: io_t to write to
  *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
+ *      nargs: number of arguments after format string.
+ *             This should help to rule out format string bugs.
  *      fmt: format for output, as per vsnprintf()
  *      ...: strings
  * post strings are printed to fd
@@ -80,7 +82,8 @@ char *strn_to_str(const char *string, const size_t n);
  * Not 8 bit clean
  **********************************************************************/
 
-int str_write(io_t *io, const flag_t flag, const char *fmt, ...);
+int str_write(io_t *io, const flag_t flag, const size_t nargs,
+  const char *fmt, ...);
 
 
 /**********************************************************************

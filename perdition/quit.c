@@ -44,6 +44,7 @@ int quit(io_t *io, const protocol_t *protocol){
   if(str_write(
     io,
     NULL_FLAG,
+    3, 
     "%s%s%s",
     protocol->one_time_tag,
     protocol->one_time_tag==NULL?"":" ",

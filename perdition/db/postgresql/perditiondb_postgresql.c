@@ -51,7 +51,7 @@ static char *dbpwd   = PERDITIONDB_PGSQL_DEFAULT_DBPWD;
  **********************************************************************/
 
 #define perditiondb_postgresql_log(msg_str, conn) \
-   PERDITION_DEBUG("%s: %s",msg_str,PQerrorMessage(conn))
+   PERDITION_DEBUG_UNSAFE("%s: %s",msg_str,PQerrorMessage(conn))
 
 
 /**********************************************************************

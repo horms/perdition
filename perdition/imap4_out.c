@@ -99,6 +99,7 @@ int imap4_out_authenticate(
   if(str_write(
     io, 
     NULL_FLAG,
+    3,
     "%s LOGIN \"%s\" \"%s\"", 
     tag_string, 
     pw->pw_name,

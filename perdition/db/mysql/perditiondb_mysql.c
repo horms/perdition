@@ -54,7 +54,7 @@ static char *db_port_col     = PERDITIONDB_MYSQL_DEFAULT_DBPORTCOL;
  **********************************************************************/
 
 #define perditiondb_mysql_log(msg_str, db) \
-   PERDITION_DEBUG("%s: %s", msg_str, mysql_error(db))
+   PERDITION_DEBUG_UNSAFE("%s: %s", msg_str, mysql_error(db))
 
 
 /**********************************************************************
@@ -234,7 +234,7 @@ int dbserver_get(
      }
    }
 
-   rc = mysql_query(&db,sqlstr);
+   rc = mysql_query(&db, sqlstr);
    if(rc){  
      perditiondb_mysql_log("mysql_query", &db);
      mysql_close(&db);

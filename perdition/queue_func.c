@@ -154,7 +154,6 @@ vanessa_queue_t *read_line(
     }
 
     *(local_buf+local_n)='\0';
-    PERDITION_DEBUG("%s", local_buf);
 
     if(!do_literal){
       free(local_buf);

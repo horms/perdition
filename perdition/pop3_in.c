@@ -135,7 +135,7 @@ int pop3_in_get_pw(
         goto loop;
       }
       if(vanessa_queue_length(q)!=1){
-	PERDITION_DEBUG(
+	PERDITION_DEBUG_UNSAFE(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);

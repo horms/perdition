@@ -92,7 +92,7 @@ char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
 	bcopy(hp->h_addr, &in, hp->h_length);
 	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
 	if(hp==NULL){
-          PERDITION_DEBUG("gethostbyaddr", errno);
+          PERDITION_DEBUG_ERRNO("gethostbyaddr");
           host=opt.bind_address;
 	}
 	else {

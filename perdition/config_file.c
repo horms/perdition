@@ -154,7 +154,7 @@ vanessa_dynamic_array_t *config_file_read (const char *filename){
 
   if(filename==NULL) return(NULL);
   if((fd=open(filename, O_RDONLY))<0){
-    PERDITION_DEBUG("open(%s): %s", filename, strerror(errno));
+    PERDITION_DEBUG_UNSAFE("open(%s): %s", filename, strerror(errno));
     return(NULL);
   }
 
@@ -289,7 +289,7 @@ void config_file_reread_handler(int sig){
   extern options_t opt;
 
   config_file_to_opt(opt.config_file);
-  PERDITION_INFO("Config file reread on signal (%d)\n", sig);
+  PERDITION_INFO_UNSAFE("Config file reread on signal (%d)\n", sig);
   log_options();
   signal(sig, (void(*)(int))config_file_reread_handler);
   return;

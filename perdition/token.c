@@ -193,7 +193,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
   int fd;
 
   if((fd=io_get_rfd(io))<0){
-    PERDITION_DEBUG("io_get_rfd %d", fd);
+    PERDITION_DEBUG_UNSAFE("io_get_rfd %d", fd);
     return(-1);
   }
 
@@ -323,7 +323,6 @@ token_t *token_read(
       case '\"':
 	if(flag&TOKEN_IMAP4){
 	  quoted^=1;
-	  PERDITION_DEBUG("quoted=%d", quoted);
 	}
         buffer[len++]=c;
 	break;

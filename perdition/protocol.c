@@ -131,13 +131,14 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   int noknown;
   size_t length;
   char *pos;
+  char l;
 
   extern char *protocol_known[];
 
   noknown=atoi(protocol_known[0]);
   
   if((request<1 || request>noknown) && request!=PROTOCOL_ALL){
-    PERDITION_DEBUG("protocol \"%d\" out of range", request);
+    PERDITION_DEBUG_UNSAFE("protocol \"%d\" out of range", request);
     return(NULL);
   }
 
@@ -158,10 +159,14 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   }
 
   pos=string;
-  for(i=1;i<=noknown;i++){
-    pos+=sprintf(pos, "%s", protocol_known[i]);
-    if(i<noknown){
-      pos+=sprintf(pos, "%s", delimiter);
+  for(i=1;i<=noknown && length>0;i++){
+    l=snprintf(pos, length, "%s", protocol_known[i]);
+    pos+=l;
+    length-=l;
+    if(i<noknown && length>0){
+      l=snprintf(pos, length, "%s", delimiter);
+      pos+=l;
+      length-=l;
     }
   }
 

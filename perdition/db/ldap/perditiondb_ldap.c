@@ -32,6 +32,8 @@
 
 #include "perditiondb_ldap.h"
 
+#include <printf.h>
+
 static LDAPURLDesc *ludp;
 
 /**********************************************************************
@@ -79,24 +81,36 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
  **********************************************************************/
 
 int dbserver_init(char *options_str) {
-  extern options_t opt;
+  int arg_type;
 
   if (options_str == NULL) {
     options_str=PERDITIONDB_LDAP_DEFAULT_URL;
   }
 
-  if (ldap_is_ldap_url(options_str) == 0) {
-    if(opt.debug){
-      fprintf(stderr, "dbserver_init: not an LDAP URL\n");
-    }
-    PERDITION_DEBUG("not an LDAP URL");
+  /*
+   * Some checks to protect against format problems
+   */
+  if(parse_printf_format(options_str, 1, &arg_type) != 1){
+    PERDITION_DEBUG("LDAP URL has more than one format flag");
+    return(-1);
+  }
+  if((arg_type & ~PA_FLAG_MASK) != PA_STRING){
+    PERDITION_DEBUG("LDAP URL has a non-string format flag");
+    return(-1);
+  }
+  if((arg_type & PA_FLAG_MASK)){
+    PERDITION_DEBUG("LDAP URL has a modifier on format flag");
     return(-1);
   }
 
+  /*
+   * Some checks to see if the URL is sane in LDAP terms
+   */
+  if (ldap_is_ldap_url(options_str) == 0) {
+    PERDITION_DEBUG("not an LDAP URL");
+    return(-1);
+  }
   if (ldap_url_parse(options_str, &ludp) != 0) {
-    if(opt.debug){
-      fprintf(stderr, "dbserver_init: ldap_url_parse\n");
-    }
     PERDITION_DEBUG("ldap_url_parse");
     return(-1);
   }

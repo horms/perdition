@@ -25,9 +25,19 @@
  *
  **********************************************************************/
 
+#include "io.h"
 #include "str.h"
 #include "options.h"
+#include "perdition_types.h"
 
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include <printf.h>
+#include <sys/uio.h>
+#include <vanessa_socket.h>
 
 /**********************************************************************
  * strn_to_str
@@ -65,6 +75,8 @@ char *strn_to_str(const char *string, const size_t n){
  * 
  * pre: io: io_t to write to
  *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
+ *      nargs: number of arguments after format string.
+ *             This should help to rule out format string bugs.
  *      fmt: format for output, as per vsnprintf()
  *      ...: strings
  * post strings are printed to fd
@@ -76,16 +88,26 @@ char *strn_to_str(const char *string, const size_t n){
 
 static char __str_write_buf[STR_WRITE_BUF_LEN];
 
-int str_write(io_t *io, const flag_t flag, const char *fmt, ...){
+int str_write(io_t *io, const flag_t flag, const size_t nargs,
+  const char *fmt, ...){
   va_list ap;
   int bytes=0;
+  int fmt_args;
 
   extern options_t opt;
   extern vanessa_logger_t *perdition_vl;
 
+  if((fmt_args=parse_printf_format(fmt, 0, NULL)) != nargs){
+    PERDITION_DEBUG_UNSAFE(
+      "nargs and fmt missmatch: %d args requested, %d args in format", nargs,
+      fmt_args);
+    return(-1);
+  }
+
   va_start(ap, fmt);
   if((bytes=vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN-2, fmt, ap))<0){
     PERDITION_DEBUG_ERRNO("vsnprintf");
+    return(-1);
   }
   va_end(ap);
 
@@ -93,16 +115,17 @@ int str_write(io_t *io, const flag_t flag, const char *fmt, ...){
   if(!(flag&WRITE_STR_NO_CLLF)){
     *(__str_write_buf+bytes++) = '\r';
     *(__str_write_buf+bytes++) = '\n';
+    *(__str_write_buf+bytes) = '\0';
   }
 
   if(opt.connection_logging){
-    vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s", __str_write_buf);
+    PERDITION_LOG(LOG_DEBUG, __str_write_buf);
   }
     
   /* Attempt one write system call and return an error if it
      doesn't write all the bytes. */
   if(io_write(io, __str_write_buf, bytes) != bytes){
-    PERDITION_DEBUG_ERRNO("write");
+    PERDITION_DEBUG_ERRNO("io_write");
     return(-1);
   }
 

@@ -219,7 +219,7 @@ int daemon_setid(const char *user, const char *group){
   }
 
   if(setgid(gid)){
-    PERDITION_DEBUG("setgid", errno);
+    PERDITION_DEBUG_ERRNO("setgid");
     return(-1);
   }
 
@@ -240,7 +240,7 @@ int daemon_setid(const char *user, const char *group){
     return(-1);
   }
 
-  PERDITION_DEBUG(
+  PERDITION_DEBUG_UNSAFE(
     "uid=%d euid=%d gid=%d egid=%d",
     getuid(),
     geteuid(),
@@ -264,7 +264,7 @@ void daemon_exit_cleanly(int i){
   if(daemon_exit_cleanly_called){ signal(i, SIG_DFL); abort(); }
   daemon_exit_cleanly_called=1;
   /*Only log if it is a signal, not a requested exit*/
-  if(i>0){ PERDITION_INFO("Exiting on signal %d", i); }
+  if(i>0){ PERDITION_INFO_UNSAFE("Exiting on signal %d", i); }
   daemon_close_fd();
   exit((i>0)?0:i);
 }

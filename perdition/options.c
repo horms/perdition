@@ -118,7 +118,7 @@ options_t opt;
     opt_i_or(opt, STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
   } \
   else { \
-    PERDITION_DEBUG("unknown state for %s: %s", id_str, optarg_copy); \
+    PERDITION_ERR_UNSAFE("unknown state for %s: %s", id_str, optarg_copy); \
     if(f&OPT_ERR) { \
       sleep(1); \
       usage(-1); \
@@ -176,7 +176,7 @@ options_t opt;
        new=SSL_MODE_TLS_ALL; \
     } \
     else { \
-     PERDITION_ERR("unknown ssl_mode: %s", optarg_copy); \
+     PERDITION_ERR_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
       if(f&OPT_ERR) { \
         sleep(1); \
         usage(-1); \
@@ -540,8 +540,8 @@ int options(int argc, char **argv, flag_t f){
   }
 
   if (c < -1) {
-    PERDITION_DEBUG(
-      "options: %s: %s\n",
+    PERDITION_DEBUG_UNSAFE(
+      "options: %s: %s",
       poptBadOption(context, POPT_BADOPTION_NOALIAS),
       poptStrerror(c)
     );

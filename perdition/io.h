@@ -29,6 +29,8 @@
 #ifndef IO_FRUB_H
 #define IO_FRUB_H
 
+#include <unistd.h>
+
 typedef void io_t;
 
 

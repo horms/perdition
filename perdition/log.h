@@ -47,33 +47,63 @@
 extern vanessa_logger_t *perdition_vl;
 extern int errno;
 
-#define PERDITION_LOG(priority, fmt, args...) \
+
+/*
+ * Hooray for format string problems!
+ *
+ * Each of the logging macros has two versions. The UNSAFE version will
+ * accept a format string. You should _NOT_ use the UNSAFE versions of the
+ * first argument, the format string, is derived from user input. The safe
+ * versions (versions that do not have the "_UNSAFE" suffix) do not accept
+ * a format string and only accept one argument, the string to log. These
+ * should be safe to use with user derived input.
+ */
+
+#define PERDITION_LOG_UNSAFE(priority, fmt, args...) \
   vanessa_logger_log(perdition_vl, priority, fmt, ## args);
 
-#define PERDITION_INFO(fmt, args...) \
-  PERDITION_LOG(LOG_INFO, fmt, ## args);
+#define PERDITION_LOG(priority, str) \
+  vanessa_logger_log(perdition_vl, priority, "%s", str)
 
-#define PERDITION_ERR(fmt, args...) \
-  PERDITION_LOG(LOG_ERR, fmt, ## args);
+#define PERDITION_INFO_UNSAFE(fmt, args...) \
+  vanessa_logger_log(perdition_vl, LOG_INFO, fmt, ## args);
 
-#define PERDITION_DEBUG(fmt, args...) \
-  PERDITION_LOG(LOG_DEBUG, __FUNCTION__ ": " fmt, ## args);
+#define PERDITION_INFO(str) \
+  vanessa_logger_log(perdition_vl, LOG_INFO, "%s", str)
+
+#define PERDITION_ERR_UNSAFE(fmt, args...) \
+  vanessa_logger_log(perdition_vl, LOG_ERR, fmt, ## args);
+
+#define PERDITION_ERR(str) \
+  vanessa_logger_log(perdition_vl, LOG_ERR, "%s", str)
+
+#define PERDITION_DEBUG_UNSAFE(fmt, args...) \
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": " fmt, ## args);
+
+#define PERDITION_DEBUG(str) \
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str);
 
 #define PERDITION_DEBUG_ERRNO(s) \
-  PERDITION_LOG(LOG_DEBUG, "%s: %s: %s", __FUNCTION__, s, strerror(errno));
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s: %s: %s", \
+    __FUNCTION__, s, strerror(errno));
 
 #ifdef WITH_SSL_SUPPORT
-#define PERDITION_DEBUG_SSL_ERR(fmt, args...) \
+#define PERDITION_DEBUG_SSL_ERROR_STRING \
   { \
     unsigned long e; \
-    while((e=ERR_get_error())){ \
-      PERDITION_DEBUG("%s", ERR_error_string(e, NULL)); \
+    while((e=ERR_get_error())) { \
+      vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s", \
+        ERR_error_string(e, NULL)); \
     } \
-  } \
-  PERDITION_DEBUG(fmt, ## args);
+  }
+
+#define PERDITION_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
+  PERDITION_DEBUG_SSL_ERROR_STRING \
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, fmt, ## args);
+
+#define PERDITION_DEBUG_SSL_ERR(str) \
+  PERDITION_DEBUG_SSL_ERROR_STRING \
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str)
 #endif /* WITH_SSL_SUPPORT */
-
-
-
 
 #endif

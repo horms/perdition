@@ -52,7 +52,7 @@ int imap4_write(
   int free_tag_string=0;
 
   if(type==NULL){
-    if(str_write(io, flag, "%s", string)<0){
+    if(str_write(io, flag, 1, "%s", string)<0){
       PERDITION_DEBUG("str_write");
       return(-1);
     }
@@ -68,7 +68,7 @@ int imap4_write(
       }
       free_tag_string=1;
     }
-    if(str_write(io, flag, "%s %s %s", tag_string, type, string)<0){
+    if(str_write(io, flag, 3, "%s %s %s", tag_string, type, string)<0){
       PERDITION_DEBUG("str_write");
       return(-1);
     }

@@ -57,22 +57,13 @@ int dbserver_init(char *options_str){
   int blank;
 
   extern int errno;
-  extern options_t opt;
 
   regex_a=NULL;
  
   if((stream=fopen(
     (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str, "r")
   )==NULL){
-    if(opt.debug){
-      fprintf(
-        stderr,
-        "Could not open %s: %s\n",
-        (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str,
-        strerror(errno)
-      );
-    }
-    PERDITION_DEBUG(
+    PERDITION_DEBUG_UNSAFE(
       "Could not open %s: %s\n",
       (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str,
       strerror(errno)

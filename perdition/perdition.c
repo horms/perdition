@@ -120,7 +120,7 @@ static void perdition_reread_handler(int sig);
 
 /* Macro to log session just after Authentication */
 #define PERDITION_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
-  PERDITION_LOG( \
+  PERDITION_LOG_UNSAFE( \
     LOG_NOTICE, \
     "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
     from_to_str, \
@@ -189,8 +189,8 @@ int main (int argc, char **argv){
     LOG_DEBUG,
     LOG_CONS
   ))==NULL){
-    fprintf(stderr, "main: vanessa_logger_openlog_syslog\n");
-    fprintf(stderr, "Fatal error opening logger. Exiting.\n");
+    fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
+                    "Fatal error opening logger. Exiting.\n");
     daemon_exit_cleanly(-1);
   }
 
@@ -208,8 +208,8 @@ int main (int argc, char **argv){
       opt.quiet?LOG_ERR:LOG_INFO,
       LOG_CONS
     ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_syslog\n");
-      fprintf(stderr, "Fatal error opening logger. Exiting.\n");
+      fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
+                      "Fatal error opening logger. Exiting.\n");
       daemon_exit_cleanly(-1);
     }
   }
@@ -229,8 +229,8 @@ int main (int argc, char **argv){
       &handle,&dbserver_get
     )<0
   ){
-    fprintf(stderr,"dlopen of \"%s\" failed\n",str_null_safe(opt.map_library));
-    PERDITION_ERR("dlopen of \"%s\" failed", str_null_safe(opt.map_library));
+    PERDITION_ERR_UNSAFE("dlopen of \"%s\" failed", 
+      str_null_safe(opt.map_library));
     usage(-1);
     daemon_exit_cleanly(-1);
   }
@@ -286,8 +286,8 @@ int main (int argc, char **argv){
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
       LOG_CONS
     ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_filename\n");
-      fprintf(stderr, "Fatal error opening logger. Exiting.\n");
+      fprintf(stderr, "main: vanessa_logger_openlog_filename\n"
+                      "Fatal error opening logger. Exiting.\n");
       daemon_exit_cleanly(-1);
     }
   }
@@ -298,8 +298,8 @@ int main (int argc, char **argv){
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
       LOG_CONS
     ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_syslog 2\n");
-      fprintf(stderr, "Fatal error opening logger. Exiting.\n");
+      fprintf(stderr, "main: vanessa_logger_openlog_syslog 2\n"
+                      "Fatal error opening logger. Exiting.\n");
       daemon_exit_cleanly(-1);
     }
   }
@@ -457,10 +457,10 @@ int main (int argc, char **argv){
 
   /*Log the session*/
   if(opt.inetd_mode) {
-    PERDITION_INFO("Connect: %sinetd_pid=%d", from_to_str, getppid());
+    PERDITION_INFO_UNSAFE("Connect: %sinetd_pid=%d", from_to_str, getppid());
   }
   else {
-    PERDITION_INFO("Connect: %s", from_to_str);
+    PERDITION_INFO_UNSAFE("Connect: %s", from_to_str);
   }
 
 #ifdef WITH_SSL_SUPPORT
@@ -474,7 +474,7 @@ int main (int argc, char **argv){
   /*Speak to our client*/
   if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
     PERDITION_DEBUG("greeting");
-    PERDITION_ERR(
+    PERDITION_ERR_UNSAFE(
       "Fatal error writing to client. %sExiting child.",
       from_to_str
     );
@@ -488,7 +488,7 @@ int main (int argc, char **argv){
     /*Read the USER and PASS lines from the client */
     if((status=(*(protocol->in_get_pw))(client_io, &pw, &tag))<0){
       PERDITION_DEBUG("protocol->in_get_pw");
-      PERDITION_ERR(
+      PERDITION_ERR_UNSAFE(
 	"Fatal Error reading authentication information from client \"%s\": "
 	"Exiting child", 
 	from_to_str
@@ -496,7 +496,7 @@ int main (int argc, char **argv){
       daemon_exit_cleanly(-1);
     }
     else if(status>0){
-      PERDITION_ERR(
+      PERDITION_ERR_UNSAFE(
         "Closing NULL session: %susername=%s", 
         from_to_str,
         str_null_safe(pw.pw_name)
@@ -508,7 +508,7 @@ int main (int argc, char **argv){
     if((username=username_mangle(pw.pw_name, 
           to_addr, STATE_GET_SERVER))==NULL){
       PERDITION_DEBUG("username_mangle STATE_GET_SERVER");
-      PERDITION_ERR(
+      PERDITION_ERR_UNSAFE(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -533,7 +533,7 @@ int main (int argc, char **argv){
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
 	    PERDITION_DEBUG_ERRNO("strdup");
-            PERDITION_ERR(
+            PERDITION_ERR_UNSAFE(
 	      "Fatal error manipulating username for client \"%s\": "
 	      "Exiting child",
 	      from_str
@@ -583,7 +583,7 @@ int main (int argc, char **argv){
       if((pw2.pw_name=username_mangle(pw.pw_name, 
             to_addr, STATE_LOCAL_AUTH))==NULL){
         PERDITION_DEBUG("username_mangle STATE_LOCAL_AUTH");
-        PERDITION_ERR(
+        PERDITION_ERR_UNSAFE(
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
         );
@@ -668,7 +668,7 @@ int main (int argc, char **argv){
         daemon_exit_cleanly(-1);
       }
 
-      PERDITION_DEBUG("SSL connection using %s", SSL_get_cipher(ssl));
+      PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
 
       if((server_cert=SSL_get_peer_certificate(ssl))==NULL){
         PERDITION_DEBUG_SSL_ERR("SSL_get_peer_certificate");
@@ -687,7 +687,7 @@ int main (int argc, char **argv){
           PERDITION_ERR("Error reading certificate subject name");
           daemon_exit_cleanly(-1);
         }
-        PERDITION_DEBUG ("subject: %s", str);
+        PERDITION_DEBUG_UNSAFE("subject: %s", str);
         free(str);
   
         str=X509_NAME_oneline(X509_get_issuer_name(server_cert), 0, 0);
@@ -696,7 +696,7 @@ int main (int argc, char **argv){
           PERDITION_ERR("Error reading certificate issuer name");
           daemon_exit_cleanly(-1);
         }
-        PERDITION_DEBUG("issuer: %s", str);
+        PERDITION_DEBUG_UNSAFE("issuer: %s", str);
         free(str);
   
         /* We could do all sorts of certificate verification stuff here before
@@ -711,7 +711,7 @@ int main (int argc, char **argv){
     if((pw2.pw_name=username_mangle(pw.pw_name, 
           to_addr, STATE_REMOTE_LOGIN))==NULL){
       PERDITION_DEBUG("username_mangle STATE_REMOTE_LOGIN");
-      PERDITION_ERR(
+      PERDITION_ERR_UNSAFE(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -757,7 +757,7 @@ int main (int argc, char **argv){
       continue;
     }
     else if(status<0){
-      PERDITION_DEBUG("protocol->out_authenticate %d", status);
+      PERDITION_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
       PERDITION_ERR("Fatal error authenticating user. Exiting child.");
       daemon_exit_cleanly(-1);
     }
@@ -802,7 +802,7 @@ int main (int argc, char **argv){
 
   /*We need a buffer for reads and writes to the server*/
   if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
-    PERDITION_DEBUG("malloc: %s, Exiting", strerror(errno));
+    PERDITION_DEBUG_ERRNO("malloc");
     PERDITION_ERR("Fatal error allocating memory. Exiting child.");
     daemon_exit_cleanly(-1);
   }
@@ -823,7 +823,7 @@ int main (int argc, char **argv){
   }
 
   /*Time to leave*/
-  PERDITION_INFO(
+  PERDITION_INFO_UNSAFE(
     "Close: %suser=\"%s\" received=%d sent=%d", 
     str_null_safe(from_to_str),
     str_null_safe(pw.pw_name),
@@ -853,7 +853,7 @@ int main (int argc, char **argv){
 static void perdition_reread_handler(int sig){
   extern options_t opt;
 
-  PERDITION_INFO("Reloading map library \"%s\" with options \"%s\"",
+  PERDITION_INFO_UNSAFE("Reloading map library \"%s\" with options \"%s\"",
     opt.map_library, opt.map_library_opt);
   getserver_closelib(handle);
   if(
@@ -866,7 +866,8 @@ static void perdition_reread_handler(int sig){
     )<0
   ){
     PERDITION_DEBUG("getserver_openlib");
-    PERDITION_ERR("Fatal error reopening: %s. Exiting child.", opt.map_library);
+    PERDITION_ERR_UNSAFE("Fatal error reopening: %s. Exiting child.", 
+      opt.map_library);
     daemon_exit_cleanly(-1);
   }
 
@@ -928,7 +929,7 @@ io_t *perdition_ssl_connection(
     }
   }
 
-  PERDITION_DEBUG("SSL connection using %s", SSL_get_cipher(ssl));
+  PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
 
   return(new_io);
 
@@ -1007,15 +1008,17 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
    */
 
   if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM)<=0){
-    PERDITION_DEBUG_SSL_ERR("SSL_CTX_use_certificate_file: \"%s\"", cert);
-    PERDITION_ERR("Error loading certificate file \"%s\"", cert);
+    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_certificate_file: \"%s\"", 
+      cert);
+    PERDITION_ERR_UNSAFE("Error loading certificate file \"%s\"", cert);
     SSL_CTX_free(ssl_ctx);
     return(NULL);
   }
  
   if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, SSL_FILETYPE_PEM)<= 0){
-    PERDITION_DEBUG_SSL_ERR("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
-    PERDITION_ERR("Error loading pricvate key file \"%s\"", privkey);
+    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_PrivateKey_file: \"%s\"", 
+      privkey);
+    PERDITION_ERR_UNSAFE("Error loading pricvate key file \"%s\"", privkey);
     SSL_CTX_free(ssl_ctx);
     return(NULL);
   }
