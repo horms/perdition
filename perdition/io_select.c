@@ -254,6 +254,11 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 	selected = select(n, readfds, writefds, exceptfds, 
 			pending?&zero_timeout:timeout);
 
+	/* Jump out if there was an error */
+	if(selected < 0) {
+		return(selected);
+	}
+
 	/* Shortcut */
 	if(!pending) {
 		return(selected);

@@ -324,7 +324,7 @@ server_port_t *getserver(
 
   /* Catch errors from any of the dbserver_get calls */
   if(status<0){
-    if(status == -2) {
+    if(status != -2) {
       VANESSA_LOGGER_DEBUG("dbserver_get");
     }
     return(NULL);
