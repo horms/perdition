@@ -100,6 +100,7 @@ int dbserver_fini(void)
 {
 	if(pldap_filter) {
 		free(pldap_filter);
+		pldap_filter=NULL;
 	}
 	return (0);
 }

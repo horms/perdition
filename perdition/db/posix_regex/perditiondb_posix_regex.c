@@ -348,8 +348,11 @@ int dbserver_get(const char *key_str, const char *options_str,
  **********************************************************************/
 
 int dbserver_fini(void){
-  vanessa_dynamic_array_destroy(regex_a);
-  return(0);
+	if(regex_a) {
+		vanessa_dynamic_array_destroy(regex_a);
+		regex_a = NULL;
+	}
+	return(0);
 }
 
 
