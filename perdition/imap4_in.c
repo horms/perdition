@@ -292,6 +292,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
     }
 
     if(token_is_eol(tag)){
+      sleep(VANESSA_LOGGER_ERR_SLEEP);
       if(token_is_null(tag)){
         if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, "Null command")<0){
           VANESSA_LOGGER_DEBUG("imap4_write 1");
