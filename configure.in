@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 0.1.8pre2)
+AM_INIT_AUTOMAKE(perdition, 0.1.8pre3)
 
 AM_PROG_LIBTOOL
 AC_PROG_CC
@@ -177,7 +177,7 @@ AC_CHECK_LIB(
     ) ;\
     sleep 5
   ],
-  -L$mysql_libpath -lz
+  $mysql_libs
 )
 fi
 
@@ -254,7 +254,7 @@ AC_CHECK_LIB(
     ) ;\
     sleep 5
   ],
-  -L$pg_libpath
+  $pg_libs
 )
 fi
 
@@ -370,7 +370,7 @@ AC_CHECK_LIB(
   ],
   [ 
     ldap_build_dir="" 
-    AC_MSG_WARN(
+    AC_MSG_ERROR(
       ""
       "**********************************************************************"
       "* perditiondb_ldap will not be built"
@@ -378,7 +378,7 @@ AC_CHECK_LIB(
     ) ;\
     sleep 5
   ],
-  -L$ldap_libpath -llber
+  $socket_lib -L$ldap_libpath -llber
 )
 fi
 
@@ -427,6 +427,7 @@ else
   pam_source=""
 fi
 
+
 pg_includes="-I$pg_includepath"
 pg_libs="-lpq -L$pg_libpath"
 mysql_includes="-I$mysql_includepath"
@@ -444,7 +445,6 @@ else
   ldap_libs="$socket_lib $nsl_lib $ldap_libs"
   posix_regex_libs="-lvanessa_logger $posix_regex_libs"
 fi
-
 
 ######################################################################
 # User and Group to run as

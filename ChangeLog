@@ -5,7 +5,7 @@ Mail retrieval proxy server
 Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-19th April 2001
+xxx
 (Horms)
 
   * Version 0.1.8
@@ -14,7 +14,9 @@ Copyright (C) 1999-2001  Horms <horms@vergenet.net>
     Thanks to Ronny Cook
   - Fixed Linking Problems in MySQL, PostgresSQL and LDAP 
     map lookup libraries.
-  - Fiexed (minor) casting problems with using various popt calls
+  - Fixed (minor) casting problems with using various popt calls
+  - \" characters are no longer stripped from input during authentication
+    phase.
 
 5th April 2001
 (Horms)

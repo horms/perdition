@@ -300,12 +300,11 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
- *       '\"' is ignored (weird thing netscape imap client sends)
  *       '\n' will terminate a token and set the eol element to 1
  *       All other characters are considered to be a part of the token
  *       If literal_buf is not NULL, and n is not NULL and *n is not 0
  *       Bytes read from fd are copied to literal_buf, this includes
- *       ' ', '\r' '\"' and '\n'.
+ *       ' ', '\r' and '\n'.
  * return: token
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
@@ -343,23 +342,23 @@ token_t *read_token(const int fd, unsigned char *literal_buf, size_t *n){
       *(literal_buf+(literal_offset++))=c;
     }
 
-    if(c=='\n'){
-      eol=1;
-      break;
-    }
-    else if(c=='\r'){
-      continue;
-    }
-    else if(c=='\"'){
-      continue;
-    }
-    else if(c==' '){
-      break;
-    }
-    else{
-      buffer[len++]=c;
+    switch(c){
+      case '\n':
+        eol=1;
+        goto end_while;
+      case '\r':
+#ifdef __GRR_0__
+      case '\"':  /* At some stage code was added to strip out \" characters
+		     this has been removed as it is not RFC compliand */
+#endif
+        break;
+      case ' ':
+        goto end_while;
+      default:
+        buffer[len++]=c;
     }
   }
+end_while:
 
   /*Set return value for n*/
   if(do_literal){
