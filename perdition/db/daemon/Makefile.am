@@ -23,25 +23,24 @@
 #
 ######################################################################
 
+noinst_LIBRARIES = libperditiondb_daemon_packet.a
+
+libperditiondb_daemon_packet_a_SOURCES = packet.c packet.h
+
 lib_LTLIBRARIES = libperditiondb_daemon.la
 
 libperditiondb_daemon_la_SOURCES = \
-perditiondb_daemon.c perditiondb_daemon.h unix_socket.c unix_socket.h \
-packet.c packet.h
-
+perditiondb_daemon.c perditiondb_daemon.h unix_socket.c unix_socket.h
 libperditiondb_daemon_la_LDFLAGS    = -version-info 0:0:0
-
-libperditiondb_daemon_la_LIBADD = -ldb
+libperditiondb_daemon_la_LIBADD = -ldb -L. -lperditiondb_daemon_packet
 
 noinst_PROGRAMS = client server
 
-client_SOURCES = client.c packet.c packet.h unix_socket.c unix_socket.h
+client_SOURCES = client.c unix_socket.c unix_socket.h
+client_LDADD = -lvanessa_logger -L. -lperditiondb_daemon_packet
 
-client_LDADD = -lvanessa_logger
-
-server_SOURCES = server.c packet.c packet.h unix_socket.c unix_socket.h
-
-server_LDADD = -lvanessa_logger
+server_SOURCES = server.c unix_socket.c unix_socket.h
+server_LDADD = -lvanessa_logger -L. -lperditiondb_daemon_packet
 
 INCLUDES=\
 -I$(top_srcdir)/ \
