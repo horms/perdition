@@ -32,24 +32,18 @@ EXTRA_DIST = perdition.8 perditiondb.5
 sbin_PROGRAMS = perdition
 	          
 install-exec-hook:
-	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.pop3)
-	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.pop3.8)
-	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.pop3s)
-	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.pop3s.8)
-	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4)
-	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4.8)
-	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4s)
-	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4s.8)
-	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imaps)
-	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imaps.8)
+	for i in pop3 pop3s imap4 imap4s imaps; do \
+		(cd $(DESTDIR)$(sbindir) && rm -f perdition.$$i && \
+			ln -sf perdition perdition.$$i); \
+		(cd $(DESTDIR)$(mandir)/man8 && rm -f perdition.$$i && \
+			ln -sf perdition.8 perdition.$$i.8); \
+	done
 
 uninstall-local:
-	(cd $(DESTDIR)$(sbindir) && rm -f perdition.pop3 \
-	perdition.pop3s perdition.imap4 perdition.imap4s \
-	perdition.imaps)
-	(cd $(DESTDIR)$(mandir)/man8 && rm perdition.pop3.8 \
-	perdition.pop3s.8 perdition.imap4.8 perdition.imap4s.8 \
-	perdition.imaps.8)
+	for i in pop3 pop3s imap4 imap4s imaps; do \
+		rm -f $(DESTDIR)$(sbindir)/perdition.$$i; \
+		rm -f $(DESTDIR)$(mandir)/man8/perdition.$$i.8; \
+	done
 
 perdition_SOURCES = \
         config_file.c       config_file.h \

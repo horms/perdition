@@ -15,7 +15,8 @@ XXX
   - Support non-syncronising IMAP string litereals as per RFC 2088
   - Correct logging of timeout
   - Add no_daemon option to perdition
-  - Vixed version information in makegdbm
+  - Fixed version information in makegdbm
+  - reinstall of symlinks works on Solaris 7
 
 
 ----------------------------------------------------------------------

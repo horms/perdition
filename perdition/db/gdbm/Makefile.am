@@ -29,7 +29,8 @@ confdir = $(sysconfdir)/perdition
 conf_DATA = popmap Makefile.popmap
 
 install-data-hook:
-	(cd $(DESTDIR)$(sysconfdir)/perdition/ && ln -sf Makefile.popmap Makefile)
+	(cd $(DESTDIR)$(sysconfdir)/perdition/ && rm -f Makefile && \
+		ln -sf Makefile.popmap Makefile)
 
 uninstall-local:
 	(cd $(DESTDIR)$(sysconfdir)/perdition/ && rm -f Makefile)
