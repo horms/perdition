@@ -1,0 +1,23 @@
+Begin3
+Title:          perdition
+Version:        0.1.8
+Entered-date:   19APR2001
+Description:    Perdition is allows users to connect to a content-free 
+                POP3 or IMAP4 server that will redirect them to their real 
+                POP3 or IMAP4 server. This enables mail retrieval for a 
+                domain to be split across multiple real pop servers on a 
+                per user basis. This can also be used to as a POP3 or IMAP4
+                proxy especially in firewall applications. Supports
+                arbitrary library based map access to determine the server
+                for a user. POSIX Regular Expression, GDBM,
+                MySQL, PostgreSQL, NIS and LDAP libraries ship with 
+		the distribution.
+Keywords:       POP3 IMAP4 Email Proxy
+Author:         Horms <horms@vergenet.net>
+Maintained-by:  Horms <horms@vergenet.net>
+Primary-site:   ftp.vergenet.net /pub/perdition
+Alternate-site: ftp.au.vergenet.net /pub/perdition
+Original-site:  
+Platforms:      Linux
+Copying-policy: GPL
+End

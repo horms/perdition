@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 0.1.7)
+AM_INIT_AUTOMAKE(perdition, 0.1.8pre1)
 
 AM_PROG_LIBTOOL
 AC_PROG_CC
@@ -433,16 +433,17 @@ pg_libs="-L$pg_libpath"
 mysql_includes="-I$mysql_includepath"
 mysql_libs="-L$mysql_libpath"
 ldap_includes="-I$ldap_includepath"
-ldap_libs="-L$ldap_libpath"
-posix_regex_libs=""
+ldap_libs="-L$ldap_libpath -lldap -llber"
 AC_MSG_CHECKING("for Linux style shared object linking")
 if test "$host_os" = "linux" -o "$host_os" = "linux-gnu"; then
   AC_MSG_RESULT(Yes)
+  pg_libs="-lpq $pg_libs"
+  mysql_libs="-lmysqlclient -lz $mysql_libs"
+  posix_regex_libs="-lvanessa_adt"
 else
   AC_MSG_RESULT(No)
   pg_libs="-lvanessa_logger -lvanessa_adt -lpq $pg_libs"
   mysql_libs="-lvanessa_logger -lvanessa_adt -lmysqlclient -lz $mysql_libs"
-  ldap_libs="-lldap -llber $ldap_libs"
   posix_regex_libs="-lvanessa_logger -lvanessa_adt"
 fi
 

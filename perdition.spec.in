@@ -1,5 +1,5 @@
 %define ver      @VERSION@
-%define rel      2
+%define rel      1
 %define prefix   /usr
 
 Summary: Mail Retrieval Proxy
@@ -36,6 +36,48 @@ Perdition allows for arbitrary user database access through
 shared libraries much in the maner of NSS in glibc. This package
 provides headers and libraries that may be useful in the development
 of perditiondb libraries.
+
+
+%package ldap
+Summary: Library to allow perdition to access LDAP based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-ldap-%{ver}-%{rel}
+
+%description ldap
+Perdition allows for arbitrary user database access through shared
+libraries much in the maner of NSS in glibc. This package allows a user
+database to be sourced from LDAP.
+
+
+%package mysql
+Summary: Library to allow perdition to access MySQL based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel} MySQL-shared zlib
+Provides: perdition-mysql-%{ver}-%{rel}
+
+%description mysql
+Perdition allows for arbitrary user database access through shared
+libraries much in the maner of NSS in glibc. This package allows a user
+database stored in a MySQL databse.
+
+
+%package postgresql
+Summary: Library to allow perdition to access PosgreSQL based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-postgresql-%{ver}-%{rel}
+
+%description postgresql
+Perdition allows for arbitrary user database access through shared
+libraries much in the maner of NSS in glibc. This package allows a user
+database stored in a PostgreSQL databse.
+
+
+
 
 
 %prep
@@ -92,36 +134,6 @@ true
 %{prefix}/man/man8/perdition.*
 %{prefix}/man/man5/perditiondb.*
 
-# gdbm
-%{prefix}/lib/libperditiondb_gdbm.a
-%{prefix}/lib/libperditiondb_gdbm.la
-%{prefix}/lib/libperditiondb_gdbm.so
-%{prefix}/lib/libperditiondb_gdbm.so.0
-%{prefix}/lib/libperditiondb_gdbm.so.0.0.0
-%{prefix}/bin/makegdbm
-/etc/perdition/Makefile
-/etc/perdition/Makefile.popmap
-%{prefix}/man/man1/makegdbm.*
-%config /etc/perdition/popmap
-
-# ldap
-%{prefix}/lib/libperditiondb_ldap.a
-%{prefix}/lib/libperditiondb_ldap.la
-%{prefix}/lib/libperditiondb_ldap.so
-%{prefix}/lib/libperditiondb_ldap.so.0
-%{prefix}/lib/libperditiondb_ldap.so.0.0.0
-%{prefix}/bin/perditiondb_ldap_makedb
-%{prefix}/man/man8/perditiondb_ldap_makedb.*
-
-# mysql
-%{prefix}/lib/libperditiondb_mysql.a
-%{prefix}/lib/libperditiondb_mysql.la
-%{prefix}/lib/libperditiondb_mysql.so
-%{prefix}/lib/libperditiondb_mysql.so.0
-%{prefix}/lib/libperditiondb_mysql.so.0.0.0
-%{prefix}/bin/perditiondb_mysql_makedb
-%{prefix}/man/man8/perditiondb_mysql_makedb.*
-
 # nis
 %{prefix}/lib/libperditiondb_nis.a
 %{prefix}/lib/libperditiondb_nis.la
@@ -137,7 +149,40 @@ true
 %{prefix}/lib/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
-# postgresql
+# gdbm
+%{prefix}/lib/libperditiondb_gdbm.a
+%{prefix}/lib/libperditiondb_gdbm.la
+%{prefix}/lib/libperditiondb_gdbm.so
+%{prefix}/lib/libperditiondb_gdbm.so.0
+%{prefix}/lib/libperditiondb_gdbm.so.0.0.0
+%{prefix}/bin/makegdbm
+/etc/perdition/Makefile
+/etc/perdition/Makefile.popmap
+%{prefix}/man/man1/makegdbm.*
+%config /etc/perdition/popmap
+
+%files ldap
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_ldap.a
+%{prefix}/lib/libperditiondb_ldap.la
+%{prefix}/lib/libperditiondb_ldap.so
+%{prefix}/lib/libperditiondb_ldap.so.0
+%{prefix}/lib/libperditiondb_ldap.so.0.0.0
+%{prefix}/bin/perditiondb_ldap_makedb
+%{prefix}/man/man8/perditiondb_ldap_makedb.*
+
+%files mysql
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_mysql.a
+%{prefix}/lib/libperditiondb_mysql.la
+%{prefix}/lib/libperditiondb_mysql.so
+%{prefix}/lib/libperditiondb_mysql.so.0
+%{prefix}/lib/libperditiondb_mysql.so.0.0.0
+%{prefix}/bin/perditiondb_mysql_makedb
+%{prefix}/man/man8/perditiondb_mysql_makedb.*
+
+%files postgresql
+%defattr(-,root,root)
 %{prefix}/lib/libperditiondb_postgresql.a
 %{prefix}/lib/libperditiondb_postgresql.la
 %{prefix}/lib/libperditiondb_postgresql.so
@@ -154,6 +199,9 @@ true
 
 
 %changelog
+* Wed Apr 18 2001 Horms <horms@vergenet.net>
+- Broke MySQL, PostgreSQL and LDAP back out into separate packages
+
 * Wed Apr 18 2001 Horms <horms@vergenet.net>
 - Merged db packages into main package
 

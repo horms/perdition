@@ -1,3 +1,10 @@
+perdition (0.1.8-1) unstable; urgency=low
+
+  * Linking problems resolved for libperditiondb-mysql,
+    libperditiondb-postgresql and libperditiondb-ldap
+
+ -- Simon Horman <horms@vergenet.net>  Wed, 18 Apr 2001 15:41:40 -0700
+
 perdition (0.1.7-3) unstable; urgency=low
 
   * Merged db packages into main package

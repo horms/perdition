@@ -56,10 +56,10 @@ makegdbm_options_t makegdbm_options(int argc, char **argv){
 
   if(argc==0 || argv==NULL) return(opt);
 
-  context= poptGetContext("perdition", argc, argv, options, 0);
+  context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
-    optarg=poptGetOptArg(context);
+    optarg=(char *)poptGetOptArg(context);
     switch (c){
       case 'h':
         usage(0);
@@ -79,7 +79,7 @@ makegdbm_options_t makegdbm_options(int argc, char **argv){
     );
   }
   
-  opt.mapname = poptGetArg(context);
+  opt.mapname = (char *)poptGetArg(context);
   if((opt.mapname == NULL) || !(poptPeekArg(context) == NULL)){
     usage(-1);
   }

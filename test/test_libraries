@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+PERDITION="/usr/sbin/perdition -i -d"
+LIBPATH="/usr/lib"
+
+for i in $LIBPATH/libperditiondb_posix_regex.so.0; do
+  echo -n "Testing: $i... "
+  if { sleep 1; echo -e "user tim"; sleep 1; echo "pass flim" ; echo sleep 1 ; echo "quit" ; sleep 1 ; } | $PERDITION -M $i ; then
+    echo Passed
+  else
+    echo Failed!
+  fi
+done

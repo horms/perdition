@@ -28,6 +28,12 @@ changelog \
 control \
 copyright \
 perdition-dev.files \
+perdition-ldap.files \
+perdition-ldap.postinst \
+perdition-mysql.files \
+perdition-mysql.postinst \
+perdition-postgresql.files \
+perdition-postgresql.postinst \
 perdition.conffiles \
 perdition.dirs \
 perdition.files \

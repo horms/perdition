@@ -192,10 +192,10 @@ int options(int argc, char **argv, flag_t f){
 
   if(f&OPT_CLEAR_MASK) opt.mask=(flag_t)0;
 
-  context= poptGetContext("perdition", argc, (char **)argv, options, 0);
+  context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
-    optarg=poptGetOptArg(context);
+    optarg=(char *)poptGetOptArg(context);
     switch (c){
       case 'a':
 #ifdef WITH_PAM_SUPPORT

@@ -5,13 +5,16 @@ Mail retrieval proxy server
 Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+19th April 2001
 (Horms)
 
-  * Version xxx
+  * Version 0.1.8
   - Fixed Segmentation Fault that occurs when reading strings that
     have a trainling whitespace during the authentication phase.
     Thanks to Ronny Cook
+  - Fixed Linking Problems in MySQL, PostgresSQL and LDAP 
+    map lookup libraries.
+  - Fiexed (minor) casting problems with using various popt calls
 
 5th April 2001
 (Horms)

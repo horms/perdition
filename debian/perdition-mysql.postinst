@@ -1,0 +1,15 @@
+#! /bin/sh
+# postinst script for perdition-mysql
+
+#DEBHELPER#
+
+if [ "$1" = "configure" ]; then
+    ldconfig
+    if [ -d /usr/doc -a ! -e /usr/doc/perdition-mysql -a -d /usr/share/doc/perdition-mysql ]; then
+      ln -sf ../share/doc/perdition-mysql /usr/doc/perdition-mysql
+    fi
+fi
+
+exit 0
+
+

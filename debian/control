@@ -5,6 +5,30 @@ Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>
 Standards-Version: 3.5.2
 
+Package: perdition-ldap
+Architecture: any
+Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Description: Library to allow perdition to access LDAP based pop maps.
+ Perdition allows for arbitrary user database access through
+ shared libraries much in the maner of NSS in glibc. This package
+ allows a user database to be sourced from LDAP.
+
+Package: perdition-mysql
+Architecture: any
+Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Description: Library to allow perdition to access MySQL based pop maps.
+ Perdition allows for arbitrary user database access through
+ shared libraries much in the maner of NSS in glibc. This package
+ allows a user database stored in a MySQL databse.
+
+Package: perdition-postgresql
+Architecture: any
+Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Description: Library to allow perdition to access PosgreSQL based pop maps.
+ Perdition allows for arbitrary user database access through
+ shared libraries much in the maner of NSS in glibc. This package
+ allows a user database stored in a PostgreSQL databse.
+
 Package: perdition-dev
 Architecture: any
 Depends: perdition (= ${Source-Version}), libvanessa-logger-dev, libvanessa-adt-dev, libvanessa-socket-dev, libc6-dev
