@@ -274,12 +274,16 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_MODE },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CERT_FILE },
+    {"ssl_ca_file",                 '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CA_FILE },
     {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_KEY_FILE },
     {"ssl_listen_ciphers",          '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_LISTEN_CIPHERS },
     {"ssl_outgoing_ciphers",        '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_OUTGOING_CIPHERS },
+    {"ssl_no_cn_verify",            '\0', POPT_ARG_NONE,   NULL, 
+      TAG_SSL_NO_CN_VERIFY },
     {NULL,                           0,   0,               NULL, 0 }
   };
 
@@ -328,6 +332,7 @@ int options(int argc, char **argv, flag_t f){
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
     opt_i(opt.connect_relog,   DEFAULT_CONNECT_RELOG,       i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_no_cn_verify,DEFAULT_SSL_NO_CN_VERIFY,    i, 0, OPT_NOT_SET);
     opt_p(opt.capability,      PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
@@ -346,6 +351,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_ca_file,     DEFAULT_SSL_CA_FILE,         i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
@@ -565,6 +571,21 @@ int options(int argc, char **argv, flag_t f){
         }
 #endif /* WITH_SSL_SUPPORT */
       break;
+      case TAG_SSL_CA_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_ca_file,optarg,opt.ssl_mask,MASK_SSL_CA_FILE,f);
+#else /* WITH_SSL_SUPPORT */
+      VANESSA_LOGGER_DEBUG(
+	"--ssl_ca_file is only supported when ssl support is compiled in");
+      if(f&OPT_ERR){
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
       case TAG_SSL_CERT_FILE:
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_CERT_FILE,f);
@@ -619,6 +640,23 @@ int options(int argc, char **argv, flag_t f){
 #else /* WITH_SSL_SUPPORT */
       VANESSA_LOGGER_DEBUG(
 	"--ssl_outgoing_ciphers is only supported when "
+	"ssl support is compiled in");
+      if(f&OPT_ERR){
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      case TAG_SSL_NO_CN_VERIFY:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_no_cn_verify,1,opt.ssl_mask,
+			MASK_SSL_NO_CN_VERIFY,f);
+#else /* WITH_SSL_SUPPORT */
+      VANESSA_LOGGER_DEBUG(
+	"--ssl_no_cn_verify is only supported when "
 	"ssl support is compiled in");
       if(f&OPT_ERR){
         usage(-1);
@@ -845,10 +883,12 @@ int log_options(void){
     "quiet=%s, " 
 #ifdef WITH_SSL_SUPPORT
     "ssl_mode=\"%s\", "
+    "ssl_ca_file=\"%s\", "
     "ssl_cert_file=\"%s\", "
     "ssl_key_file=\"%s\", "
     "ssl_listen_ciphers=\"%s\", "
     "ssl_outgoing_ciphers=\"%s\", "
+    "ssl_no_cn_verify=\"%s\", "
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
     "(mask=0x%x)\n",
@@ -888,10 +928,12 @@ int log_options(void){
     BIN_OPT_STR(opt.quiet),
 #ifdef WITH_SSL_SUPPORT
     ssl_mode,
+    str_null_safe(opt.ssl_ca_file),
     str_null_safe(opt.ssl_cert_file),
     str_null_safe(opt.ssl_key_file),
     str_null_safe(opt.ssl_listen_ciphers),
     str_null_safe(opt.ssl_outgoing_ciphers),
+    BIN_OPT_STR(opt.ssl_no_cn_verify),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
     opt.mask
@@ -1083,6 +1125,11 @@ void usage(int exit_status){
     "    ssl_all, tls_listen, tls_outgoing, tls_all. See manpage for\n"
     "    details of these options.\n"
     "    (default \"%s\")\n"
+    " --ssl_ca_file:\n"
+    "    Certificate Authorities to use when verifying certificates of\n"
+    "    real servers. Used for SSL or TLS outgoing connections.\n"
+    "    If "" then verification will not take place\n"
+    "    (default \"%s\")\n"
     " --ssl_cert_file:\n"
     "    Certificate to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
@@ -1095,6 +1142,9 @@ void usage(int exit_status){
     " --ssl_outgoing_ciphers:\n"
     "    Cipher list when making outgoing SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_no_cn_verify:\n"
+    "    Don't verify the real-servers common name with the name used.\n"
+    "    to connect to the server. Used for SSL or TLS outgoing connections.\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Note: default value for binary flags is off\n",
@@ -1119,8 +1169,9 @@ void usage(int exit_status){
 #ifdef WITH_SSL_SUPPORT
     ,
     str_null_safe(NULL),
-    str_null_safe(DEFAULT_SSL_KEY_FILE),
+    str_null_safe(DEFAULT_SSL_CA_FILE),
     str_null_safe(DEFAULT_SSL_CERT_FILE),
+    str_null_safe(DEFAULT_SSL_KEY_FILE),
     str_null_safe(DEFAULT_SSL_LISTEN_CIPHERS),
     str_null_safe(DEFAULT_SSL_OUTGOING_CIPHERS)
 #endif /* WITH_SSL_SUPPORT */

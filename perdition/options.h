@@ -128,6 +128,8 @@
 #define DEFAULT_QUERY_KEY                    NULL
 #define DEFAULT_QUIET                        0
 #ifdef WITH_SSL_SUPPORT
+#define DEFAULT_SSL_CA_FILE                  \
+  PERDITION_SYSCONFDIR "/perdition.ca.pem"
 #define DEFAULT_SSL_CERT_FILE                \
   PERDITION_SYSCONFDIR "/perdition.crt.pem"
 #define DEFAULT_SSL_KEY_FILE                 \
@@ -135,6 +137,7 @@
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
+#define DEFAULT_SSL_NO_CN_VERIFY             0
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -177,11 +180,13 @@ typedef struct {
   vanessa_dynamic_array_t *query_key;
   flag_t          mask;
 #ifdef WITH_SSL_SUPPORT
+  char            *ssl_ca_file;
   char            *ssl_cert_file;
   char            *ssl_key_file;
   int             ssl_mode;
   char            *ssl_listen_ciphers;
   char            *ssl_outgoing_ciphers;
+  int             ssl_no_cn_verify;
   flag_t          ssl_mask;
 #endif /* WITH_SSL_SUPPORT */
 } options_t;
@@ -218,16 +223,18 @@ typedef struct {
 #define MASK_TIMEOUT                     (flag_t) 0x04000000
 #define MASK_USERNAME                    (flag_t) 0x08000000
 #define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x10000000
-#define MASK_QUERY_KEY                   (flag_t) 0x20001000
+#define MASK_QUERY_KEY                   (flag_t) 0x20000000
 #define MASK_QUIET                       (flag_t) 0x40000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
-#define MASK_SSL_CERT_FILE               (flag_t) 0x00000001
-#define MASK_SSL_KEY_FILE                (flag_t) 0x00000002
-#define MASK_SSL_MODE                    (flag_t) 0x00000004
-#define MASK_SSL_LISTEN_CIPHERS          (flag_t) 0x00000008
-#define MASK_SSL_OUTGOING_CIPHERS        (flag_t) 0x00000010
+#define MASK_SSL_CA_FILE                 (flag_t) 0x00000001
+#define MASK_SSL_CERT_FILE               (flag_t) 0x00000002
+#define MASK_SSL_KEY_FILE                (flag_t) 0x00000004
+#define MASK_SSL_MODE                    (flag_t) 0x00000008
+#define MASK_SSL_LISTEN_CIPHERS          (flag_t) 0x00000010
+#define MASK_SSL_OUTGOING_CIPHERS        (flag_t) 0x00000020
+#define MASK_SSL_NO_CN_VERIFY            (flag_t) 0x00000040
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -240,11 +247,13 @@ typedef struct {
 #define TAG_LOWER_CASE                 (int) 129
 #define TAG_NO_DAEMON                  (int) 130
 #define TAG_QUERY_KEY                  (int) 131
-#define TAG_SSL_CERT_FILE              (int) 132
-#define TAG_SSL_KEY_FILE               (int) 133
-#define TAG_SSL_MODE                   (int) 134
-#define TAG_SSL_LISTEN_CIPHERS         (int) 135
-#define TAG_SSL_OUTGOING_CIPHERS       (int) 136
+#define TAG_SSL_CA_FILE                (int) 132
+#define TAG_SSL_CERT_FILE              (int) 133
+#define TAG_SSL_KEY_FILE               (int) 134
+#define TAG_SSL_MODE                   (int) 135
+#define TAG_SSL_LISTEN_CIPHERS         (int) 136
+#define TAG_SSL_OUTGOING_CIPHERS       (int) 137
+#define TAG_SSL_NO_CN_VERIFY           (int) 138
 
 
 /*Flag values for options()*/

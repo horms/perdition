@@ -7,7 +7,7 @@
  * perdition
  * Mail retrieval proxy server
  * Copyright (C) 1999-2002  Horms
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -32,6 +32,12 @@
 
 #ifdef WITH_SSL_SUPPORT
 
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <termios.h>
+#include <string.h>
+
 #include "ssl.h"
 #include "log.h"
 #include "io.h"
@@ -44,11 +50,61 @@
 #define PERDITION_SSL_CLIENT (flag_t) 0x1
 #define PERDITION_SSL_SERVER (flag_t) 0x2
 
+static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, 
+		void *data)
+{
+	ssize_t nbytes;
+	struct termios new;
+	struct termios old;
+
+	/* Turn echoing off */
+	if(tcgetattr(0, &old) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
+		return(-1);
+	}
+	new = old;
+	new.c_lflag &= (~ECHO);
+	if(tcsetattr(0, TCSANOW, &new) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("tcsetattr");
+		return(-1);
+	}
+
+	/* Read Bytes */
+	nbytes = read(1, buf, size-1);
+
+	/* Turn echoing on */
+	if(tcsetattr(0, TCSANOW, &old) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
+		return(-1);
+	}
+
+	if(nbytes < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("read");
+		return(-1);
+	}
+
+	/* Make sure the result is null terminated */
+	*(buf + nbytes) = '\0';
+
+	/* Cut of trailing "\n" or trailing "\r\n" */
+	if(nbytes > 1 && *(buf + nbytes - 1) == '\n') {
+		nbytes--;
+		 *(buf + nbytes) = '\0';
+		if(nbytes > 1 && *(buf + nbytes - 1) == '\r') {
+			nbytes--;
+		 	*(buf + nbytes) = '\0';
+		}
+	}
+
+	return(nbytes);
+}
+
 
 /**********************************************************************
  * perdition_ssl_ctx
  * Create an SSL context
- * pre: cert: certificate to use. May be NULL if privkey is NULL. 
+ * pre: ca: certificat authorities to use. May be NULL or ""
+ *      cert: certificate to use. May be NULL if privkey is NULL. 
  *            Should the path to a PEM file if non-NULL and the
  *            first item in the PEM file will be used as the 
  *            certificate.
@@ -67,8 +123,8 @@
  *       be non-NULL.
  **********************************************************************/
 
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
-		const char *ciphers)
+SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert, 
+		const char *privkey, const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx;
@@ -104,28 +160,17 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
 	/*
 	 * Set the available ciphers
 	 */
-	if(ciphers) {
-		if(SSL_CTX_set_cipher_list(ssl_ctx, ciphers) < 0) {
-			VANESSA_LOGGER_DEBUG_UNSAFE(
-					"Cipher string supplied (%s) "
-					"results in no available ciphers",
-					ciphers);
-		}
-	}
-
-	/*
-	 * If the certificate or private key is NULL (one is implied by
-	 * the other, and it has been checked) then there is no
-	 * more proccessing to be done
-	 */
-	if (cert == NULL) {
-		return (ssl_ctx);
+	if(ciphers && SSL_CTX_set_cipher_list(ssl_ctx, ciphers) < 0) {
+		VANESSA_LOGGER_DEBUG_UNSAFE(
+				"Cipher string supplied (%s) "
+				"results in no available ciphers",
+				ciphers);
 	}
 
 	/*
 	 * Load and check the certificate and private key
 	 */
-	if (SSL_CTX_use_certificate_file(ssl_ctx, cert, 
+	if (cert && SSL_CTX_use_certificate_file(ssl_ctx, cert, 
 			SSL_FILETYPE_PEM) <= 0) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_use_certificate_file: \"%s\"", cert);
@@ -135,7 +180,8 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
 		return (NULL);
 	}
 
-	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
+	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
+	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
 			SSL_FILETYPE_PEM) <= 0) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
@@ -145,75 +191,186 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
 		return (NULL);
 	}
 
-	if (!SSL_CTX_check_private_key(ssl_ctx)) {
-		VANESSA_LOGGER_DEBUG
-		    ("Private key does not match the certificate public key.");
+	if(!ca || !*ca) {
+		return (ssl_ctx);
+	}
+
+	/* 
+	 * Load the Certificat Authorities 
+	 */
+	if(!(SSL_CTX_load_verify_locations(ssl_ctx, ca, 0))) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
+		    ("SSL_CTX_load_verify_locations: \"%s\"", ca);
+		VANESSA_LOGGER_ERR_UNSAFE
+		    ("Error loading certificate authority file \"%s\"", ca);
 		SSL_CTX_free(ssl_ctx);
 		return (NULL);
 	}
+	SSL_CTX_set_verify_depth(ssl_ctx, 0);
+
+	/* NB: We do not need to call SSL_CTX_check_private_key()
+	 * because SSL_CTX_set_verify_depth has been called */
 
 	return (ssl_ctx);
 }
 
 
 /**********************************************************************
- * __perdition_ssl_log_certificate
+ * __perdition_ssl_check_common_name
  * Log the details of a certificate
- * pre: io: connectoion to log certificate of
+ * pre: cert: server certificate to check the common name of
+ *      server: server name to match against the common name
+ * post: none
+ * return: 0 on success
+ *         -1 on error
+ *         -2 if the common name did not match, or the cert did
+ *            not exist
+ **********************************************************************/
+
+static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
+{
+	char *domain;
+	char common_name[MAX_LINE_LENGTH];
+
+	extern options_t opt;
+
+	if(opt.ssl_no_cn_verify || !server) {
+		return(0);
+	}
+
+	if(!cert) {
+		VANESSA_LOGGER_DEBUG("no server certificate");
+		return(-2);
+	}
+	
+	if(X509_NAME_get_text_by_NID(X509_get_issuer_name(cert), 
+			NID_commonName, common_name, MAX_LINE_LENGTH) < 0) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
+		return(-1);
+	}
+	common_name[MAX_LINE_LENGTH -1] = '\0';
+
+	if(!strcmp(server, common_name)) {
+		return(0);
+	}
+	/* A wild card common name is allowed 
+	 * It should be of the form *.domain */
+	if(*common_name == '*' && *(common_name+1) == '.') {
+		domain = strchr(server, '.');
+		if(domain && !strcmp(common_name+2, domain+1)) {
+			return(0);
+		}
+	}
+
+	VANESSA_LOGGER_ERR("common name missmatch");
+	return(-2);
+}
+
+
+/**********************************************************************
+ * __perdition_ssl_check_certificate
+ * Log the details of a certificate
+ * pre: ssl: SSL object to log
+ *      cert: certificate to log
  * post: details of cerfificate are loged, if there is one
  * return: 0 on success, including if there was nothing to do
  *         -1 on error
  **********************************************************************/
 
 
-static int __perdition_ssl_log_certificate(io_t * io)
+static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 {
-	char *str;
-	X509 *server_cert;
-	SSL *ssl;
+	char *str = NULL;
 
 	extern options_t opt;
 
-	if (!opt.debug) {
-		return (0);
-	}
-
-	ssl = io_get_ssl(io);
-	if (!ssl) {
-		VANESSA_LOGGER_DEBUG("vanessa_socket_get_ssl");
-		return (0);
+	if(!opt.debug) {
+		return(0);
 	}
 
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("SSL connection using %s",
 				    SSL_get_cipher(ssl));
 
-	server_cert = SSL_get_peer_certificate(ssl);
-	if (!server_cert) {
-		/* Nothing more to do */
-		return (0);
+	if (!cert) {
+		return(0);
 	}
 
-	str = X509_NAME_oneline(X509_get_subject_name(server_cert), 0, 0);
+	str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 	if (!str) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
-		return (-1);
+		return(1);
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("subject: %s", str);
 	free(str);
 
-	str = X509_NAME_oneline(X509_get_issuer_name(server_cert), 0, 0);
+	str = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
 	if (!str) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
-		return (-1);
+		return(-1);
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("issuer: %s", str);
+
 	free(str);
+	return(0);
+}
 
-	/* We could do all sorts of certificate verification stuff here before
-	 * deallocating the certificate. */
-	X509_free(server_cert);
 
-	return (0);
+/**********************************************************************
+ * __perdition_ssl_check_certificate
+ * Check the details of a certificate
+ * pre: io: connectoion to check certificate of
+ *      ca: certificate authority file. Used to verify the server's
+ *          certificate. May be NULL or ""
+ *      server: server to match the common name of
+ * post: details of cerfificate are loged, if there is one
+ *       common name of the certificate is verified
+ * return: 0 on success, including if there was nothing to do
+ *         -1 on error
+ *         -2 if common name mismatched server
+ *         -3 if certificate was not verified
+ **********************************************************************/
+
+
+static int __perdition_ssl_check_certificate(io_t * io, const char *ca,
+		const char *server)
+{
+	X509 *cert = NULL;
+	SSL *ssl;
+	int status = 0;
+
+	ssl = io_get_ssl(io);
+	if (!ssl) {
+		VANESSA_LOGGER_DEBUG("vanessa_socket_get_ssl");
+		status = -1;
+		goto leave;
+	}
+	cert = SSL_get_peer_certificate(ssl);
+
+	status = __perdition_ssl_log_certificate(ssl, cert);
+	if(status < 0) {
+		VANESSA_LOGGER_DEBUG("__perdition_ssl_log_certificate");
+		goto leave;
+	}
+
+	if(ca && *ca && SSL_get_verify_result(ssl) != X509_V_OK) {
+		VANESSA_LOGGER_ERR("Certificate was not verified");
+		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_get_verify_result");
+		status = -3;
+		goto leave;
+	}
+
+	status = __perdition_ssl_check_common_name(cert, server);
+	if(status < 0) {
+		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_common_name");
+		goto leave;
+	}
+
+leave:
+	if(cert) {
+		X509_free(cert);
+	}
+
+	return (status);
 }
 
 
@@ -299,20 +456,25 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
  * connection.
  * pre: io: io_t to change. A client that has connected to a server, 
  *          SSL_connect() will be called.
+ *      ca: Certificate authority file. May be NULL or ""
+ *          Used to verify the server's certificate
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
+ *      server: server name to verify with the common name in
+ *              the server's certificate
  * post: io_t has an ssl object associated with it and SSL is intiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io, const char *ciphers)
+io_t *perdition_ssl_client_connection(io_t * io, const char *ca,
+		const char *ciphers, const char *server)
 {
 	SSL_CTX *ssl_ctx;
 	io_t *new_io;
 
-	ssl_ctx = perdition_ssl_ctx(NULL, NULL, ciphers);
+	ssl_ctx = perdition_ssl_ctx(ca, NULL, NULL, ciphers);
 	if (!ssl_ctx) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
@@ -325,8 +487,8 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ciphers)
 		return(NULL);
 	}
 
-	if (__perdition_ssl_log_certificate(new_io) < 0) {
-		VANESSA_LOGGER_DEBUG("perdition_ssl_log_certificate");
+	if (__perdition_ssl_check_certificate(new_io, ca, server) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
 		return(NULL);
 	}
@@ -337,7 +499,7 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ciphers)
 
 /**********************************************************************
  * perdition_ssl_server_connection
- * Change a stdio bassed connection that recieves client connections,
+ * Change a stdio bassed connection that receives client connections,
  * into an SSL connection
  * pre: io: io_t to change
  *      ssl_ctx: SSL Context to use
@@ -357,8 +519,8 @@ io_t *perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx)
 		return (NULL);
 	}
 
-	if (__perdition_ssl_log_certificate(new_io) < 0) {
-		VANESSA_LOGGER_DEBUG("perdition_ssl_log_certificate");
+	if (__perdition_ssl_check_certificate(new_io, NULL, NULL) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
 		return(NULL);
 	}

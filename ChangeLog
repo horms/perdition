@@ -64,6 +64,13 @@ XXX
      So that the map libraries are built correctly.
      This is the default on many (most ?) systems anyway
    - Removed Redhat 6.2 specific .spec file
+   - Verify the Common Name of real-server certificates when
+     making outgoing SSL or TLS connections
+   - Removed Redhat 6.2 specific .spec file
+   - Verify real-server certificates using a certificate authority when
+     making outgoing SSL or TLS connections
+   - Verify real-server certificate's common name when
+     making outgoing SSL or TLS connections
 
 ----------------------------------------------------------------------
 

@@ -384,6 +384,13 @@ Use TLS to connect to real pop/imap servers.
 .B tls_all:
 Short hand for tls_listen,tls_all.
 .TP
+.B \-\-ssl_ca_file FILENAME:
+Certificate Authorities to use when verifying certificates of
+real servers. Used for SSL or TLS outgoing connections.
+If  then verification will not take place
+.br
+(default "/etc/perdition/perdition.ca.pem")
+.TP
 .B \-\-ssl_cert_file FILENAME:
 Certificate to use when listening for SSL or TLS connections. Only
 available if perdition is compiled with SSL support.
@@ -407,6 +414,11 @@ Cipher list when making outgoing SSL or TLS connections as per
 \fBciphers\fP(1). If null then openssl's default will be used.
 .br
 (default "(null)")
+.TP
+\-\-ssl_no_cn_verify:
+Don't verify the real-servers common name with the name used.
+to connect to the server. Used for SSL or TLS outgoing
+connections.
 .TP
 \fBNote:\fP Default value for binary flags is off.
 .SH USER DATABASE (POPMAP)
