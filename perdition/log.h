@@ -111,7 +111,7 @@
 
 #define VANESSA_LOGGER_DEBUG_SSL_ERR(str) \
   VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
-  vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, __FUNCTION__ ": %s", str)
+  VANESSA_LOGGER_DEBUG(str)
 #endif /* WITH_SSL_SUPPORT */
 
 #endif /* _PERDITION_LOG_H */
