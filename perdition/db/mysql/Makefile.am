@@ -23,9 +23,9 @@
 #
 ######################################################################
 
-man_MANS = perditiondb_mysql_makedb.1
+man_MANS = perditiondb_mysql_makedb.8
 
-EXTRA_DIST = perditiondb_mysql_makedb perditiondb_mysql_makedb.1
+EXTRA_DIST = perditiondb_mysql_makedb perditiondb_mysql_makedb.8
 
 bin_SCRIPTS = perditiondb_mysql_makedb
 
