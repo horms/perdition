@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+23rd March 2004
 (Horms)
-  * XXX
+  * 1.14beta1
   - Fixed a logic bug in Makefile.popmap(.in) where the popmaps would
     never be built.
   - Fixed problem with pid file creation on FreeBSD (and others)?
