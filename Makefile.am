@@ -23,7 +23,14 @@
 #
 ######################################################################
 
-SUBDIRS = libjain @makegdbm_build_dir@ @makebdb_build_dir@ \
+if GDBM_BUILD
+MAKEGDBM_DIR = makegdbm
+endif
+if BDB_BUILD
+MAKEBDB_DIR = makebdb
+endif
+
+SUBDIRS = libjain $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
 	perdition debian etc packaging
 
 EXTRA_DIST = \

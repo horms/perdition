@@ -23,7 +23,11 @@
 #
 ######################################################################
 
-SUBDIRS = perdition @pam_dir@ rc.d sysconfig
+if PAM_BUILD
+PAM_DIR = pam.d
+endif
+
+SUBDIRS = perdition $(PAM_DIR) rc.d sysconfig
 
 EXTRA_DIST = 
 

@@ -23,7 +23,11 @@
 #
 ######################################################################
 
-SUBDIRS = @ldap_doc_dir@
+if LDAP_DOC_BUILD
+LDAP_DOC_DIR = doc
+endif
+
+SUBDIRS = $(LDAP_DOC_DIR)
 
 man_MANS = perditiondb_ldap_makedb.8
 
