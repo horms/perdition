@@ -23,7 +23,7 @@
 #
 ######################################################################
 
-EXTRA_DIST = perdition.conf Makefile.popmap.in Makefile.popmap
+EXTRA_DIST = perdition.conf Makefile.popmap.in Makefile.popmap popmap
 
 perditionconfdir = $(sysconfdir)/perdition
 perditionconf_DATA = perdition.conf popmap Makefile.popmap

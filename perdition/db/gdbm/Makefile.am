@@ -23,8 +23,6 @@
 #
 ######################################################################
 
-EXTRA_DIST = popmap Makefile.popmap.in Makefile.popmap
-
 lib_LTLIBRARIES = libperditiondb_gdbm.la
 
 libperditiondb_gdbm_la_SOURCES = \
