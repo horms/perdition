@@ -1,0 +1,3 @@
+/etc/init.d/perdition
+/etc/perdition/perdition.conf
+/etc/pam.d/perdition

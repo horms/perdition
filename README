@@ -1,0 +1,33 @@
+README
+
+perdition
+Mail retrieval proxy server
+Copyright (C) 1999  Horms <horms@vergenet.net>
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 59
+Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+----------------------------------------------------------------------
+
+
+
+Perdition is allows users to connect to a content-free pop server that will
+redirect them to their real pop server.  This enables pop for a domain to
+be split across multiple real pop servers on a per user basis.  This can
+also be used to as a POP proxy especially in firewall applications.
+
+For more information see man pages distributed with the package.
+
+perdition(8) perditiondb(7) perditiondb_mysql_makedb(8)
+perditiondb_ldap_makedb(8) perditiondb_postgresql_makedb(8)

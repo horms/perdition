@@ -1,0 +1,437 @@
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.\" perdition.8                                            December 2000
+.\" Horms                                             horms@vergenet.net
+.\"
+.\" perdition
+.\" Mail retrieval proxy server
+.\" Copyright (C) 2000  Horms <horms@vergenet.net>
+.\" 
+.\" This program is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of the
+.\" License, or (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+.\" 02111-1307  USA
+.\"
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TH PERDITION 8 "25th December 2000"
+.SH NAME
+perdition \- POP3 and IMAP4 proxy server
+.SH SYNOPSIS
+\fBperdition\fP [options]
+.SH DESCRIPTION
+\fBperdition\fP is allows users to connect to a content-free POP3 or
+IMAP4 server that will redirect them to their real POP3 or IMAP4
+server respectively. This enables mail retrieval for a domain to
+be split across multiple real mail servers on a per user basis.
+This can also be used to as a POP3 or IMAP4 proxy especially in
+firewall applications.
+
+When a connection is made to perdition in POP3 mode, it reads the
+USER and PASS commands and then refers to its popmap to find
+where the user's connection should be forwarded to. A connection
+to the foreign pop server, perdition then enders the USER and
+PASS commands to the foreign server. If authentication is
+successful then perdition pipes data between the client and the
+foreign server.  If authentication fails then the foreign server
+connection is closed and the client connection is reset to the
+state it was in on initial connection. That is new USER and PASS
+commands are expected. Similarly in IMAP4 mode, perdition accepts
+the LOGIN command and passes the username and password onto the
+back-end IMAP4 server specified in the popmap for authentication.
+
+At this stage the only capabilities supported by perdition in
+IMAP4 mode is IMAP4 and no authentication schemes, other than
+the LOGIN command are accepted.
+.SH OPTIONS
+.TP
+.B \-a, \-\-authenticate_in:
+User is authenticated by perdition before connection to back-end
+server is made.
+.TP
+.B \-B, \-\-no_bind_banner:
+If \-b|\-\-bind_address is specified, then the address will be resolved
+and the reverse\-lookup of this will be used in the greeting. This
+option disables this behaviour an reverts to using the uname to
+derive the hostname for the greeting.
+.TP
+.B \-b, \-\-bind_address:
+Bind to interfaces with this address. In non\-inetd mode, connections
+will only be accepted on interfaces with this address. If NULL
+connections will be accepted from all interfaces. In inetd and
+non\-inetd mode the source address of connections to real servers
+will be this address, if NULL then the operating system will select
+a source address. The address may be an IP address or a hostname.
+.br
+(default "(null)")
+.TP
+.B \-c, \-\-client_server_specification:
+Allow USER of the form ser<delimiter>server[:port] to specify the
+server and port for a user. 
+.sp
+\fBNote:\fP Overrides \-s|\-\-strip_domain.
+.TP
+.B \-D, \-\-domain_delimiter:
+Delimiter used for \-c|\-\-client_server_specification and
+\-s|\-\-strip_domain options. Multi-character delimiters are permitted.
+.br
+(default "@")
+.TP
+.B \-d, \-\-debug:
+Turn on verbose debugging.
+.TP
+.B \-f, \-\-config_file:
+Name of config file to read. If set to "" no config file will be
+used. Command line options override options set in config file.
+.br
+(default "/etc/perdition/perdition.conf")
+.TP
+.B \-g, \-\-group:
+Group to run as. 
+.br
+(default "nobody")
+.TP
+.B \-h, \-\-help:
+Display this message
+.TP
+.B \-i, \-\-inetd_mode:
+Run in inetd mode
+.TP
+.B \-L, \-\-connection_limit:
+Maximum number of connections to accept simultaneously. A value of
+zero sets no limit on the number of simultaneous connections.
+.br
+(default 0)
+.TP
+.B \-l, \-\-listen_port:
+Port to listen on. 
+.br
+(default "protocol dependent")
+.TP
+.B \-M, \-\-map_library:
+Library to open that provides functions to look up the server for a
+user. A null library mean no library will be accessed and hence, no
+lookup will take place.
+.br
+(default "/usr/lib/libperditiondb_gdbm.so")
+.TP
+.B \-m, \-\-map_library_opt:
+String option to pass to database access function provided by the
+library specified by the \-M|\-\-map_library option. The treatment of
+this string is up to the library, in the case of perditiondb_gdbm
+the gdbm map to access is set. 
+.br
+(default "(null)")
+.TP
+.B \-n, \-\-no_lookup:
+Disable host and port lookup Implies \-B|\-\-no_bind_banner
+.TP
+.B \-o, \-\-server_ok_line:
+If authentication with the back\-end server is successful then send
+the servers +OK line to the client, instead of generating one.
+.TP
+.B \-P, \-\-protocol:
+Protocol to use.
+.br
+(default "POP3")
+available protocols: "POP3, IMAP4"
+.TP
+.B \-p, \-\-outgoing_port:
+Define a port to use if a port is not defined for a user in popmap,
+or a default server if it is used. 
+.br
+(default "protocol dependent")
+.TP
+.B \-s, \-\-outgoing_server:
+Define a server to use if a user is not in the popmap. Format is
+servername[:port]. Multiple servers can be delimited by a ','. If
+multiple servers are specified then they are used in a round robin.
+.br
+(default "(null)")
+.TP
+.B \-S, \-\-strip_domain:
+Allow USER of the from user<delimiter>domain where <delimiter>domain
+will be striped off Note: over\-ridden by
+\-c|\-\-client_server_specification.
+.TP
+.B \-t, \-\-timeout:
+Idle timeout in seconds. Value of zero sets infinite timeout.
+.br
+(default 1800)
+.TP
+.B \-u, \-\-username:
+Username to run as. 
+.br
+(default "nobody")
+.TP
+.B \-q, \-\-quiet:
+Only log errors. Overridden by \-d|\-\-debug
+.TP
+\fBNote:\fP Default value for binary flags is off.
+.SH USER DATABASE
+For information on mechanisms for resolving users to a host and port and
+information on the -M|--map_library and -m|--map_library_opt flags, please
+see README.perditiondb.
+.PP
+Note that by specifying an map library no map lookups will occur and
+all connections will use the -s|--outgoing_server. In this way perdition
+can be configured as a "pure proxy".
+.SH STAND\-ALONE MODE
+Normally perdition will bind to a port, and listen for connections.  The
+default port is 110 in POP3 mode and 143 in IMAP4 mode, an alternate port
+can be specified with the \-l|\-\-listen_port command line option. In this 
+mode perdition will fork to manage clients.
+.PP
+.B Stand\-Alone Mode: RPM Installation
+.PP
+In the RPM distribution perdition can be started and 
+stopped in stand\-alone mode using:
+.PP
+/etc/rc.d/init.d/perdition start
+.br
+/etc/rc.d/init.d/perdition stop
+.PP
+Editing /etc/sysconfig/perdition allows control of whether perdition
+will be started in POP3 mode, IMAP4 mode or both (or neither).
+.PP
+The syntax for this file is:
+.PP
+.nf
+POP3=[on|off]
+IMAP4=[on|off]
+.fi
+.PP
+The file is sourced into the init script so normal bash syntax
+applies. Blank lines are ignored, as is anything after a # on a line.
+.PP
+e.g.
+.PP
+.nf
+POP3=on
+IMAP4=on
+.fi
+.PP
+If you are using the RPM and you do not want perdition to run in 
+stand\-alone mode at boot up after installation run:
+.PP
+/sbin/chkconfig \-\-del perdition
+.PP
+.B Stand\-Alone Mode: Debian Installation
+.PP
+In the Debian distribution perdition can be started and 
+stopped in stand\-alone mode using:
+.PP
+/etc/init.d/perdition start
+.br
+/etc/init.d/perdition stop
+.PP
+Editing the definitions of POP3 and IMAP4 in /etc/init.d/perdition allows 
+control of whether perdition will be started in POP3 mode, IMAP4 mode or 
+both (or neither). The valid values are "on" and "off".
+.PP
+If you are using a Debian installation of perdition and you do not want 
+perdition to run in stand\-alone mode at boot up after installation run:
+.PP
+/usr/sbin/update\-rc.d perdition remove
+.SH INETD MODE
+Perdition can be used in conjunction with inetd. This enables perdition to
+benefit from tcpd where access can be controlled to some extent using
+/etc/hosts.allow and /etc/hosts.deny.
+.PP
+To use perdition with inetd you need to add a line to /etc/inetd.conf and
+then restart inetd. The following line was added to run perdition with
+inetd under Red Hat 6.x and Debian 2.2.:
+.PP
+pop3  stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P POP3
+.br
+imap2 stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P IMAP4
+.PP
+On RedHat 6.x inetd should then be restarted using:
+.PP
+/etc/rc.d/init.d/inet restart
+.PP
+On Debian inetd should then be restarted using:
+.PP
+/etc/init.d/inet restart
+.PP
+The procedure for this may vary slightly on different installations.  In
+particular you may have to run killall \-HUP inetd or kill \-HUP <inetd pid>
+to restart inetd.
+.SH LOCAL AUTHENTICATION
+If perdition has been compiled against libpam, it may  be set up to
+authenticate the user locally once the USER and PASS commands are entered
+by specifying the \-a|\-\-authenticate_in option on the command line. This
+authentication happens before the connection to the foreign server is made
+and must succeed for a connection to the foreign server to be made. 
+.PP
+This authentication uses PAM and a sample pam configuration file for
+perdition can be found in etc/pam.d/perdition in the source tree. This
+should be dropped into /etc/pam.d.
+.SH DOMAIN DELIMITER
+A multi character domain delimiter can be set using the \-d|\-\-domain
+delimiter option. This sets the delimiter used in conjunction with the
+\-S|\-\-strip_domain and \-c|\-\-client_server_specification options.
+.SH USER PORT SPECIFICATION
+If perdition is invoked with the \-c|\-\-client_server_specification flag
+then the user may optionally specify the server and port that perdition
+should connect to for the client using the syntax
+user<delimiter>host[:port].
+.PP
+Example:
+.nf
+IMAP4
+
+0 login henry@that.host:143
+
+POP3
+
+user james@other.host
+.fi
+.SH STRIP DOMAIN
+IF strip domain is set using the \-s|\-\-strip_domain option then servers
+giving usernames of the form user<delimiter>host[:port] will have the text
+including and after <delimiter> removed from their username before
+authentication takes place.  This option does not take effect if User Port
+Specification, \-c|\-\-client_server_specification is turned on.
+.SH IDLE TIMEOUTS
+If there is no input from the client or back\-end server for greater than
+timeout seconds then the connection is closed. The default timeout is 1800
+seconds and can be specified on the command line with the \-t|\-\-timeout
+option.  A time out of 0 means that timeouts are disabled and clients and
+back\-end servers can idle indefinitely.
+.SH LOOP DETECTION
+The greeting that perdition displays when accepting an incoming connection
+is "+OK POP3 Ready <hostname>" or "* OK IMAP4 Ready <hostname>" in POP3 and
+IMAP4 modes respectively. If when perdition connects to the back\-end server
+the greeting string matches the greeting string of the perdition process
+making the connection then it is assumed that perdition is connecting to
+itself and a "Re\-Authentication Failure" is returned to the client.
+.SH CONFIGURATION FILE
+The format of a line of the configuration file is:
+.PP
+<key> <value>
+.PP
+Key is either a short or long option as per
+perdition \-h|\-\-help, without the leading \- or \-\-.  Blank lines are
+ignored, as is anything including and after a # (hash) on a
+line. If a \\ precedes a new line then the lines will be concatenated.
+IF a \\ precedes any other character, including a # (hash) it
+will be treated as a literal. Anything inside single quotes (')
+will be treated as a litreal. Anything other than a (') inside
+double quotes (") will be treated as a litreal. Whitespace
+in keys must be escaped or quoted. Whitespace in values
+need not be escaped or quoted.
+
+Options that do not make sense in the configuration file such
+as h|help and f|config_file  are ignored. Options specified on
+the command line override the options in this file.
+.PP
+Example configuration File.
+.nf
+# perdition.conf
+l           110             #Sort option used as key
+group       mail            #Long option used as key
+a                           #Option with no argument
+.fi
+.SH LOGGING
+Logs are logged via syslog using the facility mail.  You should
+inspect /etc/syslog.conf to find where these logs are written.
+Under Red Hat 6.x these logs will be written to /var/log/maillog,
+under Solaris 7 these logs will be written to /var/log/syslog.
+Normally each session will have two perdition log entries.
+Logs are prepended, depending on syslog with the date, host, and
+perdition[<pid>]: .
+.PP
+When the user connects the format of the logs is:
+.PP
+Connect: [<client_ip>\-><server_ip>] user=<username> server=<server> port=<port>
+.TP
+.B client_ip:
+The source ip address for the client.
+.TP
+.B server_ip:
+The ip address that the connection was accepted for by the server.
+The client_ip, \-> and server_ip will be omitted in inetd mode
+.TP
+.B username:
+The username given by the user to perdition
+.TP
+.B server:
+The back end server for the user
+.TP
+.B port:
+The port to connect to on the server
+
+Server will be "(null)" if no server was found.
+.fi
+.PP
+When a user disconnects after a successful connection to
+a back\-end server the format of the log is:
+.PP
+Closing:  [<client_ip>\-><server_ip> ]username=<username> <bytes_in> <bytes_out>
+.TP
+.B client_ip:
+The source ip address for the client.
+.TP
+.B server_ip:
+The ip address that the connection was accepted for by the server.
+The client_ip, \-> and server_ip will be omitted in inetd mode
+.TP
+.B username:
+The username given by the user to perdition
+.TP
+.B bytes_in:
+The number of bytes sent from the client to the server
+.TP
+.B bytes_out:
+The number of bytes sent to the client from the server
+.PP
+Fatal errors are also logged. In stand\-alone mode the startup parameters
+are logged on initialisation.  If the \-d|\-\-debug command line option or
+configuration file directive is used then startup parameters are logged in
+inetd mode and in both stand\-alone and identd mode additional debugging
+messages are logged. As the flag implies, this is useful for debugging but
+is probably too verbose for production systems. If the \-q|\-\-quiet command
+line option or configuration file directive is used, only errors will be
+logged. This is overridden by \-d|\-\-debug.
+.SH FILES
+.TP
+\fC/etc/perdition/perdition.conf
+.SH SEE ALSO
+perditiondb(8), inetd(8)
+.SH AUTHORS
+.B Lead
+.br
+Horms <horms@vergenet.net>
+.PP
+.B Perditiondb Library Authors
+.br
+Frederic Delchambre <dedel@freegates.be>      (MySQL)
+.br
+Chris Stratford: <chriss@uk.uu.net>           (LDAP)
+.br
+Nathan Neulinger <nneul@umr.edu>              (NIS)
+.PP
+.B Contributing Authors
+.br
+Daniel Rosen <droesen@entire\-systems.com>
+.br
+Clinton Work <work@scripty.com>
+.br
+Youri <ya@linkline.be>
+.br
+Jeremy Nelson <jnelson@optusnet.com.au>
+.br
+Wim Bonis <bonis@solution\-service.de>
+.br
+Arvid Requate <arvid@Team.OWL\-Online.DE>
+.br
+Mikolaj J. Habryn <dichro@rcpt.to>

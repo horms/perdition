@@ -1,0 +1,50 @@
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.\" makgdbm.1                                              December 2000
+.\" Horms                                             horms@vergenet.net
+.\"
+.\" perdition
+.\" Mail retrieval proxy server
+.\" Copyright (C) 2000  Horms <horms@vergenet.net>
+.\" 
+.\" This program is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of the
+.\" License, or (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+.\" 02111-1307  USA
+.\"
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TH MAKEGDBM 1 "25th December 2000"
+.SH NAME
+makegdbm \- Make a GDBM database from stdin 
+.SH SYNOPSIS
+\fBmakegdbm\fP [options] gdbmname
+.SH DESCRIPTION
+\fBmakegdbm\fP allows a GBDM database to be formed
+from input read from stdin. \fBgdbmname\fP is the name of the GBDM database
+to create, ususally the name of this file will end in .db. If the file
+allready exists is will be overwritten. The format of the input is
+key, value pairs separated by a colon (:). 
+.PP
+Example:
+.PP
+this is a key:this is a value
+.SH OPTIONS
+.TP
+.B -h, --help: 
+Print usage information.
+.TP
+.B -u, --undo: 
+Print content of database file, one entry a line.
+.SH SEE ALSO
+gdbm(3)
+.SH AUTHOR
+Horms <horms@vergenet.net>
