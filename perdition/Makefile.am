@@ -87,7 +87,7 @@ LDADD = \
 @nsl_lib@ \
 @resolv_lib@ \
 @dl_lib@ \
-@ssl_libs@
+@ssl_libs@ -ldmalloc
 
 perdition_LDFLAGS = -rdynamic
 

@@ -48,39 +48,17 @@
  *       else return username
  * return: domain delimiter and domain added as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_add_domain_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
  **********************************************************************/
 
-static char *__username_add_domain_str=NULL;
-
-char *username_add_domain(char *username, struct in_addr *to_addr, 
-  int state){
+char *username_add_domain(char *username, struct in_addr *to_addr, int state){
   struct hostent *hp;
   char *domainpart;
+  char *new_str;
 
   extern options_t opt;
 
   if(!(opt.add_domain&state) || to_addr==NULL)
     return(username);
-
-  switch(state){
-    case STATE_GET_SERVER:
-    case STATE_LOCAL_AUTH:
-    case STATE_REMOTE_LOGIN:
-      break;
-    default:
-      PERDITION_DEBUG("unknown state\n");
-      return(NULL);
-  }
-
-  /* If we have already added the domain, just return that value */
-  if(__username_add_domain_str!=NULL) {
-    PERDITION_DEBUG(
-      "username already contains domain delimiter, not adding domain");
-    return(__username_add_domain_str);
-  }
 
   /* If we already have a domain delimiter, stop now */
   if(strstr(username, opt.domain_delimiter)!=NULL)
@@ -99,36 +77,19 @@ char *username_add_domain(char *username, struct in_addr *to_addr,
     return(username);
   }
 
-  if ((__username_add_domain_str=(char *)malloc(
+  if ((new_str=(char *)malloc(
         strlen(username)+strlen(opt.domain_delimiter)+strlen(domainpart)+1
   ))==NULL){
     PERDITION_DEBUG_ERRNO("malloc");
-    return(username);
+    return(NULL);
   }
 
   /* Build the new username */
-  strcpy(__username_add_domain_str, username);
-  strcat(__username_add_domain_str, opt.domain_delimiter);
-  strcat(__username_add_domain_str, domainpart);
+  strcpy(new_str, username);
+  strcat(new_str, opt.domain_delimiter);
+  strcat(new_str, domainpart);
 
-  return(__username_add_domain_str);
-}
-
-
-/**********************************************************************
- * username_add_domain_free
- * Free any memory held by username_add_domain state
- * pre: none
- * post: If any memory has been allocated internally by 
- *       username_add_domain() it is freed
- * return: none
- **********************************************************************/
-
-void username_add_domain_free(void){
-  if(__username_add_domain_str!=NULL){
-    free(__username_add_domain_str);
-  }
-  __username_add_domain_str=NULL;
+  return(new_str);
 }
 
 
@@ -146,67 +107,35 @@ void username_add_domain_free(void){
  *       else return username
  * return: username, stripped as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_strip_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
  **********************************************************************/
 
-static char *__username_strip_str=NULL;
-
 char *username_strip(char *username, int state){
-  extern options_t opt;
   char *end;
+  char *new_str;
   size_t len;
+
+  extern options_t opt;
 
   if(!(opt.strip_domain&state))
     return(username);
 
-  switch(state){
-    case STATE_GET_SERVER:
-      if(opt.client_server_specification)
-        return(username);
-      break;
-    case STATE_LOCAL_AUTH:
-    case STATE_REMOTE_LOGIN:
-      break;
-    default:
-      PERDITION_DEBUG("unknown state\n");
-      return(NULL);
+  if(state==STATE_GET_SERVER && opt.client_server_specification){
+    return(username);
   }
 
-  if(__username_strip_str==NULL){
-    if((end=strstr(username, opt.domain_delimiter))==NULL){
-      __username_strip_str=username;
-    }
-    else {
-      len=end-username;
-      if((__username_strip_str=(char *)malloc(len+1))==NULL){
-	PERDITION_DEBUG_ERRNO("malloc");
-	return(NULL);
-      }
-      strncpy(__username_strip_str, username, len);
-      *(__username_strip_str+len)='\0';
-    }
+  if((end=strstr(username, opt.domain_delimiter))==NULL){
+    return(username);
   }
 
-  return(__username_strip_str);
-}
-
-
-/**********************************************************************
- * username_strip_free
- * Free any memory held by username_strip state
- * pre: none
- * post: If any memory has been allocated internally by username_strip()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-void username_strip_free(void){
-  if(__username_strip_str!=NULL){
-    free(__username_strip_str);
+  len=end-username;
+  if((new_str=(char *)malloc(len+1))==NULL){
+    PERDITION_DEBUG_ERRNO("malloc");
+    return(NULL);
   }
-  __username_strip_str=NULL;
+  strncpy(new_str, username, len);
+  *(new_str+len)='\0';
+
+  return(new_str);
 }
 
 
@@ -224,53 +153,21 @@ void username_strip_free(void){
  *       else return username
  * return: username, stripped as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_lower_case_free()
  **********************************************************************/
 
-static char *__username_lower_case_str=NULL;
-
 char *username_lower_case(char *username, int state){
+  char *new_str;
   extern options_t opt;
 
   if(!(opt.lower_case&state))
     return(username);
 
-  switch(state){
-    case STATE_GET_SERVER:
-    case STATE_LOCAL_AUTH:
-    case STATE_REMOTE_LOGIN:
-      break;
-    default:
-      PERDITION_DEBUG("unknown state\n");
-      return(NULL);
-  }
-
-  username_lower_case_free();
-
-  if((__username_lower_case_str=strdup(username))==NULL){
+  if((new_str=strdup(username))==NULL){
     PERDITION_DEBUG_ERRNO("strdup");
     return(NULL);
   }
 
-  return(str_tolower(__username_lower_case_str));
-}
-
-
-/**********************************************************************
- * username_lower_case_free
- * Free any memory held by username_lower_case state
- * pre: none
- * post: If any memory has been allocated internally by 
- *       username_lower_case()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-void username_lower_case_free(void){
-  if(__username_lower_case_str!=NULL){
-    free(__username_lower_case_str);
-  }
-  __username_lower_case_str=NULL;
+  return(str_tolower(new_str));
 }
 
 
@@ -287,44 +184,35 @@ void username_lower_case_free(void){
  *       username_lower_case().
  * return: username modified as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call
- *       strip_username_and_add_domain_free()
- *       You should call this each time username changes as some
- *       intermediate results are cached are not checked for staleness.
  **********************************************************************/
 
 char *username_mangle(char *username, 
-    struct in_addr *to_addr, int state){
+  struct in_addr *to_addr, int state){
   char *result;
+  char *old_result;
 
   if((result=username_strip(username, state))==NULL){
     PERDITION_DEBUG("username_strip");
     return(NULL);
   }
+
+  old_result = result;
   if((result=username_add_domain(result, to_addr, state))==NULL){
     PERDITION_DEBUG("username_add_domain");
     return(NULL);
   }
-  if((result=username_lower_case(result, state))==NULL){
+  if(old_result != result) {
+      free(old_result);
+  }
+
+  old_result = result;
+  if((result=username_lower_case(old_result, state))==NULL){
     PERDITION_DEBUG("username_lower_case");
     return(NULL);
   }
+  if(old_result != result) {
+      free(old_result);
+  }
 
   return(result);
-}
-
-
-/**********************************************************************
- * username_mangle_free
- * Free any memory held by strip_username and add_domain states
- * pre: none
- * post: Memory is freed as per username_strip_free(),
- *       username_add_domain_free() and username_lower_case_free();
- * return: none
- **********************************************************************/
-
-void username_mangle_free(void){
-  username_strip_free();
-  username_add_domain_free();
-  username_lower_case_free();
 }

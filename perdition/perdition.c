@@ -51,6 +51,8 @@
 #include "server_port.h"
 #include "username.h"
 
+#include <dmalloc.h>
+
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
 
@@ -78,14 +80,28 @@ static void perdition_reread_handler(int sig);
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
+  if(username!=NULL && username!=pw.pw_name && username!=pw2.pw_name){ \
+    free(username); \
+  } \
+  username=NULL; \
+  if(pw2.pw_name!=NULL && pw2.pw_name!=pw.pw_name){ \
+    free(pw2.pw_name); \
+  } \
+  pw2.pw_name=NULL; \
+  pw2.pw_passwd=NULL; \
   if(pw.pw_name!=NULL){ \
     free(pw.pw_name); \
-      pw.pw_name=NULL; \
+    pw.pw_name=NULL; \
   } \
   if(pw.pw_passwd!=NULL){ \
     free(pw.pw_passwd); \
-      pw.pw_passwd=NULL;\
+    pw.pw_passwd=NULL;\
   } \
+  if(pw2.pw_name!=NULL){ \
+    free(pw2.pw_name); \
+    pw2.pw_name=NULL; \
+  } \
+  pw2.pw_passwd=NULL; \
   if (!round_robin_server){ \
     server_port_destroy(server_port); \
   } \
@@ -95,8 +111,7 @@ static void perdition_reread_handler(int sig);
   } \
   server_io=NULL; \
   server_port=NULL; \
-  token_destroy(&tag); \
-  username_mangle_free();
+  token_destroy(&tag); 
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -145,8 +160,8 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
  **********************************************************************/
 
 int main (int argc, char **argv){
-  struct passwd pw;
-  struct passwd pw2;
+  struct passwd pw = {NULL, NULL};
+  struct passwd pw2 = {NULL, NULL};
   struct in_addr *to_addr;
   unsigned char *server_ok_buf=NULL;
   unsigned char *buffer;
@@ -158,7 +173,7 @@ int main (int argc, char **argv){
   char from_str[17];
   char to_str[17];
   char *servername=NULL;
-  char *username;
+  char *username=NULL;
   char *port=NULL;
   io_t *client_io=NULL;
   io_t *server_io=NULL;
@@ -504,9 +519,7 @@ int main (int argc, char **argv){
       daemon_exit_cleanly(0);
     }
 
-    /*Read the server from the map, if we have a map*/
-    if((username=username_mangle(pw.pw_name, 
-          to_addr, STATE_GET_SERVER))==NULL){
+    if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
       PERDITION_DEBUG("username_mangle STATE_GET_SERVER");
       PERDITION_ERR_UNSAFE(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
@@ -515,6 +528,7 @@ int main (int argc, char **argv){
       daemon_exit_cleanly(-1);
     }
 
+    /*Read the server from the map, if we have a map*/
     if(
       opt.map_library!=NULL &&
       *(opt.map_library)!='\0' &&
@@ -529,7 +543,6 @@ int main (int argc, char **argv){
         /* The Username */
         if(opt.username_from_database){
           free(pw.pw_name);
-          username_mangle_free();
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
 	    PERDITION_DEBUG_ERRNO("strdup");
@@ -606,7 +619,7 @@ int main (int argc, char **argv){
         );
         daemon_exit_cleanly(-1);
       }
-    
+
       /*
        * If local authentcation is used then now is the time to
        * Become someone else

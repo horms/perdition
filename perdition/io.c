@@ -84,8 +84,7 @@ static __io_t *__io_create_fd(
   __io_fd_t *io_fd;
   __io_t *io;
 
-  if((io_fd=(__io_fd_t *)malloc(
-	sizeof(__io_fd_t)))==NULL){
+  if((io_fd=(__io_fd_t *)malloc(sizeof(__io_fd_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 1");
     return(NULL);
   }
@@ -93,8 +92,7 @@ static __io_t *__io_create_fd(
   io_fd->read=read_fd;
   io_fd->write=write_fd;
 
-  if((io=(__io_t *)malloc(
-	sizeof(__io_t)))==NULL){
+  if((io=(__io_t *)malloc(sizeof(__io_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 2");
     free(io_fd);
     return(NULL);
@@ -182,12 +180,18 @@ static void __io_destroy(__io_t *io){
 
   switch(io->type){
     case __io_fd:
-      free(io->data.d_fd);
+      if(io->data.d_fd != NULL) {
+        free(io->data.d_fd);
+      }
+      io->data.d_fd = NULL;
       break;
 #ifdef WITH_SSL_SUPPORT
     case __io_ssl:
-      SSL_free(io->data.d_ssl->ssl);
-      free(io->data.d_ssl);
+      if(io->data.d_ssl != NULL) {
+        SSL_free(io->data.d_ssl->ssl);
+        free(io->data.d_ssl);
+        io->data.d_ssl = NULL;
+      }
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
@@ -222,7 +226,6 @@ static ssize_t __io_write(
     PERDITION_DEBUG("NULL io");
     return(-1);
   }
-
 
   switch(io->type){
     case __io_fd:

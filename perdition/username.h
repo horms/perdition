@@ -46,25 +46,9 @@
  *       else return username
  * return: domain delimiter and domain added as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_add_domain_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
  **********************************************************************/
 
-char *username_add_domain(char *username, struct in_addr *to_addr, 
-  int state);
-
-
-/**********************************************************************
- * username_add_domain_free
- * Free any memory held by username_add_domain state
- * pre: none
- * post: If any memory has been allocated internally by 
- *       username_add_domain() it is freed
- * return: none
- **********************************************************************/
-
-void username_add_domain_free(void);
+char *username_add_domain(char *username, struct in_addr *to_addr, int state);
 
 
 /**********************************************************************
@@ -81,24 +65,9 @@ void username_add_domain_free(void);
  *       else return username
  * return: username, stripped as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_strip_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
  **********************************************************************/
 
 char *username_strip(char *username, int state);
-
-
-/**********************************************************************
- * username_strip_free
- * Free any memory held by username_strip state
- * pre: none
- * post: If any memory has been allocated internally by username_strip()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-void username_strip_free(void);
 
 
 /**********************************************************************
@@ -115,23 +84,9 @@ void username_strip_free(void);
  *       else return username
  * return: username, stripped as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call username_lower_case_free()
  **********************************************************************/
 
 char *username_lower_case(char *username, int state);
-
-
-/**********************************************************************
- * username_lower_case_free
- * Free any memory held by username_lower_case state
- * pre: none
- * post: If any memory has been allocated internally by 
- *       username_lower_case()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-void username_lower_case_free(void);
 
 
 /**********************************************************************
@@ -147,24 +102,8 @@ void username_lower_case_free(void);
  *       username_lower_case().
  * return: username modified as appropriate
  *         NULL on error
- * Note: to free any memory that may be used call
- *       strip_username_and_add_domain_free()
- *       You should call this each time username changes as some
- *       intermediate results are cached are not checked for staleness.
  **********************************************************************/
 
 char *username_mangle(char *username, struct in_addr *to_addr, int state);
-
-
-/**********************************************************************
- * username_mangle_free
- * Free any memory held by strip_username and add_domain states
- * pre: none
- * post: Memory is freed as per username_strip_free(),
- *       username_add_domain_free() and username_lower_case_free();
- * return: none
- **********************************************************************/
-
-void username_mangle_free(void);
 
 #endif /* USERNAME_BERT */
