@@ -15,6 +15,7 @@ XXX
   - Fixed minor memory leak in pid file creation
   - Fixed segmentation fault in ldap module if the zeroth atribute
     returned was NULL. Jay Zh
+  - Fixed client_server_specification. It was broken.
 
 ----------------------------------------------------------------------
 

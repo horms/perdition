@@ -337,7 +337,7 @@ user_server_port_t
  
   extern options_t opt;
 
-  if(!dbserver_get && !dbserver_get2) {
+  if(!dbserver_get && !dbserver_get2 && !opt.client_server_specification) {
     return(NULL);
   }
 
@@ -353,6 +353,7 @@ user_server_port_t
       user_server_port_destroy(usp);
       return(NULL);
     }
+    return(usp);
   }
 
   if(opt.query_key == NULL) {

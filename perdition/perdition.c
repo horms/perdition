@@ -650,7 +650,7 @@ int main (int argc, char **argv, char **envp){
     }
 
     /*Read the server from the map, if we have a map*/
-    if(dbserver_get || dbserver_get2) {
+    if(dbserver_get || dbserver_get2 || opt.client_server_specification) {
     	usp = getserver(username, from_str, to_str, 
 			       peername==NULL?0:ntohs(peername->sin_port), 
 			       sockname==NULL?0:ntohs(sockname->sin_port), 
