@@ -411,8 +411,8 @@ int dbserver_get(const char *key_str,
 	}
 
 	/* See how many attributes we got */
-	for (attrcount = 0; lud->lud_attrs[attrcount] != NULL;
-	     attrcount++);
+	for (attrcount = 0; 
+	     lud->lud_attrs[attrcount] != NULL && attrcount < 3; attrcount++);
 
 	/* Store the attributes somewhere */
 	returns = (char **) calloc(attrcount, sizeof(char *));
@@ -456,7 +456,7 @@ int dbserver_get(const char *key_str,
 	ber = NULL;
 
 	/* Add in some extra for the separators and terminating NULL */
-	*len_return += attrcount;
+	*len_return += 2 + strlen(opt.domain_delimiter);
 
 	if ((*str_return = (char *) calloc(1, *len_return)) == NULL) {
 		VANESSA_LOGGER_DEBUG_ERRNO("str_return calloc");
@@ -465,16 +465,23 @@ int dbserver_get(const char *key_str,
 	}
 
 	/* Build the return string */
+	if (attrcount > 0 && returns[0]) {
+		strcat(*str_return, returns[0]);
+	}
+	if (attrcount > 1 && returns[1]) {
+		if (returns[0]) {
+			strcat(*str_return, opt.domain_delimiter);
+		}
+		strcat(*str_return, returns[1]);
+	}
+	if (attrcount > 2 && returns[2] && returns[1]) {
+		strcat(*str_return, ":");
+		strcat(*str_return, returns[2]);
+	}
 	for (count = 0; count < attrcount; count++) {
 		if (!returns[count]) {
 			continue;
 		}
-		if (vanessa_socket_str_is_digit(returns[count])) {
-			strcat(*str_return, ":");
-		} else {
-				strcat(*str_return, opt.domain_delimiter);
-		}
-		strcat(*str_return, returns[count]);
 		free(returns[count]);
 		returns[count] = NULL;
 	}

@@ -9,6 +9,8 @@ XXX
 (XXX)
  * XXX
  - Fixed some typos. Updated INSTALL. Jay zh
+ - LDAP lookups no long return a bogus leading @ in the
+   username.
 
 ----------------------------------------------------------------------
 
