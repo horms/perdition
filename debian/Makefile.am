@@ -29,6 +29,7 @@ control \
 copyright \
 perdition-dev.files \
 perdition-ldap.files \
+perdition-ldap.conffiles \
 perdition-ldap.postinst \
 perdition-mysql.files \
 perdition-mysql.postinst \
