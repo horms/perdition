@@ -40,6 +40,11 @@
 #include <printf.h>
 #endif 
 
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
+
 static LDAPURLDesc *ludp;
 
 /**********************************************************************
@@ -170,17 +175,17 @@ int dbserver_get(
   char **str_return, 
   int  *len_return
 ){
-  LDAP *connection;
-  LDAPMessage *res;
-  LDAPMessage *mptr;
-  BerElement *ber;
-  int msgid;
+  LDAP *connection = NULL;
+  LDAPMessage *res = NULL;
+  LDAPMessage *mptr = NULL;
+  BerElement *ber = NULL;
   int count;
   int attrcount;
+  int status = -1;
   char *pstr;
-  char **bv_val=NULL;
-  char *filter;
-  char **ldap_returns;
+  char **bv_val = NULL;
+  char *filter = NULL;
+  char **ldap_returns = NULL;
   char critical;
   char *binddn=NULL;
   char *bindpw=NULL;
@@ -217,7 +222,7 @@ int dbserver_get(
         if (critical) {
           /* If critical RFC2255 says we have to abort */
           PERDITION_INFO_UNSAFE("Critical extension, %s unsupported", pstr);
-          return(-1);
+          goto leave;
         }
         else {
           /* Not critical, we just ignore it */
@@ -234,37 +239,36 @@ int dbserver_get(
   /* Open LDAP connection */
   if ((connection = ldap_open(ludp->lud_host, ludp->lud_port)) == NULL){
     PERDITION_DEBUG("ldap_open");
-    return(-1);
+    goto leave;
   }
-  if ((msgid = ldap_bind_s(connection, binddn, bindpw,
-       LDAP_AUTH_SIMPLE)) != LDAP_SUCCESS){
-    PERDITION_DEBUG("ldap_bind");
-    return(-1);
+  if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE) 
+      != LDAP_SUCCESS){
+    goto leave;
   }
 
   /* Build a filter string */
   if ((filter = (char *)malloc(strlen(key_str) +
        strlen(ludp->lud_filter))) == NULL) {
     PERDITION_DEBUG_ERRNO("filter malloc");
-    ldap_unbind_s(connection);
-    return(-3);
+    status = -3;
+    goto leave;
   }
   sprintf(filter, ludp->lud_filter, key_str);
 
   /* Perform the search */
   if ((ldap_search_s(connection, ludp->lud_dn, ludp->lud_scope,
        filter, ludp->lud_attrs, 0, &res)) != LDAP_SUCCESS) {
-    free(filter);
-    ldap_unbind_s(connection);
-    return(-1);
+    PERDITION_DEBUG_ERRNO("ldap_search_s");
+    goto leave;
   }
   free(filter);
+  filter = NULL;
 
   /* See what we got back - we only bother with the first entry */
   if ((mptr = ldap_first_entry(connection, res)) == NULL) {
     PERDITION_DEBUG("ldap_first_entry");
-    ldap_unbind_s(connection);
-    return(-2);
+    status = -2;
+    goto leave;
   }
 
   /* See how many attributes we got */
@@ -273,13 +277,10 @@ int dbserver_get(
   /* Store the attributes somewhere */
   if ((ldap_returns = (char **)malloc(attrcount * sizeof(char *))) == NULL) {
     PERDITION_DEBUG_ERRNO("ldap_returns malloc");
-    ldap_unbind_s(connection);
-    return(-3);
+    status = -3;
+    goto leave;
   }
-
-  for (count = 0; count < attrcount; count++) {
-    ldap_returns[count] = NULL;
-  }
+  memset(ldap_returns, 0, attrcount * sizeof(char *));
 
   *len_return = 0;
   for (pstr = ldap_first_attribute(connection, mptr, &ber); pstr != NULL;
@@ -289,24 +290,33 @@ int dbserver_get(
     for (count = 0; count < attrcount; count++) {
       if (strcasecmp(ludp->lud_attrs[count], pstr) == 0) {
         *len_return += strlen(*bv_val);
+	if(ldap_returns[count] != NULL) {
+		free(ldap_returns[count]);
+	}
         if ((ldap_returns[count] = (char *)malloc(strlen(*bv_val)+1)) == NULL) {
           ldap_value_free(bv_val);
-          ldap_unbind_s(connection);
-          return(-3);
+          ldap_memfree(pstr);
+	  status = -3;
+	  goto leave;
         }
         strcpy(ldap_returns[count], *bv_val);
       }
     }
+
     ldap_value_free(bv_val);
+    ldap_memfree(pstr);
   }
+
+  ber_free(ber, 0);
+  ber = NULL;
 
   /* Add in some extra for the separators and terminating NULL */
   *len_return += attrcount;
 
   if ((*str_return = (char *)malloc(*len_return)) == NULL){
-    PERDITION_DEBUG_ERRNO("servername malloc");
-    ldap_value_free(bv_val);
-    return(-3);
+    PERDITION_DEBUG_ERRNO("str_return malloc");
+    status = -3;
+    goto leave;
   }
 
   /* Build the return string */
@@ -324,9 +334,26 @@ int dbserver_get(
       free(ldap_returns[count]);
     }
   }
-  free(ldap_returns);
-  
-  ldap_unbind_s(connection);
 
-  return(0);
+  status = 0;
+
+leave:
+  if(filter != NULL)
+    free(filter);
+  if(ldap_returns != NULL) {
+    for(count = 0; count < attrcount; count++)
+      if(ldap_returns[count] != NULL)
+        free(ldap_returns[count]);
+    free(ldap_returns);
+  }
+  if(ber != NULL)
+    ber_free(ber, 0);
+  if(ldap_returns != NULL)
+    free(ldap_returns);
+  if(res != NULL)
+    ldap_msgfree(res);
+  if(connection != NULL)
+    ldap_unbind_s(connection);
+
+  return(status);
 }
