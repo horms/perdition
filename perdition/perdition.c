@@ -51,8 +51,6 @@
 #include "server_port.h"
 #include "username.h"
 
-#include <dmalloc.h>
-
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
 
