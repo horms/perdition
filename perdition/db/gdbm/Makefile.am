@@ -29,7 +29,7 @@ confdir = $(sysconfdir)/perdition
 conf_DATA = popmap Makefile.popmap
 
 install-data-hook:
-	(cd $(sysconfdir)/perdition/ && ln -sf Makefile.popmap Makefile)
+	(cd $(DESTDIR)$(sysconfdir)/perdition/ && ln -sf Makefile.popmap Makefile)
 
 lib_LTLIBRARIES = libperditiondb_gdbm.la
 

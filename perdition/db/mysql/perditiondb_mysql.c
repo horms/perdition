@@ -39,6 +39,9 @@ static unsigned int dbport   = PERDITIONDB_MYSQL_DEFAULT_DBPORT;
 static char *dbtable         = PERDITIONDB_MYSQL_DEFAULT_DBTABLE;
 static char *dbuser          = PERDITIONDB_MYSQL_DEFAULT_DBUSER;
 static char *dbpwd           = PERDITIONDB_MYSQL_DEFAULT_DBPWD;
+static char *db_user_col     = PERDITIONDB_MYSQL_DEFAULT_DBUSERCOL;
+static char *db_srv_col      = PERDITIONDB_MYSQL_DEFAULT_DBSRVCOL;
+static char *db_port_col     = PERDITIONDB_MYSQL_DEFAULT_DBPORTCOL;
 
 
 /**********************************************************************
@@ -129,6 +132,15 @@ int dbserver_init(char *options_str){
      if(count>PERDITIONDB_MYSQL_DBPWD){ 
        dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPWD); 
      }
+     if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
+       db_user_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBUSERCOL); 
+     }
+     if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
+       db_srv_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBSRVCOL); 
+     }
+     if(count>PERDITIONDB_MYSQL_DBPORTCOL){ 
+       db_port_col=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPORTCOL); 
+     }
    }
 
    return(0);
@@ -187,16 +199,35 @@ int dbserver_get(
      return(-1);
    }
 
-   if(snprintf(
-     sqlstr, 
-     256, 
-     "select * from %s where user='%s';",
-     dbtable, 
-     key_str
-   )<0){
-   	PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
-	return(-3);
-   }
+   if (db_port_col && db_port_col[0])
+		{
+   		if(snprintf(
+     	sqlstr, 
+     	256, 
+     	"select %s,%s,%s from %s where %s='%s';",
+	 	db_user_col, db_srv_col, db_port_col,
+     	dbtable, db_user_col,
+     	key_str
+   		)<0){
+   		PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
+		return(-3);
+   		}
+		}
+   else
+		{
+   		if(snprintf(
+     	sqlstr, 
+     	256, 
+     	"select %s,%s from %s where %s='%s';",
+	 	db_user_col, db_srv_col,
+     	dbtable, db_user_col,
+     	key_str
+   		)<0){
+   		PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
+		return(-3);
+   		}
+		}
+
    rc = mysql_query(&db,sqlstr);
    if(rc){  
      perditiondb_mysql_log("db_server_get: mysql_query", &db);
@@ -224,27 +255,29 @@ int dbserver_get(
    }
    servername_len=*len_return=1+strlen(row[1]);
 
-   if(row[2]!=NULL && row[2][0]!='\0'){
-     *len_return+=1+strlen(row[2]);
-   }
+   if (db_port_col && db_port_col[0])
+   		if(row[2]!=NULL && row[2][0]!='\0'){
+     	*len_return+=1+strlen(row[2]);
+   		}
 
 
-   if((*str_return=(char *)malloc(*len_return))==NULL){  
-     PERDITION_LOG(LOG_DEBUG,
-       "db_server_get: servername malloc: %s",
-       strerror(errno)
-     );
-     mysql_free_result(res);
-     mysql_close(&db);
-     return(-3);
-   }
+	   if((*str_return=(char *)malloc(*len_return))==NULL){  
+    	 PERDITION_LOG(LOG_DEBUG,
+       	"db_server_get: servername malloc: %s",
+       	strerror(errno)
+     	);
+     	mysql_free_result(res);
+     	mysql_close(&db);
+     	return(-3);
+   		}
 
-   strcpy(*str_return,row[1]);
-   if(row[2]!=NULL && row[2][0]!='\0'){
-     *((*str_return)+servername_len-1)=PERDITIONDB_MYSQL_FIELD_DELIMITER;
-     strcpy((*str_return)+servername_len,row[2]);
-   }
-
+   		strcpy(*str_return,row[1]);
+   if (db_port_col && db_port_col[0])
+   		if(row[2]!=NULL && row[2][0]!='\0'){
+     		*((*str_return)+servername_len-1)=PERDITIONDB_MYSQL_FIELD_DELIMITER;
+     		strcpy((*str_return)+servername_len,row[2]);
+   		}
+   
    mysql_free_result(res);
    mysql_close(&db);
    return(0);
