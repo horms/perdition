@@ -87,9 +87,11 @@ host_triplet = @host@
 AS = @AS@
 CC = @CC@
 DLLTOOL = @DLLTOOL@
+LD = @LD@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
+NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -109,6 +111,7 @@ pam_source = @pam_source@
 pg_build_dir = @pg_build_dir@
 pg_includes = @pg_includes@
 pg_libraries = @pg_libraries@
+resolv_lib = @resolv_lib@
 socket_lib = @socket_lib@
 
 EXTRA_DIST =    perdition.rh   perdition.rh.in   perdition.debian   perdition.debian.in
@@ -122,7 +125,7 @@ perdition.rh.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

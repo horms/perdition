@@ -98,10 +98,12 @@ LDADD = \
 -ljain \
 -lvanessa_adt \
 -lvanessa_socket \
+-lvanessa_logger \
 -lpopt \
 @pam_lib@ \
 @socket_lib@ \
 @nsl_lib@ \
+@resolv_lib@ \
 @dl_lib@
 
 perdition_LDFLAGS = -rdynamic

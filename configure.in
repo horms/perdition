@@ -43,6 +43,7 @@ AC_CHECK_LIB(gdbm, gdbm_open, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
+AC_CHECK_LIB(resolv, inet_aton, [ nsl_lib="-lresolv" ], [ resolv_lib="" ])
 AC_CHECK_LIB(
   popt,
   poptGetContext,
@@ -449,6 +450,7 @@ AC_SUBST(ldap_build_dir)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
 AC_SUBST(nsl_lib)
+AC_SUBST(resolv_lib)
 AC_SUBST(ldap_lib)
 AC_SUBST(pam_dir)
 AC_SUBST(pam_lib)
