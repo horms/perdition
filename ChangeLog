@@ -24,7 +24,28 @@ XXX
    - No longer missinterpates some ssl shutdowns as errors.
    - Reconciled protocol numbers when compiled without SSL.
      Thanks to Yiu <khyiu@hk.quamnet.com>
-
+   - Minor correction to documentation of regular expression
+     back references. Atif Ghaffar <aghaffar@developer.ch>
+   - LDAP URL may contain myltiple occurances of the lookup
+     key. David Morton <mortonda@osprey.net>
+   - Increased my autoconf-foo so defines in acconfig.h actually
+     work as expected (with more recent versions of autoconf ?)
+   - Don't complain if there is no SSL object for an io in
+     io_get_ssl() as this is a valid state to be in.
+   - Use string leterals to authenticate with real server
+     in IMAP4 mode.
+   - Tidied up connection logging
+   - Connection logging works after authentication
+   - Reverted default IMAP capability to "IMAP4 IMAP4REV1" as
+     perdition shouldn't assume that real servers support rfc2088.
+     "IMAP4 IMAP4REV1 LITERAL+" may be set as the capability
+     at run time if desired.
+   - Fail if there are trailing command line arguments.
+   - Explicitly set LDAP protocol version 
+     Russell Mosemann <mose@ns.cune.edu>
+   - perdition_vl has been renamed vl and is no longer global.
+     The logger can be obtained using vanessa_logger_get()
+     if needed.
 
 ----------------------------------------------------------------------
 
@@ -46,7 +67,7 @@ XXX
   - Flush internal buffers for tokeniser when switching between
     the client and the real server in unauthenticated mode.
     This resolves a problem with IMAP literal strings not working.
-  - Support non-syncronising IMAP string litereals as per RFC 2088
+  - Support non-syncronising IMAP string literals as per RFC 2088
   - Correct logging of timeout
   - Add no_daemon option to perdition
   - Fixed version information in makegdbm

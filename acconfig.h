@@ -1,17 +1,17 @@
 /* Define to compile in pam support */
-/* #define WITH_PAM_SUPPORT 1 */
+#undef WITH_PAM_SUPPORT
 
 /* User to run perdition as */
-/* #define WITH_USER "nobody" */
+#define WITH_USER "nobody"
 
 /* Group to run perdition as */
-/* #define WITH_GROUP "nobody" */
+#define WITH_GROUP "nobody"
 
 /* Do we have LDAP LUD extentions */
-/* #define WITH_LDAP_LUD_EXTS 1 */
+#undef WITH_LDAP_LUD_EXTS
 
 /* Should we use DMALLOC */
-/* #define WITH_DMALLOC 1 */
+#undef WITH_DMALLOC
 
 /* Borrowed from Proftpd
  * Proftpd is Licenced under the terms of the GNU General Public Licence
@@ -37,5 +37,3 @@
 #undef HAVE_SETPROCTITLE
 
 /* End of code borrowed from proftpd */
-
-

@@ -23,6 +23,8 @@ From Horms
 	- If chack fails terminate
      - reissue CAPABILITY/CAPA command after intiating tls
      - honour LOGINDISABLED capability for IMAP
++ Fix up LDAP Bind Credentials
++ Fix up LDAP configuration options
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
