@@ -31,6 +31,8 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
+
 #include "options.h"
 
 #ifdef DMALLOC

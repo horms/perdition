@@ -751,7 +751,7 @@ int options(int argc, char **argv, flag_t f){
         break; 
       default:
         VANESSA_LOGGER_DEBUG_RAW("Unknown Option");
-        exit;
+        break;
     }
   }
 
