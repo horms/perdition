@@ -145,6 +145,8 @@
                                              "/perdition.ca.pem"
 #define DEFAULT_SSL_CA_PATH                  PERDITION_SYSCONFDIR \
                                              "/perdition.ca/"
+#define DEFAULT_SSL_CHAIN_FILE               NULL
+#define RECOMENDED_SSL_CHAIN_FILE            RECOMENDED_SSL_CA_FILE
 #define DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED    0
 #define DEFAULT_SSL_CERT_FILE                PERDITION_SYSCONFDIR \
 					     "/perdition.crt.pem"
@@ -154,7 +156,6 @@
 #define DEFAULT_SSL_CERT_VERIFY_DEPTH        9 /* Same as openssl's default */
 #define DEFAULT_SSL_KEY_FILE                 PERDITION_SYSCONFDIR \
 					     "/perdition.key.pem"
-#define DEFAULT_SSL_CHAIN_FILE               NULL
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL

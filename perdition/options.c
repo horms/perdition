@@ -1233,12 +1233,12 @@ void usage(int exit_status){
     "    available protocols: \"%s\"\n"
     " -p|--outgoing_port PORT_NAME|PORT_NUMBER:\n"
     "    Default real-server port. (default \"%s\")\n"
+    " -s|--outgoing_server SERVER[,SERVER...]:\n"
+    "    Default server(s). (default \"%s\")\n"
     " --pid_file FILENAME\n"
     "    Path for pidfile. Must be a full path starting with a '/'\n"
     "    Empty for no pid file. Not used in inetd mode.\n"
     "    (default \"%s/ARGV[0]\")\n"
-    " -s|--outgoing_server SERVER[,SERVER...]:\n"
-    "    Default server(s). (default \"%s\")\n"
     " -S|--strip_domain STATE[,STATE...]:\n"
     "    Allow domain portion of username to be striped in given state(s).\n"
     "    (default \"\")\n"
@@ -1259,12 +1259,22 @@ void usage(int exit_status){
     " --ssl_mode MODE[,MODE ...]:\n"
     "    Use SSL and or TLS for the listening and/or outgoing connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_ca_chain_file:\n"
+    "    Chain file containing Certificate Authorities to use when \n"
+    "    verifying certificates. Overrides ssl_ca_file and ssl_ca_path\n"
+    "    (default \"%s\")\n"
+    "    (recommended location \"%s\")\n"
     " --ssl_ca_file FILENAME:\n"
-    "    Certificate Authorities to use when verifying certificates.\n"
+    "    File containing Certificate Authorities to use when verifying\n"
+    "    certificates. When building the Certificate Authorities chain,\n"
+    "    ssl_ca_file is used first, if set, and then ssl_ca_path, if set.\n"
     "    (default \"%s\")\n"
     "    (recommended location \"%s\")\n"
     " --ssl_ca_path DIRECTORYNAME:\n"
-    "    Certificate Authorities to use when verifying certificates.\n"
+    "    Directory containing Certificate Authorities files to use when\n"
+    "    verifying certificates. When building the Certificate Authorities\n"
+    "    chain, ssl_ca_file is used first, if set, and then ssl_ca_path,\n"
+    "    if set.\n"
     "    (default \"%s\")\n"
     " --ssl_ca_accept_self_signed:\n"
     "    Accept self-signed certificates.\n"
@@ -1284,10 +1294,6 @@ void usage(int exit_status){
     "    (default %d)\n"
     " --ssl_key_file FILENAME:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
-    "    (default \"%s\")\n"
-    " --ssl_chain_file:\n"
-    "    File containing the CA certificates signing the certificate\n"
-    "    when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
     " --ssl_listen_ciphers STRING:\n"
     "    Cipher list when listening for SSL or TLS connections.\n"
@@ -1323,21 +1329,22 @@ void usage(int exit_status){
     OPT_STR(default_protocol_str),
     OPT_STR(available_protocols),
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
-    OPT_STR(PERDTIOIN_PID_DIR),
     OPT_STR(DEFAULT_OUTGOING_SERVER),
+    OPT_STR(PERDTIOIN_PID_DIR),
     DEFAULT_TIMEOUT,
     OPT_STR(DEFAULT_USERNAME),
     OPT_STR(DEFAULT_QUERY_KEY)
 #ifdef WITH_SSL_SUPPORT
     ,
     OPT_STR(NULL),
+    OPT_STR(DEFAULT_SSL_CHAIN_FILE),
+    OPT_STR(RECOMENDED_SSL_CHAIN_FILE),
     OPT_STR(DEFAULT_SSL_CA_FILE),
     OPT_STR(RECOMENDED_SSL_CA_FILE),
     OPT_STR(DEFAULT_SSL_CA_PATH),
     OPT_STR(DEFAULT_SSL_CERT_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
     OPT_STR(DEFAULT_SSL_KEY_FILE),
-    str_null_safe(DEFAULT_SSL_CHAIN_FILE),
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
     OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS)
 #endif /* WITH_SSL_SUPPORT */

@@ -506,7 +506,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 
 /* try to load the certificate chain file if it is not null*/
 	if (chain_file) {
-		if (!SSL_CTX_load_verify_locations(ssl_ctx,chain_file,NULL)) {
+		if (!SSL_CTX_load_verify_locations(ssl_ctx, chain_file, NULL)) {
 			PERDITION_DEBUG_SSL_ERR_UNSAFE(
 					"SSL_CTX_load_verify_locations: "
 					"could not load CA file %s", 

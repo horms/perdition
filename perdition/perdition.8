@@ -227,6 +227,10 @@ Port to listen on.
 The default is 110, 995, 143 and 993 in POP3, POP3S, IMAP4 and
 IMAP4S mode respectively.
 .TP
+.B \-\-login_disabled:
+Do not allow users to log in.
+Also adds LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
+.TP
 .B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
 state(s). See A|add_domain for a description of the states.
@@ -287,6 +291,19 @@ used in a round robin fashion.
 .br
 (default "")
 .TP
+.B \-\-pid_file FILENAME:
+Path for pidfile. Must be a full path starting with a '/'.
+To allow perdition to remove the pid file after the owner of
+the perdition process is changed to a non-root user, it is advised to
+specify a pid file in a subdirectory of the system var state directory
+(usually /var/run).  This subdirectory should be unique to this perdition
+invocation and will be created and have its owner and permitions set to
+allow perdition to subsequently removed the pid file.  
+.br
+Empty for no pid file. Not used in inetd mode.
+.br
+(default <var_state_dir>/<basename>/<basename>.pid)
+.TP
 .B \-S, \-\-strip_domain STATE[,STATE]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain
 will be striped off in given state(s).See add_domain for a
@@ -310,10 +327,6 @@ to connect to, regardless of this option.
 .TP
 .B \-q, \-\-quiet:
 Only log errors. Overridden by debug
-.TP
-.B \-\-login_disabled:
-Do not allow users to log in.
-Also adds LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
 .TP
 .B \-\-query_key FORMAT[,FORMAT...]:
 Instead of using the username as supplied by the end user, possibly
@@ -422,18 +435,31 @@ Used in conjunction with tls_outgoing (or tls_all), ignored otherwise.
 tls_all_force:
 Short-Hand for tls_listen_force,tls_outgoing_force.
 .TP
+.B \-\-ssl_ca_chain_file:
+Sets the optional all-in-one file where you can assemble the
+certificates of Certification Authorities (CA) which form the
+certificate chain of the server certificate. This starts with the
+issuing CA certificate of the "ssl_cert_file" certificate and can
+range up to the root CA certificate. Such a file is simply the
+concatenation of the various PEM-encoded CA Certificate files, usually
+in certificate chain order. Overrides ssl_ca_file and ssl_ca_path.
+.br
+(default NULL, no CA certificate will be used)
+.TP
 .B \-\-ssl_ca_file FILENAME:
-Certificate Authorities to use when verifying certificates of
-real servers. Used for SSL or TLS outgoing connections.
-See SSL_CTX_load_verify_locations(3) for format details.
+Certificate Authorities to use when verifying certificates of real servers.
+Used for SSL or TLS outgoing connections.  When building the Certificate
+Authorities chain, ssl_ca_file is used first, if set, and then ssl_ca_path,
+if set.  See SSL_CTX_load_verify_locations(3) for format details.
 .br
 (default "/etc/perdition/perdition.ca.pem")
 .TP
 .B \-\-ssl_ca_path PATHNAME:
 Certificate Authorities to use when verifying certificates of real servers.
 Used for SSL or TLS outgoing connections.  "openssh c_rehash" should be run
-in this directory when new certificates are added.  See
-SSL_CTX_load_verify_locations(3) for details.
+in this directory when new certificates are added.  When building the
+Certificate Authorities chain, ssl_ca_file is used first, if set, and then
+ssl_ca_path, if set.  See SSL_CTX_load_verify_locations(3) for details.
 .br
 (default "/etc/perdition/perdition.ca/")
 .TP
@@ -471,18 +497,6 @@ Public key to use when listening for SSL or TLS connections.
 Should be in PEM format.
 .br
 (default "/etc/perdition/perdition.key.pem")
-.TP
-.B \-\-ssl_certificate_chain_file:
-Sets the optional all-in-one file where you can assemble the
-certificates of Certification Authorities (CA) which form the
-certificate chain of the server certificate. This starts with the
-issuing CA certificate of the "ssl_cert_file" certificate and can
-range up to the root CA certificate. Such a file is simply the
-concatenation of the various PEM-encoded CA Certificate files, usually
-in certificate chain order.  Only available if perdition is compiled
-with SSL support.
-.br
-(default NULL, no CA certificate will be used)
 .TP
 .B \-\-ssl_listen_ciphers STRING:
 Cipher list when listening for SSL or TLS connections as per
