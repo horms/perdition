@@ -49,6 +49,12 @@ Mark D. Roth
        inetd_mode = TRUE;
      }
 
-Erwin Lubbers <erwin@box.nl>
+Erwin Lubbers
 * Periodically send a NOOP to keep connections alive (IMAP)
+
+Markus Schlosser
+* Don't log password when connection logging is enabled
+
+Leen Besselink
+* IPv6 support
 
