@@ -216,10 +216,11 @@ make -q	-C /etc/perdition/
 %{prefix}/lib/libperditiondb_nis.so
 %{prefix}/lib/libperditiondb_nis.so.0
 %{prefix}/lib/libperditiondb_nis.so.0.0.0
+%doc $addr(-, root, root) perdition/db/nis/README
 
 
 %changelog
-* Mon Oct 15 2000 Horms <horms@vergenet.net>
+* Mon Oct 16 2000 Horms <horms@vergenet.net>
 - added NIS library
 
 * Mon May 15 2000 Horms <horms@vergenet.net>
@@ -251,4 +252,3 @@ make -q	-C /etc/perdition/
 
 * Sat May 29 1999 Horms <horms@vergenet.net>
 - inital release
-

@@ -22,6 +22,8 @@
 # 02111-1307  USA
 ######################################################################
 
+EXTRA_DIST = README
+
 lib_LTLIBRARIES = libperditiondb_nis.la
 
 libperditiondb_nis_la_SOURCES = \

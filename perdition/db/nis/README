@@ -1,0 +1,58 @@
+######################################################################
+# Makefile.am                                             October 2000
+# Horms                                             horms@vergenet.net
+#
+# perdition
+# Mail retreival proxy server, NIS support
+# Copyright (C) 2000 Nathan Neulinge and Horms
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+######################################################################
+
+
+Building an NIS map using linux ypserv:
+
+Create a source map file, this should be of the form:
+  
+        userid:server
+
+If you need more complicated syntax, you'll need to enhance the below
+instructions. Now, you need to add a target to the Makefile for your ypserv
+build. For the linux ypserv, you need to:
+
+Add a variable such as USER_MAIL_SERVER to the section of the makefile,
+same place that PASSWD LOCALE GROUP etc are defined, pointing at your
+source file.
+
+Add a target name, such as user_mail_server to the all: build target.
+
+Add a build rule for user_mail_server:
+ 
+user_mail_server: $(USER_MAIL_SERVER) $(YPDIR)/Makefile
+	@echo "Updating $@..."
+	@$(AWK) '!/^[-+#]/ { if ($$1 != "") \
+		print $$1"\t"$$2 }' $(USER_MAIL_SERVER) | \
+		$(DBLOAD) -i $(USER_MAIL_SERVER) \
+                -o $(YPMAPDIR)/$@ - $@
+        -@$(NOPUSH) || $(YPPUSH) -d $(DOMAIN) $@
+        
+If you are doing this on something other than linux, I suggest modeling it
+after the  groupfile build. Be sure that the value that is passed to the
+DBLOAD equivalent is just the hostname, and not both the userid and the
+hostname.
+
+It is suggested that you use one of the other database modules instead of
+NIS unless you already have a NIS infrastructure.
