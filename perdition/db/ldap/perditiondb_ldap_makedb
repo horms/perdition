@@ -47,7 +47,7 @@ __EOF__
 
 echo -n "Has perdition.schema been added to /etc/ldap/slapd.conf? [y/N]: "
 read flim
-if ! [ -z "$flim" -o "$flim" = "y" -o "$flim" = "Y" ]; then
+if [ -z "$flim" -o "$flim" != "y" -a "$flim" != "Y" ]; then
   echo Bailing...
   exit 0
 fi
@@ -56,7 +56,7 @@ fi
 cat << __EOF__
 
 openldap requires a binddn to bind to the LDAP directory
-The default is \"$DEFAULT_DC\". To use this
+The default is "$DEFAULT_DC". To use this
 hit return, otherwise enter a host to connect to, it should be a
 string-represented DN as defined in RFC 1779.
 __EOF__
@@ -71,8 +71,8 @@ fi
 cat << __EOF__
 
 You will need to enter the sevrer for the
-binddn: \"$dc\".
-The default mau be \"secret\", you should change
+binddn: "$dc".
+The default mau be "secret", you should change
 your ldap configuration if this is the case.
 __EOF__
 
