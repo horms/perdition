@@ -112,7 +112,6 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
 
   extern struct utsname *system_uname;
   extern options_t opt;
-  extern int h_errno;
 
   if(greeting_checksum(&csum) < 0) {
 	  VANESSA_LOGGER_DEBUG("greeting_checksum");
@@ -124,14 +123,14 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
   if(flag&GREETING_ADD_NODENAME){
     if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
       if((hp=gethostbyname(opt.bind_address))==NULL){
-        VANESSA_LOGGER_DEBUG_ERRNO("gethostbyname");
+        VANESSA_LOGGER_DEBUG_HERRNO("gethostbyname");
         host=opt.bind_address;
       }
       else {
 	bcopy(hp->h_addr, &in, hp->h_length);
 	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
 	if(hp==NULL){
-          VANESSA_LOGGER_DEBUG_ERRNO("gethostbyaddr");
+          VANESSA_LOGGER_DEBUG_HERRNO("gethostbyaddr");
           host=opt.bind_address;
 	}
 	else {

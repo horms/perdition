@@ -426,7 +426,8 @@ int options(int argc, char **argv, flag_t f){
 #endif /* WITH_SSL_SUPPORT */
   }
 
-  context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
+  context= poptGetContext("perdition", argc, 
+		  (const char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
     optarg=poptGetOptArg(context);

@@ -17,6 +17,8 @@ XXX
    - Fixed output of makebdb -u
    - makebdb recreated database rather than adding to it
    - bdb module no longer appends a spurious "\0" to keys
+   - Better logging of failed gethopstbyname() and gethostbyaddr() calls
+   - Strip trailing whitespace from configuration parameters
 
 ----------------------------------------------------------------------
 
