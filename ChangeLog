@@ -8,6 +8,7 @@ Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 XXX
 (Horms)
    * XXX
+   - Removed spurious multi line string literal in ssl.c
    - Test for Berkely DB >= 4.1. It seems that they
      interface to db->open() is different as of that
      version (fools!). 
@@ -15,6 +16,9 @@ XXX
    - Minor cleanup of ssl check in configure
    - Fixed minor typo in debian init script
    - Tidied up ssl variables in configure
+   - Removed spurious multi-line string constant
+     from perdition_verify_result() which seems
+     to cause compile problems on at least Debian HPPA.
 
 ----------------------------------------------------------------------
 

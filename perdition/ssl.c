@@ -364,8 +364,8 @@ static long __perdition_verify_result(long verify, X509 *cert)
 					"certificate not trusted");
 			break;
 		case X509_V_ERR_SUBJECT_ISSUER_MISMATCH:
-			__PERDITION_VERIFY_RESULT_ERROR("
-					subject issuer mismatch");
+			__PERDITION_VERIFY_RESULT_ERROR(
+					"subject issuer mismatch");
 			__PERDITION_VERIFY_RESULT_ELEMENT("subject",
 				X509_get_subject_name(cert));
 			__PERDITION_VERIFY_RESULT_ELEMENT("issuer",
