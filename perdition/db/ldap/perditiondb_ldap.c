@@ -334,11 +334,18 @@ int dbserver_get(const char *key_str,
 	}
 
 	/* Open LDAP connection */
+#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
+	if (ldap_initialize(&connection, pldap_filter) != LDAP_SUCCESS) {
+		VANESSA_LOGGER_DEBUG_ERRNO("ldap_initialize");
+		goto leave;
+	}
+#else
 	connection = ldap_init(lud->lud_host, lud->lud_port);
 	if (!connection) {
 		VANESSA_LOGGER_DEBUG_ERRNO("ldap_init");
 		goto leave;
 	}
+#endif
 
 #ifdef WITH_LDAP_LUD_EXTS
 	/* Check extensions */
