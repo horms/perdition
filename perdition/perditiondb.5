@@ -430,6 +430,45 @@ name of the user when a query is made.
 .P
 A script, perditiondb_ldap_makedb is provided to initialise LDAP.
 .P
+.B X\-BINDPW BINDNAME
+.P
+Perdition can be configured to use use an alternate bind name, and the
+non\-standard "x\-bindpw". In fact perdition can use any extensions
+that are supported by openldap.
+.P
+ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%25s)?!bindname=uid=perdition%2co=domain.com
+.P
+ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%25s)?!BINDNAME=uid=perdition%2co=domain.com,X\-BINDPW=secret
+.P
+The first example does the usual LDAP lookup, but tries to bind to the
+server with "uid=perdition,o=domain.com" rather than the usual anonymous
+binding.  Note: The commas inside the bind string itself must be URL
+encoded, thus the %2c.
+.P
+The second example is the same as the first, but in addition to
+specifying a bind string it also uses the non\-standard "x\-bindpw"
+extension to specify a password, in this case "secret".
+.P
+The "!" character is used to ensure Perdition supports the "bindname"
+extension.  If it didn't, the LDAP connection would be aborted.  Right
+now it isn't really needed, but it may become useful as other extensions
+appear.  For full details of this, take a look at RFC2255.
+.P
+.B Multiple LDAP Servers
+.P 
+It is possible to specify multiple LDAP servers by specifying
+them, space delimited, in the LDAP UDL.
+.P 
+For example:
+.P
+ldap://host1\ host2\ host3/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%25s)
+.P
+.B perdition.schema
+.P
+A schema has been defined for perdition and is supplied as part of
+perdition. To use this you should insall it on the LDAP server in
+the LDAP daemon's schema directory and include it in slapd.conf,
+after other includes and before any database definitions.
 .SH SEE ALSO
 perditiondb(8), makegdbm(1), make(1), 
 perditiondb_mysql_makedb(8), perditiondb_postgresql_makedb(8)
