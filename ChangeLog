@@ -42,6 +42,7 @@ xxx
   - Added additional LDAP documentation. Richard Holbert <holbert.13@osu.edu>
   - Fixed memory leaks in LDAP module
   - Added optional dmalloc debugging
+  - Use a select wrapper to get around internal SSL buffering issues
 
 
 

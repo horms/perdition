@@ -34,6 +34,7 @@
 #include <vanessa_socket.h>
 
 #include "io.h"
+#include "io_select.h"
 #include "log.h"
 
 #ifdef DMALLOC
@@ -468,8 +469,15 @@ int io_close(io_t *io){
 
 static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
   io_t *io;
+  io_select_t *s;
 
-  io=(io_t *)data;
+  s=(io_select_t *)data;
+
+  io=io_select_get(s, fd);
+  if(io == NULL) {
+	  PERDITION_DEBUG("io_select_get");
+	  return(-1);
+  }
 
   return(io_read(io, buf, count));
 }
@@ -477,11 +485,19 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
 
 static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
   io_t *io;
+  io_select_t *s;
 
-  io=(io_t *)data;
+  s=(io_select_t *)data;
+
+  io=io_select_get(s, fd);
+  if(io == NULL) {
+	  PERDITION_DEBUG("io_select_get");
+	  return(-1);
+  }
 
   return(io_write(io, buf, count));
 }
+
          
 ssize_t io_pipe(
   io_t *io_a,
@@ -493,24 +509,37 @@ ssize_t io_pipe(
   int *return_b_read_bytes
 ){
   int bytes;
+  io_select_t *s;
 
-  if((bytes=vanessa_socket_pipe_func(
-    io_get_rfd(io_a),
-    io_get_wfd(io_a),
-    io_get_rfd(io_b),
-    io_get_wfd(io_b),
-    buffer,
-    buffer_length,
-    idle_timeout,
-    return_a_read_bytes,
-    return_b_read_bytes,
-    __io_pipe_read,
-    __io_pipe_write,
-    (void *)io_a,
-    (void *)io_b
-  ))<0){
-    PERDITION_DEBUG("vanessa_socket_pipe_func");
+  s = io_select_create();
+  if(s == NULL) {
+	  PERDITION_DEBUG("io_select_create");
+	  return(-1);
   }
+
+  if(io_select_add(s, io_a) == NULL || io_select_add(s, io_b) == NULL) {
+	  PERDITION_DEBUG("io_select_add");
+	  io_select_destroy(s);
+	  return(-1);
+  }
+
+  if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a),
+    				     io_get_wfd(io_a),
+    				     io_get_rfd(io_b),
+    				     io_get_wfd(io_b),
+    				     buffer,
+    				     buffer_length,
+    				     idle_timeout,
+    				     return_a_read_bytes,
+    				     return_b_read_bytes,
+    				     __io_pipe_read,
+    				     __io_pipe_write,
+    				     io_select,
+    				     (void *)s))<0){
+	PERDITION_DEBUG("vanessa_socket_pipe_func");
+  }
+
+  io_select_destroy(s);
 
   return(bytes);
 }

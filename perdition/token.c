@@ -29,6 +29,8 @@
 #include "config.h"
 #endif
 
+#include "io.h"
+#include "io_select.h"
 #include "token.h"
 #include "options.h"
 
@@ -194,6 +196,7 @@ static int token_fill_buffer(io_t *io, const options_t *opt) {
 }
 
 static int __token_fill_buffer(io_t *io, const options_t *opt){
+  io_select_t *s;
   struct timeval timeout;
   fd_set except_template;
   fd_set read_template;
@@ -206,6 +209,18 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
     return(-1);
   }
 
+  s = io_select_create();
+  if(s == NULL) {
+	  PERDITION_DEBUG("io_select_create");
+	  return(-1);
+  }
+  
+  if(io_select_add(s, io) == NULL) {
+	  PERDITION_DEBUG("io_select_add");
+	  io_select_destroy(s);
+	  return(-1);
+  }
+
   while(1){
     FD_ZERO(&read_template);
     FD_SET(fd, &read_template);
@@ -214,13 +229,15 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
     timeout.tv_sec=opt->timeout;
     timeout.tv_usec=0;
 
-    status=select(
+    status=io_select(
       FD_SETSIZE, 
       &read_template, 
       NULL, 
       &except_template,
-      opt->timeout?&timeout:NULL
+      opt->timeout?&timeout:NULL,
+      s
     );
+    io_select_destroy(s);
     if(status<0){
       if(errno!=EINTR){
         PERDITION_DEBUG_ERRNO("select");
