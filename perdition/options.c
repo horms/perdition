@@ -770,7 +770,7 @@ int log_options(void){
     "prototol=\"%s\", "
     "server_ok_line=%s, "
     "strip_domain=\"%s\", "
-    "timeout=%s, "
+    "timeout=%d, "
     "username=\"%s\", "
     "username_from_database=%s, "
     "query_key=\"%s\", " 
@@ -809,7 +809,7 @@ int log_options(void){
     protocol,
     BIN_OPT_STR(opt.server_ok_line),
     strip_domain,
-    BIN_OPT_STR(opt.timeout),
+    opt.timeout,
     str_null_safe(opt.username),
     BIN_OPT_STR(opt.username_from_database),
     str_null_safe(query_key),

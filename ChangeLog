@@ -13,6 +13,7 @@ XXX
     the client and the real server in unauthenticated mode.
     This resolves a problem with IMAP literal strings not working.
   - Support non-syncronising IMAP string litereals as per RFC 2088
+  - Correct logging of timeout
 
 
 ----------------------------------------------------------------------
