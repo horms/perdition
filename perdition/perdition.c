@@ -81,11 +81,11 @@
 #include <dmalloc.h>
 #endif
 
-/*Use uname information here and there to idinify this system*/
+/*Use uname information here and there to identify this system*/
 struct utsname *system_uname;
 
-/* Local and Peer address information is gloabal so perditiondb
- * libaries can access this information
+/* Local and Peer address information is global so perditiondb
+ * libraries can access this information
  */
 struct sockaddr_in *peername;
 struct sockaddr_in *sockname;
@@ -253,7 +253,7 @@ int main (int argc, char **argv, char **envp){
   progname = strdup(get_progname(argv[0]));
   if (!progname) {
 	  VANESSA_LOGGER_DEBUG_ERRNO("strdup");
-	  VANESSA_LOGGER_ERR("Error intialising process title\n");
+	  VANESSA_LOGGER_ERR("Error initialising process title\n");
 	  perdition_exit_cleanly(-1);
   }
   set_proc_title(progname);
@@ -265,7 +265,7 @@ int main (int argc, char **argv, char **envp){
     vanessa_logger_change_max_priority(vl, opt.quiet?LOG_ERR:LOG_INFO);
   }
 
-  /*Read congif file*/
+  /*Read config file*/
   if(opt.config_file!=NULL){
     config_file_to_opt(opt.config_file);
   }
@@ -314,7 +314,7 @@ int main (int argc, char **argv, char **envp){
     }
   }
 
-  /*Close file descriptors and detactch process from shell as necessary*/
+  /*Close file descriptors and detach process from shell as necessary*/
   if(opt.inetd_mode || opt.no_daemon || fh != NULL){
     vanessa_socket_daemon_inetd_process();
   }
@@ -367,7 +367,7 @@ int main (int argc, char **argv, char **envp){
   /*Set up protocol structure*/
   if((protocol=protocol_initialise(opt.protocol, protocol))==NULL){
     VANESSA_LOGGER_DEBUG("protocol_initialise");
-    VANESSA_LOGGER_ERR("Fatal error intialising protocol. Exiting.");
+    VANESSA_LOGGER_ERR("Fatal error initialising protocol. Exiting.");
     perdition_exit_cleanly(-1);
   }
 
@@ -424,8 +424,8 @@ int main (int argc, char **argv, char **envp){
 
   /*
    * Log the options we will be running with.
-   * If we are in inetd mode then only do this if debuging is turned on,
-   * else dbuging is a bit too verbose.
+   * If we are in inetd mode then only do this if debugging is turned on,
+   * else debugging is a bit too verbose.
    */
   if((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug){
     if(log_options()){
@@ -459,7 +459,7 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*
-   * Allocate the peername and sockanme structures
+   * Allocate the peername and sockname structures
    */
   if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
     VANESSA_LOGGER_DEBUG_ERRNO("malloc sockname");
@@ -539,7 +539,7 @@ int main (int argc, char **argv, char **envp){
   }
 
   /* A child process, or process handling an inetd connection
-   * should exit on reciept of a SIG PIPE.
+   * should exit on receipt of a SIG PIPE.
    */
   signal(SIGPIPE,   perdition_exit_cleanly);
 
@@ -739,7 +739,7 @@ int main (int argc, char **argv, char **envp){
       }
 
       /*
-       * If local authentcation is used then now is the time to
+       * If local authentication is used then now is the time to
        * Become someone else
        */
        PERDITION_SET_UID_AND_GID;
@@ -922,12 +922,12 @@ int main (int argc, char **argv, char **envp){
 
 /**********************************************************************
  * perdition_reread_handler
- * A signal handler that closes and opens the map libary,
+ * A signal handler that closes and opens the map library,
  * reinitialising as necessary.
- * pre: sig: signal recieved by the process
+ * pre: sig: signal received by the process
  * post: signal handler reset for signal
  *       map library closed and opened
- *       This may casuse shutdown and initialisation of map to
+ *       This may cause shutdown and initialisation of map to
  *       take place if appropriate symbols are defined in
  *       the library. See getserver.c for details.
  **********************************************************************/
@@ -966,8 +966,8 @@ static void perdition_reread_handler(int sig){
 
 /**********************************************************************
  * perdition_exit_cleanly
- * Exit perdition, cleaning up as neccessary
- * pre: sig: signal recieved by the process
+ * Exit perdition, cleaning up as necessary
+ * pre: sig: signal received by the process
  * post: pid file is removed
  *       process exits
  **********************************************************************/
@@ -1161,13 +1161,13 @@ write_pid_file(const char *pidfilename, const char *username,
 		if (!kill(pid, 0)) {
 			VANESSA_LOGGER_ERR_UNSAFE("Fatal error: "
 					"Pid file [%s] exists for "
-					"proccess [%u] which appears to be "
+					"process [%u] which appears to be "
 					"running, exiting", pidfilename, pid);
 			return -1;
 		}
 		else if (errno != ESRCH) {
-			VANESSA_LOGGER_DEBUG_UNSAFE("Error signalling old "
-					"proccess [%u] from pid-file [%s]: %s",
+			VANESSA_LOGGER_DEBUG_UNSAFE("Error signaling old "
+					"process [%u] from pid-file [%s]: %s",
 					pid, pidfilename, strerror(errno));
 			return -1;
 		}

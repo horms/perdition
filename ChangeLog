@@ -34,6 +34,7 @@ XXX
     (existing behaviour) and timestamp. If the log fails then
     send it to stderr.
   - Replaced server_ok_line option with server_resp_line. Andrew McNamara
+  - Spelling Fixes. Andrew McNamara
 
 ----------------------------------------------------------------------
 
