@@ -10,6 +10,7 @@ XXX
    * 1.11beta3 unreleased
    - Added option to limit the chain length used when verifying certificates
    - Cleaned up build when compiled without SSL
+   - Options to Handle self-signed and non-current certificates
 
 ----------------------------------------------------------------------
 

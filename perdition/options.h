@@ -135,8 +135,12 @@
 #ifdef WITH_SSL_SUPPORT
 #define DEFAULT_SSL_CA_FILE                  PERDITION_SYSCONFDIR \
                                              "/perdition.ca.pem"
+#define DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED    0
 #define DEFAULT_SSL_CERT_FILE                PERDITION_SYSCONFDIR \
 					     "/perdition.crt.pem"
+#define DEFAULT_SSL_CERT_ACCEPT_EXPIRED      0
+#define DEFAULT_SSL_CERT_ACCEPT_SELF_SIGNED  0
+#define DEFAULT_SSL_CERT_ACCEPT_NOT_YET_VALID 0
 #define DEFAULT_SSL_CERT_VERIFY_DEPTH        9 /* Same as openssl's default */
 #define DEFAULT_SSL_KEY_FILE                 PERDITION_SYSCONFDIR \
 					     "/perdition.key.pem"
@@ -187,7 +191,11 @@ typedef struct {
   vanessa_dynamic_array_t *query_key;
   flag_t          mask;
   char            *ssl_ca_file;
+  int             ssl_ca_accept_self_signed;
   char            *ssl_cert_file;
+  int             ssl_cert_accept_self_signed;
+  int             ssl_cert_accept_expired;
+  int             ssl_cert_accept_not_yet_valid;
   int             ssl_cert_verify_depth;
   char            *ssl_key_file;
   int             ssl_mode;
@@ -235,14 +243,18 @@ typedef struct {
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
-#define MASK_SSL_CA_FILE                 (flag_t) 0x00000001
-#define MASK_SSL_CERT_FILE               (flag_t) 0x00000002
-#define MASK_SSL_CERT_VERIFY_DEPTH       (flag_t) 0x00000004
-#define MASK_SSL_KEY_FILE                (flag_t) 0x00000008
-#define MASK_SSL_MODE                    (flag_t) 0x00000010
-#define MASK_SSL_LISTEN_CIPHERS          (flag_t) 0x00000020
-#define MASK_SSL_OUTGOING_CIPHERS        (flag_t) 0x00000040
-#define MASK_SSL_NO_CN_VERIFY            (flag_t) 0x00000080
+#define MASK_SSL_CA_FILE                       (flag_t) 0x00000001
+#define MASK_SSL_CA_ACCEPT_SELF_SIGNED         (flag_t) 0x00000002
+#define MASK_SSL_CERT_FILE                     (flag_t) 0x00000004
+#define MASK_SSL_CERT_ACCEPT_EXPIRED           (flag_t) 0x00000008
+#define MASK_SSL_CERT_ACCEPT_NOT_YET_VALID     (flag_t) 0x00000010
+#define MASK_SSL_CERT_ACCEPT_SELF_SIGNED       (flag_t) 0x00000020
+#define MASK_SSL_CERT_VERIFY_DEPTH             (flag_t) 0x00000040
+#define MASK_SSL_KEY_FILE                      (flag_t) 0x00000080
+#define MASK_SSL_MODE                          (flag_t) 0x00000100
+#define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000200
+#define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000400
+#define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00000800
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -251,19 +263,23 @@ typedef struct {
  * only. So as we still have a key, use integer values outside
  * of the values we might use for a short value
  */
-#define TAG_CONNECT_RELOG              (int) 128
-#define TAG_LOGIN_DISABLED             (int) 129
-#define TAG_LOWER_CASE                 (int) 130
-#define TAG_NO_DAEMON                  (int) 131
-#define TAG_QUERY_KEY                  (int) 132
-#define TAG_SSL_CA_FILE                (int) 133
-#define TAG_SSL_CERT_FILE              (int) 135
-#define TAG_SSL_CERT_VERIFY_DEPTH      (int) 134
-#define TAG_SSL_KEY_FILE               (int) 136
-#define TAG_SSL_MODE                   (int) 137
-#define TAG_SSL_LISTEN_CIPHERS         (int) 138
-#define TAG_SSL_OUTGOING_CIPHERS       (int) 139
-#define TAG_SSL_NO_CN_VERIFY           (int) 140
+#define TAG_CONNECT_RELOG                      (int) 128
+#define TAG_LOGIN_DISABLED                     (int) 129
+#define TAG_LOWER_CASE                         (int) 130
+#define TAG_NO_DAEMON                          (int) 131
+#define TAG_QUERY_KEY                          (int) 132
+#define TAG_SSL_CA_FILE                        (int) 133
+#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 134
+#define TAG_SSL_CERT_FILE                      (int) 135
+#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 136
+#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 137
+#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 138
+#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 139
+#define TAG_SSL_KEY_FILE                       (int) 140
+#define TAG_SSL_MODE                           (int) 141
+#define TAG_SSL_LISTEN_CIPHERS                 (int) 142
+#define TAG_SSL_OUTGOING_CIPHERS               (int) 143
+#define TAG_SSL_NO_CN_VERIFY                   (int) 144
 
 
 /*Flag values for options()*/

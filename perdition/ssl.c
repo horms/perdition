@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <string.h>
+#include <openssl/bio.h>
 
 #include "ssl.h"
 #include "log.h"
@@ -127,6 +128,29 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
  *       be non-NULL.
  **********************************************************************/
 
+#define __PERDITION_VERIFY_CALLBACK_ELEMENT(_key, _value)                   \
+	X509_NAME_oneline((_value), buf, MAX_LINE_LENGTH);                  \
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), buf);
+
+#define __PERDITION_VERIFY_CALLBACK_TIME(_key, _time)                       \
+{                                                                           \
+	BIO *tmp_bio;                                                       \
+	char *tmp_str;                                                      \
+	tmp_bio = BIO_new(BIO_s_mem());                                     \
+	if(!tmp_bio) {                                                      \
+		VANESSA_LOGGER_DEBUG("BIO_new");                            \
+		goto fail;                                                  \
+	}                                                                   \
+	ASN1_TIME_print(tmp_bio, (_time));                                  \
+	BIO_get_mem_data(tmp_bio, &tmp_str);                                \
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), tmp_str);      \
+	if(!BIO_free(tmp_bio)) {                                            \
+		VANESSA_LOGGER_DEBUG("BIO_free");                           \
+		goto fail;                                                  \
+	}                                                                   \
+}
+	
+
 static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
 	char buf[MAX_LINE_LENGTH];
@@ -148,9 +172,166 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 				X509_STORE_CTX_get_error_depth(ctx), 
 				opt.ssl_cert_verify_depth);
 		X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
-		return(0);
+		goto fail;
 	}
 
+	/*
+	 * Handle all error codes. See verify(1) 
+	 */
+	switch (ctx->error) {
+		case X509_V_OK:
+			goto ok;
+			break;
+		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
+			VANESSA_LOGGER_DEBUG_RAW(
+					"unable to get issuer certificate");
+			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
+				X509_get_issuer_name(ctx->current_cert));
+			break;
+		case X509_V_ERR_UNABLE_TO_GET_CRL: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW(
+					"unable to get certificate CRL");
+			break;
+		case X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE:
+			VANESSA_LOGGER_DEBUG_RAW("unable to decrypt "
+					"certificate's signature");
+			break;
+		case X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW("unable to decrypt "
+					"CLR's signature");
+			break;
+		case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
+			VANESSA_LOGGER_DEBUG_RAW("unable to decode "
+					"issuer public key");
+			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
+				X509_get_issuer_name(ctx->current_cert));
+			break;
+		case X509_V_ERR_CERT_SIGNATURE_FAILURE:
+			VANESSA_LOGGER_DEBUG_RAW(
+					"certificate signature failure");
+			break;
+		case X509_V_ERR_CRL_SIGNATURE_FAILURE: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW(
+					"CRL signature failure");
+			break;
+		case X509_V_ERR_CERT_NOT_YET_VALID:
+			VANESSA_LOGGER_DEBUG_RAW("signature not yet valid");
+			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
+				X509_get_notBefore(ctx->current_cert));
+			break;
+		case X509_V_ERR_CRL_NOT_YET_VALID: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW(
+					"CRL not yet valid");
+			if(opt.ssl_cert_accept_not_yet_valid) {
+				ok = 1;
+				goto ok;
+			}
+			break;
+		case X509_V_ERR_CERT_HAS_EXPIRED:
+			VANESSA_LOGGER_DEBUG_RAW(
+					"certificate has expired");
+			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
+				X509_get_notAfter(ctx->current_cert));
+			if(opt.ssl_cert_accept_expired) {
+				ok = 1;
+				goto ok;
+			}
+			break;
+		case X509_V_ERR_CRL_HAS_EXPIRED: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW(
+					"CLR has expired");
+			break;
+		case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
+			VANESSA_LOGGER_DEBUG_RAW("format error in "
+					"certificate's notBefore field");
+			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
+				X509_get_notBefore(ctx->current_cert));
+			break;
+		case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
+			VANESSA_LOGGER_DEBUG_RAW( "format error in "
+					"certificate's notAfter field");
+			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
+				X509_get_notAfter(ctx->current_cert));
+			break;
+		case X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW("format error in "
+					"CRL's lastUpdate field");
+			break;
+		case X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW( "format error in "
+					"CRL's nextUpdate field");
+			break;
+		case X509_V_ERR_OUT_OF_MEM:
+			VANESSA_LOGGER_DEBUG_RAW("out of memory");
+			break;
+		case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
+			VANESSA_LOGGER_DEBUG_RAW("self signed certificate");
+			if(opt.ssl_cert_accept_self_signed) {
+				ok = 1;
+				goto ok;
+			}
+			break;
+		case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+			VANESSA_LOGGER_DEBUG_RAW("self signed certificate "
+					"in chain");
+			if(opt.ssl_ca_accept_self_signed) {
+				ok = 1;
+				goto ok;
+			}
+			break;
+		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
+			VANESSA_LOGGER_DEBUG_RAW("unable to get local "
+					"issuer certificate");
+			break;
+		case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
+			VANESSA_LOGGER_DEBUG_RAW("unable to verify the "
+					"first certificate");
+			break;
+		case X509_V_ERR_CERT_CHAIN_TOO_LONG: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW("certificate chain too long");
+			break;
+		case X509_V_ERR_CERT_REVOKED: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW("certificate revoked");
+			break;
+		case X509_V_ERR_INVALID_CA:
+			VANESSA_LOGGER_DEBUG_RAW("invalid CA certificate");
+			break;
+		case X509_V_ERR_PATH_LENGTH_EXCEEDED:
+			VANESSA_LOGGER_DEBUG_RAW(
+					"path length constraint exceeded");
+			break;
+		case X509_V_ERR_INVALID_PURPOSE:
+			VANESSA_LOGGER_DEBUG_RAW(
+					"unsuported certificate purpose");
+			break;
+		case X509_V_ERR_CERT_UNTRUSTED:
+			VANESSA_LOGGER_DEBUG_RAW("certificate not trusted");
+			break;
+		case X509_V_ERR_SUBJECT_ISSUER_MISMATCH:
+			VANESSA_LOGGER_DEBUG_RAW("subject issuer mismatch");
+			__PERDITION_VERIFY_CALLBACK_ELEMENT("subject",
+				X509_get_subject_name(ctx->current_cert));
+			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
+				X509_get_issuer_name(ctx->current_cert));
+			break;
+		case X509_V_ERR_AKID_SKID_MISMATCH:
+			VANESSA_LOGGER_DEBUG_RAW("authority and subject key "
+					"identifier mismatch");
+			break;
+		case X509_V_ERR_KEYUSAGE_NO_CERTSIGN:
+			VANESSA_LOGGER_DEBUG_RAW("key usage does not "
+					"include certificate signing");
+			break;
+		case X509_V_ERR_APPLICATION_VERIFICATION: /* Unused */
+			VANESSA_LOGGER_DEBUG_RAW("application verification "
+					"failure");
+			break;
+	}
+
+
+fail:
+	ok = 0;
+ok:
 	return(ok);
 }
 
@@ -224,14 +405,10 @@ SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert,
 		return (NULL);
 	}
 
-	if(!ca || !*ca) {
-		return (ssl_ctx);
-	}
-
 	/* 
 	 * Load the Certificat Authorities 
 	 */
-	if(!(SSL_CTX_load_verify_locations(ssl_ctx, ca, 0))) {
+	if(ca && *ca && !(SSL_CTX_load_verify_locations(ssl_ctx, ca, 0))) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_load_verify_locations: \"%s\"", ca);
 		VANESSA_LOGGER_ERR_UNSAFE

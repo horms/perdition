@@ -301,8 +301,16 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_MODE },
     {"ssl_ca_file",                 '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CA_FILE },
+    {"ssl_ca_accept_self_signed",   '\0', POPT_ARG_NONE,   NULL, 
+      TAG_SSL_CA_ACCEPT_SELF_SIGNED },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CERT_FILE },
+    {"ssl_cert_accept_expired",     '\0', POPT_ARG_NONE,   NULL, 
+      TAG_SSL_CERT_ACCEPT_EXPIRED },
+    {"ssl_cert_accept_not_yet_valid", 
+      '\0', POPT_ARG_NONE,   NULL, TAG_SSL_CERT_ACCEPT_NOT_YET_VALID },
+    {"ssl_cert_accept_self_signed", '\0', POPT_ARG_NONE,   NULL, 
+      TAG_SSL_CERT_ACCEPT_SELF_SIGNED },
     {"ssl_cert_verify_depth",       '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CERT_VERIFY_DEPTH },
     {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
@@ -384,7 +392,16 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_SSL_SUPPORT
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_ca_file,     DEFAULT_SSL_CA_FILE,         i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_ca_accept_self_signed, DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED, 
+		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_cert_accept_expired, DEFAULT_SSL_CERT_ACCEPT_EXPIRED, 
+		                                            i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_cert_accept_not_yet_valid, 
+		               DEFAULT_SSL_CERT_ACCEPT_NOT_YET_VALID, 
+		                                            i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_cert_accept_self_signed, DEFAULT_SSL_CERT_ACCEPT_SELF_SIGNED, 
+		                                            i, 0, OPT_NOT_SET);
     opt_i(opt.ssl_cert_verify_depth, DEFAULT_SSL_CERT_VERIFY_DEPTH,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
@@ -610,6 +627,14 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_ca_file");
 #endif /* WITH_SSL_SUPPORT */
       break;
+      case TAG_SSL_CA_ACCEPT_SELF_SIGNED:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_ca_accept_self_signed,1,opt.ssl_mask,
+			MASK_SSL_CA_ACCEPT_SELF_SIGNED,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_ca_accept_self_signed");
+#endif /* WITH_SSL_SUPPORT */
+      break;
       case TAG_SSL_CERT_VERIFY_DEPTH:
 #ifdef WITH_SSL_SUPPORT
         opt_i(opt.ssl_cert_verify_depth,atoi(optarg),opt.ssl_mask,
@@ -625,6 +650,30 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_cert_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
+      case TAG_SSL_CERT_ACCEPT_EXPIRED:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_cert_accept_expired,1,opt.ssl_mask,
+			MASK_SSL_CERT_ACCEPT_EXPIRED,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_cert_accept_expired");
+#endif /* WITH_SSL_SUPPORT */
+      break;
+      case TAG_SSL_CERT_ACCEPT_NOT_YET_VALID:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_cert_accept_not_yet_valid,1,opt.ssl_mask,
+			MASK_SSL_CERT_ACCEPT_NOT_YET_VALID,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_cert_accept_not_yet_valid");
+#endif /* WITH_SSL_SUPPORT */
+      break;
+      case TAG_SSL_CERT_ACCEPT_SELF_SIGNED:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_cert_accept_self_signed,1,opt.ssl_mask,
+			MASK_SSL_CERT_ACCEPT_SELF_SIGNED,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_cert_accept_self_signed");
+#endif /* WITH_SSL_SUPPORT */
+      break;
       case TAG_SSL_KEY_FILE:
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_key_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
@@ -885,7 +934,11 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_SSL_SUPPORT
     "ssl_mode=\"%s\", "
     "ssl_ca_file=\"%s\", "
+    "ssl_ca_accept_self_signed=\"%s\", "
     "ssl_cert_file=\"%s\", "
+    "ssl_cert_accept_expired=\"%s\", "
+    "ssl_cert_not_yet_valid=\"%s\", "
+    "ssl_cert_self_signed=\"%s\", "
     "ssl_cert_verify_depth=%d, "
     "ssl_key_file=\"%s\", "
     "ssl_listen_ciphers=\"%s\", "
@@ -932,7 +985,11 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_SSL_SUPPORT
     ssl_mode,
     str_null_safe(opt.ssl_ca_file),
+    BIN_OPT_STR(opt.ssl_ca_accept_self_signed),
     str_null_safe(opt.ssl_cert_file),
+    BIN_OPT_STR(opt.ssl_cert_accept_expired),
+    BIN_OPT_STR(opt.ssl_cert_accept_not_yet_valid),
+    BIN_OPT_STR(opt.ssl_cert_accept_self_signed),
     opt.ssl_cert_verify_depth,
     str_null_safe(opt.ssl_key_file),
     str_null_safe(opt.ssl_listen_ciphers),
@@ -1164,9 +1221,19 @@ void usage(int exit_status){
     "    real servers. Used for SSL or TLS outgoing connections.\n"
     "    If "" then verification will not take place\n"
     "    (default \"%s\")\n"
+    " --ssl_ca_accept_self_signed:\n"
+    "    Accept signed certificate authorities when verifying a certificate\n"
     " --ssl_cert_file:\n"
     "    Certificate to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_cert_accept_self_signed:\n"
+    "    Accept signed certificates\n"
+    " --ssl_cert_accept_expired:\n"
+    "    Accept expired certificates. This includes server certificates\n"
+    "    and certificats authority certificates.\n"
+    " --ssl_cert_accept_not_yet_valid:\n"
+    "    Accept certificates that are not yet valid. This includes server\n"
+    "    certificates and certificats authority certificates.\n"
     " --ssl_cert_verify_depth:\n"
     "    Chain Depth to recurse to when vierifying certificates.\n"
     "    (default %d)\n"
