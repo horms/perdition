@@ -5,10 +5,10 @@ Mail retrieval proxy server
 Copyright (C) 1999  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+5th April 2001
 (Horms)
 
-   * Version xxx
+   * Version 0.1.7
    - Red Hat init script reports status correctly
    - Fixed minor spelling errors in documentation
    - Added missing library symlings to spec file
