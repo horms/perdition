@@ -13,6 +13,7 @@ XXX
       to be edited to enable perdition)
    - Updated init information in man page
    - Fixed configure.in so --disable-ssl should actually work
+   - Tidied up naming of loging macros
 
 ----------------------------------------------------------------------
 

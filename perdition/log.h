@@ -56,60 +56,60 @@
  */
 
 #ifdef WITH_SSL_SUPPORT
-#define VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
-  { \
-    unsigned long e; \
-    SSL_load_error_strings(); \
-    while((e=ERR_get_error())) { \
-      VANESSA_LOGGER_DEBUG(ERR_error_string(e, NULL)); \
-    } \
-    ERR_free_strings(); \
+#define PERDITION_DEBUG_SSL_ERROR_STRING                                      \
+  {                                                                           \
+    unsigned long e;                                                          \
+    SSL_load_error_strings();                                                 \
+    while((e=ERR_get_error())) {                                              \
+      VANESSA_LOGGER_DEBUG(ERR_error_string(e, NULL));                        \
+    }                                                                         \
+    ERR_free_strings();                                                       \
   }
 
-#define VANESSA_LOGGER_DEBUG_SSL_IO_ERR(str, ssl, ret) \
-{ \
-  int error; \
-  error = SSL_get_error(ssl, ret); \
-  if(error == SSL_ERROR_SYSCALL && ERR_peek_error() == 0) { \
-    if(ret == 0) { \
-      VANESSA_LOGGER_DEBUG(str ": An EOF that violates the protocol " \
-                      "has occured"); \
-    } \
-    else if(ret == -1) { \
-      VANESSA_LOGGER_DEBUG_ERRNO(str ": I/O Error"); \
-    } \
-    else { \
-      VANESSA_LOGGER_DEBUG(str ": Unknown Syscall Error"); \
-    } \
-  } \
-  else if(error == SSL_ERROR_ZERO_RETURN) { \
-    VANESSA_LOGGER_DEBUG(str ": Connection has closed"); \
-  } \
-  else if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
-    VANESSA_LOGGER_DEBUG(str ": Warning: wants read or write"); \
-  } \
-  /* SSL_ERROR_WANT_ACCEPT does not appear to be defined for some reason \
-  else if(error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) { \
-    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect or accept"); \
-  } \
-  */ \
-  else if(error == SSL_ERROR_WANT_CONNECT) { \
-    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect"); \
-  } \
-  else if(error == SSL_ERROR_WANT_X509_LOOKUP) { \
-    VANESSA_LOGGER_DEBUG(str ": Warning: wants x509 lookup"); \
-  } \
-  else { \
-    VANESSA_LOGGER_DEBUG_SSL_ERR(str); \
-  } \
+#define PERDITION_DEBUG_SSL_IO_ERR(str, ssl, ret)                             \
+{                                                                             \
+  int error;                                                                  \
+  error = SSL_get_error(ssl, ret);                                            \
+  if(error == SSL_ERROR_SYSCALL && ERR_peek_error() == 0) {                   \
+    if(ret == 0) {                                                            \
+      VANESSA_LOGGER_DEBUG(str ": An EOF that violates the protocol "         \
+                      "has occured");                                         \
+    }                                                                         \
+    else if(ret == -1) {                                                      \
+      VANESSA_LOGGER_DEBUG_ERRNO(str ": I/O Error");                          \
+    }                                                                         \
+    else {                                                                    \
+      VANESSA_LOGGER_DEBUG(str ": Unknown Syscall Error");                    \
+    }                                                                         \
+  }                                                                           \
+  else if(error == SSL_ERROR_ZERO_RETURN) {                                   \
+    VANESSA_LOGGER_DEBUG(str ": Connection has closed");                      \
+  }                                                                           \
+  else if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) {    \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants read or write");               \
+  }                                                                           \
+  /* SSL_ERROR_WANT_ACCEPT does not appear to be defined for some reason      \
+  else if(error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) {\
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect or accept");           \
+  }                                                                           \
+  */                                                                          \
+  else if(error == SSL_ERROR_WANT_CONNECT) {                                  \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect");                     \
+  }                                                                           \
+  else if(error == SSL_ERROR_WANT_X509_LOOKUP) {                              \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants x509 lookup");                 \
+  }                                                                           \
+  else {                                                                      \
+    PERDITION_DEBUG_SSL_ERR(str);                                             \
+  }                                                                           \
 }
 
-#define VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
-  VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
+#define PERDITION_DEBUG_SSL_ERR_UNSAFE(fmt, args...)                          \
+  PERDITION_DEBUG_SSL_ERROR_STRING                                            \
   vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, fmt, ## args)
 
-#define VANESSA_LOGGER_DEBUG_SSL_ERR(str) \
-  VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
+#define PERDITION_DEBUG_SSL_ERR(str)                                          \
+  PERDITION_DEBUG_SSL_ERROR_STRING                                            \
   VANESSA_LOGGER_DEBUG(str)
 #endif /* WITH_SSL_SUPPORT */
 

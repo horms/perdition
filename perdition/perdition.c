@@ -372,7 +372,7 @@ int main (int argc, char **argv, char **envp){
     ssl_ctx = perdition_ssl_ctx(NULL, NULL, opt.ssl_cert_file, 
 		    opt.ssl_key_file, opt.ssl_listen_ciphers);
     if(!ssl_ctx) {
-      VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
+      PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
       VANESSA_LOGGER_ERR("Fatal error establishing SSL context for listening");
       vanessa_socket_daemon_exit_cleanly(-1);
     }

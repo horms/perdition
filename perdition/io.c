@@ -239,7 +239,7 @@ void io_destroy(io_t *io){
 { \
   int error; \
   error = SSL_get_error((_ssl), bytes); \
-  VANESSA_LOGGER_DEBUG_SSL_IO_ERR(_name, (_ssl), _bytes); \
+  PERDITION_DEBUG_SSL_IO_ERR(_name, (_ssl), _bytes); \
   if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
     VANESSA_LOGGER_DEBUG(_name ": Warning: wants read or write"); \
     return(0); \
@@ -481,7 +481,7 @@ int io_close(io_t *io){
        * This seems to return errors for no reason, so let's ignore them
        *
        * if(SSL_shutdown(io->data.d_ssl->ssl)<=0){
-       *   VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_shutdown");
+       *   PERDITION_DEBUG_SSL_ERR("SSL_shutdown");
        *   return(-1);
        * }
        */

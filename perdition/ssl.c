@@ -422,7 +422,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	SSL_load_error_strings();
 
 	if ((ssl_ctx = SSL_CTX_new(ssl_method)) == NULL) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_CTX_new");
+		PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
 		return (NULL);
 	}
 
@@ -440,7 +440,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	 * Load and check the certificate and private key
 	 */
 	if (cert && SSL_CTX_use_certificate_chain_file(ssl_ctx, cert) <= 0) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
+		PERDITION_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_use_certificate_chain_file: \"%s\"", cert);
 		VANESSA_LOGGER_ERR_UNSAFE
 		    ("Error loading certificate chain file \"%s\"", cert);
@@ -451,7 +451,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
 	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
 			SSL_FILETYPE_PEM) <= 0) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
+		PERDITION_DEBUG_SSL_ERR_UNSAFE
 		    ("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
 		VANESSA_LOGGER_ERR_UNSAFE
 		    ("Error loading pricvate key file \"%s\"", privkey);
@@ -471,7 +471,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	if((use_ca_file || use_ca_path) &&
 			!SSL_CTX_load_verify_locations(ssl_ctx, use_ca_file, 
 				use_ca_path)) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE(
+		PERDITION_DEBUG_SSL_ERR_UNSAFE(
 				"SSL_CTX_load_verify_locations: "
 		     		"file=\"%s\" path=\"%s\"", 
 				str_null_safe(use_ca_file), 
@@ -525,7 +525,7 @@ static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
 	
 	if(X509_NAME_get_text_by_NID(X509_get_subject_name(cert), 
 			NID_commonName, common_name, MAX_LINE_LENGTH) < 0) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
+		PERDITION_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
 		return(-1);
 	}
 	common_name[MAX_LINE_LENGTH -1] = '\0';
@@ -577,7 +577,7 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 	
 	str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 	if (!str) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+		PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
 		return(1);
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("subject: %s", str);
@@ -585,7 +585,7 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 
 	str = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
 	if (!str) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+		PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
 		return(-1);
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("issuer: %s", str);
@@ -641,7 +641,7 @@ static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 			__perdition_verify_result(SSL_get_verify_result(ssl),
 				cert) != X509_V_OK) {
 		VANESSA_LOGGER_ERR("Certificate was not verified");
-		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_get_verify_result");
+		PERDITION_DEBUG_SSL_ERR("SSL_get_verify_result");
 		status = -3;
 		goto leave;
 	}
@@ -686,7 +686,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 
 	ssl = SSL_new(ssl_ctx);
 	if (!ssl) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_new");
+		PERDITION_DEBUG_SSL_ERR("SSL_new");
 		goto bail;
 	}
 
@@ -706,7 +706,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		SSL_set_connect_state(ssl);
 		ret = SSL_connect(ssl);
 		if (ret <= 0) {
-			VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_connect",
+			PERDITION_DEBUG_SSL_IO_ERR("SSL_connect",
 					io_get_ssl(new_io), ret);
 			goto bail;
 		}
@@ -714,7 +714,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		SSL_set_accept_state(ssl);
 		ret = SSL_accept(ssl);
 		if (ret <= 0) {
-			VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_accept",
+			PERDITION_DEBUG_SSL_IO_ERR("SSL_accept",
 					io_get_ssl(new_io), ret);
 			VANESSA_LOGGER_DEBUG("no shared ciphers?");
 			goto bail;
@@ -765,7 +765,7 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
 
 	ssl_ctx = perdition_ssl_ctx(ca_file, ca_path, NULL, NULL, ciphers);
 	if (!ssl_ctx) {
-		VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
+		PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
 		return(NULL);
 	}
