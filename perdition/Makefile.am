@@ -33,7 +33,13 @@ sbin_PROGRAMS = perdition
 	          
 install-exec-hook:
 	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.pop3)
+	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.pop3.8)
+	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.pop3s)
+	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.pop3s.8)
 	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4)
+	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4.8)
+	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4s)
+	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4s.8)
 
 
 perdition_SOURCES = \

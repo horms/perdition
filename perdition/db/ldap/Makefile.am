@@ -23,7 +23,7 @@
 #
 ######################################################################
 
-SUBDIRS = doc
+SUBDIRS = @ldap_doc_dir@
 
 man_MANS = perditiondb_ldap_makedb.8
 
@@ -33,8 +33,16 @@ EXTRA_DIST = perditiondb_ldap_makedb perditiondb_ldap_makedb.8 \
 		$(schema_sources)
 
 install-data-hook: $(schema_sources)
-	if test -n "@ldap_schemadir@" -a -w "@ldap_schemadir@"; then \
-		install -m644 $< $(DESTDIR)@ldap_schemadir@/perdition.schema;\
+	if test -n "@ldap_schemadir@"; then \
+		if test -n "$(DESTDIR)" -a \
+				! -e "$(DESTDIR)@ldap_schemadir@"; then \
+			$(top_srcdir)/mkinstalldirs \
+				"$(DESTDIR)@ldap_schemadir@"; \
+		fi; \
+		if test -w "$(DESTDIR)@ldap_schemadir@"; then \
+			install -m644 $< \
+				"$(DESTDIR)@ldap_schemadir@/perdition.schema";\
+		fi \
 	fi
 
 

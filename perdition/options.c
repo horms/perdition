@@ -296,7 +296,13 @@ int options(int argc, char **argv, flag_t f){
     if(!(f&OPT_FILE) && !strcmp("perdition.imap4", basename)){
       opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
     }
+    else if(!(f&OPT_FILE) && !strcmp("perdition.imap4s", basename)){
+      opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
+    }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3", basename)){
+      opt_i(opt.protocol,      PROTOCOL_POP3,               i, 0, OPT_NOT_SET);
+    }
+    else if(!(f&OPT_FILE) && !strcmp("perdition.pop3s", basename)){
       opt_i(opt.protocol,      PROTOCOL_POP3,               i, 0, OPT_NOT_SET);
     }
     else {
