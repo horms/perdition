@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev (>= 0.0.2), libvanessa-adt-dev (>= 0.0.2), libvanessa-socket-dev (>= 0.0.3), libpopt-dev, libpam0g-dev, libmysqlclient10-dev | libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper, zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv
+Build-Depends: libvanessa-logger-dev (>= 0.0.3), libvanessa-adt-dev (>= 0.0.3), libvanessa-socket-dev (>= 0.0.4), libpopt-dev, libpam0g-dev, libmysqlclient10-dev | libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper, zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv
 #Build-Depends: libvanessa-logger-dev (>= 0.0.2), libvanessa-adt-dev (>= 0.0.2), libvanessa-socket-dev (>= 0.0.3), libpopt-dev, libpam0g-dev, libmysqlclient10-dev | libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper, zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev
 Section: non-US
 Priority: optional
@@ -32,7 +32,7 @@ Description: Library to allow perdition to access PostgreSQL based pop maps.
 
 Package: perdition-dev
 Architecture: any
-Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.2), libvanessa-adt-dev (>= 0.0.2), libvanessa-socket-dev (>= 0.0.3), libc6-dev
+Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.3), libvanessa-adt-dev (>= 0.0.3), libvanessa-socket-dev (>= 0.0.4), libc6-dev
 Description: Development libraries and headers for perdition
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
@@ -42,7 +42,7 @@ Description: Development libraries and headers for perdition
 Package: perdition
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libvanessa-socket0 (<= 0.0.2), libvanessa-adt0 (<= 0.0.1), libvanessa-logger0 (<= 0.0.1)
+Conflicts: libvanessa-socket0 (<= 0.0.3), libvanessa-adt0 (<= 0.0.2), libvanessa-logger0 (<= 0.0.2)
 Description: POP3 and IMAP4 Proxy server
  Perdition allows users to connect to a content-free POP3 or IMAP4
  server that will redirect them to their real POP3 or IMAP4 server. This
