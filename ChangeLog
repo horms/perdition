@@ -22,6 +22,8 @@ XXX
    on the real-server
  - Pass asynchronous messages sent by the real-server during
    authentication back to the end-user
+ - When add_domain is used, allow the depth to which the domain
+   name has leading levels stripped.
 
 ----------------------------------------------------------------------
 

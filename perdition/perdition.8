@@ -67,7 +67,7 @@ process names in the /proc filesystem on Linux which can cause init scripts
 to fail to stop perdition correctly.
 .SH OPTIONS
 .TP
-.B \-A|\-\-add_domain STATE[,STATE...]:
+.B \-A|\-\-add_domain STATE[,STATE...][,STRIP_DEPTH]:
 Appends a domain to the USER based on the IP address connected to
 in given state(s). The domain name to append will be the reverse-lookup
 of the IP address connected to. If there is no reverse lookup for
@@ -92,7 +92,17 @@ authentication.
 .B all:
 Short-Hand for all of above states.
 .sp
-(default "")
+The domain may also have leading levels striped, essentially
+to convert a hostname to a domain name. The depth of the strip
+defaults to 1, which would mean that www.au.vergenet.net would
+become au.vergenet.net. A depth of 2 would cause it to become 
+vergenet.net and so forth. A depth of 0 leaves the name unchanged.
+The depth and may be specified by appending ",STRIP_DEPTH" to the state. 
+For compatibility reasons the default depth is 1.
+.sp
+e.g. all,2
+.sp
+(the default value for add_domain is "")
 .TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end

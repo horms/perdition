@@ -43,6 +43,7 @@
  *      in_addr: Source address of connection
  *      state: The current state. Should be one of STATE_GET_SERVER,
  *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
+ *      strip_depth: number of leading levels of the domain to strip
  * post: if state&opt.add_domain &&
  *           username doesn't contain the domain delimiter
  *         append the domain delimiter and the domain for the reverse
@@ -52,7 +53,9 @@
  *         NULL on error
  **********************************************************************/
 
-char *username_add_domain(char *username, struct in_addr *to_addr, int state);
+char *
+username_add_domain(char *username, struct in_addr *to_addr, int state,
+		unsigned int strip_depth);
 
 
 /**********************************************************************

@@ -51,6 +51,7 @@
  *      in_addr: Source address of connection
  *      state: The current state. Should be one of STATE_GET_SERVER,
  *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
+ *      strip_depth: number of leading levels of the domain to strip
  * post: if state&opt.add_domain &&
  *           username doesn't contain the domain delimiter
  *         append the domain delimiter and the domain for the reverse
@@ -60,12 +61,17 @@
  *         NULL on error
  **********************************************************************/
 
-char *username_add_domain(char *username, struct in_addr *to_addr, int state){
+char *
+username_add_domain(char *username, struct in_addr *to_addr, int state,
+		unsigned int strip_depth){
   struct hostent *hp;
   char *domainpart;
   char *new_str;
 
   extern options_t opt;
+
+  VANESSA_LOGGER_DEBUG_UNSAFE("username_add_domain %x %x %p", opt.add_domain, 
+		  state, to_addr);
 
   if(!(opt.add_domain&state) || to_addr==NULL)
     return(username);
@@ -74,21 +80,34 @@ char *username_add_domain(char *username, struct in_addr *to_addr, int state){
   if(strstr(username, opt.domain_delimiter)!=NULL)
     return(username);
 
-  /* no fixed domain string; lookup */
-  if ((domainpart != opt.explicit_domain) || (!*domainpart)){
-    /* If we have no reverse IP address, stop now */
+  if (opt.explicit_domain) {
+    domainpart = opt.explicit_domain;
+  }
+  else {
     hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET);
     if (!hp) {
       VANESSA_LOGGER_DEBUG("no reverse IP lookup, domain not added");
       return(username);
     }
 
-    /* Make some space for the domain part */
-    domainpart=strchr(hp->h_name, '.');
-    if (domainpart == NULL || *(++domainpart)=='\0'){
+    domainpart = hp->h_name;
+    if (!domainpart || !*domainpart) {
       VANESSA_LOGGER_DEBUG("No domain in reverse lookup, domain not added");
       return(username);
     }
+
+    while (strip_depth-- && *domainpart) {
+      char *subdomain;
+      subdomain = strchr(domainpart, '.');
+      if (!subdomain) {
+        VANESSA_LOGGER_DEBUG("No domain completely stripped away, not added");
+        return username;
+      }
+      domainpart = subdomain + 1;  /* +1 to remove the leading '.' */
+    }
+
+    if (!*domainpart) 
+      return username;
   }
 
   if ((new_str=(char *)malloc(
@@ -205,13 +224,17 @@ char *username_mangle(char *username,
   char *result;
   char *old_result;
 
+  extern options_t opt;
+  
   if((result=username_strip(username, state))==NULL){
     VANESSA_LOGGER_DEBUG("username_strip");
     return(NULL);
   }
 
   old_result = result;
-  if((result=username_add_domain(result, to_addr, state))==NULL){
+  result = username_add_domain(result, to_addr, state, 
+        opt.add_domain_strip_depth);
+  if (!result) {
     VANESSA_LOGGER_DEBUG("username_add_domain");
     return(NULL);
   }

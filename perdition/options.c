@@ -142,9 +142,14 @@ options_t opt;
   OPT_MODIFY_USERNAME(opt.strip_domain, opt.mask, MASK_STRIP_DOMAIN, f, \
     "strip_domain");
 
-#define OPT_ADD_DOMAIN \
-  OPT_MODIFY_USERNAME(opt.add_domain, opt.mask, MASK_ADD_DOMAIN, f, \
-    "add_domain");
+#define OPT_ADD_DOMAIN							\
+	if (vanessa_socket_str_is_digit(optarg_copy)) {			\
+		opt.add_domain_strip_depth = atoi(optarg_copy);		\
+	}								\
+	else {								\
+		OPT_MODIFY_USERNAME(opt.add_domain, opt.mask, 		\
+				MASK_ADD_DOMAIN, f, "add_domain");	\
+	}
 
 #define OPT_LOWER_CASE \
   OPT_MODIFY_USERNAME(opt.lower_case, opt.mask, MASK_LOWER_CASE, f, \
@@ -341,6 +346,7 @@ int options(int argc, char **argv, flag_t f){
   /* i is used as a dummy variable */
   if(f&OPT_SET_DEFAULT){
     opt_i(opt.add_domain,      DEFAULT_ADD_DOMAIN,          i, 0, OPT_NOT_SET);
+    opt.add_domain_strip_depth = DEFAULT_ADD_DOMAIN_STRIP_DEPTH;
 #ifdef WITH_PAM_SUPPORT
     opt_i(opt.authenticate_in, DEFAULT_AUTHENTICATE_IN,     i, 0, OPT_NOT_SET);
 #endif /* WITH_PAM_SUPPORT */
@@ -924,6 +930,12 @@ int log_options_str(char *str, size_t n){
   }
 
   LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.add_domain, add_domain);
+  if (*add_domain) {
+    snprintf(add_domain + strlen(add_domain), 
+		    39 - strlen(add_domain), ",%d", 
+		    opt.add_domain_strip_depth);
+    add_domain[39] = '\0';
+  }
   LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.lower_case, lower_case);
   LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.strip_domain, strip_domain);
   
@@ -1026,9 +1038,9 @@ int log_options_str(char *str, size_t n){
     "ssl_outgoing_ciphers=\"%s\", "
     "ssl_no_cert_verify=\"%s\", "
     "ssl_no_cn_verify=\"%s\", "
-    "(ssl_mask=0x%x) "
+    "(ssl_mask=0x%08x) "
 #endif /* WITH_SSL_SUPPORT */
-    "(mask=0x%x)\n",
+    "(mask=0x%08x %08x)\n",
     OPT_STR(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
@@ -1084,7 +1096,7 @@ int log_options_str(char *str, size_t n){
     BIN_OPT_STR(opt.ssl_no_cn_verify),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
-    opt.mask
+    opt.mask, opt.mask2
   );
   *(str+n-1) = '\0';
 
@@ -1169,7 +1181,7 @@ void usage(int exit_status){
     "Usage: perdition [options]\n"
     "\n"
     "Options:\n"
-    " -A|--add_domain STATE[,STATE...]:\n"
+    " -A|--add_domain STATE[,STATE...][,STRIP_DEPTH]:\n"
     "    Appends a domain to the USER based on the IP address connected to\n"
     "    in given state(s). (default \"\")\n"
 #ifdef WITH_PAM_SUPPORT

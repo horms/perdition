@@ -100,6 +100,7 @@
 
 
 #define DEFAULT_ADD_DOMAIN                   STATE_NONE
+#define DEFAULT_ADD_DOMAIN_STRIP_DEPTH       1
 #ifdef WITH_PAM_SUPPORT
 #define DEFAULT_AUTHENTICATE_IN              0
 #endif /* WITH_PAM_SUPPORT */
@@ -167,6 +168,7 @@
 
 typedef struct {
   int             add_domain;
+  unsigned int    add_domain_strip_depth;
 #ifdef WITH_PAM_SUPPORT
   int             authenticate_in;
 #endif /* WITH_PAM_SUPPORT */
