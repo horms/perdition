@@ -29,10 +29,10 @@ perditiondb \- perdition modular popmap support
 Perdition supports a dynamic library mechanism to access
 arbitrary databases that resolve a user to a host and port.
 .P
-Note: If you are using the -s|--default server option then
+Note: If you are using the \-s|\--default server option then
 creating an empty database will cause all users to use
 the default server. Alternatively, setting no popmap by passing
-an empty string to the -m|--map_name option will cause no
+an empty string to the \-m|\--map_name option will cause no
 map lookups to take place and only the default server to
 be used. If in this situation no default server is set then
 perdition will still run but users will not be able
@@ -68,13 +68,13 @@ returned in str_return and len_return.
 .B return:  
 0 on success
 .sp
--1 on db access error
+\-1 on db access error
 This inclides file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
--2 if key cannot be found in map
+\-2 if key cannot be found in map
 .sp
--3 on other error
+\-3 on other error
 .TP
 .B Note: 
 The string returned in str_return should be of the 
@@ -115,12 +115,12 @@ db is intialised
 .B return:  
 0 on success
 .sp
--1 on db access error This inclides file, connection and other data access
+\-1 on db access error This inclides file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
--2 if key cannot be found in map
+\-2 if key cannot be found in map
 .sp
--3 on other error
+\-3 on other error
 .P
 .B dbserver_fini
 .P
@@ -135,13 +135,13 @@ db is shut down
 .B return:  
 0 on success
 .sp
--1 on db access error
+\-1 on db access error
 This inclides file, connection and other data access
 errors. It does not cover memory allocation problems.
 .sp
--2 if key cannot be found in map
+\-2 if key cannot be found in map
 .sp
--3 on other error
+\-3 on other error
 .P
 In addition, if a SIGHUP is sent to a process then a signal handler
 will call dbserver_fini if it is defined and then
@@ -200,22 +200,22 @@ rebuild the popmap. This is installed into /etc/perdition/ in the RPM
 distribution.
 .P
 An alternate location for the popmap.db can be specified using the
--m|--map_library_opt command line option or configuration file directive.
+\-m|\--map_library_opt command line option or configuration file directive.
 .P
 E.g.
 .P
-perdition -m /etc/my_popmap.db
+perdition \-m /etc/my_popmap.db
 .P
 .SH NIS
 Ths NIS library reads a YP/NIS map, the key is the userid, the value is the
 servername.
 .P
 The default map name is 'user_mail_server', and can be changed by
-specifying the map name with the -m flag.
+specifying the map name with the \-m flag.
 .P
 To use this library, you need to specify:
 .P
-perdition -M /usr/lib/libperditiondb_nis.so.0
+perdition \-M /usr/lib/libperditiondb_nis.so.0
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
@@ -227,15 +227,15 @@ significant infrastructure based around yp.
 .SH POSIX REGULAR EXPRESSIONS
 .P
 The backerference substitution code in this library is courtesy 
-of Wim Bonis <bonis@solution-service.de> and in turn the PHP3
+of Wim Bonis <bonis@solution\-service.de> and in turn the PHP3
 project.
 .P
 This library can be used by specifying the full path to the libary using
-the -M|--map_library command line option or configuration file directive.
+the \-M|\--map_library command line option or configuration file directive.
 .P
 E.g.
 .P
-perdition -M /usr/lib/libperditiondb_posix_regex.so.0
+perdition \-M /usr/lib/libperditiondb_posix_regex.so.0
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
@@ -253,9 +253,9 @@ Information on setting the domain_delimiter is found in \fBperdition\fP(8),
 .P
 E.g.
 .P
-^[a-k]: localhost
+^[a\-k]: localhost
 .br
-^[^a-k]: localhost:110
+^[^a\-k]: localhost:110
 .br
 ^user: user2@localhost
 .br
@@ -269,11 +269,11 @@ E.g.
 .P
 For the regex (.*)@(.*): $1_$2@localhost
 .br
-bonis@solution-service.de
+bonis@solution\-service.de
 .br
 would return
 .br
-bonis_solution-service_de@localhost
+bonis_solution\-service_de@localhost
 .P
 Note that there is no implcit ^ or $
 around the regular expressions. The popmap entry "flim: localhost" will
@@ -284,23 +284,23 @@ The map file is read once on startup and cached. This is to increase
 performance as the regular expressions must be compiled internally before
 they can be used. The map file can be re read by sending perdition as
 SIGHUP.  An alternate location for the popmap.re can be specified using the
--m|--map_library_opt command line option or configuration file directive.
+\-m|\--map_library_opt command line option or configuration file directive.
 .P
 E.g.
 .P
-perdition -m /etc/my_popmap.re
+perdition \-m /etc/my_popmap.re
 .P
 .SH MYSQL
 Many thanks to Frederic Delchambre <dedel@freegates.be> for
 his invaluable contribution to this library.
 .P
 As per Posix Regex, this library can be used by specifying the full path to
-the libary using the -M|--map_library command line option or configuration
+the libary using the \-M|\--map_library command line option or configuration
 file directive.
 .P
 E.g.
 .P
-perdition -M /usr/lib/libperditiondb_mysql.so.0
+perdition \-M /usr/lib/libperditiondb_mysql.so.0
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
@@ -309,16 +309,16 @@ The library will connect to a MySQL database and do a query on a table
 expected to have the columns:
 .P
 .nf
-+------------+--------------+------+-----+---------+-------+
++\--\--\--\--\--\--+\--\--\--\--\--\--\--+\--\--\--+\--\--\-+\--\--\--\--\-+\--\--\--\-+
 | Field      | Type         | Null | Key | Default | Extra |
-+------------+--------------+------+-----+---------+-------+
++\--\--\--\--\--\--+\--\--\--\--\--\--\--+\--\--\--+\--\--\-+\--\--\--\--\-+\--\--\--\-+
 | user       | varchar(128) |      | PRI |         |       |
 | servername | varchar(255) |      |     |         |       |
 | port       | varchar(8)   | YES  |     | NULL    |       |
-+------------+--------------+------+-----+---------+-------+
++\--\--\--\--\--\--+\--\--\--\--\--\--\--+\--\--\--+\--\--\-+\--\--\--\--\-+\--\--\--\-+
 .fi
 .P
-The fields may be in a different order and other, non-perdition fields may
+The fields may be in a different order and other, non\-perdition fields may
 also be present in this table. The names of the columns can be other than
 their above defaults by using the library option string (described below).
 All fields must be literal character strings. The allowed length of the
@@ -334,12 +334,12 @@ host is the hostname or IP address to connect to and username, if
 specified, is the username to use when connecting to host.
 .P
 The port is the TCP port to use when connecting to the server. This field
-can be specified if the backend server answers on a non-standard port
+can be specified if the backend server answers on a non\-standard port
 (standard ports being 110 for POP3 and 143 for IMAP). Only specifiy this
 field in the database if you intend to use POP3 or IMAP exclusively as it
 will try to use this port no matter what protocol is being used. If POP3
-and IMAP are both being used on non-standard backend server ports, those
-ports can be specified with the -p argument when you invoke the perdition
+and IMAP are both being used on non\-standard backend server ports, those
+ports can be specified with the \-p argument when you invoke the perdition
 executable (this is a global definition, but should be adequate for most
 installations).
 .P
@@ -366,7 +366,7 @@ port column:       port
 .br
 .P
 A script, perditiondb_mysql_makedb, is provided to initialise such a
-database.  Alternate values can be set using the -m|--map_library_opt
+database.  Alternate values can be set using the \-m|\--map_library_opt
 command line option or configuration file directive with an argument of the
 form:
 .P
@@ -374,14 +374,14 @@ form:
 .P
 E.g.
 .P
-perdition -m some.host.com:3306:aDb:bTable:cUser:dPassword:eSrvCol:fUserCol:gPortCol
+perdition \-m some.host.com:3306:aDb:bTable:cUser:dPassword:eSrvCol:fUserCol:gPortCol
 .P
 Arguments may be omitted from the end of the option string with no consequence other than
 that the default value for any omitted argument will be used. Arguments may not be omitted if
 any argument to its right is defined. Someone seeking to set only the server and password
 to something other than the default might attempt the following:
 .P
-perdition -m some.host.com:::::OddPassword
+perdition \-m some.host.com:::::OddPassword
 .P
 This will not work. It will set the server and password to the values shown, but all arguments
 in between will be set as NULL rather than the default. In the author's opinion it is always best
@@ -389,12 +389,12 @@ to specify \fBall\fP of the arguments, whether default or not, to avoid confusio
 .SH POSTGRESQL
 .P
 This is a port of the MySQL library to PostgreSQL, The library can be used
-by specifying the full path to the libary using the -M|--map_library
+by specifying the full path to the libary using the \-M|\--map_library
 command line option or configuration file directive.
 .P
 E.g.
 .P
-perdition -M /usr/lib/libperditiondb_mysql.so.0
+perdition \-M /usr/lib/libperditiondb_mysql.so.0
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
@@ -405,12 +405,12 @@ database.
 For more information please see the MySQL documentaion above.
 .SH LDAP
 This library allows access to LDAP based popmaps. This library can be used
-by specifying the full path to the libary using the -M|--map_library
+by specifying the full path to the libary using the \-M|\--map_library
 command line option or configuration file directive.
 .P
 E.g.
 .P
-perdition -M /usr/lib/libperditiondb_ldap.so.0
+perdition \-M /usr/lib/libperditiondb_ldap.so.0
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
@@ -419,11 +419,11 @@ A script is provided in etc/perdition/ldap/ to initialise an
 LDAP popmap for the default URL.
 In the RPM distrubution this can be found installed in
 /etc/perdition/ldap/ . An alternate URL can be set using the
--m|--map_library_opt command line option or configuration file directive.
+\-m|\--map_library_opt command line option or configuration file directive.
 .P
 The default URL is:
 .P
-ldap://localhost/ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)
+ldap://localhost/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%25s)
 .P
 The URL should contain excactly one %s (%25s), which will be filled by the
 name of the user when a query is made.
@@ -467,7 +467,7 @@ Ronny Cook <ronny@asiaonline.net>
 .br
 Geoff Mitchell <g.mitchell@videonetworks.com>
 .br
-Willi Langenberger <wlang@wu-wien.ac.at>
+Willi Langenberger <wlang@wu\-wien.ac.at>
 .br
 Matt Prigge <mprigge@pobox.com>
 

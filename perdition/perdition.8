@@ -28,7 +28,7 @@ perdition \- POP3 and IMAP4 proxy server
 .SH SYNOPSIS
 \fBperdition\fP [options]
 .SH DESCRIPTION
-\fBperdition\fP allows users to connect to a content-free POP3 or
+\fBperdition\fP allows users to connect to a content\-free POP3 or
 IMAP4 server that will redirect them to their real POP3 or IMAP4
 server respectively. This enables mail retrieval for a domain to
 be split across multiple real mail servers on a per user basis.
@@ -46,14 +46,14 @@ connection is closed and the client connection is reset to the
 state it was in on initial connection. That is new USER and PASS
 commands are expected. Similarly in IMAP4 mode, perdition accepts
 the LOGIN command and passes the username and password onto the
-back-end IMAP4 server specified in the popmap for authentication.
+back\-end IMAP4 server specified in the popmap for authentication.
 
 At this stage the only capabilities supported by perdition in
 IMAP4 mode is IMAP4 and no authentication schemes, other than
 the LOGIN command are accepted.
 .SH OPTIONS
 .TP
-.B -A|--add_domain:
+.B \-A|\-\-add_domain:
 Appends a domain to the USER based on the IP address connected to
 in given state(s). State may be one of servername_lookup,
 local_authentication, remote_login and all.
@@ -97,11 +97,11 @@ a source address.
 .br
 (default "(null)")
 .TP
-.B -C|--connection_logging:
+.B \-C|\-\-connection_logging:
 Log interaction between clients, perdition and servers during
 authentication phase.
 .sp
-\fBNote:\fP -d|--debug must be specified for this option to take effect.
+\fBNote:\fP \-d|\-\-debug must be specified for this option to take effect.
 .TP
 .B \-c, \-\-client_server_specification:
 Allow USER of the form user<delimiter>server[:port] to specify the
@@ -109,7 +109,7 @@ server and port for a user.
 .TP
 .B \-D, \-\-domain_delimiter string:
 Delimiter used for \-c|\-\-client_server_specification and
-\-S|\-\-strip_domain options. Multi-character delimiters are permitted.
+\-S|\-\-strip_domain options. Multi\-character delimiters are permitted.
 .br
 (default "@")
 .TP
@@ -210,7 +210,7 @@ Username to run as.
 If the servername in the popmap specified in the form:
 user<delimiter>domain then use the username given by the servername.  If a
 servername is given in this form then the domain will be used as the server
-to connect to, regardless of it the -U|\-\-username_from_database option is
+to connect to, regardless of it the \-U|\-\-username_from_database option is
 specified or not.
 .TP
 .B \-q, \-\-quiet:
@@ -270,11 +270,11 @@ if perdition is compiled with SSL support.
 \fBNote:\fP Default value for binary flags is off.
 .SH USER DATABASE (POPMAP)
 For information on mechanisms for resolving users to a host and port and
-information on the -M|--map_library and -m|--map_library_opt flags, please
+information on the \-M|\-\-map_library and \-m|\-\-map_library_opt flags, please
 see \fBperditiondb\fP(5).
 .PP
 Note that by specifying an map library no map lookups will occur and
-all connections will use the -s|--outgoing_server. In this way perdition
+all connections will use the \-s|\-\-outgoing_server. In this way perdition
 can be configured as a "pure proxy".
 .SH STAND\-ALONE MODE
 Normally perdition will bind to a port, and listen for connections.  The
@@ -554,7 +554,7 @@ Ronny Cook <ronny@asiaonline.net>
 .br
 Geoff Mitchell <g.mitchell@videonetworks.com>
 .br
-Willi Langenberger <wlang@wu-wien.ac.at>
+Willi Langenberger <wlang@wu\-wien.ac.at>
 .br
 Matt Prigge <mprigge@pobox.com>
 
