@@ -21,6 +21,7 @@ xxx
   - A modified S|strip_domain option such that domain may optionally be
     stripped for zero or more of: database lookup, local authentication,
     remote login.
+  - Updated documenation of MySQL module Matt Prigge
 
 5th April 2001
 (Horms)
@@ -34,7 +35,7 @@ xxx
    - Added -lresolv and -lvanessa_logger to build for perdition
      itself to fix compile problems under solaris
    - Added ability to specify columns in MySQL module
-     Geoff Mitchell <g.mitchell@videonetworks.com>
+     Geoff Mitchell
    - Running perdition.pop3 and perdition.imap4 now automatically
      runs perdition in POP3 or IMAP4 mode respectively
    - Added connection loging to interaction between perdition
