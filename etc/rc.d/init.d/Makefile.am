@@ -23,4 +23,8 @@
 #
 ######################################################################
 
-EXTRA_DIST = perdition.rh perdition.debian
+EXTRA_DIST = \
+  perdition.rh \
+  perdition.rh.in \
+  perdition.debian \
+  perdition.debian.in

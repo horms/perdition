@@ -207,7 +207,7 @@ int daemon_setid(const char *user, const char *group){
   struct passwd *pw;
   struct group *gr;
 
-  if(vanessa_socket_str_is_digigt(group)){
+  if(vanessa_socket_str_is_digit(group)){
     gid=(gid_t)atoi(group);
   }
   else{
@@ -224,7 +224,7 @@ int daemon_setid(const char *user, const char *group){
     return(-1);
   }
 
-  if(vanessa_socket_str_is_digigt(user)){
+  if(vanessa_socket_str_is_digit(user)){
     uid=(uid_t)atoi(user);
   }
   else{

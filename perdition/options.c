@@ -117,6 +117,7 @@ int options(int argc, char **argv, flag_t f){
   static struct poptOption options[] =
   {
     {"authenticate_in",             'a', POPT_ARG_NONE,   NULL, 'a'},
+    {"no_bind_banner",              'B', POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b', POPT_ARG_STRING, NULL, 'b'},
     {"config_file",                 'f', POPT_ARG_STRING, NULL, 'f'},
     {"connection_limit",            'L', POPT_ARG_STRING, NULL, 'L'},
@@ -151,6 +152,7 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_PAM_SUPPORT
     opt_i(opt.authenticate_in, DEFAULT_AUTHENTICATE_IN,     i, 0, OPT_NOT_SET);
 #endif /* WITH_PAM_SUPPORT */
+    opt_i(opt.no_bind_banner,  DEFAULT_NO_BIND_BANNER,      i, 0, OPT_NOT_SET);
     opt_i(opt.client_server_specification, DEFAULT_CLIENT_SERVER_SPECIFICATION,
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.connection_limit,DEFAULT_CONNECTION_LIMIT,    i, 0, OPT_NOT_SET);
@@ -203,6 +205,13 @@ int options(int argc, char **argv, flag_t f){
         return(-1);
       }
 #endif /* WITH_PAM_SUPPORT */
+      case 'B':
+        opt_i(opt.no_bind_banner,1,opt.mask,MASK_NO_BIND_BANNER,f);
+        PERDITION_LOG(
+	  LOG_DEBUG,  
+          "flim"
+        );
+        break;
       case 'b':
         opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f);
         break;
@@ -243,7 +252,7 @@ int options(int argc, char **argv, flag_t f){
 	}
         break;
       case 'L':
-        if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ 
+        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
 	  usage(-1); 
 	}
         opt_i(
@@ -298,7 +307,7 @@ int options(int argc, char **argv, flag_t f){
         }
         break;
       case 't':
-        if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ 
+        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
 	  usage(-1); 
 	}
         opt_i(opt.timeout,atoi(optarg),opt.mask,MASK_TIMEOUT,f);
@@ -394,6 +403,7 @@ int log_options(void){
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%d, "
 #endif /* WITH_PAM_SUPPORT */
+    "no_bind_banner=%d, "
     "bind_address=\"%s\", "
     "client_server_specification=%d, "
     "config_file=\"%s\", "
@@ -414,10 +424,12 @@ int log_options(void){
     "strip_domain=%d, "
     "timeout=%d, "
     "username=\"%s\", "
-    "quiet=%d\n",
+    "quiet=%d " 
+    "(mask=0x%x)\n",
 #ifdef WITH_PAM_SUPPORT
     opt.authenticate_in,
 #endif /* WITH_PAM_SUPPORT */
+    opt.no_bind_banner,
     str_null_safe(opt.bind_address),
     opt.client_server_specification,
     opt.config_file,
@@ -438,7 +450,8 @@ int log_options(void){
     opt.strip_domain,
     opt.timeout,
     str_null_safe(opt.username),
-    opt.quiet
+    opt.quiet,
+    opt.mask
   );
 
   if(protocol!=NULL){ free(protocol); }
@@ -491,11 +504,22 @@ void usage(int exit_status){
     "                      User is authenticated by perdition before\n"
     "                      connection to backend server is made.\n"
 #endif /* WITH_PAM_SUPPORT */
+    "     -B|--no_bind_banner:\n"
+    "                      If -b|--bind_address is specified, then the\n"
+    "                      address will be resolved and the reverse-lookup\n"
+    "                      of this will be used in the greeting. This option\n"
+    "                      disables this behaviour an reverts to using the\n"
+    "                      uname to derive the hostname for the greeting\n"
     "     -b|--bind_address:\n"
     "                      Bind to interfaces with this address.\n"
-    "                      The address may be an IP address or\n"
-    "                      a hostname.\n"
-    "                      If NULL then bind to all interfaces.\n"
+    "                      In non-inetd mode, connections will only be\n"
+    "                      accepted on interfaces with this address. If\n"
+    "                      NULL connections will be accepted from all\n"
+    "                      interfaces. In inetd and non-inetd mode the source\n"
+    "                      address of connections to real servers will be\n"
+    "                      this address, if NULL then the operating system\n"
+    "                      will select a source address.\n"
+    "                      The address may be an IP address or a hostname.\n"
     "                      (default \"%s\")\n"
     "     -c|--client_server_specification:\n"
     "                      Allow USER of the form ser<delimiter>server[:port]\n"
@@ -540,6 +564,7 @@ void usage(int exit_status){
     "                      perditiondb_gdbm the gdbm map to access is set.\n"
     "                      (default \"%s\")\n"
     "     -n|--no_lookup:  Disable host and port lookup\n"
+    "                      Implies -B|--no_bind_banner\n"
     "     -o|--server_ok_line:\n"
     "                      If authentication with the back-end server is\n"
     "                      successful then send the servers +OK line to\n"

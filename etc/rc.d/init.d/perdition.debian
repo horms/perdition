@@ -36,7 +36,7 @@
 ######################################################################
 
 
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
+PATH=/usr/local/sbin:/bin:/usr/bin:/sbin:/usr/sbin
 NAME=perdition
 
 # Run perdition listening as a POP3 proxy [yes|no]

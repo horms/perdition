@@ -67,7 +67,7 @@ AC_CHECK_LIB(
     "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_logger/"
     "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
     "**********************************************************************"
-  ) ;\
+  )
 )
 AC_CHECK_LIB(
   vanessa_adt,
@@ -81,7 +81,8 @@ AC_CHECK_LIB(
     "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_adt/"
     "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
     "**********************************************************************"
-  ) ;\
+  ),
+  -lvanessa_logger
 )
 AC_CHECK_LIB(
   vanessa_socket,
@@ -95,7 +96,8 @@ AC_CHECK_LIB(
     "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_socket/"
     "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
     "**********************************************************************"
-  ) ;\
+  ),
+  -lvanessa_logger
 )
 
 
@@ -471,6 +473,8 @@ etc/pam.d/Makefile
 etc/perdition/Makefile 
 etc/rc.d/Makefile 
 etc/rc.d/init.d/Makefile 
+etc/rc.d/init.d/perdition.debian 
+etc/rc.d/init.d/perdition.rh 
 etc/sysconfig/Makefile 
 Makefile
 INSTALL

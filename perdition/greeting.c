@@ -72,15 +72,44 @@ int greeting(const int fd, const protocol_t *protocol, flag_t flag){
  **********************************************************************/
 
 char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
+  char *host;
+  struct hostent *hp;
+  struct in_addr in;
+
   extern struct utsname *system_uname;
+  extern options_t opt;
+  extern int h_errno;
 
   if(flag&GREETING_ADD_NODENAME){
-    if((message=cat_str(
-      3,
-      protocol->greeting_string,
-      " ",
-      system_uname->nodename
-    ))==NULL){
+    if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
+      if((hp=gethostbyname(opt.bind_address))==NULL){
+        PERDITION_LOG(
+	  LOG_DEBUG, 
+	  "warning: greeting_str: gethostbyname: %s", 
+	  strerror(errno)
+	);
+        host=opt.bind_address;
+      }
+      else {
+	bcopy(hp->h_addr, &in, hp->h_length);
+	if((hp=gethostbyaddr(&in, sizeof(struct in_addr), AF_INET))==NULL){
+          PERDITION_LOG(
+	    LOG_DEBUG, 
+	    "warning: greeting_str: gethostbyaddr: %s", 
+	    strerror(errno)
+	  );
+          host=opt.bind_address;
+	}
+	else {
+          host=opt.bind_address;
+	  host=hp->h_name;
+	}
+      }
+    }
+    else{
+      host=system_uname->nodename;
+    }
+    if((message=cat_str(3, protocol->greeting_string, " ", host))==NULL){
       PERDITION_LOG(LOG_DEBUG, "greeting_str: cat_str");
       return(NULL);
     }

@@ -79,11 +79,61 @@ perdition_SOURCES = \
         str.h \
         log.h
 
-INCLUDES= -I$(top_srcdir)/libjain -DPERDITION_LIBDIR=\"${libdir}\"
+bin_PROGRAMS = config_file2
 
-perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@
+config_file2_SOURCES = \
+        daemon.c \
+        daemon.h \
+        getserver.c \
+        getserver.h \
+        greeting.c \
+        greeting.h \
+        options.c \
+        options.h \
+        pam.c \
+	pam.h \
+        config_file2.c \
+        config_file2.h \
+        perdition_types.h \
+        pop3.c \
+        pop3.h \
+        pop3_in.c \
+        pop3_in.h \
+        pop3_out.c \
+        pop3_out.h \
+        pop3_write.c \
+        pop3_write.h \
+        protocol.c \
+        protocol.h \
+        protocol_t.h \
+        quit.c \
+        quit.h \
+        imap4.c \
+        imap4.h \
+        imap4_in.c \
+        imap4_in.h \
+        imap4_out.c \
+        imap4_out.h \
+        imap4_write.c \
+        imap4_write.h \
+        token.c \
+        token.h \
+        queue_func.c \
+        queue_func.h \
+        server_port.c \
+        server_port.h \
+        str.c \
+        str.h \
+        log.h
 
-perdition_LDADD = \
+INCLUDES= \
+  -I$(top_srcdir)/libjain \
+  -DPERDITION_LIBDIR=\"${libdir}\" \
+  -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\"
+
+LDFLAGS = -Wl,--rpath -Wl,@prefix@
+
+LDADD = \
 -L../libjain \
 -L../libjain/.libs/ \
 -ljain \

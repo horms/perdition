@@ -43,7 +43,7 @@
 /*Flags for write_str */
 #define WRITE_STR_NO_CLLF     0x1     /*Append a CLLF*/
 
-int vanessa_socket_str_is_digigt(const char *str);
+int vanessa_socket_str_is_digit(const char *str);
 
 char *strn_to_str(const char *string, const size_t n);
 

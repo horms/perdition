@@ -28,7 +28,7 @@
 #include "str.h"
 
 /**********************************************************************
- * vanessa_socket_str_is_digigt
+ * vanessa_socket_str_is_digit
  * Test if a null terminated string is composed entirely of digits (0-9)
  *
  * pre: str
@@ -38,7 +38,7 @@
  * Not 8 bit clean
  **********************************************************************/
 
-int vanessa_socket_str_is_digigt(const char *str){
+int vanessa_socket_str_is_digit(const char *str){
   size_t offset;
   size_t top;
 

@@ -147,6 +147,7 @@ int main (int argc, char **argv){
   /*Open the dbserver_get library, if we have a library*/
   if(
     opt.map_library!=NULL && 
+    *(opt.map_library)!='\0' && 
     getserver_openlib(
       opt.map_library,
       opt.map_library_opt,
@@ -354,6 +355,7 @@ int main (int argc, char **argv){
     /*Read the server from the map, if we have a map*/
     if(
       opt.map_library!=NULL &&
+      *(opt.map_library)!='\0' &&
       (server_port=getserver(pw.pw_name, dbserver_get))!=NULL
     ){
       char *host;
@@ -447,7 +449,9 @@ int main (int argc, char **argv){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    if((server=vanessa_socket_client_open(
+    if((server=vanessa_socket_client_src_open(
+      opt.bind_address,
+      NULL,
       servername, 
       port, 
       (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0)

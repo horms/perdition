@@ -33,6 +33,13 @@ xxx
    - Fixed freeing of sturcture for default server 
    - Tidied up build and added debian directory so debian packages can
      be build.
+   - Bind Address now dictates source address for conections to real
+     servers
+   - Greet with reverse DNS of bind_address if given.
+     An option is supplied to disable this behaviour
+   - Added quiet option which allows for logging only of (fatal) 
+     internal errors
+
 
 ----------------------------------------------------------------------
 

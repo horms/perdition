@@ -35,7 +35,7 @@
 static LDAPURLDesc *ludp;
 
 /**********************************************************************
- * perditiondb_ldap_vanessa_socket_str_is_digigt
+ * perditiondb_ldap_vanessa_socket_str_is_digit
  * Test if a null terminated string is composed entirely of digits (0-9)
  *
  * Code borrowed from ../../str.c
@@ -47,7 +47,7 @@ static LDAPURLDesc *ludp;
  * Not 8 bit clean
  **********************************************************************/
 
-static int perditiondb_ldap_vanessa_socket_str_is_digigt(const char *str){
+static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
   size_t offset;
   size_t top;
 
@@ -245,7 +245,7 @@ int dbserver_get(
     strcpy(*str_return, ldap_returns[0]);
     free(ldap_returns[0]);
     for (count = 1; count < attrcopied; count++) {
-      if (perditiondb_ldap_vanessa_socket_str_is_digigt(ldap_returns[count])) {
+      if (perditiondb_ldap_vanessa_socket_str_is_digit(ldap_returns[count])) {
         strcat(*str_return, ":");
       }
       else {
