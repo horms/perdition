@@ -459,8 +459,8 @@ int main (int argc, char **argv, char **envp){
     }
   }
   else{
-    s=vanessa_socket_server_accept(g, opt.connection_limit, peername, sockname,
-      				   0);
+    s = vanessa_socket_server_accept(g, opt.connection_limit, peername, 
+          sockname, 0);
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
       VANESSA_LOGGER_ERR("Fatal error accepting child connecion. Exiting.");
@@ -507,7 +507,8 @@ int main (int argc, char **argv, char **envp){
 
   /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect: %sinetd_pid=%d", from_to_str, getppid());
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %sinetd_pid=%d", 
+          from_to_str, getppid());
   }
   else {
     VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_str);

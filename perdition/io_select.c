@@ -83,7 +83,7 @@ io_select_t *io_select_create()
 	s->fd = vanessa_list_create(1, NULL, NULL, NULL, NULL,
 			        IO_SELECT_MATCH_IO, NULL);
 	if(s->fd == NULL) {
-		VANESSA_LOGGER_DEBUG("vanessa_hash_create");
+		VANESSA_LOGGER_DEBUG("vanessa_list_create");
 		free(s);
 		return(NULL);
 	}

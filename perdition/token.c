@@ -215,12 +215,13 @@ static int token_fill_buffer(io_t *io, const options_t *opt,
 
 static int __token_fill_buffer(io_t *io, const options_t *opt,
 		const char *log_str){
-  io_select_t *s;
+  io_select_t *s = NULL;
   struct timeval timeout;
   fd_set except_template;
   fd_set read_template;
   int bytes_read;
   int status;
+  int return_status = -1;
   int fd;
 
   if((fd=io_get_rfd(io))<0){
@@ -231,13 +232,12 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
   s = io_select_create();
   if(s == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_create");
-	  return(-1);
+	  goto leave;
   }
   
   if(io_select_add(s, io) == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_add");
-	  io_select_destroy(s);
-	  return(-1);
+	  goto leave;
   }
 
   while(1){
@@ -256,21 +256,20 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
       opt->timeout?&timeout:NULL,
       s
     );
-    io_select_destroy(s);
     if(status<0){
       if(errno!=EINTR){
         VANESSA_LOGGER_DEBUG_ERRNO("select");
-        return(-1);
+	goto leave;
       }
       continue;  /* Ignore EINTR */
     }
     else if(FD_ISSET(fd, &except_template)){
       VANESSA_LOGGER_DEBUG("error on file descriptor");
-      return(-1);
+      goto leave;
     }
     else if(status==0){
       VANESSA_LOGGER_DEBUG("idle timeout");
-      return(0);
+      goto leave;
     }
 
     /*If we get this far fd must be ready for reading*/
@@ -280,7 +279,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
       MAX_LINE_LENGTH-1
     ))<0){
       VANESSA_LOGGER_DEBUG_ERRNO("error reading input");
-      return(-1);
+      goto leave;
     }
 
     token_read_offset=0;
@@ -291,11 +290,13 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
       VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s \"%s\"", log_str, dump_buf);
       free(dump_buf);
     }
-    return(bytes_read);
+    break;
   }
 
-  VANESSA_LOGGER_DEBUG("fall-through return");
-  return(0); /* Here to stop compiler complaining */
+  return_status = bytes_read;
+leave:
+  io_select_destroy(s);
+  return(return_status);
 }
 
 
