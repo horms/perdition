@@ -36,9 +36,7 @@ AC_PROG_MAKE_SET
 
 
 dnl Checks for libraries.
-dnl Replace `main' with a function in -ldl:
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
-dnl Replace `main' with a function in -lgdbm:
 AC_CHECK_LIB(gdbm, gdbm_open, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
@@ -553,7 +551,7 @@ AC_MSG_WARN(
 ) ;\
     sleep 5
   ],
-  -ldl
+  $dl_lib
 )
 fi
 

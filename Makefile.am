@@ -35,4 +35,5 @@ CODING_LOCATIONS.in\
 CODING_LOCATIONS \
 perdition.spec.in \
 perdition.spec \
-acconfig.h
+acconfig.h \
+autogen.sh

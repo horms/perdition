@@ -30,9 +30,15 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "perditiondb_ldap.h"
 
+#ifdef HAVE_PARSE_PRINTF_FORMAT
 #include <printf.h>
+#endif 
 
 static LDAPURLDesc *ludp;
 
@@ -81,7 +87,9 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
  **********************************************************************/
 
 int dbserver_init(char *options_str) {
+#ifdef HAVE_PARSE_PRINTF_FORMAT
   int arg_type;
+#endif
 
   if (options_str == NULL) {
     options_str=PERDITIONDB_LDAP_DEFAULT_URL;
@@ -99,6 +107,7 @@ int dbserver_init(char *options_str) {
     return(-1);
   }
 
+#ifdef HAVE_PARSE_PRINTF_FORMAT
   /*
    * Some checks to protect against format problems
    */
@@ -114,6 +123,7 @@ int dbserver_init(char *options_str) {
     PERDITION_DEBUG("LDAP URL has a modifier on format flag");
     return(-1);
   }
+#endif /* HAVE_PARSE_PRINTF_FORMAT */
 
   return(0);
 }

@@ -49,4 +49,4 @@ cd $THEDIR
 $srcdir/configure "$@"
 
 echo 
-echo "Now type 'make' to compile perdition."
+echo "Now type 'gmake' to compile perdition."
