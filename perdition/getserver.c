@@ -318,6 +318,13 @@ server_port_t *getserver(
     return(NULL);
   }
 
+  /* Check for an empty result */
+  if(*content_str=='\0' || content_len) {
+    free(content_str);
+    PERDITION_DEBUG("dbserver_get returned empty string");
+    return(NULL);
+  }
+
   /* Parse the result */
   if(status == 0) {
     if((server_port=server_port_create())==NULL){
@@ -325,6 +332,7 @@ server_port_t *getserver(
       return(NULL);
     }
     server_port=server_port_strn_assign(server_port, content_str, content_len);
+    server_port=server_port_strn_assign(server_port, "", 1);
     free(content_str);
   }
 

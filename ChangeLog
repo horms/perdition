@@ -10,6 +10,7 @@ XXX
 
   * Version XXX
   - Uninstall symlinks created by -hook targets in various Makefile.am
+  - Handle the return of an empty string from db_getserver routines
 
 
 ----------------------------------------------------------------------
