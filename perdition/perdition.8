@@ -262,15 +262,22 @@ not resolve host or port names returned by popmap lookups, thus, your popmap
 must return ip addresses and port numbers.
 .TP
 .B \-O, \-\-ok_line:
-Use STRING as the OK line to send to the client. Overriden by server_ok_line.
+Use STRING as the OK line to send to the client. Overriden by server_resp_line.
 OK and will be prepended to STRING, and in IMAP mode a tag
 will also be prepended to the string.
 .br
 (default "You are so in")
 .TP
-.B \-o, \-\-server_ok_line:
+.B \-\-server_ok_line:
+This option is deprecated and may be removed in a future release.
+Use server_resp_line instead.
 If authentication with the real\-server is successful then send
 the servers +OK line to the client, instead of generating one.
+.TP
+.TP
+.B \-o, \-\-server_resp_line:
+If authentication with the real\-server is successful then send
+the servers response line to the client, instead of generating one.
 .TP
 .B \-P, \-\-protocol PROTOCOL:
 Protocol to use.

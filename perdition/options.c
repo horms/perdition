@@ -280,7 +280,8 @@ int options(int argc, char **argv, flag_t f){
     {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
     {"ok_line",                     'O',  POPT_ARG_STRING, NULL, 'O'},
-    {"server_ok_line",              'o',  POPT_ARG_NONE,   NULL, 'o'},
+    {"server_ok_line",              '\0', POPT_ARG_NONE,   NULL, 'o'},
+    {"server_resp_line",            'o',  POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P',  POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p',  POPT_ARG_STRING, NULL, 'p'},
     {"strip_domain",                'S',  POPT_ARG_STRING, NULL, 'S'},
@@ -372,8 +373,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.login_disabled,  DEFAULT_LOGIN_DISABLED,      i, 0, OPT_NOT_SET);
     opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
-    opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
-    opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
+    opt_i(opt.server_resp_line,DEFAULT_SERVER_RESP_LINE,    i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
     opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
@@ -561,7 +561,7 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.ok_line,optarg,opt.mask2,MASK2_OK_LINE,f);
         break;
       case 'o':
-        opt_i(opt.server_ok_line,1,opt.mask,MASK_SERVER_OK_LINE,f);
+        opt_i(opt.server_resp_line,1,opt.mask,MASK_SERVER_RESP_LINE,f);
         break;
       case 'P':
         if((index=protocol_index(optarg))<0){
@@ -999,7 +999,7 @@ int log_options_str(char *str, size_t n){
     "outgoing_server=\"%s\", "
     "pid_file=\"%s\", "
     "prototol=\"%s\", "
-    "server_ok_line=%s, "
+    "server_resp_line=%s, "
     "strip_domain=\"%s\", "
     "timeout=%d, "
     "username=\"%s\", "
@@ -1054,7 +1054,7 @@ int log_options_str(char *str, size_t n){
     OPT_STR(outgoing_server),
     OPT_STR(opt.pid_file),
     protocol,
-    BIN_OPT_STR(opt.server_ok_line),
+    BIN_OPT_STR(opt.server_resp_line),
     strip_domain,
     opt.timeout,
     OPT_STR(opt.username),
@@ -1224,11 +1224,11 @@ void usage(int exit_status){
     "    Disable host and port lookup.\n"
     " -O|--ok_line STRING:\n"
     "    Use STRING as the OK line to send to the client.\n"
-    "    Overriden by server_ok_line.\n"
+    "    Overriden by server_resp_line.\n"
     "    (default \"%s\")\n"
-    " -o|--server_ok_line:\n"
-    "    If authentication with the back-end server is successful then send\n"
-    "    the servers OK line to the client, instead of generating one.\n"
+    " -o|--server_resp_line:\n"
+    "    Use back-end server's authentication response, instead of \n"
+    "    generating one.\n"
     " -P|--protocol PROTOCOL:\n"
     "    Protocol to use.\n"
     "    (default \"%s\")\n"

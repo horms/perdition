@@ -33,6 +33,7 @@ XXX
     then after parsing of the config is complete add a ident
     (existing behaviour) and timestamp. If the log fails then
     send it to stderr.
+  - Replaced server_ok_line option with server_resp_line. Andrew McNamara
 
 ----------------------------------------------------------------------
 

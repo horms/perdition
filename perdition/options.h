@@ -129,7 +129,7 @@
 #define DEFAULT_OK_LINE                      "You are so in"
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
 #define DEFAULT_STRIP_DOMAIN                 STATE_NONE
-#define DEFAULT_SERVER_OK_LINE               0
+#define DEFAULT_SERVER_RESP_LINE             0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
 #ifdef WITH_USER
 #define DEFAULT_USERNAME                     WITH_USER
@@ -199,7 +199,7 @@ typedef struct {
   char            *pid_file;
   int             protocol;
   int             quiet;
-  int             server_ok_line;
+  int             server_resp_line;
   int             strip_domain;
   int             timeout;
   char            *username;
@@ -253,7 +253,7 @@ typedef struct {
 #define MASK_OUTGOING_PORT               (flag_t) 0x00400000
 #define MASK_OUTGOING_SERVER             (flag_t) 0x00800000
 #define MASK_PROTOCOL                    (flag_t) 0x01000000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x02000000
+#define MASK_SERVER_RESP_LINE            (flag_t) 0x02000000
 #define MASK_STRIP_DOMAIN                (flag_t) 0x04000000
 #define MASK_TIMEOUT                     (flag_t) 0x08000000
 #define MASK_USERNAME                    (flag_t) 0x10000000

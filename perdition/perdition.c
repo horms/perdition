@@ -197,13 +197,13 @@ int main (int argc, char **argv, char **envp){
   struct passwd pw = {NULL, NULL};
   struct passwd pw2 = {NULL, NULL};
   struct in_addr *to_addr;
-  unsigned char *server_ok_buf=NULL;
+  unsigned char *server_resp_buf=NULL;
   unsigned char *buffer;
   user_server_port_t *usp=NULL;
   protocol_t *protocol=NULL;
   token_t *our_tag=NULL;
   token_t *client_tag=NULL;
-  size_t server_ok_buf_size=0;
+  size_t server_resp_buf_size=0;
   flag_t tls_state=0;
   timed_log_t auth_log;
   char from_to_str[36];
@@ -448,11 +448,11 @@ int main (int argc, char **argv, char **envp){
   /*
    * If we are using the server's ok line then allocate a buffer to store it
    */ 
-  if(opt.server_ok_line){
-    if((server_ok_buf=(unsigned char *)malloc(
+  if(opt.server_resp_line){
+    if((server_resp_buf=(unsigned char *)malloc(
       sizeof(unsigned char)*MAX_LINE_LENGTH
     ))==NULL){
-      VANESSA_LOGGER_DEBUG_ERRNO("malloc server_ok_buf");
+      VANESSA_LOGGER_DEBUG_ERRNO("malloc server_resp_buf");
       VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
       perdition_exit_cleanly(-1);
     }
@@ -821,15 +821,29 @@ int main (int argc, char **argv, char **envp){
     }
 #endif /* WITH_SSL_SUPPORT */
 
-    if(opt.server_ok_line){
-      server_ok_buf_size=MAX_LINE_LENGTH-1;
+    if(opt.server_resp_line){
+      server_resp_buf_size=MAX_LINE_LENGTH-1;
     }
     token_flush();
     status = (*(protocol->out_authenticate))(server_io, &pw2, our_tag, protocol,
-      server_ok_buf, &server_ok_buf_size);
+      server_resp_buf, &server_resp_buf_size);
     if(status==0) {
 	    quit(server_io, protocol, our_tag);
-	    LOGIN_FAILED(PROTOCOL_NO, "Re-Authentication Failure");
+            if(opt.server_resp_line){
+              sleep(PERDITION_AUTH_FAIL_SLEEP);
+              *(server_resp_buf+server_resp_buf_size)='\0';
+              if(protocol->write(client_io, WRITE_STR_NO_CLLF, client_tag, 
+                    NULL, 1, "%s", server_resp_buf)<0){
+                VANESSA_LOGGER_DEBUG("protocol->write");
+                VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
+                perdition_exit_cleanly(-1);
+              }
+              VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name,
+                                      servername, port,
+                                      "failed: Re-Authentication Failure");
+            }
+            else
+              LOGIN_FAILED(PROTOCOL_NO, "Re-Authentication Failure");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -845,11 +859,10 @@ int main (int argc, char **argv, char **envp){
       perdition_exit_cleanly(-1);
     }
 
-    if(opt.server_ok_line){
-      *(server_ok_buf+server_ok_buf_size)='\0';
-      buffer=server_ok_buf;
+    if(opt.server_resp_line){
+      *(server_resp_buf+server_resp_buf_size)='\0';
       if(protocol->write(client_io, WRITE_STR_NO_CLLF, client_tag, 
-            NULL, 1, "%s", server_ok_buf)<0){
+            NULL, 1, "%s", server_resp_buf)<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         perdition_exit_cleanly(-1);
@@ -870,8 +883,8 @@ int main (int argc, char **argv, char **envp){
   VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
 		  servername, port, "ok");
 
-  if(opt.server_ok_line){
-     free(server_ok_buf);
+  if(opt.server_resp_line){
+     free(server_resp_buf);
   }
 
   /*We need a buffer for reads and writes to the server*/
