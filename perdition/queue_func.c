@@ -82,10 +82,6 @@ vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n,
   }
  
   do{
-    if(flag&TOKEN_POP3 && vanessa_queue_length(q)){
-      flag|=TOKEN_EOL;
-    }
-
     if((t=token_read(
       io,
       (buf==NULL)?NULL:buf+buf_offset,
