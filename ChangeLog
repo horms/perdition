@@ -14,6 +14,7 @@ XXX
    by configure.
  - Fixed possible buffer overflow in berkely db module
    Chris Stratford
+ - Option to disable compilation of ldap (latex) documentation
 
 ----------------------------------------------------------------------
 

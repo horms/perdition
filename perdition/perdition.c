@@ -607,6 +607,9 @@ int main (int argc, char **argv, char **envp){
     /*Read the USER and PASS lines from the client */
     status=(*(protocol->in_get_pw))(client_io, &pw, &client_tag);
     token_flush();
+    VANESSA_LOGGER_INFO_UNSAFE("Read Autentication Credentials: "
+		    "%susername=%s password=%s", from_to_str,
+		    str_null_safe(pw.pw_name), str_null_safe(pw.pw_passwd));
     if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
       VANESSA_LOGGER_ERR_UNSAFE(

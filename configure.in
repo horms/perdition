@@ -963,6 +963,24 @@ AC_ARG_WITH(
 ######################################################################
 # Latex stuff
 
+AC_MSG_CHECKING([if ldap (latex) documentation is disabled]);
+AC_ARG_ENABLE(
+  ldap_doc,
+  [  --disable-ldap-doc      DO not ldap (latex) documentation.  ],
+  [ 
+    if test "$enable_ldap_doc" = "no"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [ 
+    enable_ldap_doc="yes";
+    AC_MSG_RESULT("no") 
+  ]
+)
+
+if test "$enable_ldap_doc" = "yes"; then
 AC_CHECK_PROG(latex, latex, y, n)
 AC_CHECK_PROG(dvips, dvips, y, n)
 AC_CHECK_PROG(ps2pdf, ps2pdf, y, n)
@@ -978,7 +996,7 @@ AC_MSG_WARN(
 else
 	ldap_doc_build="yes"
 fi
-
+fi
 AM_CONDITIONAL(LDAP_DOC_BUILD, test "${ldap_doc_build}" = "yes")
 
 
