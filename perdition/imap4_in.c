@@ -40,6 +40,8 @@
 #endif
 
 
+#define IMAP_SYNCHRONISING_TOKEN     0x0
+#define IMAP_NON_SYNCHRONISING_TOKEN 0x1
 
 /**********************************************************************
  * imap4_token_is_literal
@@ -49,7 +51,9 @@
  * pre: token: token to examine
  *      i: will be seeded with the value of n if token is a literal
  * post: i is seeded with the value of n if token is a literal
- * return: 0 if token is a literal
+ * return: IMAP_NON_SYNCHRONISING_TOKEN if token is 
+ *           a non-synchronising litereal
+ *         IMAP_SYNCHRONISING_TOKEN if token is a sunchronising literal
  *         -1 if token is not a literal
  *         -2 on error
  **********************************************************************/
@@ -58,32 +62,45 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 {
 	char *str;
 	char *str2;
+	int non_synchronising = IMAP_SYNCHRONISING_TOKEN;
 
 	if(!token_is_eol(token)) {
 		return(-1);
 	}
 
+	/* Get the string out of the token */
 	if((str=token_to_string(token, '\"'))==NULL){
 		PERDITION_DEBUG("token_to_string");
 		return(-2);
 	}
 
+	/* Check for surrounding {} */
 	if(*str != '{' || *(str+strlen(str)-1) != '}') {
 		return(-1);
 	}
-
 	*(str+strlen(str)-1) = '\0';
+
+	/* If the traling character is a + then it is a 
+	 * non_synchronising literal */
+
+	if(*(str+strlen(str)-1) == '+') {
+		non_synchronising = IMAP_NON_SYNCHRONISING_TOKEN;
+		*(str+strlen(str)-1) = '\0';
+	}
+
+	/* Check that what is left is only digits */
 	if(!vanessa_socket_str_is_digit(str+1)) {
 		return(-1);
 	}
 
+	/* Convert it into binary */
 	*i = strtoul(str+1, &str2, 10);
 	if(*i == ULONG_MAX) {
 		PERDITION_DEBUG_ERRNO("strtoul");
 		return(-2);
 	}
 
-	return(0);
+	return(non_synchronising);
 }
 
 
@@ -136,21 +153,22 @@ static token_t *imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 		return(NULL);
 	}
 
-	tag=token_create();
-	if(tag == NULL) {
-		PERDITION_DEBUG("token_create");
-		return(NULL);
+	if(status == IMAP_SYNCHRONISING_TOKEN) {
+		tag=token_create();
+		if(tag == NULL) {
+			PERDITION_DEBUG("token_create");
+			return(NULL);
+		}
+		token_assign(tag, strdup("+"), 1, 0);
+		imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 
+				"ready for additional input");
+		token_destroy(&tag);
 	}
-	token_assign(tag, strdup("+"), 1, 0);
-	imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 
-			"ready for additional input");
 
 	if(i == 0) {
-		token_unassign(tag);
+		tag=token_create();
 		return(tag);
 	}
-
-	token_destroy(&tag);
 
 	if((tag=token_read(io, NULL, NULL, TOKEN_IMAP4_LITERAL, i))==NULL){
 		PERDITION_DEBUG("token_read");

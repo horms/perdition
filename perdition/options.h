@@ -104,7 +104,7 @@
 #else
 #define DEFAULT_GROUP                        "nobody"
 #endif /* WITH_GROUP */
-#define DEFAULT_IMAP_CAPABILITY              "IMAP4 IMAP4REV1"
+#define DEFAULT_IMAP_CAPABILITY              "IMAP4 IMAP4REV1 LITERAL+"
 #define DEFAULT_INETD_MODE                   0
 #define DEFAULT_MAP_LIB \
   PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"

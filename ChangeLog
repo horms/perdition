@@ -12,6 +12,7 @@ XXX
   - Flush internal buffers for tokenizer when swiching between
     the client and the real server in unauthenticated mode.
     This resolves a problem with IMAP literal strings not working.
+  - Support non-syncronising IMAP string litereals as per RFC 2088
 
 
 ----------------------------------------------------------------------
