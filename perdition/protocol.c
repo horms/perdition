@@ -25,7 +25,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "protocol.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 char *protocol_known[] = {"2", "POP3", "IMAP4"};
 

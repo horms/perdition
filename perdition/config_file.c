@@ -26,8 +26,17 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 
 #include "config_file.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * config_file_to_opt

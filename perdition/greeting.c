@@ -25,8 +25,17 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "greeting.h"
 #include "options.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * greeting

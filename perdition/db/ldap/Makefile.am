@@ -46,4 +46,4 @@ INCLUDES=\
 @ssl_includes@ \
 @ldap_includes@
 
-libperditiondb_ldap_la_LIBADD = @ssl_libs@ @ldap_libs@
+libperditiondb_ldap_la_LIBADD = @ssl_lib@ @ldap_libs@

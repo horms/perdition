@@ -25,7 +25,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "imap4_out.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * imap4_authenticate

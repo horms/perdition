@@ -25,7 +25,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "pop3_write.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * pop3_write

@@ -25,8 +25,17 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "token.h"
 #include "options.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 
 static unsigned char token_read_buffer[MAX_LINE_LENGTH];

@@ -26,12 +26,21 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 
 #include <netdb.h>
 
 #include "username.h"
 #include "options.h"
 #include "str.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * username_add_domain

@@ -27,8 +27,17 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 
 #include "pam.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 #ifdef WITH_PAM_SUPPORT
 

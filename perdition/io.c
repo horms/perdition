@@ -25,12 +25,21 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <vanessa_socket.h>
 
 #include "io.h"
 #include "log.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 typedef struct {
   int read;

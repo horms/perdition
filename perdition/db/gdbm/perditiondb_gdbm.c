@@ -25,7 +25,15 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "perditiondb_gdbm.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 /**********************************************************************

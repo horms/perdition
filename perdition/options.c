@@ -26,7 +26,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "options.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 options_t opt;
 
@@ -744,8 +753,8 @@ int log_options(void){
     BIN_OPT_STR(opt.debug),
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
-    str_null_safe(opt.imap_capability),
     BIN_OPT_STR(opt.inetd_mode),
+    str_null_safe(opt.imap_capability),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
     str_null_safe(lower_case),

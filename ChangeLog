@@ -41,6 +41,7 @@ xxx
     in pop3 mode
   - Added additional LDAP documentation. Richard Holbert <holbert.13@osu.edu>
   - Fixed memory leaks in LDAP module
+  - Added optional dmalloc debugging
 
 
 

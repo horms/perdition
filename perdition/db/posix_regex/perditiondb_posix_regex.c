@@ -25,7 +25,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "perditiondb_posix_regex.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 static vanessa_dynamic_array_t *regex_a;
 

@@ -30,7 +30,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "perditiondb_postgresql.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 static vanessa_dynamic_array_t *a=NULL;
 static char *dbhost          = PERDITIONDB_PGSQL_DEFAULT_DBHOST;

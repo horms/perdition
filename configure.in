@@ -64,7 +64,6 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_logger generic logging library"
 "* available from"
-"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_logger/"
 "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
 "**********************************************************************"
 )
@@ -78,7 +77,6 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_adt abstract data type library"
 "* available from"
-"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_adt/"
 "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
 "**********************************************************************"
 ),
@@ -93,7 +91,6 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_socket TCP socket interface library"
 "* available from"
-"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_socket/"
 "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
 "**********************************************************************"
 ),
@@ -166,7 +163,7 @@ AC_ARG_WITH(
   ]
 )
 
-ssl_libs="-L$ssl_libpath -lssl -lcrypto"
+ssl_lib="-L$ssl_libpath -lssl -lcrypto"
 
 AC_CHECK_FILE(
   $ssl_includepath/openssl/ssl.h,
@@ -201,12 +198,12 @@ AC_MSG_WARN(
       sleep 5
     fi
   ],
-  $ssl_libs
+  $ssl_lib
 )
 
 if test "$enable_ssl" = "yes"; then
   AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
-  AC_SUBST(ssl_libs)
+  AC_SUBST(ssl_lib)
   AC_SUBST(ssl_includes)
 fi
 
@@ -333,7 +330,7 @@ AC_ARG_WITH(
   ]
 )
 
-pg_libs="$socket_lib $nsl_lib $crypt_lib $ssl_libs -lvanessa_logger -lvanessa_adt -L$pg_libpath -lpq"
+pg_libs="$socket_lib $nsl_lib $crypt_lib $ssl_lib -lvanessa_logger -lvanessa_adt -L$pg_libpath -lpq"
 
 AC_CHECK_FILE(
   $pg_includepath/libpq-fe.h,
@@ -594,6 +591,21 @@ AC_DEFINE_UNQUOTED(WITH_GROUP, "$perdition_group", Group to run perdition as )
 
 
 ######################################################################
+# Dmalloc debugging
+ 
+dmalloc_lib=""
+AC_ARG_WITH(
+  dmalloc,
+  [  --with-dmalloc          Compile with dmalloc debugging  ],
+  [ dmalloc_lib="-ldmalloc" 
+    AC_SUBST(dmalloc_lib) 
+    AC_DEFINE(WITH_DMALLOC) ],
+  
+)
+AC_DEFINE_UNQUOTED(WITH_USER, "$perdition_user", User to run perdition as )
+
+
+######################################################################
 # Latex stuff
 
 AC_CHECK_PROG(latex, latex, y, n)
@@ -645,6 +657,7 @@ AC_SUBST(pam_dir)
 AC_SUBST(pam_lib)
 AC_SUBST(pam_source)
 AC_SUBST(ldap_doc_dir)
+AC_SUBST(dmalloc_lib)
 
 AC_OUTPUT(
 packaging/Makefile

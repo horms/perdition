@@ -37,7 +37,7 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_postgresql_la_LIBADD = @ssl_libs@ @pg_libs@
+libperditiondb_postgresql_la_LIBADD = @ssl_lib@ @pg_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
@@ -45,4 +45,3 @@ INCLUDES=\
 -I$(top_srcdir)/libjain \
 @ssl_includes@ \
 @pg_includes@
-

@@ -95,7 +95,16 @@
  **********************************************************************/
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "getserver.h"
+
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 /**********************************************************************

@@ -24,6 +24,15 @@
 
 #include "jain.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
+
 /**********************************************************************
  * str_is_jain
  * Determine if a string is one of various spellings of jain

@@ -37,7 +37,7 @@ perditiondb_mysql.h
 
 libperditiondb_mysql_la_LDFLAGS = -version-info 0:0:0
 
-libperditiondb_mysql_la_LIBADD =  @ssl_libs@ @mysql_libs@
+libperditiondb_mysql_la_LIBADD =  @ssl_lib@ @mysql_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \

@@ -68,7 +68,7 @@ INCLUDES= \
   -I$(top_srcdir)/libjain \
   -DPERDITION_LIBDIR=\"${libdir}\" \
   -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
-  @ssl_includes@
+  @ssl_includes@ 
 
 # Removed because Debian doesn't like it
 #LDFLAGS = -Wl,--rpath -Wl,@prefix@
@@ -86,7 +86,8 @@ LDADD = \
 @nsl_lib@ \
 @resolv_lib@ \
 @dl_lib@ \
-@ssl_libs@
+@ssl_lib@ \
+@dmalloc_lib@
 
 perdition_LDFLAGS = -rdynamic
 

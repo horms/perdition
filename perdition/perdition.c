@@ -50,6 +50,11 @@
 #include "server_port.h"
 #include "username.h"
 
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
+
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
 
@@ -267,7 +272,7 @@ int main (int argc, char **argv){
   signal(SIGUSR1,   (void(*)(int))vanessa_socket_daemon_noop_handler);
   signal(SIGSEGV,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGUSR2,   (void(*)(int))vanessa_socket_daemon_noop_handler);
-  signal(SIGPIPE,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGPIPE,   SIG_IGN);
   signal(SIGALRM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGTERM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGURG,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);

@@ -25,8 +25,17 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "imap4_in.h"
 #include "options.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 #ifdef WITH_PAM_SUPPORT
 

@@ -25,7 +25,16 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "pop3_in.h"
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 #ifdef WITH_PAM_SUPPORT
 
