@@ -10,6 +10,8 @@ xxx
 
   * Version xxx
   - Added LDAP schema, perdition.schema
+    This uses the Private Enteprise Number 12856, which belongs
+    to Verge Networks, which intern belongs to the author Horms
   - -X is no longer a synonym for --lower_case
   - Addded POP3S and IMAP4S protocol labels
   - Updated signal handlers to reflect changes in libvanessa_socket
