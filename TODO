@@ -12,7 +12,8 @@ From Horms
 *  Make TLS IMAP and POP Server support RFC 2595 compliant
      * Option to only use tls if advertised by server on a per-user basis
 * Support SSL CRLs (maybey?)
-* Support persistent SSL ID Cache (maybey?)
+* Support persistent SSL ID Cache (maybe?)
+* Add SSL suport to LDAP module
 
 From Jon Griffiths
 * LDAPS support
@@ -50,3 +51,4 @@ Mark D. Roth
 
 Erwin Lubbers <erwin@box.nl>
 * Periodically send a NOOP to keep connections alive (IMAP)
+
