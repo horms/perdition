@@ -297,7 +297,8 @@ do_getserver(
 	}
 
 	if(dbserver_get) {
-		if(user_server_port_strn_assign(usp_ret, server_str) < 0) {
+		if(user_server_port_strn_assign(usp_ret, server_str, 
+					server_len) < 0) {
 			VANESSA_LOGGER_DEBUG("user_server_port_strn_assign");
 			goto fail;
 		}
@@ -347,7 +348,7 @@ user_server_port_t
     (popserver=strrstr(user_str, opt.domain_delimiter)) != NULL 
   ){
     *popserver='\0';
-    if(user_server_port_strn_assign(&usp, 
+    if(user_server_port_str_assign(&usp, 
         popserver+opt.domain_delimiter_length) < 0) {
       VANESSA_LOGGER_DEBUG("server_port_strn_assign");
       user_server_port_destroy(usp);

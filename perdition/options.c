@@ -1360,7 +1360,7 @@ void usage(int exit_status){
 #define ADD_TO_SERVER_PORT \
 do {                                                                        \
 	usp = NULL;                                                         \
-	user_server_port_strn_assign(&usp, string);                         \
+	user_server_port_str_assign(&usp, string);                          \
 	if(!vanessa_dynamic_array_add_element(a, usp)){                     \
 		return(NULL);                                               \
 	}                                                                   \

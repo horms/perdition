@@ -82,9 +82,9 @@ user_server_port_assign(user_server_port_t **usp, char *user,
 
 
 /**********************************************************************
- * user_server_port_strn_assign
+ * user_server_port_str_assign
  * Assign the data in a string, to a port structure
- * pre: str should be of the form 
+ * pre: str: string of the form
  *        [<user><domain_delimiter>]<servername>[:<port>]
  * post: <server> is assigned to usp.server
  *       <port> is assigned to usp.port if present, otherwise null
@@ -94,7 +94,29 @@ user_server_port_assign(user_server_port_t **usp, char *user,
  **********************************************************************/
 
 int
-user_server_port_strn_assign(user_server_port_t **usp, const char *str)
+user_server_port_str_assign(user_server_port_t **usp, const char *str)
+{
+	return user_server_port_strn_assign(usp, str, strlen(str));
+}
+
+
+/**********************************************************************
+ * user_server_port_strn_assign
+ * Assign the data in a string, to a port structure
+ * pre: str: string of the form
+ *        [<user><domain_delimiter>]<servername>[:<port>]
+ *      str_len: maximum number of bytes of str to use,
+ *               not including traling '\0', if any
+ * post: <server> is assigned to usp.server
+ *       <port> is assigned to usp.port if present, otherwise null
+ *       <user> is assigned to usp.user if present, otherwise null
+ * return: 0 on success
+ *         -1 on error
+ **********************************************************************/
+
+int
+user_server_port_strn_assign(user_server_port_t **usp, const char *str,
+		size_t str_len)
 {
 	int alloced = 0;
 	extern options_t opt;
@@ -111,10 +133,12 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str)
 		user_server_port_unassign(*usp);
 	}
 
-	(*usp)->server = strdup(str);
+	(*usp)->server = (char *) malloc (str_len + 1);
 	if(!(*usp)->server) {
 		goto strdup_fail;
 	}
+	memset((*usp)->server, 0, str_len + 1);
+	strncpy((*usp)->server, str, str_len);
 
 	(*usp)->port = strrchr((*usp)->server, SERVER_PORT_DELIMITER);
 	if((*usp)->port) {

@@ -38,6 +38,7 @@ XXX
   - Fixed incorrect path to pid file in debian init script that
     caused the script to fail to restart perdition. Thomas Hager
   - Don't accept truncated commands
+  - Don't assume that the return of a popmap lookup will be null terminated
 
 ----------------------------------------------------------------------
 
