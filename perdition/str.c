@@ -35,7 +35,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
+#ifdef HAVE_PARSE_PRINTF_FORMAT
 #include <printf.h>
+#endif
 #include <sys/uio.h>
 #include <vanessa_socket.h>
 
@@ -93,14 +95,14 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
   va_list ap;
   int bytes=0;
   int fmt_args;
-#ifdef HAVE_PARSE_PRINT_FORMAT
+#ifndef HAVE_PARSE_PRINT_FORMAT
   int place;
 #endif /* HAVE_PARSE_PRINT_FORMAT */
 
   extern options_t opt;
   extern vanessa_logger_t *perdition_vl;
 
-#if HAVE_PARSE_PRINT_FORMAT
+#ifndef HAVE_PARSE_PRINT_FORMAT
   fmt_args = 0;
   for (place=0; fmt[place]!='\0'; place++) {
         if (fmt[place]=='%')

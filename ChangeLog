@@ -29,6 +29,8 @@ xxx
     Chris Stratford <Chris.Stratford@uk.uu.net>
   - Code to detatch from terminal moved into libvanessa_socket
   - makegdbm now compiles with --disable-static. Vyt <vyt@vzljot.ru>
+  - compatibility for systems without parse_printf_format()
+    Ronny Cook <ronny@ronnycook.org>
 
 
 
