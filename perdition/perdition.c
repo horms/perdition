@@ -79,24 +79,24 @@ static void perdition_reread_handler(int sig);
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
-  if(username!=NULL && username!=pw.pw_name && username!=pw2.pw_name){ \
-    free(username); \
+  if(username && username!=pw.pw_name && username!=pw2.pw_name){ \
+    ; /* free(username); \ */ \
   } \
   username=NULL; \
-  if(pw2.pw_name!=NULL && pw2.pw_name!=pw.pw_name){ \
+  if(pw2.pw_name && pw2.pw_name!=pw.pw_name){ \
     free(pw2.pw_name); \
   } \
   pw2.pw_name=NULL; \
   pw2.pw_passwd=NULL; \
-  if(pw.pw_name!=NULL){ \
+  if(pw.pw_name){ \
     free(pw.pw_name); \
     pw.pw_name=NULL; \
   } \
-  if(pw.pw_passwd!=NULL){ \
+  if(pw.pw_passwd){ \
     free(pw.pw_passwd); \
     pw.pw_passwd=NULL;\
   } \
-  if(pw2.pw_name!=NULL){ \
+  if(pw2.pw_name){ \
     free(pw2.pw_name); \
     pw2.pw_name=NULL; \
   } \
@@ -104,7 +104,7 @@ static void perdition_reread_handler(int sig);
   if (!round_robin_server){ \
     server_port_destroy(server_port); \
   } \
-  if(server_io!=NULL) { \
+  if(server_io) { \
     io_close(server_io); \
     io_destroy(server_io); \
   } \
