@@ -26,6 +26,8 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
     the search has failed. Previously a useless entry with
     no servername was returned.
   - Up dated .spec file and init script to work against Red Hat 7.1
+  - ldap module:  If supported, set the network timeout to 10 seconds
+    Roland Rosenfeld <roland@spinnaker.de>
 
 
 ----------------------------------------------------------------------

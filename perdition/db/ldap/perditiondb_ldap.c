@@ -241,6 +241,18 @@ int dbserver_get(
     PERDITION_DEBUG("ldap_init");
     goto leave;
   }
+#ifdef LDAP_OPT_NETWORK_TIMEOUT
+  {
+    struct timeval mytimeval;
+    mytimeval.tv_sec = 10;
+    mytimeval.tv_usec = 0;
+    if (ldap_set_option(connection, LDAP_OPT_NETWORK_TIMEOUT, 
+        &mytimeval) != LDAP_OPT_SUCCESS) {
+      PERDITION_DEBUG("ldap_network_timeout");
+      return(-1);
+    }
+  }
+#endif /*LDAP_OPT_NETWORK_TIMEOUT */
   if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE) 
       != LDAP_SUCCESS){
     goto leave;

@@ -55,4 +55,6 @@ int dbserver_get(
   "ldap://localhost/" \
   "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)"
 
+#define PERDITIONDB_LDAP_NETWORK_TIMEOUT 10
+
 #endif
