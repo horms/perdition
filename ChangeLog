@@ -5,11 +5,19 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+   * XXX
+   - May log to stdout or stderr.
+
+
+----------------------------------------------------------------------
+
 11th May 2002
 (Horms)
 
   * Version 0.1.10beta4
-  - Flush internal buffers for tokenizer when swiching between
+  - Flush internal buffers for tokeniser when switching between
     the client and the real server in unauthenticated mode.
     This resolves a problem with IMAP literal strings not working.
   - Support non-syncronising IMAP string litereals as per RFC 2088

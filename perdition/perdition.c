@@ -38,6 +38,7 @@
 #include <arpa/inet.h>
 #include <vanessa_socket.h>
 #include <time.h>
+#include <stdio.h>
 
 #include "protocol.h"
 #include "log.h"
@@ -174,6 +175,7 @@ int main (int argc, char **argv, char **envp){
   char *port=NULL;
   io_t *client_io=NULL;
   io_t *server_io=NULL;
+  FILE *fh;
   int bytes_written=0;
   int bytes_read=0;
   int status;
@@ -218,17 +220,8 @@ int main (int argc, char **argv, char **envp){
    * Update Logger
    */
   if(!opt.debug){
-    vanessa_logger_closelog(perdition_vl);
-    if((perdition_vl=vanessa_logger_openlog_filehandle(
-      stdout,
-      LOG_IDENT,
-      opt.quiet?LOG_ERR:LOG_INFO,
-      LOG_CONS
-    ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
-                      "Fatal error opening logger. Exiting.\n");
-      vanessa_socket_daemon_exit_cleanly(-1);
-    }
+    vanessa_logger_change_max_priority(perdition_vl, 
+		    opt.quiet?LOG_ERR:LOG_INFO);
   }
 
   /*Read congif file*/
@@ -276,8 +269,18 @@ int main (int argc, char **argv, char **envp){
   signal(SIGWINCH,  vanessa_socket_daemon_exit_cleanly);
   signal(SIGIO,     vanessa_socket_daemon_exit_cleanly);
 
+  fh = NULL;
+  if(opt.log_facility!=NULL) {
+    if(strcmp(opt.log_facility, "-")) {
+      fh = stdout;
+    }
+    else if(strcmp(opt.log_facility, "+")) {
+      fh = stderr;
+    }
+  }
+
   /*Close file descriptors and detactch process from shell as necessary*/
-  if(opt.inetd_mode || opt.no_daemon){
+  if(opt.inetd_mode || opt.no_daemon || fh != NULL){
     vanessa_socket_daemon_inetd_process();
   }
   else{
@@ -289,7 +292,19 @@ int main (int argc, char **argv, char **envp){
    * and configuration file has been read.
    */
   vanessa_logger_closelog(perdition_vl);
-  if(opt.log_facility!=NULL && *(opt.log_facility)=='/'){
+  if(fh != NULL) {
+    if((perdition_vl=vanessa_logger_openlog_filehandle(
+      fh,
+      LOG_IDENT,
+      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
+      LOG_CONS
+    ))==NULL){
+      fprintf(stderr, "main: vanessa_logger_openlog_filehandle\n"
+                      "Fatal error opening logger. Exiting.\n");
+      vanessa_socket_daemon_exit_cleanly(-1);
+    }
+  }
+  else if(opt.log_facility!=NULL && *(opt.log_facility)=='/'){
     if((perdition_vl=vanessa_logger_openlog_filename(
       opt.log_facility,
       LOG_IDENT,
@@ -361,7 +376,7 @@ int main (int argc, char **argv, char **envp){
    * If we are in inetd mode then only do this if debuging is turned on,
    * else dbuging is a bit too verbose.
    */
-  if((!opt.quiet && !opt.inetd_mode) || opt.debug){
+  if((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug){
     if(log_options()){
       PERDITION_DEBUG("log_options");
       PERDITION_ERR("Fatal error loging options. Exiting.");

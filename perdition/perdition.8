@@ -137,8 +137,14 @@ Turn on verbose debugging.
 .TP
 .B \-F, \-\-log_facility facility:
 Syslog facility to log to. If the facility has a leading '/' then it will
-be treated as a file to log to. (default "mail").  Note: If an error occurs
-before options are read it may be logged to syslog facility mail
+be treated as a file. If is "-" or "+" then log to stdout or stderr 
+respectivley.
+.br
+(default "mail")
+.br 
+Notes: If an error occurs before options are read it may be logged to 
+stdout. If stdout or stderr are used, then the process will not fork
+and detach from the terminal.
 .TP
 .B \-f, \-\-config_file filename:
 Name of config file to read. If set to "" no config file will be
