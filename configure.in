@@ -654,7 +654,7 @@ AC_CHECK_HEADERS(
 # It seems that function call arguments actually vary between versions.
 # Why do we use this crap anyway?
 
-AC_MSG_CHECKING("For Bergley DB Version 4.1 and above");
+AC_MSG_CHECKING("For Berkley DB Version 4.1 and above");
 AC_TRY_RUN(
 	[ #include <db.h>
 	  int main(int arc, char **argv) { 
