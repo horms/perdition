@@ -62,7 +62,8 @@ AC_CHECK_LIB(
     "**********************************************************************"
     "* perdition requires the vanessa_logger generic logging library"
     "* available from"
-    "* ftp://ftp.vergenet.net/pub/vanessa_logger/ and mirrors."
+    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_logger/"
+    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
     "**********************************************************************"
   ) ;\
 )
@@ -75,7 +76,8 @@ AC_CHECK_LIB(
     "**********************************************************************"
     "* perdition requires the vanessa_adt abstract data type library"
     "* available from"
-    "* ftp://ftp.vergenet.net/pub/vanessa_adt/ and mirrors."
+    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_adt/"
+    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
     "**********************************************************************"
   ) ;\
 )
@@ -88,7 +90,8 @@ AC_CHECK_LIB(
     "**********************************************************************"
     "* perdition requires the vanessa_socket TCP socket interface library"
     "* available from"
-    "* ftp://ftp.vergenet.net/pub/vanessa_socket/ and mirrors."
+    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_socket/"
+    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
     "**********************************************************************"
   ) ;\
 )

@@ -7,3 +7,4 @@ Makefile.in
 Makefile
 .libs
 config.h
+perdition_config.h
