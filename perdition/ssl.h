@@ -37,24 +37,6 @@
 #include "io.h"
 #include "perdition_types.h"
 
-/**********************************************************************
- * perdition_ssl_connection
- * Change a stdio bassed connection into an SSL connection
- * io: io_t to change
- * ssl_cts: SSL Context to use
- * flag: If PERDITION_CLIENT the io is a client that has connected to
- *       a server and SSL_connect() will be called. If PERDITION_SERVER
- *       then the io is a serve rthat has accepted a connection and
- *       SSL_accept will be called. There are no other valid values
- *       for flag.
- * post: io_t has an ssl object associated with it and SSL is intiated
- *       for the connection.
- * return: io_t with ssl object associated with it
- *         NULL on error
- **********************************************************************/
-
-io_t *perdition_ssl_connection(io_t * io, SSL_CTX * ssl_ctx, flag_t flag);
-
 
 /**********************************************************************
  * perdition_ssl_ctx
@@ -78,6 +60,35 @@ io_t *perdition_ssl_connection(io_t * io, SSL_CTX * ssl_ctx, flag_t flag);
 
 SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
 
+
+/**********************************************************************
+ * perdition_ssl_client_connection
+ * Change a stdio bassed connection to a remote server, into an SSL 
+ * connection.
+ * io: io_t to change. A client that has connected to
+ *       a server, SSL_connect() will be called.
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+io_t *perdition_ssl_client_connection(io_t * io);
+
+
+/**********************************************************************
+ * perdition_ssl_server_connection
+ * Change a stdio bassed connection that revieves client connections,
+ * into an SSL connection
+ * io: io_t to change
+ * ssl_ctx: SSL Context to use
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+io_t *perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx);
 
 #endif				/* WITH_SSL_SUPPORT */
 

@@ -47,8 +47,8 @@ typedef uint32 flag_t;
 
 #define MAX_LINE_LENGTH 4096
 
-#define PERDITION_NONE   (flag_t) 0x0
-#define PERDITION_CLIENT (flag_t) 0x1
-#define PERDITION_SERVER (flag_t) 0x2
+#define PERDITION_LOG_STR_SELF   "SELF:  "
+#define PERDITION_LOG_STR_CLIENT "CLIENT:"
+#define PERDITION_LOG_STR_REAL   "REAL:  "
 
 #endif

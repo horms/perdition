@@ -61,6 +61,7 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
 #else
   protocol->in_authenticate= NULL;
 #endif
+  protocol->out_setup = pop3_out_setup;
   protocol->out_authenticate = pop3_out_authenticate;
   protocol->out_response= pop3_out_response;
   protocol->destroy = pop3_destroy_protocol;

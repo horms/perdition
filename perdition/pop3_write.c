@@ -56,17 +56,17 @@ int pop3_write(
   const char *type, 
   const char *string
 ){
-  if(type==NULL){
-    if(str_write(io, flag, 1, "%s", string)<0){
-      VANESSA_LOGGER_DEBUG("str_write");
-      return(-1);
-    }   
-  }
-  else {
-    if(str_write(io, flag, 2, "%s %s", type, string)<0){
-      VANESSA_LOGGER_DEBUG("str_write");
-      return(-1);
-    }   
-  }
+  const char *w_type;
+  const char *w_space;
+  const char *w_string;
+
+  w_type = (type)?type:"";
+  w_space = (type && string)?" ":"";
+  w_string = (string)?string:"";
+
+  if(str_write(io, flag, 3, "%s%s%s", w_type, w_space, w_string)<0){
+    VANESSA_LOGGER_DEBUG("str_write");
+    return(-1);
+  }   
   return(0);
 }   

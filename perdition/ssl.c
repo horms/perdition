@@ -35,79 +35,14 @@
 #include "ssl.h"
 #include "log.h"
 #include "io.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
-
-/**********************************************************************
- * perdition_ssl_connection
- * Change a stdio bassed connection into an SSL connection
- * io: io_t to change
- * ssl_cts: SSL Context to use
- * flag: If PERDITION_CLIENT the io is a client that has connected to
- *       a server and SSL_connect() will be called. If PERDITION_SERVER
- *       then the io is a server that has accepted a connection and
- *       SSL_accept will be called. There are no other valid values
- *       for flag.
- * post: io_t has an ssl object associated with it and SSL is intiated
- *       for the connection.
- * return: io_t with ssl object associated with it
- *         NULL on error
- **********************************************************************/
-
-io_t *perdition_ssl_connection(
-  io_t *io,
-  SSL_CTX *ssl_ctx,
-  flag_t flag
-){
-  io_t *new_io=NULL;
-  SSL *ssl=NULL;
-  int ret;
-  
-  if((ssl=SSL_new(ssl_ctx))==NULL){
-    VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_new");
-    goto bail;
-  }
-
-  /* Set up io object that will use SSL */
-  if((new_io=io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io)))==NULL){
-    VANESSA_LOGGER_DEBUG("io_create_ssl");
-    goto bail;
-  }
-
-  io_destroy(io);
-
-  /* Get for TLS/SSL handshake */
-  if(flag&PERDITION_CLIENT){
-    SSL_set_connect_state(ssl);
-    ret = SSL_connect(ssl);
-    if(ret <= 0){
-      VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_connect", io_get_ssl(io), ret);
-      goto bail;
-    }
-  }
-  else {
-    SSL_set_accept_state(ssl);
-    ret = SSL_accept(ssl);
-    if(ret <= 0){
-      VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_accept", io_get_ssl(io), ret);
-      goto bail;
-    }
-  }
-
-  VANESSA_LOGGER_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
-
-  return(new_io);
-
-bail:
-  if(new_io==NULL)
-    SSL_free(ssl);
-  else
-    io_destroy(new_io);
-  return(NULL);
-}
+#define PERDITION_SSL_CLIENT (flag_t) 0x1
+#define PERDITION_SSL_SERVER (flag_t) 0x2
 
 
 /**********************************************************************
@@ -130,73 +65,287 @@ bail:
  *       be non-NULL.
  **********************************************************************/
 
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
-  SSL_METHOD *ssl_method;
-  SSL_CTX *ssl_ctx;
+SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey)
+{
+	SSL_METHOD *ssl_method;
+	SSL_CTX *ssl_ctx;
 
-  /* 
-   * If either the certificate or private key is non-NULL the
-   * other should be too
-   */
+	/* 
+	 * If either the certificate or private key is non-NULL the
+	 * other should be too
+	 */
+	if (cert == NULL && privkey != NULL) {
+		VANESSA_LOGGER_DEBUG("Certificate is NULL but "
+				"private key is non-NULL");
+		return (NULL);
+	}
 
-  if(cert==NULL && privkey!=NULL){
-    VANESSA_LOGGER_DEBUG("Certificate is NULL but private key is non-NULL");
-    return(NULL);
-  }
+	if (privkey == NULL && cert != NULL) {
+		VANESSA_LOGGER_DEBUG ("Private key is NULL but "
+				"certificate is non-NULL");
+		return (NULL);
+	}
 
-  if(privkey==NULL && cert!=NULL){
-    VANESSA_LOGGER_DEBUG("Private key is NULL but certificate is non-NULL");
-    return(NULL);
-  }
+	/*
+	 * Initialise an SSL context
+	 */
+	SSLeay_add_ssl_algorithms();
+	ssl_method = SSLv23_method();
+	SSL_load_error_strings();
 
-  /*
-   * Initialise an SSL context
-   */
+	if ((ssl_ctx = SSL_CTX_new(ssl_method)) == NULL) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_CTX_new");
+		return (NULL);
+	}
 
-  SSLeay_add_ssl_algorithms();
-  ssl_method = SSLv23_method();
-  SSL_load_error_strings();
+	/*
+	 * If the certificate or private key is NULL (one is implied by
+	 * the other, and it has been checked) then there is no
+	 * more proccessing to be done
+	 */
+	if (cert == NULL) {
+		return (ssl_ctx);
+	}
 
-  if((ssl_ctx=SSL_CTX_new(ssl_method))==NULL){
-    VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_CTX_new");
-    return(NULL);
-  }
+	/*
+	 * Load and check the certificate and private key
+	 */
+	if (SSL_CTX_use_certificate_file(ssl_ctx, cert, 
+			SSL_FILETYPE_PEM) <= 0) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
+		    ("SSL_CTX_use_certificate_file: \"%s\"", cert);
+		VANESSA_LOGGER_ERR_UNSAFE
+		    ("Error loading certificate file \"%s\"", cert);
+		SSL_CTX_free(ssl_ctx);
+		return (NULL);
+	}
 
-  /*
-   * If the certificate or private key is NULL (one is implied by
-   * the other, and it has been checked) then there is no
-   * more proccessing to be done
-   */
-  if(cert==NULL){
-    return(ssl_ctx);
-  }
+	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
+			SSL_FILETYPE_PEM) <= 0) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
+		    ("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
+		VANESSA_LOGGER_ERR_UNSAFE
+		    ("Error loading pricvate key file \"%s\"", privkey);
+		SSL_CTX_free(ssl_ctx);
+		return (NULL);
+	}
 
-  /*
-   * Load and check the certificate and private key
-   */
+	if (!SSL_CTX_check_private_key(ssl_ctx)) {
+		VANESSA_LOGGER_DEBUG
+		    ("Private key does not match the certificate public key.");
+		SSL_CTX_free(ssl_ctx);
+		return (NULL);
+	}
 
-  if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM)<=0){
-    VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_certificate_file: \"%s\"", 
-      cert);
-    VANESSA_LOGGER_ERR_UNSAFE("Error loading certificate file \"%s\"", cert);
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
- 
-  if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, SSL_FILETYPE_PEM)<= 0){
-    VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_PrivateKey_file: \"%s\"", 
-      privkey);
-    VANESSA_LOGGER_ERR_UNSAFE("Error loading pricvate key file \"%s\"", privkey);
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
-  
-  if(!SSL_CTX_check_private_key(ssl_ctx)){
-    VANESSA_LOGGER_DEBUG("Private key does not match the certificate public key.");
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
-
-  return(ssl_ctx);
+	return (ssl_ctx);
 }
-#endif /* sl_ctxITH_SSL_SUPPORT */
+
+
+/**********************************************************************
+ * __perdition_ssl_log_certificate
+ * Log the details of a certificate
+ * pre: io: connectoion to log certificate of
+ * post: details of cerfificate are loged, if there is one
+ * return: 0 on success, including if there was nothing to do
+ *         -1 on error
+ **********************************************************************/
+
+
+static int __perdition_ssl_log_certificate(io_t * io)
+{
+	char *str;
+	X509 *server_cert;
+	SSL *ssl;
+
+	extern options_t opt;
+
+	if (!opt.debug) {
+		return (0);
+	}
+
+	ssl = io_get_ssl(io);
+	if (!ssl) {
+		VANESSA_LOGGER_DEBUG("vanessa_socket_get_ssl");
+		return (0);
+	}
+
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("SSL connection using %s",
+				    SSL_get_cipher(ssl));
+
+	server_cert = SSL_get_peer_certificate(ssl);
+	if (!server_cert) {
+		/* Nothing more to do */
+		return (0);
+	}
+
+	str = X509_NAME_oneline(X509_get_subject_name(server_cert), 0, 0);
+	if (!str) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+		return (-1);
+	}
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("subject: %s", str);
+	free(str);
+
+	str = X509_NAME_oneline(X509_get_issuer_name(server_cert), 0, 0);
+	if (!str) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+		return (-1);
+	}
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("issuer: %s", str);
+	free(str);
+
+	/* We could do all sorts of certificate verification stuff here before
+	 * deallocating the certificate. */
+	X509_free(server_cert);
+
+	return (0);
+}
+
+
+/**********************************************************************
+ * __perdition_ssl_connection
+ * Change a stdio bassed connection into an SSL connection
+ * io: io_t to change
+ * ssl_cts: SSL Context to use
+ * flag: If PERDITION_SSL_CLIENT the io is a client that has connected to
+ *       a server and SSL_connect() will be called. If PERDITION_SSL_SERVER
+ *       then the io is a server that has accepted a connection and
+ *       SSL_accept will be called. There are no other valid values
+ *       for flag.
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx, 
+		flag_t flag)
+{
+	io_t *new_io = NULL;
+	SSL *ssl = NULL;
+	int ret;
+
+	ssl = SSL_new(ssl_ctx);
+	if (!ssl) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_new");
+		goto bail;
+	}
+
+	/* Set up io object that will use SSL */
+	new_io =
+	    io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io),
+			  io_get_name(io));
+	if (!new_io) {
+		VANESSA_LOGGER_DEBUG("io_create_ssl");
+		goto bail;
+	}
+
+	io_destroy(io);
+	io = NULL;
+
+	/* Get for TLS/SSL handshake */
+	if (flag & PERDITION_SSL_CLIENT) {
+		SSL_set_connect_state(ssl);
+		ret = SSL_connect(ssl);
+		if (ret <= 0) {
+			VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_connect",
+					io_get_ssl(new_io), ret);
+			goto bail;
+		}
+	} else {
+		SSL_set_accept_state(ssl);
+		ret = SSL_accept(ssl);
+		if (ret <= 0) {
+			VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_accept",
+					io_get_ssl(new_io), ret);
+			goto bail;
+		}
+	}
+
+	return (new_io);
+
+      bail:
+	if (new_io) {
+		io_destroy(new_io);
+	} else {
+		SSL_free(ssl);
+	}
+	if (io) {
+		io_destroy(io);
+	}
+	return (NULL);
+}
+
+
+/**********************************************************************
+ * perdition_ssl_client_connection
+ * Change a stdio bassed connection to a remote server, into an SSL 
+ * connection.
+ * io: io_t to change. A client that has connected to
+ *       a server, SSL_connect() will be called.
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+io_t *perdition_ssl_client_connection(io_t * io)
+{
+	SSL_CTX *ssl_ctx;
+	io_t *new_io;
+
+	ssl_ctx = perdition_ssl_ctx(NULL, NULL);
+	if (!ssl_ctx) {
+		VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
+		io_destroy(io);
+		return(NULL);
+	}
+
+	new_io = __perdition_ssl_connection(io, ssl_ctx, PERDITION_SSL_CLIENT);
+	if (!new_io) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_connection");
+		return(NULL);
+	}
+
+	if (__perdition_ssl_log_certificate(new_io) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_log_certificate");
+		io_destroy(new_io);
+		return(NULL);
+	}
+
+	return(new_io);
+}
+
+
+/**********************************************************************
+ * perdition_ssl_server_connection
+ * Change a stdio bassed connection that revieves client connections,
+ * into an SSL connection
+ * io: io_t to change
+ * ssl_ctx: SSL Context to use
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+io_t *perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx)
+{
+	io_t *new_io;
+
+	new_io = __perdition_ssl_connection(io, ssl_ctx, PERDITION_SSL_SERVER);
+	if (!new_io) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_connection");
+		return (NULL);
+	}
+
+	if (__perdition_ssl_log_certificate(new_io) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_ssl_log_certificate");
+		io_destroy(new_io);
+		return(NULL);
+	}
+
+	return (new_io);
+}
+
+#endif				/* WITH_SSL_SUPPORT */

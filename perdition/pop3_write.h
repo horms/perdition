@@ -37,6 +37,8 @@
 #define POP3_QUIT "QUIT"
 #define POP3_OK "+OK"
 #define POP3_ERR "-ERR"
+#define POP3_CAPA_END "."
+#define POP3_CAPA_CONT "S:"
 #define POP3_DEFAULT_CAPABILITY "UIDL  USER"
 #define POP3_TLS_CAPABILITY "STLS"
 #define POP3_CAPABILITY_DELIMITER "  "

@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef POP3_OUT_BLUM
-#define POP3_OUT_BLUM
+#ifndef _POP3_OUT_H
+#define _POP3_OUT_H
 
 #include <pwd.h>
 #include <sys/types.h>
@@ -38,6 +38,28 @@
 #include "queue_func.h"
 #include "protocol_t.h"
 #include "greeting.h"
+
+
+/**********************************************************************
+ * pop3_out_setup
+ * Begin interaction with real server by checking that
+ * the connection is ok and doing TLS if neccessar0
+ * pre: io: io_t to read from and write to
+ *      pw:     structure with username and passwd
+ *      tag:    ignored 
+ *      protocol: protocol structure for POP3
+ * post: 2: If TLS has been requested and all is succesful
+ *       1: If TLS has not been requested, but all is successful
+ *       0: on failure
+ *       -1 on error
+ **********************************************************************/
+
+int pop3_out_setup(
+  io_t *io,
+  const struct passwd *pw,
+  const token_t *tag,
+  const protocol_t *protocol
+);
 
 
 /**********************************************************************
@@ -62,15 +84,16 @@ int pop3_out_authenticate(
   unsigned char *buf,
   size_t *n
 );
-  
+
 
 /**********************************************************************
  * pop3_out_response
  * Compare a respnse from a server with the desired response
  * pre: io: io_t to read from and write to
- *      out_fd: file descriptor to write to
  *      tag_string: ignored
  *      desired_token: token expected from server
+ *      buf: buffer to return server response in
+ *      n: size of buffer
  * post: 1 : tag and desired token found
  *       0: tag and desired token not found
  *       -1: on error
@@ -86,4 +109,5 @@ int pop3_out_response(
   size_t *n
 );
 
-#endif
+
+#endif /* _POP3_OUT_H */

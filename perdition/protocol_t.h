@@ -55,6 +55,9 @@ struct protocol_t_struct {
 	char *one_time_tag;
 	int (*in_get_pw) (io_t *io, struct passwd *return_pw,
 			  token_t **return_tag);
+	int (*out_setup) (io_t *io, const struct passwd *pw,
+				 const token_t *tag,
+				 const struct protocol_t_struct *protocol);
 	int (*out_authenticate) (io_t *io, const struct passwd *pw,
 				 const token_t *tag,
 				 const struct protocol_t_struct *protocol,
