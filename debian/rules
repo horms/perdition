@@ -7,7 +7,7 @@ export DH_COMPAT=2
 pwd:=$(shell pwd)
 cfg:=--prefix=/usr --sysconfdir=/etc --with-group=nogroup --mandir=/usr/share/man
 
-build: build-stamp
+build: checkbuild build-stamp
 build-stamp:
 	dh_testdir
 	./configure $(cfg)
@@ -49,8 +49,6 @@ install: build
 	install -c -m 644 ChangeLog \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
-	install -c -m 644 NEWS \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 CODING_LOCATIONS \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 TODO \
@@ -79,4 +77,9 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
+
+checkbuild:
+	chmod u+x ./debian/dpkg-checkbuild
+	./debian/dpkg-checkbuild debian/control
+
+.PHONY: build clean binary-indep binary-arch binary install checkbuild

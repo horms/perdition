@@ -1,8 +1,9 @@
 Source: perdition
+Build-Depends: libvanessa-logger-dev, libvanessa-adt-dev, libvanessa-socket-dev, libpopt-dev, libpam0g-dev, libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libopenldap-dev | libldap2-dev
 Section: mail
 Priority: optional
-Maintainer: Horms <horms@vergenet.net>
-Standards-Version: 3.1.1
+Maintainer: Simon Horman <horms@vergenet.net>
+Standards-Version: 3.5.2
 
 Package: perdition-gdbm
 Architecture: any

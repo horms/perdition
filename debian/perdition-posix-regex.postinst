@@ -1,0 +1,15 @@
+#! /bin/sh
+# postinst script for perdition-posix-regex
+
+#DEBHELPER#
+
+if [ "$1" = "configure" ]; then
+    ldconfig
+    if [ -d /usr/doc -a ! -e /usr/doc/perdition-posix-regex -a -d /usr/share/doc/perdition-posix-regex ]; then
+      ln -sf ../share/doc/perdition-posix-regex /usr/doc/perdition-posix-regex
+    fi
+fi
+
+exit 0
+
+

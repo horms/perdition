@@ -1,0 +1,15 @@
+#! /bin/sh
+# postinst script for perdition-nis
+
+#DEBHELPER#
+
+if [ "$1" = "configure" ]; then
+    ldconfig
+    if [ -d /usr/doc -a ! -e /usr/doc/perdition-nis -a -d /usr/share/doc/perdition-nis ]; then
+      ln -sf ../share/doc/perdition-nis /usr/doc/perdition-nis
+    fi
+fi
+
+exit 0
+
+

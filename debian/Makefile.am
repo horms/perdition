@@ -48,4 +48,5 @@ perdition.dirs \
 perdition.files \
 perdition.postinst \
 perdition.postrm \
-rules
+rules \
+dpkg-checkbuild
