@@ -71,8 +71,8 @@ int dbserver_fini(void);
 int dbserver_init(char *options_str);
 
 int dbserver_get(
-  char   * key_str,
-  char   * options_str,
+  const char   * key_str,
+  const char   * options_str,
   char   **str_return,
   size_t *len_return
 );

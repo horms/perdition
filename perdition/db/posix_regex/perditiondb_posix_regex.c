@@ -197,8 +197,8 @@ int dbserver_init(char *options_str){
 #define  REXEX_NOSUBMATCH  10
 
 int dbserver_get(
-  char *key_str, 
-  char *options_str,
+  const char *key_str, 
+  const char *options_str,
   char **str_return, 
   int  *len_return
 ){

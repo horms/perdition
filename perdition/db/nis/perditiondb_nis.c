@@ -67,14 +67,14 @@
 
 
 int dbserver_get(
-  char *key_str, 
-  char *options_str,
+  const char *key_str, 
+  const char *options_str,
   char **str_return, 
   int  *len_return
 ){
   int res;
   char *domain = NULL;
-  char *map = NULL;
+  const char *map = NULL;
 
   res = yp_get_default_domain(&domain);
   if ( res ) {

@@ -106,6 +106,132 @@
 #include <dmalloc.h>
 #endif
 
+#define _GKS_CHUNK_SIZE 32
+
+#define _GSK_STR_ADD(_str, _size) \
+	if(key_str_space < (_size)) { \
+		key_str_size += _GKS_CHUNK_SIZE; \
+		key_str_space += _GKS_CHUNK_SIZE; \
+		key_str = (char *)realloc(key_str, key_str_size); \
+		if(key_str == NULL) { \
+			PERDITION_DEBUG_ERRNO("realloc"); \
+			return(NULL); \
+		} \
+		key_str_p = key_str + key_str_size - key_str_space; \
+	} \
+	strncpy(key_str_p, (_str), (_size)); \
+	key_str_space -= (_size); \
+	key_str_p += (_size);
+
+#define _GSK_STR_ADD_C(_c) \
+{ \
+	char c; \
+	c = (_c); \
+	_GSK_STR_ADD(&c, 1); \
+}
+
+#define _GSK_STR_ADD_STR(_str) \
+	_GSK_STR_ADD(_str, strlen(_str));
+
+#define _GSK_SPLIT_USER(_full_user_str) \
+	if(domain_str == NULL) { \
+		domain_str = strstr((_full_user_str), opt.domain_delimiter); \
+		if(domain_str == NULL) { \
+			str_free(key_str); \
+			return(NULL); \
+		} \
+		user_str = (_full_user_str); \
+		user_str_size = domain_str-user_str; \
+		domain_str++; \
+	}
+
+
+static char *getserver_key_str(const char *query_fmt, 
+		const char *full_user_str, const char *from_str, 
+		const char *to_str, const uint16 to_port)
+{
+        const char *user_str=NULL;
+        char *domain_str=NULL;
+	size_t user_str_size=0;
+	char to_port_str[6];
+        const char *c;
+
+	char *key_str=NULL;
+	char *key_str_p=NULL;
+	size_t key_str_space=0;
+	size_t key_str_size=0;
+
+        int have_escape = 0;
+
+	extern options_t opt;
+
+        /* \U: Username
+         * \u: Username (bit before domain delimiter)
+         * \D: domain delimiter
+         * \d: Domain (but after domain delimiter)
+         * \i: Source IP address
+         * \I: Destination IP address
+         * \P: Destination port
+	 * \\: Literal \
+         */
+
+        for(c = query_fmt; *c != '\0'; c++) {
+		/* Handle escape */
+		if(*c == '\\' && !have_escape) {
+			have_escape = 1;
+			continue;
+		}
+
+		/* Deal with Literals */
+		if(!have_escape) {
+			_GSK_STR_ADD(c, 1);
+			continue;
+		}
+
+		/* Handle escape codes */
+		switch(*c) {
+			case 'U':
+				_GSK_STR_ADD_STR(full_user_str);
+				break;
+			case 'u':
+				_GSK_SPLIT_USER(full_user_str);
+				_GSK_STR_ADD(user_str, user_str_size);
+				break;
+			case 'D':
+				_GSK_STR_ADD_STR(opt.domain_delimiter);
+				break;
+			case 'd':
+				_GSK_SPLIT_USER(full_user_str);
+				_GSK_STR_ADD_STR(domain_str);
+				break;
+			case 'i':
+				_GSK_STR_ADD_STR(from_str);
+				break;
+			case 'I':
+				_GSK_STR_ADD_STR(to_str);
+				break;
+			case 'P':
+				snprintf(to_port_str, 6, "%hu", to_port);
+				to_port_str[5] = '\0';
+				_GSK_STR_ADD_STR(to_port_str);
+				break;
+			case '/':
+				_GSK_STR_ADD_C('\\');
+				break;
+			default:
+				PERDITION_DEBUG_UNSAFE("Unknown escape "
+						"sequence: \\%c", *c);
+				return(NULL);
+		}
+		have_escape=0;
+
+        }       
+
+	_GSK_STR_ADD_C('\0');
+	PERDITION_DEBUG_UNSAFE("\"%s\"->\"%s\"", query_fmt, key_str);
+	return(key_str);
+}       
+
 
 /**********************************************************************
  * getserver
@@ -118,21 +244,22 @@
  **********************************************************************/
 
 server_port_t *getserver(
-  char *key_str, 
-  int (*dbserver_get)(char *, char *, char **, size_t *)
+  const char *user_str, const char *from_str, const char *to_str, 
+  const uint16 port, 
+  int (*dbserver_get)(const char *, const char *, char **, size_t *)
 ){
   server_port_t *server_port=NULL;
   char *content_str;
   int  content_len;
   char *popserver;
-  int status;
+  int status = -1;
  
   extern options_t opt;
 
   /* If the user specified a server, and it is allowed then use it */
   if(
     opt.client_server_specification &&
-    (popserver=strstr(key_str, opt.domain_delimiter)) != NULL 
+    (popserver=strstr(user_str, opt.domain_delimiter)) != NULL 
   ){
     *popserver='\0';
     if((server_port=server_port_create())==NULL){
@@ -148,20 +275,42 @@ server_port_t *getserver(
     return(server_port);
   }
 
-  /* Look up the user in the database */
-  status=dbserver_get(key_str,opt.map_library_opt,&content_str,&content_len);
+  if(opt.query_key == NULL) {
+  	status=dbserver_get(user_str, opt.map_library_opt,
+			&content_str, &content_len);
+  }
+  else {
+	  char *query_fmt;
+	  char *key_str;
+	  size_t count;
+	  size_t i;
 
-  /* If that didn't work look up the domain in the database */
-  if(
-    status == -2 && opt.lookup_domain &&
-    (popserver=strstr(key_str, opt.domain_delimiter)) != NULL &&
-    popserver != key_str
-  ) {
-    status=dbserver_get(popserver, opt.map_library_opt,
-                        &content_str, &content_len);
+	  count = vanessa_dynamic_array_get_count(opt.query_key);
+
+	  for(i = 0; i < count ; i++) {
+		query_fmt=(char *)vanessa_dynamic_array_get_element(
+				  opt.query_key, i);
+		if(query_fmt == NULL) {
+			status = -3;
+			PERDITION_DEBUG("vanessa_dynamic_array_get_element");
+			return(NULL);
+		}
+		key_str = getserver_key_str(query_fmt, user_str, from_str,
+				to_str, port);
+		if(key_str == NULL) {
+			PERDITION_DEBUG("getserver_key_str");
+			return(NULL);
+		}
+		status=dbserver_get(key_str, opt.map_library_opt,
+			&content_str, &content_len);
+		free(key_str);
+		if(status != -2) {
+			break;
+		}
+	  }
   }
 
-  /* Catch errors from either of the two dbserver_get calls */
+  /* Catch errors from any of the dbserver_get calls */
   if(status<0){
     if(status == -2) {
       PERDITION_DEBUG("dbserver_get");
@@ -201,7 +350,7 @@ int getserver_openlib(
   char *libname,
   char *options_str,
   void **handle_return,
-  int (**dbserver_get_return)(char *, char *, char **, size_t *)
+  int (**dbserver_get_return)(const char *, const char *, char **, size_t *)
 ){
   char *error;
   int *(*dbserver_init)(char *);

@@ -44,15 +44,16 @@
 #include <dlfcn.h>
 
 server_port_t *getserver(
-  char * key_str,
-  int (*dbgetserver)(char *, char *, char **, size_t *)
+  const char *user_str, const char *from_str, const char *to_str, 
+  const uint16 port, 
+  int (*dbserver_get)(const char *, const char *, char **, size_t *)  
 );
 
 int getserver_openlib(
   char *libname,
   char *opt_string,
   void **handle_return,
-  int (**dbgetserver_return)(char *, char *, char **, size_t *)
+  int (**dbgetserver_return)(const char *, const char *, char **, size_t *)
 );
 
 int getserver_closelib(void *handle);

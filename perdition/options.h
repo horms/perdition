@@ -51,6 +51,7 @@
 #include "server_port.h"
 
 #define OPT_SERVER_DELIMITER                ','
+#define OPT_KEY_DELIMITER                   ','
 
 /*
  * States for strip_domain option which may be the logical
@@ -108,7 +109,6 @@
 #define DEFAULT_MAP_LIB \
   PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"
 #define DEFAULT_LOG_FACILITY                 "mail"
-#define DEFAULT_LOOKUP_DOMAIN                STATE_NONE
 #define DEFAULT_LOWER_CASE                   STATE_NONE
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
@@ -124,6 +124,7 @@
 #define DEFAULT_USERNAME                     "nobody"
 #endif /* WITH_USER */
 #define DEFAULT_USERNAME_FROM_DATABASE       0
+#define DEFAULT_QUERY_KEY                    NULL
 #define DEFAULT_QUIET                        0
 #ifdef WITH_SSL_SUPPORT
 #define DEFAULT_SSL_CERT_FILE                \
@@ -150,10 +151,8 @@ typedef struct {
   char            *group;
   int             inetd_mode;
   char            *imap_capability;
-  int             timeout;
   char            *listen_port;
   char            *log_facility;
-  int             lookup_domain;
   int             lower_case;
   char            *map_library;
   char            *map_library_opt;
@@ -165,8 +164,10 @@ typedef struct {
   int             quiet;
   int             server_ok_line;
   int             strip_domain;
+  int             timeout;
   char            *username;
   int             username_from_database;
+  vanessa_dynamic_array_t *query_key;
   flag_t          mask;
 #ifdef WITH_SSL_SUPPORT
   char            *ssl_cert_file;
@@ -193,20 +194,20 @@ typedef struct {
 #define MASK_IMAP_CAPABILITY             (flag_t) 0x00000800
 #define MASK_LOG_FACILITY                (flag_t) 0x00001000
 #define MASK_LISTEN_PORT                 (flag_t) 0x00002000
-#define MASK_LOOKUP_DOMAIN               (flag_t) 0x00004000
-#define MASK_LOWER_CASE                  (flag_t) 0x00008000
-#define MASK_MAP_LIB                     (flag_t) 0x00010000
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00020000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00040000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00080000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00100000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00200000
-#define MASK_PROTOCOL                    (flag_t) 0x00400000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00800000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x01000000
-#define MASK_TIMEOUT                     (flag_t) 0x02000000
-#define MASK_USERNAME                    (flag_t) 0x04000000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x08000000
+#define MASK_LOWER_CASE                  (flag_t) 0x00004000
+#define MASK_MAP_LIB                     (flag_t) 0x00008000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00010000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00020000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00040000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00080000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00100000
+#define MASK_PROTOCOL                    (flag_t) 0x00200000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x00400000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x00800000
+#define MASK_TIMEOUT                     (flag_t) 0x01000000
+#define MASK_USERNAME                    (flag_t) 0x02000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x04000000
+#define MASK_QUERY_KEY                   (flag_t) 0x08001000
 #define MASK_QUIET                       (flag_t) 0x10000000
 
 #ifdef WITH_SSL_SUPPORT
@@ -222,8 +223,8 @@ typedef struct {
  * only. So as we still have a key, use integer values outside
  * of the values we might use for a short value
  */
-#define TAG_LOOKUP_DOMAIN              (int) 128
-#define TAG_LOWER_CASE                 (int) 129
+#define TAG_LOWER_CASE                 (int) 128
+#define TAG_QUERY_KEY                  (int) 129
 #define TAG_SSL_CERT_FILE              (int) 130
 #define TAG_SSL_KEY_FILE               (int) 131
 #define TAG_SSL_MODE                   (int) 132

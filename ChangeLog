@@ -11,15 +11,13 @@ xxx
   * Version xxx
   - Added LDAP schema, perdition.schema
   - -X is no longer a synonym for --lower_case
-  - Added --lookup_domain option which allows different default
-    servers to be specified for different domains.
-    Ronny Cook <ronny@ronnycook.org>
   - Addded POP3S and IMAP4S protocol labels
   - Updated signal handlers to reflect changes in libvanessa_socket
   - Change UID and GID before forking rather than after
   - Change process title at different stages of a perdition processes 
     life
   - Added ODBC perditondb module
+  - Added query keys.
 
 
 

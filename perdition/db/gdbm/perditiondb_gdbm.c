@@ -54,8 +54,8 @@
  **********************************************************************/
 
 int dbserver_get(
-  char *key_str, 
-  char *options_str,
+  const char *key_str, 
+  const char *options_str,
   char **str_return, 
   int  *len_return
 ){
@@ -63,10 +63,10 @@ int dbserver_get(
   datum key;
   datum content;
   
-  key.dptr=key_str;
+  key.dptr=(char *)key_str;
   key.dsize=strlen(key_str);
   if((dbf=gdbm_open(
-      (options_str==NULL)?PERDITIONDB_GDBM_DEFAULT_MAPNAME:options_str,
+      (options_str==NULL)?PERDITIONDB_GDBM_DEFAULT_MAPNAME:(char *)options_str,
       0, 
       GDBM_READER, 
       0644, 

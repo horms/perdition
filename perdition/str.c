@@ -221,7 +221,6 @@ char *str_cat(const int nostring, ...){
 
 /**********************************************************************
  * str_free
- * Macro defined elsewhere
  **********************************************************************/
 
 #define str_free(string) \
@@ -233,7 +232,6 @@ char *str_cat(const int nostring, ...){
 
 /**********************************************************************
  * str_null_safe
- * Macro defined elsewhere
  **********************************************************************/
 
 #define str_null_safe(string) \

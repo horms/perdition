@@ -78,7 +78,7 @@ vanessa_logger_t *perdition_vl;
  * Used for opening dynamic server lookup library
  * Kept global so they can be used in signal handlers
  */
-static int (*dbserver_get)(char *, char *, char **, size_t *);
+static int (*dbserver_get)(const char *, const char *, char **, size_t *);
 static void *handle;
 
 static void perdition_reread_handler(int sig);
@@ -555,7 +555,9 @@ int main (int argc, char **argv, char **envp){
     /*Read the server from the map, if we have a map*/
     if(
       opt.map_library != NULL && *(opt.map_library) != '\0' &&
-      (server_port = getserver(username, dbserver_get)) != NULL
+      (server_port = getserver(username, from_str, to_str, 
+			       sockname==NULL?0:ntohs(sockname->sin_port), 
+			       dbserver_get)) != NULL
     ){
       char *host;
 

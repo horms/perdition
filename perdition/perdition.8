@@ -235,6 +235,59 @@ description of the states.
 .br
 (default "(null)")
 .TP
+.B \-\-query_key format[,format...]:
+Instead of using the username as supplied by the end user, possibly
+modified by \-\-strip_domain, use the formats specified. The formats
+will be used in order to querey the popmap. The result from the first 
+successful lookup will be used. The format is comprised of a string
+of characters, delimited by ','. The following escape codes
+are valid:
+.sp
+\\U: Long Username, the entire string supplied by 
+    the end user, less any effects of 
+    \-\-strip_domain.
+.br
+\\u: Short Username, the portion Long Username 
+    before the domain delimiter.
+.br
+\\D: Domain Delimiter, as spefified by 
+    \-\-domain_delimiter
+.br
+\\d: Domain the portion Long Username after the
+    domain delimiter.
+.br
+\\i: Source IP address of the connection
+.br
+\\I: Destination IP addres of the connection
+.br
+\\P: Destination port of the connection
+.br
+\\\\: Literal \\
+.sp
+As a ',' is the delimiter between formats, it cannot appear
+within a format. All other characters other than the escape codes
+above, and ',' are treated as literals.
+.sp
+Examples
+.sp
+Use the supplied username, the default behaviour
+.br
+\\U
+.sp
+Use the user portion of the supplied username, if this
+doesn't work try the domain protion of the supplied 
+username preceded by the domain delimiter
+.br
+\\u,\\D\\d
+.sp
+Use the destination IP address
+.br
+\\I
+.sp
+Escape codes interspersed with literals
+.br
+\\u\\da_domain,\\da_domain
+.TP
 .B \-\-ssl_mode:
 Use SSL and or TLS for the listening and/or outgoing connections.
 A comma delimited list of: none, ssl_listen, ssl_outgoing,

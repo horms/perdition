@@ -35,8 +35,8 @@
 #define PERDITIONDB_NIS_DEFAULT_MAPNAME "user_mail_server"
 
 int dbserver_get(
-  char *key_str, 
-  char *options_str,
+  const char *key_str, 
+  const char *options_str,
   char **str_return, 
   int *len_return
 );
