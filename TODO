@@ -5,20 +5,18 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
+Key: +: highly desired for the next release
+     *: may not be completed before the next release
+
 From Horms
-+  Make TLS IMAP and POP Server support RFC 2595 compliant
-      + Option to only use tls if advertised by server
-        + On a global and per-user basis
-	  (perhaps only global for now, per-user sounds like a PITA)
-     + honour LOGINDISABLED capability for IMAP
+*  Make TLS IMAP and POP Server support RFC 2595 compliant
+     * Option to only use tls if advertised by server on a per-user basis
 * Fix up LDAP Bind Credentials
 * Fix up LDAP configuration options
 + Config files for different protocols
-  - Should key of the protocol argument 
-  - should also be able to key off argv[0]
+  + Should key of the protocol argument 
+  + should also be able to key off argv[0]
 + Fix regular expression popmap code
-+ Periodically issue a log message, so perdition-pbs will work
-  for long imap sessions
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
