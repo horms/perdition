@@ -1,8 +1,8 @@
-perdition (0.1.7pre1-2) unstable; urgency=low
+perdition (0.1.7-1) unstable; urgency=low
 
-  * A CVS release.
+  * A release.
 
- -- Simon Horman <horms@vergenet.net>  Tue, 20 Feb 2001 17:55:01 -0800
+ -- Simon Horman <horms@vergenet.net>  Wed, 04 Apr 2001 12:38:12 -0700
 
 Local variables:
 mode: debian-changelog

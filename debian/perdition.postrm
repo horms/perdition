@@ -3,7 +3,7 @@
 
 #DEBHELPER#
 
-update-rc.d perdition remove >/dev/null
+update-rc.d -f perdition remove >/dev/null
 
 exit 0
 
