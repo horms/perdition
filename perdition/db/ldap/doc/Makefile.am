@@ -1,10 +1,10 @@
 ######################################################################
-# Makefile.am                                               March 2000
-# ChrisS                                              chriss@uk.uu.net
+# Makefile.am                                            February 2000
+# Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retrieval proxy server, LDAP support
-# Copyright (C) 1999-2001  ChrisS and Horms
+# Mail retrieval proxy server
+# Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -23,27 +23,33 @@
 #
 ######################################################################
 
-SUBDIRS = doc
+LATEX = latex
+DVIPS = dvips
+PS2PDF = ps2pdf
+GUNZIP = gunzip
 
-man_MANS = perditiondb_ldap_makedb.8
 
-EXTRA_DIST = perditiondb_ldap_makedb perditiondb_ldap_makedb.8
+gzeps_sources = ds5dump.eps.gz mail-ldapdump.eps.gz
 
-bin_SCRIPTS = perditiondb_ldap_makedb
+tex_sources = perdition_ldap.tex
 
-lib_LTLIBRARIES = libperditiondb_ldap.la
+EXTRA_DIST = perdition_ldap.lyx $(gzeps_sources) $(tex_sources)
 
-libperditiondb_ldap_la_SOURCES = \
-perditiondb_ldap.c \
-perditiondb_ldap.h
+all-local: perdition_ldap.pdf
 
-libperditiondb_ldap_la_LDFLAGS    = -version-info 0:0:0
+clean-local:
+	rm -f *.aux *.log *.pdf *.dvi *.ps *.eps
 
-INCLUDES=\
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
-@ssl_includes@ \
-@ldap_includes@
+dvi-local: perdition_ldap.dvi
 
-libperditiondb_ldap_la_LIBADD = @ssl_libs@ @ldap_libs@
+perdition_ldap.dvi: $(tex_sources) $(gzeps_sources:.eps.gz=.eps)
+	$(LATEX) $(tex_sources)
+
+%.ps: %.dvi
+	$(DVIPS) $< -o $@
+
+%.pdf: %.ps
+	$(PS2PDF) $< $@
+
+%.eps: %.eps.gz
+	$(GUNZIP) -c $< > $@

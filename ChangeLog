@@ -39,6 +39,7 @@ xxx
   - Fixed problem with quit() segfaulting on solaris and others.
     This caused perdition to exit if an authentication error occured
     in pop3 mode
+  - Added additional LDAP documentation. Richard Holbert <holbert.13@osu.edu>
 
 
 

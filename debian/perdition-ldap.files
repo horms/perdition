@@ -4,3 +4,4 @@ usr/lib/libperditiondb_ldap.la
 usr/lib/libperditiondb_ldap.so.0
 usr/lib/libperditiondb_ldap.so.0.0.0
 /usr/share/man/man8/perditiondb_ldap_makedb.8
+usr/share/doc/perdition-ldap/perdition_ldp.pdf

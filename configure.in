@@ -593,6 +593,27 @@ AC_ARG_WITH(
 AC_DEFINE_UNQUOTED(WITH_GROUP, "$perdition_group", Group to run perdition as )
 
 
+######################################################################
+# Latex stuff
+
+AC_CHECK_PROG(latex, latex, y, n)
+AC_CHECK_PROG(dvips, dvips, y, n)
+AC_CHECK_PROG(ps2pdf, ps2pdf, y, n)
+AC_CHECK_PROG(gunzip, gunzip, y, n)
+if test "$latex" = "n" -o "$dvips" = "n" -o "$ps2pdf" = "n" -o "$gunzip" = "n"
+then
+	AC_MSG_WARN(
+	""
+	"**********************************************************************"
+	"* Latex not installed. LDAP documentation will nto be built"
+	"**********************************************************************"
+	);
+	ldap_doc_dir=""
+else
+	ldap_doc_dir="doc"
+fi
+
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_UID_T
@@ -623,6 +644,7 @@ AC_SUBST(crypt_lib)
 AC_SUBST(pam_dir)
 AC_SUBST(pam_lib)
 AC_SUBST(pam_source)
+AC_SUBST(ldap_doc_dir)
 
 AC_OUTPUT(
 packaging/Makefile
@@ -642,6 +664,7 @@ perdition/db/mysql/Makefile
 perdition/db/nis/Makefile 
 perdition/db/postgresql/Makefile 
 perdition/db/ldap/Makefile 
+perdition/db/ldap/doc/Makefile 
 makegdbm/Makefile 
 etc/Makefile 
 etc/pam.d/Makefile 

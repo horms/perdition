@@ -61,6 +61,10 @@ install: build
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
 
+	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition-ldap
+	install -c -m 644 perdition/db/ldap/doc/perdition_ldap.pdf \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition-ldap/perdition_ldp.pdf
+
 	dh_movefiles --source=debian/tmp
 
 binary-indep: build install

@@ -1,0 +1,423 @@
+#LyX 1.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 218
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme pslatex
+\graphics default
+\paperfontsize 10
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\paperorientation portrait
+\leftmargin 1in
+\topmargin 0.5in
+\rightmargin 1in
+\bottommargin 0.5in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Configuring Perdition Proxy Software to Use An Existing LDAP Server
+\layout Author
+
+Richard L.
+ Holbert
+\layout Part*
+
+Introduction
+\layout Standard
+
+The Perdition proxy server software was designed by Simon Horman as part
+ of a high availability email system.
+ Perdition allows an ISP to distribute end user mail boxes over several
+ servers seamlessly.
+ All the end users connect through the proxy server(s) to retrieve their
+ email via POP, and/or IMAP.
+ User redirection information can be stored using a variety of methods including
+: gdbm, NIS, regular expressions, relational data bases (MySQL, PostgreSQL),
+ and LDAP.
+\layout Standard
+
+The main perdition web site is 
+\begin_inset LatexCommand \url{http://www.vergenet.net/linux/perdition/}
+
+\end_inset 
+
+
+\layout Standard
+
+The author's email address is: horms@vergenet.net
+\layout Standard
+
+Perdition also requires that the VAnessa (VA Network Enhanced Scalable Server
+ Architecture) libraries be installed.
+ The VAnessa web site is at: 
+\begin_inset LatexCommand \url{http://www.vergenet.net/linux/vanessa/}
+
+\end_inset 
+
+.
+ Both sets of tools were downloaded from: ftp.vergenet.net, and installed
+ on my Linux workstation using the Redhat Package Manager (RPM).
+ In a production environment, Perdition and VAnessa should be installed
+ on a set of dedicated servers.
+\layout Standard
+
+Perdition comes with a tool to populate an empty OpenLDAP server with its
+ default schema, perditiondb_ldap_makedb.
+ However, as we already have several existing, populated, iPlanet LDAP servers
+ along with an infrastucture to maintain the information in them, I decided
+ to adapt Perdition to use our existing servers' schemas.
+ 
+\layout Part*
+
+LDAP URLs
+\layout Standard
+
+Perdition extracts information from LDAP via specially configured URLs.
+\layout Standard
+
+LDAP URLs are documented in RFC 2255 
+\begin_inset LatexCommand \url{http://www.cis.ohio-state.edu/cgi-bin/rfc/rfc2255.html}
+
+\end_inset 
+
+, and the iPlanet Directory Server Administrator's Guide (Appendix C) 
+\begin_inset LatexCommand \url{http://docs.iplanet.com/docs/manuals/directory/51/html/ag/url.htm#1915312}
+
+\end_inset 
+
+.
+\layout Standard
+
+LDAP URLs have the following format:
+\layout Standard
+
+ldap[s]://hostname[:port]/search_base?attributes?scope?filter
+\layout Standard
+
+Cleartext connections are made using the ldap:// protocol, and encrypted
+ (SSL) conections are made using the ldaps:// protocol.
+\layout Standard
+\align center 
+LDAP URL Components:
+\layout Standard
+\pextra_type 3 \pextra_widthp 75
+
+
+\begin_inset  Tabular
+<lyxtabular version="2" rows="7" columns="2">
+<features rotate="false" islongtable="false" endhead="0" endfirsthead="0" endfoot="0" endlastfoot="0">
+<column alignment="left" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="left" valignment="top" leftline="true" rightline="true" width="" special="">
+<row topline="true" bottomline="true" newpage="false">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="false" rotate="false" usebox="none" width="1.0in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Component
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Definition
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="false" newpage="false">
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+hostname
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+\noindent \align left 
+Server name, or numerical ip address.
+ Example, ldap.mydomain.edu, or 10.10.220.90
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="false" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+port
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+The LDAP service's port number.
+ Example, 389, or 636 if using the secure (ldaps) protocol.
+ A blank here defaults to 389 for ldap, and 636 for ldaps.
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="false" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+search_base
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Consists of an entry's distinguished name (DN).
+ The search_base tells Perdition where to start its search.
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="false" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+attributes
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Names of the LDAP fields to be returned.
+ A blank here returns all visible attributes.
+ The port attribute is optional if standard POP3, and IMAP4 ports are being
+ used.
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="false" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+scope
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Scope consists of one of the following: base, one, or sub.
+ For all the schemas tested, Perdition seems to work with either one, or
+ sub, but not with base.
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+filter
+\end_inset 
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" rotate="false" usebox="none" width="4.5in" special="">
+\begin_inset Text
+
+\layout Standard
+
+Criteria to be used within the scope of the search.
+ Example, (uid=%25s).
+ The %25s gets replaced with the userid supplied by the user's email client.
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Part*
+
+Configuration
+\layout Standard
+
+Recommended configuration approach: via changes to /etc/perdition/perdition.conf
+ file.
+ To configure Perdition to use LDAP, add the following lines:
+\layout Standard
+
+M /usr/lib/libperditiondb_ldap.so
+\layout Standard
+
+m ldap://hostname.mydomain.com:port/ou=mailbox,dc=mydomain.com,dc=com?user-name,mai
+lhost,port?one?(uid=%25s)
+\layout Standard
+
+Substitute your server's name, ldap port, search_base, etc.
+\layout Standard
+
+Another approach is to modify perditions startup script by appending the
+ -M and -m values from above to the proxies command line.
+\layout Part*
+
+Rapid Testing
+\layout Standard
+
+A web browser, such as Netscape, Konqueror, Mozilla, etc.
+ can be used in conjunction with a GUI LDAP tool, like GQ, to derive and
+ test LDAP queries.
+\layout Standard
+
+The ficticious iplanet-ldap server uses iPlanet's messaging server schema.
+\layout Standard
+
+The following is a screen shot of iplanet-ldap's tree structure.
+\layout Standard
+\added_space_top 0.3cm \added_space_bottom 0.3cm \align center 
+
+\begin_inset Figure size 360 216
+file mail-ldapdump.eps
+subcaption MAIL-LDAP Tree Structure
+width 2 5
+height 2 3
+flags 11
+
+\end_inset 
+
+
+\layout Standard
+
+However, directoryserver4, and directoryserver5 use a modified eduPerson
+ schema.
+ As a result, the search bases differ.
+\layout Standard
+
+Here's a screen shot of directoryserver5's tree structure.
+\layout Standard
+\added_space_top 0.3cm \added_space_bottom 0.3cm \align center 
+
+\begin_inset Figure size 360 216
+file ds5dump.eps
+subcaption DS5 Tree Structure
+width 2 5
+height 2 3
+flags 11
+
+\end_inset 
+
+
+\newline 
+
+\layout Standard
+
+The access controlls for directoryserver5 had to be modified to make the
+ mailhost attribute visible from anonymous binds.
+\layout Standard
+
+Some example LDAP queries along with their results are as follows:
+\layout Standard
+
+ldap://iplanet-ldap.mydomain.edu:389/ou=people,o=mydomain.edu,o=internet?uid,mailho
+st?one?(uid=smith.13)
+\layout LyX-Code
+
+dn: uid=smith.13,ou=People, o=mydomain.edu, o=internet
+\layout LyX-Code
+
+uid: smith.13
+\layout LyX-Code
+
+mailhost: mail2.service.mydomain.edu
+\layout Standard
+
+ldap://directoryserver5.service.mydomain.edu:20389/ou=people,dc=osu,dc=edu?uid,mail
+host,port?one?(uid=jones.6)
+\layout LyX-Code
+
+dn: mydomainEduID=397427, ou=People, dc=mydomain, dc=edu
+\layout LyX-Code
+
+uid: jones.6
+\layout LyX-Code
+
+mailhost: mail1.service.mydomain.edu
+\layout Standard
+
+Notice how the order of the search base dn starts with the bottom of the
+ tree, and works its way back up the tree.
+ Also note that in this example, directoryserver5 uses non-standard port,
+ 20389 for LDAP.
+\layout Part*
+
+Extensions
+\layout Standard
+
+The basic LDAP URL can be extended in two ways.
+\layout Standard
+
+If the LDAP servers are using standard ports, then multiple servers can
+ be used in the LDAP URL.
+ For example:
+\layout Standard
+
+ldap://ldap1 ldap2 ldap3/ou=people,o=mydomain.edu,o=internet?uid,mailhost,port?on
+e?(uid=smith.13)
+\layout Standard
+
+So far, all the examples have used anonymous binds to connect to the LDAP
+ servers.
+ The LDAP URL may be extended using the bindname, and x-bindpw attributes
+ as follows:
+\layout Standard
+
+ldap://ldap1:389/ou=people,o=mydomain.edu,o=internet?uid,mailhost,port?one?(uid=s
+mith.13)?!
+\newline 
+bindname=cn=admin,x-bindpw=secret
+\layout Standard
+
+or
+\layout Standard
+
+ldaps://secure-ldap:636/ou=people,o=mydomain.edu,o=internet?uid,mailhost?one?(uid
+=smith.13)?!
+\newline 
+bindname=cn=super%20admin,x-bindpw=bigsecret
+\layout Part*
+
+Testing
+\layout Standard
+
+I conducted several tests using telnet, and a reconfigured email client.
+ I was able to retrieve mail from any of our existing mail servers by pointing
+ my email client at the Perdition proxy running on localhost.
+ Changing the value of my mailhost attribute in LDAP caused the proxy to
+ redirect my retrieval requests to the appropriate mail server.
+\the_end
