@@ -2,8 +2,16 @@ Change Log
 
 perdition
 Mail retrieval proxy server
-Copyright (C) 1999  Horms <horms@vergenet.net>
+Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
+
+xxx
+(Horms)
+
+  * Version xxx
+  - Fixed Segmentation Fault that occurs when reading strings that
+    have a trainling whitespace during the authentication phase.
+    Thanks to Ronny Cook
 
 5th April 2001
 (Horms)

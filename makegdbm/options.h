@@ -6,11 +6,9 @@
  * Code based on man getopt(3), later translated to popt.
  * Some code based on man popt(3)
  *
- *
- *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999  Horms
+ * Copyright (C) 1999-2001  Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

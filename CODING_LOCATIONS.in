@@ -2,11 +2,11 @@ CODING_LOCATIONS
 
 perdition
 Mail retrieval proxy server
-Copyright (C) 1999-2000  Horms <horms@vergenet.net>
+Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 I would like to thank to following venues, roughly in cronological order,
-that facilitated the code you see before you;
+that facilitated the code you see before you:
 
 * UNSW, CSE, Keg Lab, Kensington, Sydney, NSW, Australia
 * Jennifer, my flat in Randwick, Sydney, NSW, Australia
@@ -41,3 +41,5 @@ that facilitated the code you see before you;
 * Various Trans-Atlantic Flights
 * Kim's apartment, Amsterdam, The Netherlands
 * Lobster Lab, K and Struan's appartment, Pyrmont, Sydney, NSW, Australia
+* Raster's Apartment, San Francisco, CA, USA
+* Tony Guntharp's Apartment, San Francisco, CA, USA
