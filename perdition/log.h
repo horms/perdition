@@ -52,7 +52,7 @@ extern int errno;
  * Hooray for format string problems!
  *
  * Each of the logging macros has two versions. The UNSAFE version will
- * accept a format string. You should _NOT_ use the UNSAFE versions of the
+ * accept a format string. You should _NOT_ use the UNSAFE versions if the
  * first argument, the format string, is derived from user input. The safe
  * versions (versions that do not have the "_UNSAFE" suffix) do not accept
  * a format string and only accept one argument, the string to log. These
