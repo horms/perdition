@@ -17,6 +17,7 @@ XXX
    - Compliation of each database library may be disabled 
      using configure
    - Fixed minor SSL include path problem. Bo Bendtsen
+   - Fixed minor documentation error in SSL crt and key files
 
 ----------------------------------------------------------------------
 
