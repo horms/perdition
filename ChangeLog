@@ -5,6 +5,15 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+   * XXX
+   - Debian and Red Hat package's init script will run perdition by default
+     (previously /etc/default/perdition / /etc/sysconfig/perdition needed 
+      to be edited to enable perdition)
+
+----------------------------------------------------------------------
+
 6th June 2003
 (Horms)
    * 1.11

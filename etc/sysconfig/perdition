@@ -8,7 +8,7 @@
 # Run perdition
 # Set to "yes" to run perdition
 # Set to any other value to not run perdition
-#RUN_PERDITION=yes
+RUN_PERDITION=yes
 
 # Command line parameters to pass to perdition when run in any mode.
 # This is in addition to any mode specific flags.
