@@ -41,15 +41,16 @@ int quit(io_t *io, const protocol_t *protocol){
   vanessa_queue_t *q;
   int status;
 
-  if(str_write(
-    io,
-    NULL_FLAG,
-    3, 
-    "%s%s%s",
-    protocol->one_time_tag,
-    protocol->one_time_tag==NULL?"":" ",
-    protocol->quit_string
-  )<0){
+  str_write(io, NULL_FLAG, (size_t) 1, "%s", "bob");
+
+  if(str_write(io, 
+      NULL_FLAG, 
+      3, 
+      "%s%s%s", 
+      protocol->one_time_tag==NULL?"":protocol->one_time_tag,
+      protocol->one_time_tag==NULL?"":" ", 
+      protocol->quit_string
+    )<0){
     PERDITION_DEBUG("str_write");
     return(-1);
   }
