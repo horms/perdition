@@ -11,7 +11,7 @@ XXX
    - Cleaned up imap4_write to not used returned local variables.
    - Show version when logging options
    - format string corretly handles username and domain when
-     no domain_delimter is supplied by the end-user.
+     no domain_delimter is supplied by the end-user. Evan Moore.
    - Logger is reoppened on SIGHUP. This is particularly useful
      perdition is logging to a file.
    - Compliation of each database library may be disabled 
