@@ -38,6 +38,7 @@
 #define IMAP4_OK "OK"
 #define IMAP4_BAD "BAD"
 #define IMAP4_NO "NO"
+#define IMAP4_BYE "BYE"
 #define IMAP4_UNTAGED "*"
 #define IMAP4_CONT_TAG "+"
 #define IMAP4_DEFAULT_PORT "143"
@@ -46,6 +47,14 @@
 #define IMAP4_TLS_CAPABILITY "STARTTLS"
 #define IMAP4_CAPABILITY_DELIMITER " "
 #define IMAP4S_DEFAULT_PORT "993"
+
+#define IMAP4_CMD_NOOP         "NOOP"
+#define IMAP4_CMD_STARTTLS     "STARTTLS"
+#define IMAP4_CMD_CAPABILLTY   "CAPABILITY"
+#define IMAP4_CMD_AUTHENTICATE "AUTHENTICATE"
+#define IMAP4_CMD_LOGOUT       "LOGOUT"
+#define IMAP4_CMD_LOGIN        "LOGIN"
+#define IMAP4_CMD_BYE          "BYE"
 
 /**********************************************************************
  * imap4_write

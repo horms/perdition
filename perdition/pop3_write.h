@@ -45,6 +45,11 @@
 #define POP3_DEFAULT_PORT "110"
 #define POP3S_DEFAULT_PORT "995"
 
+#define POP3_CMD_CAPA "CAPA"
+#define POP3_CMD_STLS "STLS"
+#define POP3_CMD_USER "USER"
+#define POP3_CMD_PASS "PASS"
+#define POP3_CMD_QUIT "QUIT"
 
 /**********************************************************************
  * pop3_write

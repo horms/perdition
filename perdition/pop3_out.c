@@ -110,7 +110,7 @@ int pop3_out_setup(
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
-    if(pop3_write(io, NULL_FLAG, NULL, "CAPA", NULL)<0){
+    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, NULL)<0){
       VANESSA_LOGGER_DEBUG("pop3_write");
       goto leave;
     }
@@ -146,7 +146,7 @@ int pop3_out_setup(
       VANESSA_LOGGER_DEBUG("token_create stls");
       goto leave;
     }
-    token_assign(stls, "STLS", strlen("STLS"), TOKEN_EOL);
+    token_assign(stls, POP3_CMD_CAPA, strlen(POP3_CMD_CAPA), TOKEN_EOL);
 
     /* Loop through "S:" lines */
     while(1) {
@@ -180,7 +180,7 @@ int pop3_out_setup(
 
   status = 1;
   if(have_stls && opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
-    if(pop3_write(io, NULL_FLAG, NULL, "STLS", NULL)<0){
+    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, NULL)<0){
       VANESSA_LOGGER_DEBUG("pop3_write");
       goto leave;
     }
@@ -259,7 +259,7 @@ int pop3_out_authenticate(
   token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
   /* Send USER command */
-  if(pop3_write(io, NULL_FLAG, NULL, "USER", pw->pw_name)<0){
+  if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_USER, pw->pw_name)<0){
     VANESSA_LOGGER_DEBUG("pop3_write");
     status = -1;
     goto leave;
@@ -278,7 +278,7 @@ int pop3_out_authenticate(
   q = NULL;
 
   /* Send PASS command */
-  if(pop3_write(io, NULL_FLAG, NULL, "PASS", pw->pw_passwd)<0){
+  if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_PASS, pw->pw_passwd)<0){
     VANESSA_LOGGER_DEBUG("pop3_write pass");
     status = -1;
     goto leave;

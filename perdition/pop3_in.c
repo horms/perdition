@@ -139,14 +139,15 @@ int pop3_in_get_pw(
     }
     token_unassign(t);
 
-    if(strcasecmp(command_string, "CAPA")==0){
+    if(strcasecmp(command_string, POP3_CMD_CAPA)==0){
       if(vanessa_queue_length(q)!=0){
 	VANESSA_LOGGER_DEBUG_UNSAFE(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "Mate, try: CAPA")<0){
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+				"Mate, try: " POP3_CMD_CAPA)<0){
           VANESSA_LOGGER_DEBUG("pop3_write capa args");
           break;
         }
@@ -159,14 +160,15 @@ int pop3_in_get_pw(
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
-        !strcasecmp(command_string, "STLS")){
+        !strcasecmp(command_string, POP3_CMD_STLS)){
       if(vanessa_queue_length(q)!=0){
 	VANESSA_LOGGER_DEBUG_UNSAFE(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG,NULL,POP3_ERR,"Mate, try: STLS")<0){
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,
+				"Mate, try: " POP3_CMD_STLS)<0){
           VANESSA_LOGGER_DEBUG("pop3_write stls args");
           break;
         }
@@ -192,11 +194,11 @@ int pop3_in_get_pw(
     } 
 #endif /* WITH_SSL_SUPPORT */
 
-    if(strcasecmp(command_string, "USER")==0){
+    if(strcasecmp(command_string, POP3_CMD_USER)==0){
       if(return_pw->pw_name!=NULL){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
-	    "USER is already set, mate")<0){
+	    POP3_CMD_USER " is already set, mate")<0){
           VANESSA_LOGGER_DEBUG("pop3_write user set");
           break;
         }
@@ -208,8 +210,8 @@ int pop3_in_get_pw(
 	  vanessa_queue_length(q)
 	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG,NULL,POP3_ERR,
-	    "Mate, try: USER <username>")<0){
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,
+	    "Mate, try: " POP3_CMD_USER " <username>")<0){
           VANESSA_LOGGER_DEBUG("pop3_write user args");
           break;
         }
@@ -227,7 +229,8 @@ int pop3_in_get_pw(
       }
       token_destroy(&t);
       
-      if((message=str_cat(3, "USER ", return_pw->pw_name, " set"))<0){
+      if((message=str_cat(3, POP3_CMD_USER " ", return_pw->pw_name, 
+				      " set"))<0){
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
@@ -236,12 +239,12 @@ int pop3_in_get_pw(
         goto loop;
       }
     }
-    else if(strcasecmp(command_string, "PASS")==0){
+    else if(strcasecmp(command_string, POP3_CMD_PASS)==0){
       str_free(command_string);
       if(return_pw->pw_name==NULL){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
-	    "USER not yet set, mate")<0){
+	    POP3_CMD_USER " not yet set, mate")<0){
           VANESSA_LOGGER_DEBUG("pop3_write pass, user not set");
           break;
         }
@@ -250,7 +253,7 @@ int pop3_in_get_pw(
       if(vanessa_queue_length(q)>1){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
-	    "Mate, try: PASS <password>")<0){
+	    "Mate, try: " POP3_CMD_PASS " <password>")<0){
           VANESSA_LOGGER_DEBUG("pop3_write pass args");
           break;
         }
@@ -275,8 +278,8 @@ int pop3_in_get_pw(
       vanessa_queue_destroy(q);
       return(0);
     }
-    else if(strcasecmp(command_string, "QUIT")==0){
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, "QUIT")<0){
+    else if(strcasecmp(command_string, POP3_CMD_QUIT)==0){
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, POP3_CMD_QUIT)<0){
         VANESSA_LOGGER_DEBUG("pop3_write quit");
         break;
       }
@@ -284,12 +287,14 @@ int pop3_in_get_pw(
       return(1);
     }
     else{
-      char *tmp_str = "Mate, the command must be one of USER, PASS or QUIT";
+      char *tmp_str = "Mate, the command must be one of "
+	      POP3_CMD_USER ", " POP3_CMD_PASS " or " POP3_CMD_QUIT;
       sleep(VANESSA_LOGGER_ERR_SLEEP);
 #ifdef WITH_SSL_SUPPORT
       if(opt.ssl_mode & SSL_MODE_TLS_LISTEN) {
-        tmp_str = "Mate, the command must be one of CAPA, STLS, USER, "
-	    "PASS or QUIT";
+        tmp_str = "Mate, the command must be one of "
+	      POP3_CMD_CAPA ", " POP3_CMD_USER ", " POP3_CMD_PASS " or "
+	      POP3_CMD_QUIT;
       }
 #endif /* WITH_SSL_SUPPORT */
       if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, tmp_str) < 0) {

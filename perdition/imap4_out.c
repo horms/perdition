@@ -129,14 +129,16 @@ int imap4_out_setup(
     VANESSA_LOGGER_DEBUG("str_write 1");
     goto leave;
   }
-  token_assign(check_t, "CAPABILITY", strlen("CAPABILITY"), TOKEN_NONE);
+  token_assign(check_t, IMAP4_CMD_CAPABILLTY, strlen(IMAP4_CMD_CAPABILLTY), 
+		  TOKEN_NONE);
   status=imap4_out_response(io, IMAP4_UNTAGED, check_t, &q, buf, &n);
   if(status<0) {
     VANESSA_LOGGER_DEBUG("imap4_out_response 2");
     goto leave;
   }
 
-  token_assign(check_t, "STARTTLS", strlen("STARTTLS"), TOKEN_DONT_CARE);
+  token_assign(check_t, IMAP4_CMD_STARTTLS, strlen(IMAP4_CMD_STARTTLS), 
+		  TOKEN_DONT_CARE);
   while(vanessa_queue_length(q)) {
     if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
       VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
@@ -166,7 +168,7 @@ int imap4_out_setup(
       VANESSA_LOGGER_DEBUG("token_to_string 3");
       goto leave;
     }
-    if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, "STARTTLS")<0){
+    if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, IMAP4_CMD_STARTTLS)<0){
       VANESSA_LOGGER_DEBUG("str_write 2");
       goto leave;
     }
@@ -239,7 +241,7 @@ int imap4_out_authenticate(
     return(-1);
   }
 
-  if(str_write(io, NULL_FLAG, 2, "%s LOGIN {%d}", tag_string, 
+  if(str_write(io, NULL_FLAG, 2, "%s " IMAP4_CMD_LOGIN " {%d}", tag_string, 
       strlen(pw->pw_name))<0){
     VANESSA_LOGGER_DEBUG("str_write 1");
     status=-1;
