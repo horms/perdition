@@ -65,6 +65,7 @@ perdition_SOURCES = \
         token.c             token.h \
         server_port.c       server_port.h \
         str.c               str.h \
+        ssl.c               ssl.h \
         username.c          username.h
 
 

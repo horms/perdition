@@ -50,6 +50,7 @@
 #include "config_file.h"
 #include "server_port.h"
 #include "username.h"
+#include "ssl.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -255,28 +256,28 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Set signal handlers*/
-  signal(SIGHUP,    (void(*)(int))perdition_reread_handler);
-  signal(SIGINT,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGQUIT,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGILL,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGTRAP,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGIOT,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGBUS,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGFPE,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGUSR1,   (void(*)(int))vanessa_socket_daemon_noop_handler);
-  signal(SIGSEGV,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGUSR2,   (void(*)(int))vanessa_socket_daemon_noop_handler);
+  signal(SIGHUP,    perdition_reread_handler);
+  signal(SIGINT,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGQUIT,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGILL,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGTRAP,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGIOT,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGBUS,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGFPE,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGUSR1,   vanessa_socket_handler_noop);
+  signal(SIGSEGV,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGUSR2,   vanessa_socket_handler_noop);
   signal(SIGPIPE,   SIG_IGN);
-  signal(SIGALRM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGTERM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGALRM,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGTERM,   vanessa_socket_daemon_exit_cleanly);
   signal(SIGCHLD,   vanessa_socket_handler_reaper);
-  signal(SIGURG,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGXCPU,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGXFSZ,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGVTALRM, (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGPROF,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGWINCH,  (void(*)(int))vanessa_socket_daemon_exit_cleanly);
-  signal(SIGIO,     (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGURG,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGXCPU,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGXFSZ,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGVTALRM, vanessa_socket_daemon_exit_cleanly);
+  signal(SIGPROF,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGWINCH,  vanessa_socket_daemon_exit_cleanly);
+  signal(SIGIO,     vanessa_socket_daemon_exit_cleanly);
 
   /*Close file descriptors and detactch process from shell as necessary*/
   if(opt.inetd_mode){
@@ -901,162 +902,3 @@ static void perdition_reread_handler(int sig){
 
   signal(sig, (void(*)(int))perdition_reread_handler);
 }
-
-
-#ifdef WITH_SSL_SUPPORT
-/**********************************************************************
- * perdition_ssl_connection
- * Change a stdio bassed connection into an SSL connection
- * io: io_t to change
- * ssl_cts: SSL Context to use
- * flag: If PERDITION_CLIENT the io is a client that has connected to
- *       a server and SSL_connect() will be called. If PERDITION_SERVER
- *       then the io is a serve rthat has accepted a connection and
- *       SSL_accept will be called. There are no other valid values
- *       for flag.
- * post: io_t has an ssl object associated with it and SSL is intiated
- *       for the connection.
- * return: io_t with ssl object associated with it
- *         NULL on error
- **********************************************************************/
-
-io_t *perdition_ssl_connection(
-  io_t *io,
-  SSL_CTX *ssl_ctx,
-  flag_t flag
-){
-  io_t *new_io=NULL;
-  SSL *ssl=NULL;
-  
-  if((ssl=SSL_new(ssl_ctx))==NULL){
-    PERDITION_DEBUG_SSL_ERR("SSL_new");
-    goto bail;
-  }
-
-  /* Set up io object that will use SSL */
-  if((new_io=io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io)))==NULL){
-    PERDITION_DEBUG("io_create_ssl");
-    goto bail;
-  }
-
-  io_destroy(io);
-
-  /* Get for TLS/SSL handshake */
-  if(flag&PERDITION_CLIENT){
-    SSL_set_connect_state(ssl);
-    if(SSL_connect(ssl)<=0){
-      PERDITION_DEBUG_SSL_ERR("SSL_connect");
-      goto bail;
-    }
-  }
-  else {
-    SSL_set_accept_state(ssl);
-    if(SSL_accept(ssl)<=0){
-      PERDITION_DEBUG_SSL_ERR("SSL_accept");
-      goto bail;
-    }
-  }
-
-  PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
-
-  return(new_io);
-
-bail:
-  if(new_io==NULL)
-    SSL_free(ssl);
-  else
-    io_destroy(new_io);
-  return(NULL);
-}
-
-
-/**********************************************************************
- * perdition_ssl_ctx
- * Create an SSL context
- * pre: cert: certificate to use. May be NULL if privkey is NULL. 
- *            Should the path to a PEM file if non-NULL and the
- *            first item in the PEM file will be used as the 
- *            certificate.
- *      privkey: private key to use May be NULL if cert is NULL. 
- *               Should the path to a PEM file if non-NULL and the
- *               first item in the PEM file will be used as the 
- *               private key.
- * post: If SSL is initiated and a context is created
- *       If cert is non-NULL then this certificate file is loaded
- *       If privkey is non-NULL then this private key file is loaded
- *       If cert and privkey are non-NULL then check private key
- *       against certificate.
- *       Note: If either cert of privkey are non-NULL then both must
- *       be non-NULL.
- **********************************************************************/
-
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
-  SSL_METHOD *ssl_method;
-  SSL_CTX *ssl_ctx;
-
-  /* 
-   * If either the certificate or private key is non-NULL the
-   * other should be too
-   */
-
-  if(cert==NULL && privkey!=NULL){
-    PERDITION_DEBUG("Certificate is NULL but private key is non-NULL");
-    return(NULL);
-  }
-
-  if(privkey==NULL && cert!=NULL){
-    PERDITION_DEBUG("Private key is NULL but certificate is non-NULL");
-    return(NULL);
-  }
-
-  /*
-   * Initialise an SSL context
-   */
-
-  SSLeay_add_ssl_algorithms();
-  ssl_method = SSLv23_method();
-  SSL_load_error_strings();
-
-  if((ssl_ctx=SSL_CTX_new(ssl_method))==NULL){
-    PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
-    return(NULL);
-  }
-
-  /*
-   * If the certificate or private key is NULL (one is implied by
-   * the other, and it has been checked) then there is no
-   * more proccessing to be done
-   */
-  if(cert==NULL){
-    return(ssl_ctx);
-  }
-
-  /*
-   * Load and check the certificate and private key
-   */
-
-  if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM)<=0){
-    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_certificate_file: \"%s\"", 
-      cert);
-    PERDITION_ERR_UNSAFE("Error loading certificate file \"%s\"", cert);
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
- 
-  if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, SSL_FILETYPE_PEM)<= 0){
-    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_PrivateKey_file: \"%s\"", 
-      privkey);
-    PERDITION_ERR_UNSAFE("Error loading pricvate key file \"%s\"", privkey);
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
-  
-  if(!SSL_CTX_check_private_key(ssl_ctx)){
-    PERDITION_DEBUG("Private key does not match the certificate public key.");
-    SSL_CTX_free(ssl_ctx);
-    return(NULL);
-  }
-
-  return(ssl_ctx);
-}
-#endif /* sl_ctxITH_SSL_SUPPORT */

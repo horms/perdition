@@ -15,6 +15,8 @@ xxx
     servers to be specified for different domains.
     Ronny Cook <ronny@ronnycook.org>
   - Addded POP3S and IMAP4S protocol labels
+  - Updated signal handlers to reflect changes in libvanessa_socket
+  - Change UID and GID before forking rather than after
 
 
 
