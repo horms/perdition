@@ -33,12 +33,15 @@
 #include "perditiondb_postgresql.h"
 
 static vanessa_dynamic_array_t *a=NULL;
-static char *dbhost  = PERDITIONDB_PGSQL_DEFAULT_DBHOST;
-static char *dbport  = PERDITIONDB_PGSQL_DEFAULT_DBPORT;
-static char *dbname  = PERDITIONDB_PGSQL_DEFAULT_DBNAME;
-static char *dbtable = PERDITIONDB_PGSQL_DEFAULT_DBTABLE;
-static char *dbuser  = PERDITIONDB_PGSQL_DEFAULT_DBUSER;
-static char *dbpwd   = PERDITIONDB_PGSQL_DEFAULT_DBPWD;
+static char *dbhost          = PERDITIONDB_PGSQL_DEFAULT_DBHOST;
+static char *dbport          = PERDITIONDB_PGSQL_DEFAULT_DBPORT;
+static char *dbname          = PERDITIONDB_PGSQL_DEFAULT_DBNAME;
+static char *dbtable         = PERDITIONDB_PGSQL_DEFAULT_DBTABLE;
+static char *dbuser          = PERDITIONDB_PGSQL_DEFAULT_DBUSER;
+static char *dbpwd           = PERDITIONDB_PGSQL_DEFAULT_DBPWD;
+static char *db_user_col     = PERDITIONDB_PGSQL_DEFAULT_DBUSERCOL;
+static char *db_srv_col      = PERDITIONDB_PGSQL_DEFAULT_DBSRVCOL;
+static char *db_port_col     = PERDITIONDB_PGSQL_DEFAULT_DBPORTCOL;
 
 
 /**********************************************************************
@@ -135,6 +138,25 @@ int dbserver_init(char *options_str){
    if(count>PERDITIONDB_PGSQL_DBPWD){ 
      dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_PGSQL_DBPWD); 
    }
+   if(count>PERDITIONDB_PGSQL_DBUSERCOL){
+     db_user_col=vanessa_dynamic_array_get_element(
+         a,
+         PERDITIONDB_PGSQL_DBUSERCOL
+     );
+   }
+   if(count>PERDITIONDB_PGSQL_DBSRVCOL){
+     db_srv_col=vanessa_dynamic_array_get_element(
+         a, 
+         PERDITIONDB_PGSQL_DBSRVCOL
+     );
+   }
+   if(count>PERDITIONDB_PGSQL_DBPORTCOL){
+     db_port_col=vanessa_dynamic_array_get_element(
+         a,
+         PERDITIONDB_PGSQL_DBPORTCOL
+     );
+   }
+
 
    free(tmp_str);
 
@@ -168,7 +190,7 @@ static int truncate_str(char *str, const char c){
 
 /**********************************************************************
  * dbserver_get
- * Read the server information for a given key from the MySQL db
+ * Read the server information for a given key from the PgSQL db
  * specified in the options string. If fields are missing
  * from the options string, or it is NULL then defaults are
  * used as necessary.
@@ -211,17 +233,38 @@ int dbserver_get(
      return(-1);
    }
 
-   if(snprintf(
-     sqlstr, 
-     256,
-     "select * from %s where \"user\"='%s'",
-     dbtable, 
-     key_str
-   )<0){
-     PERDITION_DEBUG("query truncated, aborting");
-     PQfinish(conn);
-     return(-3);
+   if (db_port_col && db_port_col[0]) {
+     if(snprintf(
+       sqlstr, 
+       PERDITIONDB_PGSQL_QUERY_LENGTH,
+       "SELECT %s,%s FROM %s WHERE \"%s\"='%s'",
+       db_srv_col,
+       db_port_col,
+       dbtable,
+       db_user_col,   
+       key_str
+     )<0){
+       PERDITION_DEBUG("query truncated, aborting");
+       PQfinish(conn);
+       return(-3);
+     }
    }
+   else {
+     if(snprintf(
+              sqlstr,
+       PERDITIONDB_PGSQL_QUERY_LENGTH,
+       "SELECT %s FROM %s WHERE \"%s\"='%s'",
+       db_srv_col,
+       dbtable,
+       db_user_col,
+       key_str
+     )<0){
+       PERDITION_DEBUG("query truncated, aborting");
+       PQfinish(conn);
+       return(-3);
+     } 
+   }
+
 
    res = PQexec(conn, sqlstr);
    if(!res || PQresultStatus(res) != PGRES_TUPLES_OK){  
@@ -236,34 +279,29 @@ int dbserver_get(
     * If no tuples were found  or the servername is null then leave, 
     * else continue using the first tuple.
     */
-   if(PQntuples(res)<1 || PQgetisnull(res, 0, 1)){
+   if(PQntuples(res)<1 || PQgetisnull(res, 0, 0)){
      PQclear(res);
      PQfinish(conn);
      return(-1);
    }
-   
-   servername=PQgetvalue(res, 0, 1);
-   /*
-    * Grr, postgres seems to return a ' ' padded string
-    */
-   truncate_str(servername, ' ');
-   if(*servername=='\0'){
-     PQclear(res);
-     PQfinish(conn);
-     return(-1);
-   }
-   servername_len=*len_return=1+strlen(servername);
 
-   if(!PQgetisnull(res, 0, 2)){
-     port=PQgetvalue(res, 0, 2);
-     /*
-      * Grr, postgres seems to return a ' ' padded string
-      */
-     truncate_str(port, ' ');
-     if(*port=='\0'){
-     	port=NULL;
-     }
-     else {
+
+   if(!PQgetisnull(res, 0, 0)) {
+     servername=PQgetvalue(res, 0, 0);
+     /* Strip the spaces that PGSQL pads results with */
+     truncate_str(servername, ' ');
+     servername_len=*len_return=1+strlen(servername);  
+   } else {
+     PQclear(res);
+     PQfinish(conn);
+     return(-1);
+   }
+
+   if(PQnfields(res) == 2) {
+     if(!PQgetisnull(res, 0, 1)){
+       port=PQgetvalue(res, 0, 1);
+       /* Strip the spaces that PGSQL pads results with */
+       truncate_str(port, ' ');
        *len_return+=1+strlen(port);
      }
    }

@@ -21,7 +21,9 @@ xxx
   - Setting ssl-mode to none now actually works
   - Link ldap code against libresolv if it is present on the system. Eric Fagan
   - Fix doble frees relating to username_mangle.
-  
+  - PostgreSQL module now has the same alternate column name support
+    as the MySQL module. Matt Prigge
+
 
 
 ----------------------------------------------------------------------
