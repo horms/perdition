@@ -9,7 +9,7 @@ From Horms
 *  Add TLS IMAP and POP support
 
 From Rob Wyn Jones
-o Allow multiple servers for a user (or default) are connect to in series
+* Allow multiple servers for a user (or default) are connect to in series
   (rather than randomly)
 
 From Krzysztof Sierota

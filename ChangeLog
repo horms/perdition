@@ -19,6 +19,7 @@ xxx
   - Change UID and GID before forking rather than after
   - Change process title at different stages of a perdition processes 
     life
+  - Added ODBC perditondb module
 
 
 
