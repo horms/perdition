@@ -734,12 +734,12 @@ AC_CHECK_PROG(ps2pdf, ps2pdf, y, n)
 AC_CHECK_PROG(gunzip, gunzip, y, n)
 if test "$latex" = "n" -o "$dvips" = "n" -o "$ps2pdf" = "n" -o "$gunzip" = "n"
 then
-	AC_MSG_WARN(
-	""
-	"**********************************************************************"
-	"* Latex not installed. LDAP documentation will nto be built"
-	"**********************************************************************"
-	);
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* Latex not installed. LDAP documentation will nto be built"
+"**********************************************************************"
+);
 	ldap_doc_dir=""
 else
 	ldap_doc_dir="doc"
