@@ -42,7 +42,7 @@
 
 
 #ifdef WITH_SSL_SUPPORT
-char *protocol_known[] = {"4", "POP3", "POP3S", "IMAP4", "IMAP4S"};
+char *protocol_known[] = {"4", "POP3", "IMAP4", "POP3S", "IMAP4S"};
 #else
 char *protocol_known[] = {"2", "POP3", "IMAP4"};
 #endif

@@ -187,7 +187,6 @@ char *pop3_capability(char *capability, char **mangled_capability,
   cursor = *mangled_capability;
   while(1) {
     start = end;
-    printf("start: \"%s\"\n", start);
     end = strstr(start, POP3_CAPABILITY_DELIMITER);
     if(end == NULL) {
       end = start + strlen(start);
