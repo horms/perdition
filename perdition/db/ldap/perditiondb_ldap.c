@@ -219,7 +219,7 @@ static int pldap_get_filter(const char *key_str, const char *filter_str,
 		return(-1);
 	}
 
-	err = ldap_url_parse(pldap_filter, lud);
+	err = ldap_url_parse(new_filter, lud);
 	if (err) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_url_parse: %s",
 				ldap_err2string(err));
@@ -399,7 +399,7 @@ int dbserver_get(const char *key_str,
 
 	/* Perform the search */
 	err = ldap_search_s(connection, lud->lud_dn, lud->lud_scope,
-			   filter, lud->lud_attrs, 0, &res);
+			   lud->lud_filter, lud->lud_attrs, 0, &res);
 	if (err != LDAP_SUCCESS) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_search_s: %s",
 				ldap_err2string(err));
@@ -417,7 +417,7 @@ int dbserver_get(const char *key_str,
 		VANESSA_LOGGER_LOG_UNSAFE(LOG_WARNING, 
 				"multiple entries returned by filter: "
 				"base: %s; scope: %s; filter: %s", 
-				lud->lud_dn, lud->lud_scope, filter);
+				lud->lud_dn, lud->lud_scope, lud->lud_filter);
 	}
 
 	free(filter);
