@@ -29,6 +29,9 @@
 #include "../config.h"
 #endif
 
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <vanessa_adt.h>
 #include <sys/select.h>
 
