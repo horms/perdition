@@ -13,6 +13,8 @@ xxx
    - Added missing library symlings to spec file
    - Server ok line option fixed. Was expecting arguments when it
      has none.
+   - Added -lresolv and -lvanessa_logger to build for perdition
+     itself to fix compile problems under solaris
 
 ----------------------------------------------------------------------
 
