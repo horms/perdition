@@ -418,9 +418,9 @@ In the RPM distrubution this can be found installed in
 .P
 The default URL is:
 .P
-ldap://localhost/ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%s)
+ldap://localhost/ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)
 .P
-The URL should contain excactly one %s, which will be filled by the
+The URL should contain excactly one %s (%25s), which will be filled by the
 name of the user when a query is made.
 .P
 A script, perditiondb_ldap_makedb is provided to initialise LDAP.

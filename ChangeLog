@@ -12,6 +12,9 @@ xxx
   - Added SSL Support
   - Added loging of successful Authentication
   - Added logging of reread or map library
+  - Removed code that expands % to %25 in LDAP urls as it
+    handles some RFC 1959 compliant URLS incorrectly by expanding
+    out % that shouldn't be expanded. Erik R. Leo
 
 ----------------------------------------------------------------------
 
