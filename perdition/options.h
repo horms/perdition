@@ -60,6 +60,7 @@
 #define DEFAULT_CLIENT_SERVER_SPECIFICATION  0
 #define DEFAULT_CONFIG_FILE              PERDITION_SYSCONFDIR "/perdition.conf"
 #define DEFAULT_CONNECTION_LIMIT             0
+#define DEFAULT_CONNECTION_LOGGING           0
 #define DEFAULT_DEBUG                        0
 #define DEFAULT_DOMAIN_DELIMITER             "@"
 #ifdef WITH_GROUP
@@ -94,6 +95,7 @@ typedef struct {
   int             client_server_specification;
   char            *config_file;
   int             connection_limit;
+  int             connection_logging;
   int             debug;
   char            *domain_delimiter;
   int             domain_delimiter_length;
@@ -122,26 +124,27 @@ typedef struct {
 #endif /* WITH_PAM_SUPPORT */
 #define MASK_BIND_ADDRESS                (flag_t) 0x00000002
 #define MASK_CONNECTION_LIMIT            (flag_t) 0x00000004
-#define MASK_DEBUG                       (flag_t) 0x00000008
-#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000010
-#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000020
-#define MASK_CONFIG_FILE                 (flag_t) 0x00000040
-#define MASK_GROUP                       (flag_t) 0x00000080
-#define MASK_INETD_MODE                  (flag_t) 0x00000100
-#define MASK_LOG_FACILITY                (flag_t) 0x00000200
-#define MASK_LISTEN_PORT                 (flag_t) 0x00000400
-#define MASK_MAP_LIB                     (flag_t) 0x00000800
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00001000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00002000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00004000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00008000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00010000
-#define MASK_PROTOCOL                    (flag_t) 0x00020000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00040000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x00080000
-#define MASK_TIMEOUT                     (flag_t) 0x00100000
-#define MASK_USERNAME                    (flag_t) 0x00200000
-#define MASK_QUIET                       (flag_t) 0x00400000
+#define MASK_CONNECTION_LOGGING          (flag_t) 0x00000008
+#define MASK_DEBUG                       (flag_t) 0x00000010
+#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000020
+#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000040
+#define MASK_CONFIG_FILE                 (flag_t) 0x00000080
+#define MASK_GROUP                       (flag_t) 0x00000100
+#define MASK_INETD_MODE                  (flag_t) 0x00000200
+#define MASK_LOG_FACILITY                (flag_t) 0x00000400
+#define MASK_LISTEN_PORT                 (flag_t) 0x00000800
+#define MASK_MAP_LIB                     (flag_t) 0x00001000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00002000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00004000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00008000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00010000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00020000
+#define MASK_PROTOCOL                    (flag_t) 0x00040000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x00080000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x00100000
+#define MASK_TIMEOUT                     (flag_t) 0x00200000
+#define MASK_USERNAME                    (flag_t) 0x00400000
+#define MASK_QUIET                       (flag_t) 0x00800000
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

@@ -26,6 +26,7 @@
  **********************************************************************/
 
 #include "str.h"
+#include "options.h"
 
 
 /**********************************************************************
@@ -74,12 +75,17 @@ char *strn_to_str(const char *string, const size_t n){
 
 
 int write_str(const int fd, flag_t flag, int nostring, ...){
+  struct iovec *list=NULL;
   va_list ap;
   char *string;
-  struct iovec *list=NULL;
-  int section = 0, bytes = 0;
+  char *dbg_fmt=NULL;
+  char *dbg_fmt_crnt;
+  int section=0;
+  int bytes=0;
 
   extern int errno;
+  extern options_t opt;
+  extern vanessa_logger_t *perdition_vl;
 
   if(nostring<1){
     return(-1);
@@ -91,8 +97,22 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
     return(-1);
   }
 
+  /* Allocate iovec structure. */
+  if(opt.connection_logging){
+    if((dbg_fmt=(char *)malloc((nostring+2)*2*sizeof(char)))==NULL){
+      PERDITION_LOG(LOG_DEBUG, "write_str: malloc 2: %s", strerror(errno));
+      free(list);
+      return(-1);
+    }
+  }
+
   va_start(ap, nostring);
+  dbg_fmt_crnt=dbg_fmt;
   while(nostring-->0){
+    if(opt.connection_logging){
+      *dbg_fmt_crnt++='%';
+      *dbg_fmt_crnt++='s';
+    }
     string=va_arg(ap, char*);
     if(string==NULL){
       continue;
@@ -111,8 +131,20 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
     list[section].iov_len = (size_t)2;
     bytes += list[section].iov_len;
     section++;
+    if(opt.connection_logging){
+      *dbg_fmt_crnt++='\r';
+      *dbg_fmt_crnt++='\n';
+    }
   }
 
+  if(opt.connection_logging){
+    *dbg_fmt_crnt='\0';
+    va_start(ap, nostring);
+    vanessa_logger_logv(perdition_vl, LOG_DEBUG, dbg_fmt, ap);
+    va_end(ap);
+    free(dbg_fmt);
+  }
+    
   /* Attempt one writev system call and return an error if it
      doesn't write all the bytes. */
   if(writev(fd,list,section) != bytes){

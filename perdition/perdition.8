@@ -73,6 +73,12 @@ a source address. The address may be an IP address or a hostname.
 .br
 (default "(null)")
 .TP
+.B -C|--connection_logging:
+Log interaction between clients and perdition. This does
+not include interactions between clients and back-end servers.
+.sp
+\fBNote:\fP -d|--debug must be specified for this option to take effect.
+.TP
 .B \-c, \-\-client_server_specification:
 Allow USER of the form user<delimiter>server[:port] to specify the
 server and port for a user. 

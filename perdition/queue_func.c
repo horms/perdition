@@ -26,6 +26,7 @@
  **********************************************************************/
 
 #include "queue_func.h"
+#include "options.h"
 
 
 /**********************************************************************
@@ -44,7 +45,8 @@
  *       return what has been read so far. (No buffer overflows today)
  **********************************************************************/
 
-vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
+
+static vanessa_queue_t *__read_line(const int fd, unsigned char *buf, size_t *n){
   token_t *t=NULL;
   size_t buf_offset=0;
   size_t buf_remaining;
@@ -62,13 +64,13 @@ vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
   }
 
   if((q=vanessa_queue_create(DESTROY_TOKEN))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "read_line: create_queue");
+    PERDITION_LOG(LOG_DEBUG, "__read_line: create_queue");
     return(NULL);
   }
  
   do{
     if((t=read_token(fd,(buf==NULL)?NULL:buf+buf_offset,&buf_remaining))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "read_line: read_token");
+      PERDITION_LOG(LOG_DEBUG, "__read_line: read_token");
       vanessa_queue_destroy(q);
       return(NULL);
     }
@@ -79,7 +81,7 @@ vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
     }
 
     if((q=vanessa_queue_push(q, (void *)t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "read_line: vanessa_queue_push");
+      PERDITION_LOG(LOG_DEBUG, "__read_line: vanessa_queue_push");
       return(NULL);
     }
   }while(!token_is_eol(t) && !(do_literal && buf_offset>=*n));
@@ -89,6 +91,57 @@ vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
   }
 
   return(q);
+}
+
+vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
+  int do_literal=0;
+  char *local_buf;
+  size_t local_n;
+  vanessa_queue_t *local_q;
+
+  extern int errno;
+  extern options_t opt;
+
+  if(opt.connection_logging){
+    if(buf!=NULL && n!=NULL && *n!=0){
+      do_literal=1;
+    }
+
+    if(!do_literal){
+      if((local_buf=(char *)malloc(MAX_LINE_LENGTH*sizeof(char)))==NULL){
+        PERDITION_DEBUG_ERRNO("read_line: malloc", errno);
+        return(NULL);
+      }
+      local_n=MAX_LINE_LENGTH-1;
+    }
+    else{
+      local_buf=buf;
+      local_n=(*n)-1;
+    }
+
+    if((local_q=__read_line(fd, local_buf, &local_n))==NULL){
+      PERDITION_DEBUG("read_line: __read_line");
+      if(!do_literal){
+        free(local_buf);
+      }
+      return(NULL);
+    }
+
+    *(local_buf+local_n)='\0';
+    PERDITION_DEBUG(local_buf);
+
+    if(!do_literal){
+      free(local_buf);
+    }
+    else{
+      *n=local_n;
+    }
+    return(local_q);
+  }
+
+  /* Fast Path :) */
+  return(__read_line(fd, buf, n));
+
 }
 
 

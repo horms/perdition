@@ -272,7 +272,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
     }
 
     /*If we get this far fd must be ready for reading*/
-    if((bytes_read=read(fd, token_read_buffer, MAX_LINE_LENGTH))<0){
+    if((bytes_read=read(fd, token_read_buffer, MAX_LINE_LENGTH-1))<0){
       PERDITION_DEBUG_ERRNO("token_fill_buffer: error reading input", errno);
       return(-1);
     }
@@ -280,7 +280,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
     if(bytes_read==0){
       PERDITION_DEBUG_ERRNO("token_fill_buffer: zero bytes read", errno);
     }
-    
+
     token_read_offset=0;
     token_read_bytes=bytes_read;
     return(bytes_read);

@@ -225,8 +225,6 @@ int main (int argc, char **argv){
     }
   }
 
-  PERDITION_LOG(LOG_DEBUG, "flim\n");
-
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
     PERDITION_LOG(LOG_DEBUG,"main: malloc system_uname: %s",strerror(errno));

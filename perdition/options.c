@@ -119,27 +119,28 @@ int options(int argc, char **argv, flag_t f){
     {"authenticate_in",             'a', POPT_ARG_NONE,   NULL, 'a'},
     {"no_bind_banner",              'B', POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b', POPT_ARG_STRING, NULL, 'b'},
+    {"connection_logging",          'C', POPT_ARG_NONE,   NULL, 'C'},
+    {"client_server_specification", 'c', POPT_ARG_STRING, NULL, 'c'},
+    {"domain_delimiter",            'D', POPT_ARG_STRING, NULL, 'D'},
+    {"debug",                       'd', POPT_ARG_NONE,   NULL, 'd'},
     {"log_facility",                'F', POPT_ARG_STRING, NULL, 'F'},
     {"config_file",                 'f', POPT_ARG_STRING, NULL, 'f'},
-    {"connection_limit",            'L', POPT_ARG_STRING, NULL, 'L'},
-    {"client_server_specification", 'c', POPT_ARG_STRING, NULL, 'c'},
-    {"debug",                       'd', POPT_ARG_NONE,   NULL, 'd'},
-    {"domain_delimiter",            'D', POPT_ARG_STRING, NULL, 'D'},
     {"group",                       'g', POPT_ARG_STRING, NULL, 'g'},
     {"help",                        'h', POPT_ARG_NONE,   NULL, 'h'},
     {"inetd_mode",                  'i', POPT_ARG_NONE,   NULL, 'i'},
     {"jain",                        'j', POPT_ARG_NONE,   NULL, 'j'},
     {"jane",                        'j', POPT_ARG_NONE,   NULL, 'j'},
     {"jayne",                       'j', POPT_ARG_NONE,   NULL, 'j'},
+    {"connection_limit",            'L', POPT_ARG_STRING, NULL, 'L'},
+    {"listen_port",                 'l', POPT_ARG_STRING, NULL, 'l'},
     {"map_library",                 'M', POPT_ARG_STRING, NULL, 'M'},
     {"map_library_opt",             'm', POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n', POPT_ARG_NONE,   NULL, 'n'},
-    {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
-    {"outgoing_port",               'p', POPT_ARG_STRING, NULL, 'p'},
-    {"protocol",                    'P', POPT_ARG_STRING, NULL, 'P'},
-    {"listen_port",                 'l', POPT_ARG_STRING, NULL, 'l'},
     {"server_ok_line",              'o', POPT_ARG_NONE,   NULL, 'o'},
+    {"protocol",                    'P', POPT_ARG_STRING, NULL, 'P'},
+    {"outgoing_port",               'p', POPT_ARG_STRING, NULL, 'p'},
     {"strip_domain",                'S', POPT_ARG_STRING, NULL, 'S'},
+    {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
     {"timeout",                     't', POPT_ARG_STRING, NULL, 't'},
     {"username",                    'u', POPT_ARG_STRING, NULL, 't'},
     {"quiet",                       'q', POPT_ARG_NONE,   NULL, 'q'},
@@ -159,6 +160,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.client_server_specification, DEFAULT_CLIENT_SERVER_SPECIFICATION,
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.connection_limit,DEFAULT_CONNECTION_LIMIT,    i, 0, OPT_NOT_SET);
+    opt_i(opt.connection_logging,DEFAULT_CONNECTION_LOGGING,i, 0, OPT_NOT_SET);
     opt_i(opt.debug,           DEFAULT_DEBUG,               i, 0, OPT_NOT_SET);
     opt_i(opt.inetd_mode,      DEFAULT_INETD_MODE,          i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE) && !strcmp("perdition.imap4", basename)){
@@ -219,13 +221,12 @@ int options(int argc, char **argv, flag_t f){
 #endif /* WITH_PAM_SUPPORT */
       case 'B':
         opt_i(opt.no_bind_banner,1,opt.mask,MASK_NO_BIND_BANNER,f);
-        PERDITION_LOG(
-	  LOG_DEBUG,  
-          "flim"
-        );
         break;
       case 'b':
         opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f);
+        break;
+      case 'C':
+        opt_i(opt.connection_logging,1,opt.mask,MASK_DEBUG,f);
         break;
       case 'c':
         opt_i(
@@ -422,6 +423,7 @@ int log_options(void){
     "client_server_specification=%d, "
     "config_file=\"%s\", "
     "connection_limit=%d, "
+    "connection_logging=%d, "
     "debug=%d, "
     "domain_delimiter=\"%s\", "
     "group=\"%s\", "
@@ -449,6 +451,7 @@ int log_options(void){
     opt.client_server_specification,
     opt.config_file,
     opt.connection_limit,
+    opt.connection_logging,
     opt.debug,
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
@@ -535,6 +538,9 @@ void usage(int exit_status){
     "    will be this address, if NULL then the operating system will select\n"
     "    a source address. The address may be an IP address or a hostname.\n"
     "    (default \"%s\")\n"
+    " -C|--connection_logging:\n"
+    "    Log interaction between clients and perdition\n"
+    "    Note: -d|--debug must be specified for this option to take effect.\n"
     " -c|--client_server_specification:\n"
     "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
     "    server and port for a user. Note: over-rides -s|--strip_domain.\n"
