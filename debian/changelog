@@ -1,4 +1,4 @@
-perdition (xxx) unstable; urgency=low
+perdition (1.11beta1-1) unstable; urgency=low
 
   *  New Upstream version
      Closes Debian Bugs:
@@ -7,7 +7,7 @@ perdition (xxx) unstable; urgency=low
      - Not a bug (closes: Bug#170783)
      - Not a bug (closes: Bug#170782)
 
- -- Simon Horman <horms@vergenet.net>  XXX
+ -- Simon Horman <horms@vergenet.net>  Fri, 27 Dec 2002 17:32:51 +0900
 
 perdition (0.1.10-2) unstable; urgency=low
 

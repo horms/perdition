@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-XXX
+27th December 2002
 (Horms)
-   * 1.11unreleased
+   * 1.11beta1
    - Added Berkely DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
    - Added TLS support. Thanks to Wolfgang Breyha
