@@ -10,7 +10,7 @@ XXX
    * 1.11unreleased
    - Added Berkely DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
-   - Added the beginings of TLS support. Thanks to Wolfgang Breyha
+   - Added TLS support. Thanks to Wolfgang Breyha
    - Fixed error in help and invocation in .spec file of
      the with-ldap-schema-directory configure option
    - Use loging convenicence macros provided by libvanessa_logger
@@ -73,6 +73,7 @@ XXX
      making outgoing SSL or TLS connections
    - Fixed some problems in handling IMAP string literals if they are
      used for both the the username and password for LOGIN
+   - Log initial errors / logs to stderr not stdout.
 
 ----------------------------------------------------------------------
 

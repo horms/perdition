@@ -190,7 +190,7 @@ int main (int argc, char **argv, char **envp){
   /*
    * Create Logger
    */
-  vl=vanessa_logger_openlog_filehandle(stdout, LOG_IDENT, LOG_DEBUG, LOG_CONS);
+  vl=vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG, LOG_CONS);
   if(!vl) {
     fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
                     "Fatal error opening logger. Exiting.\n");
@@ -271,7 +271,7 @@ int main (int argc, char **argv, char **envp){
     vanessa_socket_daemon_inetd_process();
   }
   else{
-    vanessa_socket_daemon_process();
+    // flim vanessa_socket_daemon_process();
   }
 
   /*
