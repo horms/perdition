@@ -304,7 +304,8 @@ server_port_t *getserver(
 				  opt.query_key, i);
 		if(query_fmt == NULL) {
 			status = -3;
-			VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_get_element");
+			VANESSA_LOGGER_DEBUG(
+					"vanessa_dynamic_array_get_element");
 			return(NULL);
 		}
 		key_str = getserver_key_str(query_fmt, user_str, from_str,

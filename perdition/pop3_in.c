@@ -74,7 +74,7 @@ int pop3_in_authenticate(
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
         "Authentication failure, mate")<0){
       VANESSA_LOGGER_DEBUG("pop3_write");
       do_pam_end(pamh, EXIT_SUCCESS);
@@ -112,7 +112,6 @@ int pop3_in_get_pw(
   token_t **return_tag
 ){
   vanessa_queue_t *q = NULL;
-  char *command_string = NULL;
   token_t *t = NULL;
   char *message=NULL;
 
@@ -133,41 +132,33 @@ int pop3_in_get_pw(
       break;
     }
 
-    if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      VANESSA_LOGGER_DEBUG("token_to_string");
-      break;
-    }
-    token_unassign(t);
-
-    if(strcasecmp(command_string, POP3_CMD_CAPA)==0){
+    if(strncasecmp(token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
       if(vanessa_queue_length(q)!=0){
-	VANESSA_LOGGER_DEBUG_UNSAFE(
-	  "vanessa_queue_length(q)=%d\n",
-	  vanessa_queue_length(q)
-	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 				"Mate, try: " POP3_CMD_CAPA)<0){
           VANESSA_LOGGER_DEBUG("pop3_write capa args");
           break;
         }
         goto loop;
       }
-      pop3_write(io, NULL_FLAG, NULL, POP3_OK, "Capability list follows, mate");
-      pop3_write(io, WRITE_STR_NO_CLLF, NULL, NULL, opt.mangled_capability);
+      pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
+		      "Capability list follows, mate");
+      pop3_write(io, WRITE_STR_NO_CLLF, NULL, NULL, 1, "%s",
+		      opt.mangled_capability);
       goto loop;
     }
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
-        !strcasecmp(command_string, POP3_CMD_STLS)){
+        !strncasecmp(token_buf(t), POP3_CMD_STLS, token_len(t))){
       if(vanessa_queue_length(q)!=0){
 	VANESSA_LOGGER_DEBUG_UNSAFE(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 				"Mate, try: " POP3_CMD_STLS)<0){
           VANESSA_LOGGER_DEBUG("pop3_write stls args");
           break;
@@ -175,7 +166,7 @@ int pop3_in_get_pw(
         goto loop;
       }
       if(io_get_type(io) != io_type_ssl){
-        pop3_write(io, NULL_FLAG, NULL, POP3_OK, 
+        pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
 			"Begin TLS negotiation, mate");
         token_destroy(&t);
         vanessa_queue_destroy(q);
@@ -184,7 +175,7 @@ int pop3_in_get_pw(
       else
       {
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 	    "TLS already active, mate")<0){
           VANESSA_LOGGER_DEBUG("pop3_write stls set");
           break;
@@ -194,10 +185,10 @@ int pop3_in_get_pw(
     } 
 #endif /* WITH_SSL_SUPPORT */
 
-    if(strcasecmp(command_string, POP3_CMD_USER)==0){
+    if(strncasecmp(token_buf(t), POP3_CMD_USER, token_len(t))==0){
       if(return_pw->pw_name!=NULL){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 	    POP3_CMD_USER " is already set, mate")<0){
           VANESSA_LOGGER_DEBUG("pop3_write user set");
           break;
@@ -210,7 +201,7 @@ int pop3_in_get_pw(
 	  vanessa_queue_length(q)
 	);
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,0,
 	    "Mate, try: " POP3_CMD_USER " <username>")<0){
           VANESSA_LOGGER_DEBUG("pop3_write user args");
           break;
@@ -234,16 +225,15 @@ int pop3_in_get_pw(
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, message)<0){
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, 1, "%s", message)<0){
         VANESSA_LOGGER_DEBUG("pop3_write user set");
         goto loop;
       }
     }
-    else if(strcasecmp(command_string, POP3_CMD_PASS)==0){
-      str_free(command_string);
+    else if(strncasecmp(token_buf(t), POP3_CMD_PASS, token_len(t))==0){
       if(return_pw->pw_name==NULL){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 	    POP3_CMD_USER " not yet set, mate")<0){
           VANESSA_LOGGER_DEBUG("pop3_write pass, user not set");
           break;
@@ -252,7 +242,7 @@ int pop3_in_get_pw(
       }
       if(vanessa_queue_length(q)>1){
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
 	    "Mate, try: " POP3_CMD_PASS " <password>")<0){
           VANESSA_LOGGER_DEBUG("pop3_write pass args");
           break;
@@ -278,8 +268,8 @@ int pop3_in_get_pw(
       vanessa_queue_destroy(q);
       return(0);
     }
-    else if(strcasecmp(command_string, POP3_CMD_QUIT)==0){
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, POP3_CMD_QUIT)<0){
+    else if(strncasecmp(token_buf(t), POP3_CMD_QUIT, token_len(t))==0){
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0, POP3_CMD_QUIT)<0){
         VANESSA_LOGGER_DEBUG("pop3_write quit");
         break;
       }
@@ -287,7 +277,7 @@ int pop3_in_get_pw(
       return(1);
     }
     else{
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
             "Mate, the command must be one of " POP3_CMD_CAPA ", " 
 	    POP3_CMD_USER ", " POP3_CMD_PASS " or " POP3_CMD_QUIT) < 0) {
         VANESSA_LOGGER_DEBUG("pop3_write command");
@@ -298,14 +288,12 @@ int pop3_in_get_pw(
     /*Clean up before looping*/
     loop:
     token_destroy(&t);
-    str_free(command_string);
     vanessa_queue_destroy(q);
     str_free(message);
   }
 
   /*If we get here clean up and bail*/
   token_destroy(&t);
-  str_free(command_string);
   vanessa_queue_destroy(q);
   str_free(message);
   return(-1);

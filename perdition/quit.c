@@ -51,25 +51,15 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 	token_t *t;
 	vanessa_queue_t *q;
 	int status = -1;
-	char *tag_str;
 
-	if (tag) {
-		tag_str = token_to_string(tag, TOKEN_NO_STRIP);
-		if (!tag_str) {
-			VANESSA_LOGGER_DEBUG("token_to_string");
-			goto leave;
-		}
-	} else {
-		tag_str = "";
-	}
-
-	if (str_write(io, NULL_FLAG, 3, "%s%s%s", tag_str,
-		      tag?" ":"", protocol->quit_string) < 0) {
-		VANESSA_LOGGER_DEBUG("str_write");
+	if(protocol->write(io, NULL_FLAG, tag, 
+				protocol->quit_string, 0, "") < 0) {
+		VANESSA_LOGGER_DEBUG("protocol->write");
 		return (-1);
 	}
 
-	/* We need to read the response, even though we don't
+	/* 
+	 * We need to read the response, even though we don't
 	 * care about it
 	 */
 
@@ -80,7 +70,7 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 	token_assign(t, (PERDITION_USTRING) protocol->type[PROTOCOL_OK],
 		     strlen(protocol->type[PROTOCOL_OK]), TOKEN_DONT_CARE);
 
-	if ((protocol->out_response(io, tag_str, t, &q, NULL, NULL)) < 0) {
+	if ((protocol->out_response(io, tag, t, &q, NULL, NULL)) < 0) {
 		VANESSA_LOGGER_DEBUG("out_response");
 		goto leave;
 	}
@@ -91,8 +81,5 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 	token_unassign(t);
 	token_destroy(&t);
 	vanessa_queue_destroy(q);
-	if(tag && tag_str) {
-		free(tag_str);
-	}
 	return (status);
 }

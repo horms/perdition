@@ -38,53 +38,91 @@
 
 /**********************************************************************
  * imap4_write
- * Display an message of the form [<tag> <type> ]<string>
+ * Display an message of the form 
+ *       <tag> <command>[ <string>]
+ * or
+ *       <string>
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
  *           if NULL, then IMAP4_UNTAGED is used
- *      type: type of message, IMAP4_OK, IMAP4_NO or IMAP4_BAD
- *            if NULL then only string is written, no tag and no type
- *      string: mesage to display
+ *      command: command in message sent
+ *           if NULL then only string is written, no tag or command
+ *      nargs: number of arguments after fmt
+ *      fmt: format passed used to form string
+ *      ...: arguments for fmt
  * Return 0 on success
  *        -1 otherwise
  **********************************************************************/
 
-int imap4_write(
-  io_t *io,
-  const flag_t flag,
-  const token_t *tag, 
-  const char *type, 
-  const char *string
-){
-  char *tag_string=NULL;
-  int free_tag_string=0;
+static char __imap4_write_fmt_str[MAX_LINE_LENGTH];
 
-  if(type==NULL){
-    if(str_write(io, flag, 1, "%s", string)<0){
-      VANESSA_LOGGER_DEBUG("str_write");
-      return(-1);
-    }
-  }
-  else {
-    if(tag==NULL){
-      tag_string=IMAP4_UNTAGED;
-    }
-    else {
-      if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-        VANESSA_LOGGER_DEBUG("token_to_string");
-        return(-1);
-      }
-      free_tag_string=1;
-    }
-    if(str_write(io, flag, 3, "%s %s %s", tag_string, type, string)<0){
-      VANESSA_LOGGER_DEBUG("str_write");
-      return(-1);
-    }
-  }
+static const char *__imap4_write_fmt(io_t *io, flag_t *flag, 
+		const token_t *tag, const char *command, const char *fmt)
+{
+	char *tag_str = NULL;
+	char *new_fmt_end = NULL;
+	size_t tag_str_len;
+	size_t command_len;
+	size_t fmt_len;
+
+	/* Fast Path */
+	if(!command) {
+		return(fmt);
+	}
+
+	/* Slow Path */
+
+	memset(__imap4_write_fmt_str, 0, MAX_LINE_LENGTH);
+
+      	if(tag==NULL){
+		tag_str = IMAP4_UNTAGED;
+		tag_str_len = strlen(IMAP4_UNTAGED);
+	}
+	else {
+		tag_str = token_buf(tag);
+		tag_str_len = token_len(tag);
+	}
+
+	command_len = strlen(command);
+	fmt_len = strlen(fmt);
+
+	memcpy(__imap4_write_fmt_str, tag_str, tag_str_len);
+	new_fmt_end = __imap4_write_fmt_str + tag_str_len;
+
+	*(new_fmt_end) = ' ';
+	memcpy(new_fmt_end + 1, command, command_len);
+	new_fmt_end += command_len + 1;
+
+	if(*fmt){
+		*(new_fmt_end) = ' ';
+		memcpy(new_fmt_end + 1, fmt, fmt_len);
+	        new_fmt_end += fmt_len + 1;
+	}
+
+	if (!(*flag & WRITE_STR_NO_CLLF)) {
+		memcpy(new_fmt_end, "\r\n", 2);
+		*flag |= WRITE_STR_NO_CLLF;
+	}
+
+	return(__imap4_write_fmt_str);
+}
+
+int imap4_write(io_t *io, flag_t flag, const token_t *tag, 
+		const char *command, size_t nargs, const char *fmt, ...)
+{
+	const char *new_fmt = NULL;
+	va_list ap;
+
+	new_fmt = __imap4_write_fmt(io, &flag, tag, command, fmt);
+
+	va_start(ap, fmt);
+	if(str_vwrite(io, flag, nargs, new_fmt, ap)<0){
+		VANESSA_LOGGER_DEBUG("str_vwrite");
+		va_end(ap);
+		return(-1);
+	}
+	va_end(ap);
   
-  if(free_tag_string){
-    str_free(tag_string);
-  }
-  return(0);
+  	return(0);
 }

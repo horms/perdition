@@ -56,27 +56,26 @@
 #define IMAP4_CMD_LOGIN         "LOGIN"
 #define IMAP4_CMD_BYE           "BYE"
 
+
 /**********************************************************************
  * imap4_write
- * Display an message of the form [<tag> <type> ]<string>
+ * Display an message of the form <tag> <command> [<string>]
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
  *           if NULL, then IMAP4_UNTAGED is used
- *      type: type of message, IMAP4_OK, IMAP4_NO or IMAP4_BAD
- *            if NULL then only string is written, no tag and no type
- *      string: mesage to display
+ *      command: command in message sent
+ *           if NULL then only string is written, no tag or command
+ *      nargs: number of arguments after fmt
+ *      fmt: format passed used to form string
+ *      ...: arguments for fmt
  * Return 0 on success
  *        -1 otherwise
  **********************************************************************/
 
-int imap4_write(
-  io_t *io,
-  const flag_t flag,
-  const token_t *tag, 
-  const char *type, 
-  const char *string
-);
+int imap4_write(io_t *io, const flag_t flag, const token_t *tag, 
+		const char *command, const size_t nargs, 
+		const char *fmt, ...);
 
 #endif
 

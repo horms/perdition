@@ -38,35 +38,77 @@
 
 /**********************************************************************
  * pop3_write
- * Write a message of the form [<type> ]<string>
+ * Display an message of the form
+ *       <command>[ <string>]
+ * or
+ *       <string>
  * Pre: io: io_t to write to
- *      flag: flag to pass to str_write, as per str.h
- *      tag: ignored
- *      type: type of message, POP3_OK or POP3_ERR
- *            if NULL then only string is written
- *      string: mesage to display
+ *      flag: flag to pass to str_write as per str.h
+ *      tag: ignored 
+ *      command: command in message sent
+ *           if NULL then only string is written
+ *      nargs: number of arguments after fmt
+ *      fmt: format passed used to form string
+ *      ...: arguments for fmt
  * Return 0 on success
  *        -1 otherwise
  **********************************************************************/
-      
-int pop3_write(
-  io_t *io,
-  const flag_t flag,
-  const token_t *tag,
-  const char *type, 
-  const char *string
-){
-  const char *w_type;
-  const char *w_space;
-  const char *w_string;
 
-  w_type = (type)?type:"";
-  w_space = (type && string)?" ":"";
-  w_string = (string)?string:"";
+static char __pop3_write_fmt_str[MAX_LINE_LENGTH];
 
-  if(str_write(io, flag, 3, "%s%s%s", w_type, w_space, w_string)<0){
-    VANESSA_LOGGER_DEBUG("str_write");
-    return(-1);
-  }   
-  return(0);
-}   
+static const char *__pop3_write_fmt(io_t *io, flag_t *flag,
+		const char *command, const char *fmt)
+{
+	char *new_fmt_end = NULL;
+	size_t command_len;
+	size_t fmt_len;
+
+	/* Fast Path */
+	if(!command) {
+		return(fmt);
+	}
+
+	/* Slow Path */
+
+	memset(__pop3_write_fmt_str, 0, MAX_LINE_LENGTH);
+
+	command_len = strlen(command);
+	fmt_len = strlen(fmt);
+
+	memcpy(__pop3_write_fmt_str, command, command_len);
+	new_fmt_end = __pop3_write_fmt_str + command_len;
+
+	if(*fmt){
+		*(new_fmt_end) = ' ';
+		memcpy(new_fmt_end + 1, fmt, fmt_len);
+	        new_fmt_end += fmt_len + 1;
+	}
+
+	if (!(*flag & WRITE_STR_NO_CLLF)) {
+		memcpy(new_fmt_end, "\r\n", 2);
+		*flag |= WRITE_STR_NO_CLLF;
+	}
+
+	return(__pop3_write_fmt_str);
+}
+
+int pop3_write(io_t *io, flag_t flag, const token_t *tag, 
+		const char *command, size_t nargs, const char *fmt, ...)
+{
+	const char *new_fmt = NULL;
+	va_list ap;
+
+
+	new_fmt = __pop3_write_fmt(io, &flag, command, fmt);
+
+	va_start(ap, fmt);
+	if(str_vwrite(io, flag, nargs, new_fmt, ap)<0){
+		VANESSA_LOGGER_DEBUG("str_vwrite");
+		va_end(ap);
+		return(-1);
+	}
+	va_end(ap);
+  
+  	return(0);
+}
+

@@ -97,7 +97,7 @@ int pop3_out_authenticate(
  * pop3_out_response
  * Compare a respnse from a server with the desired response
  * pre: io: io_t to read from and write to
- *      tag_string: ignored
+ *      tag: ignored
  *      desired_token: token expected from server
  *      buf: buffer to return server response in
  *      n: size of buffer
@@ -109,7 +109,7 @@ int pop3_out_authenticate(
 
 int pop3_out_response(
   io_t *io,
-  const char *tag_string,
+  const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,
   unsigned char *buf,

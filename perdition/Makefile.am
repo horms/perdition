@@ -67,7 +67,7 @@ perdition_SOURCES = \
         pop3s.c             pop3s.h \
         pop3_in.c           pop3_in.h \
         pop3_out.c          pop3_out.h \
-        pop3_write.c        pop3_write.h \
+	pop3_write.c        pop3_write.h \
         protocol.c          protocol.h \
         protocol_t.h \
         queue_func.c        queue_func.h \

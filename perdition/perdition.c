@@ -139,22 +139,24 @@ static void perdition_reread_handler(int sig);
 #endif
 
 /* Macro to log session just after Authentication */
-#define VANESSA_LOGGER_LOG_AUTH(_auth_log, _from_to_str, \
-      _user, _servername, _port, _status) \
-  memset(_auth_log.log_str, 0, sizeof(_auth_log.log_str)); \
-  snprintf(_auth_log.log_str, sizeof(_auth_log.log_str)-1, \
-    "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
-    from_to_str, str_null_safe(_user), str_null_safe(_servername), \
-    str_null_safe(_port), str_null_safe(_status)); \
-  VANESSA_LOGGER_LOG(LOG_NOTICE, _auth_log.log_str); \
-  _auth_log.log_time=time(NULL) + opt.connect_relog; \
-  set_proc_title("perdition: auth %s", str_null_safe(_status));
+#define VANESSA_LOGGER_LOG_AUTH(_auth_log, _from_to_str,                   \
+			_user, _servername, _port, _status)                \
+	memset(_auth_log.log_str, 0, sizeof(_auth_log.log_str));           \
+	snprintf(_auth_log.log_str, sizeof(_auth_log.log_str)-1,           \
+			"Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" "   \
+			"status=\"%s\"",                                   \
+			from_to_str, str_null_safe(_user),                 \
+			str_null_safe(_servername),                        \
+			str_null_safe(_port), str_null_safe(_status));     \
+	VANESSA_LOGGER_LOG(LOG_NOTICE, _auth_log.log_str);                 \
+	_auth_log.log_time=time(NULL) + opt.connect_relog;                 \
+	set_proc_title("perdition: auth %s", str_null_safe(_status));
 
 #define LOGIN_FAILED(_type, _reason)                                      \
 {                                                                         \
 	sleep(PERDITION_AUTH_FAIL_SLEEP);                                 \
 	if(protocol->write(client_io, NULL_FLAG, client_tag,              \
-				protocol->type[(_type)],                  \
+				protocol->type[(_type)], 0,               \
 				(_reason))<0){                            \
 		VANESSA_LOGGER_DEBUG("protocol->write");                  \
 		VANESSA_LOGGER_ERR("Fatal error writing to client. "      \
@@ -807,26 +809,16 @@ int main (int argc, char **argv, char **envp){
     if(opt.server_ok_line){
       *(server_ok_buf+server_ok_buf_size)='\0';
       buffer=server_ok_buf;
-      if(protocol->write(
-        client_io, 
-        WRITE_STR_NO_CLLF,
-        client_tag, 
-        NULL,
-        server_ok_buf
-      )<0){
+      if(protocol->write(client_io, WRITE_STR_NO_CLLF, client_tag, 
+            NULL, 1, "%s", server_ok_buf)<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
     }
     else{
-      if(protocol->write(
-        client_io, 
-        NULL_FLAG,
-        client_tag, 
-        protocol->type[PROTOCOL_OK],
-        "You are so in"
-      )<0){
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
+            protocol->type[PROTOCOL_OK], 0, "You are so in")<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);

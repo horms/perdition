@@ -57,13 +57,8 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
     VANESSA_LOGGER_DEBUG("greeting_str");
     return(-1);
   }
-  if(protocol->write(
-    io, 
-    NULL_FLAG, 
-    NULL, 
-    protocol->type[PROTOCOL_OK], 
-    message
-  )<0){
+  if(protocol->write(io, NULL_FLAG, NULL, protocol->type[PROTOCOL_OK], 
+        1, "%s", message)<0){
     VANESSA_LOGGER_DEBUG("protocol->write");
     return(-1);
   }

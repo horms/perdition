@@ -66,31 +66,28 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 {
 	int status = -1;
 	int found = 0;
-	token_t *t;
-	token_t *capability;
-	char *tag_string = NULL;
+	token_t *t = NULL;
+	token_t *capability = NULL;
 
 	if((capability=token_create())==NULL){
 	    	VANESSA_LOGGER_DEBUG("token_create");
 		goto leave;
 	}
 
-	if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-		VANESSA_LOGGER_DEBUG("token_to_string");
-		goto leave;
-	}
-	if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, 
-	      			IMAP4_CMD_CAPABILLTY)<0){
-		VANESSA_LOGGER_DEBUG("str_write");
+	if(imap4_write(io, NULL_FLAG, tag, 
+				IMAP4_CMD_CAPABILLTY, 0, "")<0){
+		VANESSA_LOGGER_DEBUG("imap4_write");
 		goto leave;
 	}
 	token_assign(capability, IMAP4_CMD_CAPABILLTY, 
 			strlen(IMAP4_CMD_CAPABILLTY), 
 	      		TOKEN_NONE);
-	status=imap4_out_response(io, IMAP4_UNTAGED, capability, q, buf, 
-			buf_n);
+	status=imap4_out_response(io, NULL, capability, q, buf, buf_n);
 	if(status<0) {
-		VANESSA_LOGGER_DEBUG("imap4_out_response 2");
+		VANESSA_LOGGER_DEBUG("imap4_out_response capability untagged");
+		goto leave;
+	}
+	if(!status) {
 		goto leave;
 	}
 
@@ -110,8 +107,8 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 	}
 	token_destroy(&t);
 	
-	if(imap4_out_response(io, tag_string, ok, q, buf, buf_n) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_out_response 3");
+	if(imap4_out_response(io, tag, ok, q, buf, buf_n) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_out_response capbability ok");
 		goto leave;
 	}
 	imap4_tag_inc(tag);
@@ -121,9 +118,6 @@ leave:
 	token_unassign(capability);
   	token_destroy(&capability);
 	token_destroy(&t);
-	if(tag_string) {
-		free(tag_string);
-	}
 	return(status);
 }
 
@@ -155,11 +149,9 @@ int imap4_out_setup(
 ){
   token_t *ok = NULL;
   token_t *t = NULL;
-  token_t *check_t = NULL;
   vanessa_queue_t *q = NULL;
   char *read_string = NULL;
   char *greeting_string=NULL;
-  char *tag_string=NULL;
   int status=-1;
   int protocol_status = PROTOCOL_S_OK;
   int capability_status;
@@ -168,19 +160,15 @@ int imap4_out_setup(
 
   extern options_t opt;
 
-  if((check_t=token_create())==NULL){
-    VANESSA_LOGGER_DEBUG("token_create 1");
-    goto leave;
-  }
   if((ok=token_create())==NULL){
-    VANESSA_LOGGER_DEBUG("token_create 2");
+    VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
   token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
       TOKEN_DONT_CARE);
 
-  if((status=imap4_out_response(io, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
-    VANESSA_LOGGER_DEBUG("imap4_out_response 1");
+  if((status=imap4_out_response(io, NULL, ok, &q, NULL, NULL))<0){
+    VANESSA_LOGGER_DEBUG("imap4_out_response greeting");
     goto leave;
   }
   else if(!status){
@@ -207,8 +195,6 @@ int imap4_out_setup(
     goto leave;
   }
 
-  /* Ok to go */
-
 #ifdef WITH_SSL_SUPPORT
   if(!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
     goto ok;
@@ -220,23 +206,21 @@ int imap4_out_setup(
     VANESSA_LOGGER_DEBUG("imap4_out_get_capability");
     goto leave;
   }
+  if(!capability_status) {
+	  status = 0;
+	  goto leave;
+  }
 
   if(capability_status) {
     protocol_status |= PROTOCOL_S_STARTTLS;
-    if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-      VANESSA_LOGGER_DEBUG("token_to_string 3");
+    if(imap4_write(io, NULL_FLAG, tag, IMAP4_CMD_STARTTLS, 0, "")<0){
+      VANESSA_LOGGER_DEBUG("imap4_write starttls");
       goto leave;
     }
-    if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, IMAP4_CMD_STARTTLS)<0){
-      VANESSA_LOGGER_DEBUG("str_write 2");
+    if((status=imap4_out_response(io, tag, ok, &q, buf, &n))<0) {
+      VANESSA_LOGGER_DEBUG("imap4_out_response starttls");
       goto leave;
     }
-    if((status=imap4_out_response(io, tag_string, ok, &q, buf, &n))<0) {
-      VANESSA_LOGGER_DEBUG("imap4_out_response 4");
-      goto leave;
-    }
-    free(tag_string);
-    tag_string = NULL;
     imap4_tag_inc(tag);
   }
 #endif /* WITH_SSL_SUPPORT */
@@ -245,16 +229,11 @@ ok:
   status=protocol_status;
 leave:
   str_free(greeting_string);
-  token_unassign(check_t);
-  token_destroy(&check_t);
   token_unassign(ok);
   token_destroy(&ok);
   token_destroy(&t);
   if(q) {
     vanessa_queue_destroy(q);
-  }
-  if(tag_string) {
-    free(tag_string);
   }
   return(status);
 
@@ -290,9 +269,9 @@ int imap4_out_authenticate(
   unsigned char *buf,
   size_t *n
 ){
-  token_t *ok;
+  token_t *ok=NULL;
+  token_t *cont=NULL;
   vanessa_queue_t *q;
-  char *tag_string=NULL;
   int status=-1;
   int capability_status;
 
@@ -300,61 +279,62 @@ int imap4_out_authenticate(
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
-      TOKEN_DONT_CARE);
+  token_assign(ok, IMAP4_OK, strlen(IMAP4_OK), TOKEN_DONT_CARE);
+
+  if((cont=token_create())==NULL){
+    VANESSA_LOGGER_DEBUG("token_create");
+    goto leave;
+  }
+  token_assign(cont, IMAP4_CONT_TAG, strlen(IMAP4_CONT_TAG), TOKEN_DONT_CARE);
 
   capability_status = imap4_out_get_capability(io, ok, tag, &q, buf, n, 
-        IMAP4_CMD_LOGINDISABLED, strlen(IMAP4_CMD_LOGINDISABLED));
+		  IMAP4_CMD_LOGINDISABLED, strlen(IMAP4_CMD_LOGINDISABLED));
   if(capability_status < 0) {
-    VANESSA_LOGGER_DEBUG("imap4_out_get_capability");
-    goto leave;
+	  VANESSA_LOGGER_DEBUG("imap4_out_get_capability");
+	  goto leave;
   }
   if(capability_status) {
-    status = 2;
-    goto leave;
+	  status = 2;
+	  goto leave;
   }
 
-  if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-    VANESSA_LOGGER_DEBUG("token_to_string");
-    goto leave;
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_CMD_LOGIN, 1, "{%d}",
+			  strlen(pw->pw_name))<0){
+	  VANESSA_LOGGER_DEBUG("imap4_write login");
+	  status=-1;
+	  goto leave;
+  }
+  if((status=imap4_out_response(io, cont, ok, &q, buf, n))<0){
+	  VANESSA_LOGGER_DEBUG("imap4_out_response login");
   }
 
-  if(str_write(io, NULL_FLAG, 2, "%s " IMAP4_CMD_LOGIN " {%d}", tag_string, 
-      strlen(pw->pw_name))<0){
-    VANESSA_LOGGER_DEBUG("str_write 1");
-    status=-1;
-    goto leave;
+  if(imap4_write(io, NULL_FLAG, NULL, NULL, 2, "%s {%d}", 
+			  pw->pw_name, strlen(pw->pw_passwd))<0){
+	  VANESSA_LOGGER_DEBUG("imap4_write name");
+	  status=-1;
+	  goto leave;
   }
-  if((status=imap4_out_response(io, IMAP4_CONT_TAG, ok, &q, buf, n))<0){
-    VANESSA_LOGGER_DEBUG("imap4_out_response 2");
-  }
-
-  if(str_write(io, NULL_FLAG, 2, "%s {%d}", pw->pw_name, 
-      strlen(pw->pw_passwd))<0){
-    VANESSA_LOGGER_DEBUG("str_write 2");
-    status=-1;
-    goto leave;
-  }
-  if((status=imap4_out_response(io, IMAP4_CONT_TAG, ok, &q, buf, n))<0){
-    VANESSA_LOGGER_DEBUG("imap4_out_response 2");
+  if((status=imap4_out_response(io, cont, ok, &q, buf, n))<0){
+	  VANESSA_LOGGER_DEBUG("imap4_out_response passwd");
   }
 
-  if(str_write(io, NULL_FLAG, 1, "%s", pw->pw_passwd)<0){
-    VANESSA_LOGGER_DEBUG("str_write 3");
-    status=-1;
-    goto leave;
+  if(imap4_write(io, NULL_FLAG, NULL, NULL, 1, "%s", pw->pw_passwd)<0){
+	  VANESSA_LOGGER_DEBUG("str_write passwd");
+	  status=-1;
+	  goto leave;
   }
-  if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
-    VANESSA_LOGGER_DEBUG("imap4_out_response 3");
+  if((status=imap4_out_response(io, tag, ok, &q, buf, n))<0){
+	  VANESSA_LOGGER_DEBUG("imap4_out_response passwd");
   }
   
   vanessa_queue_destroy(q);
 
   leave:
   imap4_tag_inc(tag);
-  str_free(tag_string);
   token_unassign(ok);
   token_destroy(&ok);
+  token_unassign(cont);
+  token_destroy(&cont);
   return(status);
 }
   
@@ -363,7 +343,7 @@ int imap4_out_authenticate(
  * imap4_out_response
  * Compare a respnse from a server with the desired response
  * pre: io: io_t to read from
- *      tag_string: tag expected from server
+ *      tag: tag expected from server. NULL for untagged.
  *      desired_token: token expected from server
  *      q: resulting queue is stored here
  *      buf: buffer to read server response in to
@@ -374,32 +354,18 @@ int imap4_out_authenticate(
  *         -1: on error
  **********************************************************************/
 
-int imap4_out_response(
-  io_t *io,
-  const char *tag_string,
-  const token_t *desired_token,
-  vanessa_queue_t **q,
-  unsigned char *buf,
-  size_t *n
-){
-  int status;
-  int tagged;
-  token_t *t;
-  char *server_tag_string;
+int imap4_out_response(io_t *io, const token_t *tag, 
+		const token_t *desired_token, vanessa_queue_t **q, 
+		unsigned char *buf, size_t *n)
+{
+  int status = -1;
+  token_t *t = NULL;
 
-  *q=NULL;
-  server_tag_string=NULL;
-  t=NULL;
   status=-1;
-
-  /*
-   * tagged set to 0 if an untagged message is expected
-   * set to non-zero otherwise
-   */
-  tagged=strcmp(tag_string, IMAP4_UNTAGED);
 
   /*Check tag*/
   while(1){
+    token_destroy(&t);
     *q=read_line(io, buf, n, TOKEN_IMAP4, 0, PERDITION_LOG_STR_REAL);
     if(!*q){
       VANESSA_LOGGER_DEBUG("read_line");
@@ -411,22 +377,21 @@ int imap4_out_response(
       return(-1);
     }
 
-    if((server_tag_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      VANESSA_LOGGER_DEBUG("token_to_string");
-      goto leave;
+    if(tag) {
+      if(!strncmp(token_buf(t), IMAP4_UNTAGED, token_len(t))){
+        vanessa_queue_destroy(*q);
+        continue;
+      }
+      else if(!token_cmp(tag, t)){
+        VANESSA_LOGGER_DEBUG("invalid tag from server");
+        goto leave;
+      }
     }
-    token_destroy(&t);
-  
-    if(tagged && !strcmp(server_tag_string, IMAP4_UNTAGED)){
-      vanessa_queue_destroy(*q);
-      continue;
-    }
-  
-    if(strcmp(server_tag_string, tag_string)){
-      VANESSA_LOGGER_DEBUG_UNSAFE("invalid tag from server "
-		      "got:\"%s\" expected:\"%s\"",
-		      server_tag_string, tag_string);
-      goto leave;
+    else {
+      if(strncmp(token_buf(t), IMAP4_UNTAGED, token_len(t))) {
+	VANESSA_LOGGER_DEBUG("invalid tag from server");
+        goto leave;
+      }
     }
   
     break;
@@ -446,8 +411,5 @@ int imap4_out_response(
     vanessa_queue_destroy(*q);
     *q=NULL;
   }
-  str_free(server_tag_string);
   return(status);
 }
-
-

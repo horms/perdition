@@ -144,6 +144,117 @@ char *strn_to_str(const char *string, const size_t n)
 
 
 /**********************************************************************
+ * str_vwrite
+ * write strings to fd by puting them into tokens and
+ * printing the tokens
+ * if !(flag&WRITE_STR_NO_CLLF)
+ *   append a CRLF to the output (intput strings should not end in a CRLF)
+ * 
+ * pre: io: io_t to write to
+ *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
+ *      nargs: number of arguments after format string.
+ *             This should help to rule out format string bugs.
+ *      fmt: format for output, as per vsnprintf()
+ *      ap: strings
+ * post strings are printed to fd
+ * return: -1 on error
+ *         0 otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+static char __str_write_buf[STR_WRITE_BUF_LEN];
+
+static const char *__str_vwrite(io_t * io, const flag_t flag, 
+		const size_t nargs, const char *fmt, va_list ap,
+		int *bytes)
+{
+	int fmt_args;
+#ifndef HAVE_PARSE_PRINT_FORMAT
+	int place;
+#endif				/* HAVE_PARSE_PRINT_FORMAT */
+
+	/* Fast Path */
+	if(!nargs && (flag & WRITE_STR_NO_CLLF)) {
+		*bytes = strlen(fmt);
+		return(fmt);
+	}
+
+	/* Slow Path */
+
+#ifndef HAVE_PARSE_PRINT_FORMAT
+	fmt_args = 0;
+	for (place = 0; fmt[place] != '\0'; place++) {
+		if (fmt[place] == '%')
+			fmt[place + 1] == '%' ? place++ : fmt_args++;
+	}
+	if (fmt_args != nargs) {
+#else				/* HAVE_PARSE_PRINT_FORMAT */
+	if ((fmt_args = parse_printf_format(fmt, 0, NULL)) != nargs) {
+#endif				/* HAVE_PARSE_PRINT_FORMAT */
+		VANESSA_LOGGER_DEBUG_UNSAFE("nargs and fmt missmatch: "
+				"%d args requested, %d args in format",
+		     		nargs, fmt_args);
+		return (NULL);
+	}
+
+	*bytes = vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN - 2, fmt, ap);
+	if(*bytes < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("vsnprintf");
+		return (NULL);
+	}
+
+	/* Add carriage return,newline to output. */
+	if (!(flag & WRITE_STR_NO_CLLF)) {
+		memcpy(__str_write_buf + *bytes, "\r\n", 2);
+		*bytes += 2;
+	}
+
+	return (__str_write_buf);
+}
+
+
+int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
+	      const char *fmt, va_list ap)
+{
+	const char *str;
+	int bytes = 0;
+
+	extern options_t opt;
+
+	str = __str_vwrite(io, flag, nargs, fmt, ap, &bytes);
+	if(!str) {
+		VANESSA_LOGGER_DEBUG("__str_vwrite");
+		return(-1);
+	}
+
+	if (opt.connection_logging) {
+		char *dump_str;
+
+		dump_str = VANESSA_LOGGER_DUMP(str, bytes, 0);
+		if (!dump_str) {
+			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
+			return (-1);
+		}
+		VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"",
+					  PERDITION_LOG_STR_SELF,
+					  dump_str);
+		free(dump_str);
+	}
+
+	/* Attempt one write system call and return an error if it
+	   doesn't write all the bytes. */
+	if (io_write(io, str, bytes) != bytes) {
+		VANESSA_LOGGER_DEBUG_ERRNO("io_write");
+		return (-1);
+	}
+
+	return (0);
+}
+
+
+
+/**********************************************************************
  * str_write
  * write strings to fd by puting them into tokens and
  * printing the tokens
@@ -163,73 +274,22 @@ char *strn_to_str(const char *string, const size_t n)
  * Not 8 bit clean
  **********************************************************************/
 
-static char __str_write_buf[STR_WRITE_BUF_LEN];
-
 int str_write(io_t * io, const flag_t flag, const size_t nargs,
 	      const char *fmt, ...)
 {
+	int bytes;
 	va_list ap;
-	int bytes = 0;
-	int fmt_args;
-#ifndef HAVE_PARSE_PRINT_FORMAT
-	int place;
-#endif				/* HAVE_PARSE_PRINT_FORMAT */
-
-	extern options_t opt;
-
-#ifndef HAVE_PARSE_PRINT_FORMAT
-	fmt_args = 0;
-	for (place = 0; fmt[place] != '\0'; place++) {
-		if (fmt[place] == '%')
-			fmt[place + 1] == '%' ? place++ : fmt_args++;
-	}
-	if (fmt_args != nargs) {
-#else				/* HAVE_PARSE_PRINT_FORMAT */
-	if ((fmt_args = parse_printf_format(fmt, 0, NULL)) != nargs) {
-#endif				/* HAVE_PARSE_PRINT_FORMAT */
-		VANESSA_LOGGER_DEBUG_UNSAFE
-		    ("nargs and fmt missmatch: %d args requested, %d args in format",
-		     nargs, fmt_args);
-		return (-1);
-	}
 
 	va_start(ap, fmt);
-	if ((bytes =
-	     vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN - 2, fmt,
-		       ap)) < 0) {
-		VANESSA_LOGGER_DEBUG_ERRNO("vsnprintf");
-		return (-1);
-	}
+	bytes = str_vwrite(io, flag, nargs, fmt, ap);
 	va_end(ap);
 
-	/* Add carriage return,newline to output. */
-	if (!(flag & WRITE_STR_NO_CLLF)) {
-		*(__str_write_buf + bytes++) = '\r';
-		*(__str_write_buf + bytes++) = '\n';
+	if(bytes < 0) {
+		VANESSA_LOGGER_DEBUG("str_vwrite");
+		return(-1);
 	}
 
-	if (opt.connection_logging) {
-		char *dump_str;
-
-		dump_str = VANESSA_LOGGER_DUMP(__str_write_buf, bytes, 0);
-		if (!dump_str) {
-			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
-			return (-1);
-		}
-		VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"",
-					  PERDITION_LOG_STR_SELF,
-					  dump_str);
-		free(dump_str);
-	}
-
-	/* Attempt one write system call and return an error if it
-	   doesn't write all the bytes. */
-	if (io_write(io, __str_write_buf, bytes) != bytes) {
-		VANESSA_LOGGER_DEBUG_ERRNO("io_write");
-		return (-1);
-	}
-
-	return (0);
+	return(0);
 }
 
 

@@ -97,6 +97,30 @@ char *strn_to_str(const char *string, const size_t n);
 
 
 /**********************************************************************
+ * str_vwrite
+ * write strings to fd by puting them into tokens and
+ * printing the tokens
+ * if !(flag&WRITE_STR_NO_CLLF)
+ *   append a CRLF to the output (intput strings should not end in a CRLF)
+ * 
+ * pre: io: io_t to write to
+ *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
+ *      nargs: number of arguments after format string.
+ *             This should help to rule out format string bugs.
+ *      fmt: format for output, as per vsnprintf()
+ *      ap: strings
+ * post strings are printed to fd
+ * return: -1 on error
+ *         0 otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
+	      const char *fmt, va_list ap);
+
+
+/**********************************************************************
  * str_write
  * write strings to fd by puting them into tokens and
  * printing the tokens

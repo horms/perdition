@@ -100,7 +100,7 @@ int imap4_out_authenticate(
  * imap4_out_response
  * Compare a respnse from a server with the desired response
  * pre: io: io_t to read from
- *      tag_string: tag expected from server
+ *      tag: tag expected from server. NULL for untaged.
  *      desired_token: token expected from server
  *      q: resulting queue is stored here
  *      buf: buffer to read server response in to
@@ -113,7 +113,7 @@ int imap4_out_authenticate(
 
 int imap4_out_response(
   io_t *io,
-  const char *tag_string,
+  const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,
   unsigned char *buf,

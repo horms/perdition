@@ -163,7 +163,7 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 		}
 		token_assign(*input_token, strdup(IMAP4_CONT_TAG), 1, 0);
 		imap4_write(io, NULL_FLAG, *input_token, IMAP4_OK, 
-				"ready for additional input");
+				0, "ready for additional input");
 		token_destroy(input_token);
 	}
 
@@ -218,7 +218,8 @@ int imap4_in_authenticate(
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, "Authentication failure")<0){
+    if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0,
+			    "Authentication failure")<0){
       VANESSA_LOGGER_DEBUG("imap4_write");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
@@ -261,7 +262,7 @@ int imap4_in_authenticate(
 	}                                                                   \
         sleep(VANESSA_LOGGER_ERR_SLEEP);                                    \
         if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,                       \
-				"Try " IMAP4_CMD_LOGIN                      \
+				0, "Try " IMAP4_CMD_LOGIN                   \
 				" <username> <passwd>")<0){                 \
 		VANESSA_LOGGER_DEBUG("imap4_write syntax error");           \
 		break;                                                      \
@@ -271,7 +272,7 @@ int imap4_in_authenticate(
 	if(vanessa_queue_length(q)) {                                       \
 		sleep(VANESSA_LOGGER_ERR_SLEEP);                            \
 		if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,               \
-					"Argument given to " _cmd           \
+					0, "Argument given to " _cmd        \
 					" but there shouldn't be one")<0){  \
 			VANESSA_LOGGER_DEBUG("imap4_write syntax error");   \
 				break;                                      \
@@ -285,7 +286,6 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
   vanessa_queue_t *q = NULL;
   token_t *tag = NULL;
   token_t *t = NULL;
-  char * command_string = NULL;
 
   return_pw->pw_name=NULL;
 
@@ -304,14 +304,14 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     if(token_is_eol(tag)){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
       if(token_is_null(tag)){
-        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, "Null command")<0){
-          VANESSA_LOGGER_DEBUG("imap4_write 1");
+        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, 0, "Null command")<0){
+          VANESSA_LOGGER_DEBUG("imap4_write null command");
           goto loop;
         }
       }
       else {
-        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, "Missing command")){
-          VANESSA_LOGGER_DEBUG("imap4_write 2");
+        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, 0, "Missing command")){
+          VANESSA_LOGGER_DEBUG("imap4_write missing command");
           goto loop;
         }
       }
@@ -324,12 +324,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       break;
     }
 
-    if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      VANESSA_LOGGER_DEBUG("token_to_string");
-      break;
-    }
-     
-    if(strcasecmp(command_string, IMAP4_CMD_NOOP)==0){
+    if(strncasecmp(token_buf(t), IMAP4_CMD_NOOP, token_len(t))==0){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_NOOP);
       if(imap4_in_noop_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop");
@@ -337,12 +332,12 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       }
     }
 #ifdef WITH_SSL_SUPPORT
-    else if(strcasecmp(command_string, IMAP4_CMD_STARTTLS)==0){
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_STARTTLS, token_len(t))==0){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_STARTTLS);
       if(io_get_type(io) != io_type_ssl){
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
 				"Begin TLS negotiation now")<0){
-           VANESSA_LOGGER_DEBUG("imap4_write");
+           VANESSA_LOGGER_DEBUG("imap4_write begin TLS");
           return(-1);
         }
         vanessa_queue_destroy(q);
@@ -351,28 +346,30 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       else
       {
         sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, "SSL already active")<0){
-          VANESSA_LOGGER_DEBUG("ssl already active");
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, 0,
+				"SSL already active")<0){
+          VANESSA_LOGGER_DEBUG("imap4_write ssl already active");
           break;
         }
       }
     }    
 #endif /* WITH_SSL_SUPPORT */
-    else if(strcasecmp(command_string, IMAP4_CMD_CAPABILLTY)==0){
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_CAPABILLTY, token_len(t))==0){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_CAPABILLTY);
       if(imap4_in_capability_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_capability");
         break;
       }
     }
-    else if(strcasecmp(command_string, IMAP4_CMD_AUTHENTICATE)==0){
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_AUTHENTICATE,
+			    token_len(t))==0){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_AUTHENTICATE);
       if(imap4_in_authenticate_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop 2");
         break;
       }
     }
-    else if(strcasecmp(command_string, IMAP4_CMD_LOGOUT)==0){
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_LOGOUT, token_len(t))==0){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_LOGOUT);
       if(imap4_in_logout_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop 3");
@@ -381,8 +378,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       vanessa_queue_destroy(q);
       return(1);
     }
-    else if(strcasecmp(command_string, IMAP4_CMD_LOGIN)==0){
-      str_free(command_string);
+    else if(strncasecmp(token_buf(t), IMAP4_CMD_LOGIN, token_len(t))==0){
       if(vanessa_queue_length(q)!=2 && vanessa_queue_length(q)!=1){
 	__IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
         goto loop;
@@ -402,7 +398,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         goto loop;
       }
       else if(status != IMAP4_NON_LITERAL) {
-	token_t tmp_t;
+	token_t *tmp_t;
 
         /* Read again to get the space and litereal */
         vanessa_queue_destroy(q);
@@ -475,8 +471,9 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
     else {
       sleep(VANESSA_LOGGER_ERR_SLEEP);
-      if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, "Unrecognised command")<0){
-        VANESSA_LOGGER_DEBUG("imap4_write 3");
+      if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, 0,
+			      "Unrecognised command")<0){
+        VANESSA_LOGGER_DEBUG("imap4_write unrecognised command");
         break;
       }
     }
@@ -485,14 +482,12 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     loop:
     token_destroy(&t);
     token_destroy(&tag);
-    str_free(command_string);
     vanessa_queue_destroy(q);
   }
 
   /*If we get here clean up and bail*/
   token_destroy(&t);
   token_destroy(&tag);
-  str_free(command_string);
   vanessa_queue_destroy(q);
   return(-1);
 }
@@ -508,7 +503,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
  **********************************************************************/
 
 int imap4_in_noop_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, IMAP4_CMD_NOOP)<0){
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_NOOP)<0){
     VANESSA_LOGGER_DEBUG("imap4_write");
     return(-1);
   }
@@ -528,14 +523,14 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag){
  **********************************************************************/
 
 int imap4_in_logout_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 
+  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
 			  "IMAP4 server loging out")<0){
-    VANESSA_LOGGER_DEBUG("imap4_write 1");
+    VANESSA_LOGGER_DEBUG("imap4_write untagged");
     return(-1);
   }
 
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, IMAP4_CMD_LOGOUT)<0){
-    VANESSA_LOGGER_DEBUG("imap4_write 2");
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_LOGOUT)<0){
+    VANESSA_LOGGER_DEBUG("imap4_write tagged");
     return(-1);
   }
 
@@ -556,14 +551,15 @@ int imap4_in_logout_cmd(io_t *io, const token_t *tag){
 int imap4_in_capability_cmd(io_t *io, const token_t *tag){
   extern options_t opt;
 
-  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILLTY,
+  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILLTY, 0,
 			  str_null_safe(opt.capability))<0){
-    VANESSA_LOGGER_DEBUG("imap4_write 1");
+    VANESSA_LOGGER_DEBUG("imap4_write untagged");
     return(-1);
   }
 
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, IMAP4_CMD_CAPABILLTY)<0){
-    VANESSA_LOGGER_DEBUG("imap4_write 2");
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
+			  IMAP4_CMD_CAPABILLTY)<0){
+    VANESSA_LOGGER_DEBUG("imap4_write tagged");
     return(-1);
   }
 
@@ -581,16 +577,12 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag){
  **********************************************************************/
 
 int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(
-    io, 
-    NULL_FLAG,
-    tag, 
-    IMAP4_NO, 
-    IMAP4_CMD_AUTHENTICATE "mechchanism not supported"
-  )<0){
-    VANESSA_LOGGER_DEBUG("imap4_write 2");
-    return(-1);
-  }
+	if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0, 
+				IMAP4_CMD_AUTHENTICATE 
+				"mechchanism not supported")<0){
+		VANESSA_LOGGER_DEBUG("imap4_write");
+		return(-1);
+	}
 
-  return(0);
+	return(0);
 }

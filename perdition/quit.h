@@ -37,12 +37,9 @@
 #include "config.h" 
 #endif
 
-#include "perdition_types.h"
-#include "imap4_write.h"
-#include "log.h"
 #include "protocol_t.h"
-#include "queue_func.h"
 #include "token.h"
+#include "io.h"
 
 int quit(io_t *io, const protocol_t *protocol, token_t *tag);
 
