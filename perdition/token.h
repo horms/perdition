@@ -56,15 +56,11 @@ typedef struct{
  * Flags for Tokens
  */
 #define TOKEN_NONE        (flag_t) 0x00   /* No flag (NULL state) */
-#define TOKEN_LITERAL     (flag_t) 0x01   /* A literal token */
-#define TOKEN_QUOTED      (flag_t) 0x02   /* A quoted token */
-#define TOKEN_HAS_QUOTES  (flag_t) 0x04   /* A token within ""
-					   * Only makes sense for a quoted
-					   * token. Confusingly quoted 
-					   * tokens may not be within "" */
-#define TOKEN_EOL         (flag_t) 0x08   /* Token is at the end of a line */
-#define TOKEN_DONT_CARE   (flag_t) 0x15   /* Don't care what token is.
+#define TOKEN_EOL         (flag_t) 0x01   /* Token is at the end of a line */
+#define TOKEN_DONT_CARE   (flag_t) 0x03   /* Don't care what token is.
 					     Used for comparisons */
+
+#define TOKEN_NO_STRIP    (unsigned char) '\0'
 
 token_t *create_token(void);
 
@@ -233,6 +229,9 @@ int token_cmp(const token_t *a, const token_t *b);
  * dump the buffer in a token into a \0 terminated string
  * string will be dynamically allocated
  * pre: t: token to dump to a string
+ *      strip: Character to strip from first and last character of 
+ *             string if it is present. Ignored if TOKEN_NO_STRIP
+ *
  * post: a sting is allocated and the contents of t's buffer pluss
  *       a trailing '\0' is placed in the string
  * return: the string
@@ -241,7 +240,7 @@ int token_cmp(const token_t *a, const token_t *b);
  * Not 8 bit clean
  **********************************************************************/
 
-char *token_to_string(const token_t *t);
+char *token_to_string(const token_t *t, const unsigned char strip);
 
 
 #endif

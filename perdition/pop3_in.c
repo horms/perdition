@@ -114,7 +114,7 @@ int pop3_in_get_pw(
       break;
     }
 
-    if((command_string=token_to_string(t))==NULL){
+    if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
       PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
       break;
     }
@@ -130,7 +130,11 @@ int pop3_in_get_pw(
         goto loop;
       }
       if(vanessa_queue_length(q)!=1){
-	PERDITION_LOG(LOG_DEBUG, "vanessa_queue_length(q)=%d\n", vanessa_queue_length(q));
+	PERDITION_LOG(
+	  LOG_DEBUG,
+	  "vanessa_queue_length(q)=%d\n",
+	  vanessa_queue_length(q)
+	);
         sleep(PERDITION_ERR_SLEEP);
         if(pop3_write(out_fd,NULL_FLAG,NULL,POP3_ERR,"Try USER <username>")<0){
           PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write 2");
@@ -144,7 +148,7 @@ int pop3_in_get_pw(
         t=NULL;
         break;
       }
-      if((return_pw->pw_name=token_to_string(t))==NULL){
+      if((return_pw->pw_name=token_to_string(t, TOKEN_NO_STRIP))==NULL){
         PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
         break;
       }
@@ -183,7 +187,7 @@ int pop3_in_get_pw(
           free(return_pw->pw_name);
           break;
         }
-        if((return_pw->pw_passwd=token_to_string(t))==NULL){
+        if((return_pw->pw_passwd=token_to_string(t, TOKEN_NO_STRIP))==NULL){
           PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
           free(return_pw->pw_name);
           break;

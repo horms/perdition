@@ -93,7 +93,7 @@ int imap4_out_authenticate(
     goto leave;
   }
 
-  if((tag_string=token_to_string(tag))==NULL){
+  if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
     PERDITION_LOG(LOG_DEBUG, "imap4_in_tagged_ok: token_to_string");
     return(-1);
   }
@@ -101,7 +101,7 @@ int imap4_out_authenticate(
   if(write_str(
     out_fd, 
     NULL_FLAG,
-    5, 
+    6, 
     tag_string, 
     " LOGIN \"",
     pw->pw_name,
@@ -179,7 +179,7 @@ int imap4_out_response(
       return(-1);
     }
 
-    if((server_tag_string=token_to_string(t))==NULL){
+    if((server_tag_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
       PERDITION_LOG(LOG_DEBUG, "imap4_out_response: token_to_string");
       goto leave;
     }

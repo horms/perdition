@@ -62,7 +62,7 @@ int imap4_write(
       tag_string=IMAP4_UNTAGED;
     }
     else {
-      if((tag_string=token_to_string(tag))==NULL){
+      if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
         PERDITION_LOG(LOG_DEBUG, "imap4_in_tagged_ok: token_to_string");
         return(-1);
       }

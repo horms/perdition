@@ -273,7 +273,6 @@ token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
   token_t *t;
   size_t literal_offset=0;
   size_t len=0;
-  size_t offset=0;
   int bytes_read;
   int do_literal;
   flag_t flag=TOKEN_NONE;
@@ -313,24 +312,17 @@ end_while:
     *n=literal_offset;
   }
 
-  /*Unquote quoted strings if we are in imap4 mode*/
-  if(opt.protocol==PROTOCOL_IMAP4 && *buffer=='\"' && *(buffer+len-1)=='\"'){
-    offset++;
-    len--;
-    flag|=TOKEN_HAS_QUOTES;
-  }
-
   /*Create token to return*/
   if((t=token_create())==NULL){
     PERDITION_LOG(LOG_DEBUG, "token_read: token_create");
     return(NULL);
   }
-  if((assign_buffer=(unsigned char*)malloc(len-offset))==NULL){
+  if((assign_buffer=(unsigned char*)malloc(len))==NULL){
     PERDITION_DEBUG_ERRNO("token_read: malloc", errno);
     return(NULL);
   }
-  memcpy(assign_buffer, buffer+offset, len-offset);
-  token_assign(t, assign_buffer, len-offset, flag);
+  memcpy(assign_buffer, buffer, len);
+  token_assign(t, assign_buffer, len, flag);
   return(t);
 }
 
@@ -365,6 +357,8 @@ int token_cmp(const token_t *a, const token_t *b){
  * dump the buffer in a token into a \0 terminated string
  * string will be dynamically allocated
  * pre: t: token to dump to a string
+ *      strip: Character to strip from first and last character of 
+ *             string if it is present. Ignored if TOKEN_NO_STRIP
  * post: a sting is allocated and the contents of t's buffer pluss
  *       a trailing '\0' is placed in the string
  * return: the string
@@ -373,10 +367,21 @@ int token_cmp(const token_t *a, const token_t *b){
  * Not 8 bit clean
  **********************************************************************/
 
-char *token_to_string(const token_t *t){
+char *token_to_string(const token_t *t, const unsigned char strip){
   char *string;
+  unsigned char *buf;
+  size_t n;
 
-  if((string=strn_to_str((char *)t->buf, t->n))==NULL){
+
+  buf=t->buf;
+  n=t->n;
+
+  if(strip!=TOKEN_NO_STRIP && *buf==strip && *(buf+n-1)==strip){
+    buf++;
+    n-=2;
+  }
+
+  if((string=strn_to_str((char *)buf, n))==NULL){
     PERDITION_LOG(LOG_DEBUG, "token_to_string: strn_to_str");
     return(NULL);
   }

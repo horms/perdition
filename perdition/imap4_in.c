@@ -135,7 +135,7 @@ int imap4_in_get_pw(
       break;
     }
 
-    if((command_string=token_to_string(t))==NULL){
+    if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
       PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
       break;
     }
@@ -189,7 +189,7 @@ int imap4_in_get_pw(
 	t=NULL;
         break;
       }
-      if((return_pw->pw_name=token_to_string(t))==NULL){
+      if((return_pw->pw_name=token_to_string(t, '\"'))==NULL){
         PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
         break;
       }
@@ -201,7 +201,7 @@ int imap4_in_get_pw(
 	  tag=NULL;
           break;
         }
-        if((return_pw->pw_passwd=token_to_string(t))==NULL){
+        if((return_pw->pw_passwd=token_to_string(t, '\"'))==NULL){
           PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
           free(return_pw->pw_name);
           break;

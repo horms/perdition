@@ -539,7 +539,7 @@ void usage(int exit_status){
     "    a source address. The address may be an IP address or a hostname.\n"
     "    (default \"%s\")\n"
     " -C|--connection_logging:\n"
-    "    Log interaction between clients and perdition\n"
+    "    Log interaction during authentication phase\n"
     "    Note: -d|--debug must be specified for this option to take effect.\n"
     " -c|--client_server_specification:\n"
     "    Allow USER of the form user<delimiter>server[:port] to specify the\n"

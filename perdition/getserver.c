@@ -187,24 +187,24 @@ int getserver_openlib(
 ){
   char *error;
   int *(*dbserver_init)(char *);
-
   extern options_t opt;
 
   *handle_return=dlopen(libname, RTLD_LAZY);
   if(!*handle_return) {
+    error=dlerror();
     if(opt.debug){
-      fprintf(stderr, "dlopen failed: %s\n", dlerror());
+      fprintf(stderr, "dlopen failed: %s\n", error);
     }
-    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlopen: %s", dlerror());
+    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlopen: %s", error);
     return(-1);
   }
 
   *dbserver_get_return=dlsym(*handle_return, "dbserver_get");
   if((error=dlerror())!=NULL){
     if(opt.debug){
-      fprintf(stderr, "Could not find symbol dbserver_get: %s", dlerror());
+      fprintf(stderr, "Could not find symbol dbserver_get: %s", error);
     }
-    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlsym");
+    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlsym: %s", error);
     dlclose(*handle_return);
     return(-1);
   }
@@ -212,9 +212,9 @@ int getserver_openlib(
   if((error=dlerror())==NULL){
     if(dbserver_init(options_str)){
       if(opt.debug){
-        fprintf(stderr, "Error running dbserver_init\n");
+        fprintf(stderr, "Error running dbserver_init: %s\n", error);
       }
-      PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dbserver_init");
+      PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dbserver_init: %s", error);
       dlclose(*handle_return);
       return(-1);
     }
@@ -237,11 +237,12 @@ int getserver_openlib(
 int getserver_closelib(void *handle){
   int status=0;
   int *(*dbserver_fini)(void);
+  char *error;
 
   dbserver_fini=dlsym(handle, "dbserver_fini");
-  if(dlerror()==NULL){
+  if((error=dlerror())==NULL){
     if(dbserver_fini()){
-      PERDITION_LOG(LOG_DEBUG, "getserver_closelib: dbserver_fini");
+      PERDITION_LOG(LOG_DEBUG, "getserver_closelib: dbserver_fini: %s", error);
       status=-1;
     }
   }

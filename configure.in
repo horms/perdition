@@ -115,7 +115,7 @@ AC_ARG_WITH(
   mysql-includes,
   [  --with-mysql-includes=DIR  
                           MySQL include files are in DIR.  ],
-  [ mysql_includepath="-I$withval" ],
+  [ mysql_includepath="$withval" ],
   [ 
     AC_MSG_CHECKING(MySQL include path)
     for mysql_includepath in /usr/mysql/include /usr/local/mysql/include \
@@ -128,6 +128,8 @@ AC_ARG_WITH(
     AC_MSG_RESULT($mysql_includepath)
   ]
 )
+
+mysql_includes="-I$mysql_includepath"
 
 AC_ARG_WITH(
   mysql-libraries,
@@ -146,6 +148,8 @@ AC_ARG_WITH(
     AC_MSG_RESULT($mysql_libpath)
   ]
 )
+
+mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$mysql_libpath -lmysqlclient"
 
 AC_CHECK_FILE(
   $mysql_includepath/mysql.h,
@@ -204,6 +208,8 @@ AC_ARG_WITH(
   ]
 )
 
+pg_includes="-I$pg_includepath"
+
 AC_ARG_WITH(
   pg-libraries,
   [  --with-pg-libraries=DIR PostgreSQL library files are in DIR.  ],
@@ -223,6 +229,7 @@ AC_ARG_WITH(
   ]
 )
 
+pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -L$pg_libpath -lpq"
 
 AC_CHECK_FILE(
   $pg_includepath/libpq-fe.h,
@@ -325,6 +332,8 @@ AC_ARG_WITH(
   ]
 )
 
+ldap_includes="-I$ldap_includepath"
+
 AC_ARG_WITH(
   ldap-libraries,
   [  --with-ldap-libraries=DIR 
@@ -343,6 +352,7 @@ AC_ARG_WITH(
   ]
 )
 
+ldap_libs="$socket_lib $nsl_lib -L$ldap_libpath -lldap -llber"
 
 AC_CHECK_FILE(
   $ldap_includepath/ldap.h,
@@ -378,7 +388,7 @@ AC_CHECK_LIB(
     ) ;\
     sleep 5
   ],
-  $socket_lib -L$ldap_libpath -llber
+  $ldap_libs
 )
 fi
 
@@ -400,22 +410,27 @@ AC_CHECK_HEADERS(
     sleep 5
   ]
 )
+
 if test $pam = yes; then
-  AC_CHECK_HEADERS(
-    security/pam_misc.h, 
-    true,
-    [
-      pam=no
-      AC_MSG_WARN(
-        ""
-        "**********************************************************************"
-        "* pam support will not be built"
-        "**********************************************************************"
-      ) ;\
-      sleep 5
-    ]
-  )
+AC_CHECK_HEADERS(security/pam_misc.h)
+
+AC_CHECK_LIB(
+  pam,
+  pam_authenticate,
+  true,
+  [ 
+    pam=no
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* pam support will not be built"
+      "**********************************************************************"
+    ) ;\
+    sleep 5
+  ],
+)
 fi
+
 if test $pam = yes; then
   pam_lib="-lpam"
   pam_source="pam.c pam.h"
@@ -428,12 +443,6 @@ else
 fi
 
 
-pg_includes="-I$pg_includepath"
-pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lpq -L$pg_libpath"
-mysql_includes="-I$mysql_includepath"
-mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$mysql_libpath -lmysqlclient"
-ldap_includes="-I$ldap_includepath"
-ldap_libs="$socket_lib $nsl_lib -L$ldap_libpath -lldap -llber"
 posix_regex_libs="-lvanessa_logger -lvanessa_adt"
 
 ######################################################################

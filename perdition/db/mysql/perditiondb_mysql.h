@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include <vanessa_adt.h>
 
 #define PERDITIONDB_MYSQL_FIELD_DELIMITER   ':'

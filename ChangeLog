@@ -15,8 +15,8 @@ xxx
   - Fixed Linking Problems in MySQL, PostgresSQL and LDAP 
     map lookup libraries.
   - Fixed (minor) casting problems with using various popt calls
-  - \" characters are no longer stripped from input during authentication
-    phase.
+  - Correct handling of litereals quoted with \" characters in
+    IMAP mode.
 
 5th April 2001
 (Horms)
