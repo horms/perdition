@@ -121,7 +121,7 @@ void init_set_proc_title(int argc, char *argv[], char *envp[])
   /* Set the __progname and __progname_full variables so glibc and company don't
    * go nuts. - MacGyver
    */
-  __progname = strdup("peridtion");
+  __progname = strdup("perdition");
   __progname_full = strdup(argv[0]);
 #endif /* HAVE___PROGNAME */
   
