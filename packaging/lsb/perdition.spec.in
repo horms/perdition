@@ -11,7 +11,7 @@
 #%define _datadir               %{_prefix}/share
 #%define _sysconfdir            %{_prefix}/etc
 #%define _sharedstatedir        %{_prefix}/com
-#%define _localstatedir         %{_prefix}/var
+#%define _localstatedir         /var
 #%define _lib                   lib
 #%define _libdir                %{_exec_prefix}/%{_lib}
 #%define _includedir            %{_prefix}/include
@@ -304,6 +304,9 @@ true
 
 
 %changelog
+* Fri Mar  1 2004 Horms <horms@verge.net.au>
+- Set localstatedir to /var
+
 * Fri Oct 30 2002 Horms <horms@verge.net.au>
 - Fixed BDB mess!
 
