@@ -239,11 +239,70 @@ typedef struct {
 #define OPT_FIRST_CALL  (flag_t) \
  OPT_ERR|OPT_CLEAR_MASK|OPT_SET_MASK|OPT_SET_DEFAULT
 
-int options(int argc, char **argv, flag_t flag);
-int options_set_mask(flag_t *mask, flag_t flag, flag_t mask_entry);
-int log_options(void);
-void usage(int exit_status);
-vanessa_dynamic_array_t *split_str_server_port(char *string, 
-  const char delimiter);
+/**********************************************************************
+ * options
+ * Read in command line options
+ * pre: argc: number or elements in argv
+ *      argv: array of strings with command line-options
+ *      flag: see options.h for flag values
+ *            ignores errors otherwise
+ * post: global opt is seeded with values according to argc and argv
+ **********************************************************************/
 
-#endif
+int options(int argc, char **argv, flag_t f);
+
+
+/**********************************************************************
+ * options_set_mask
+ * Set the options mask
+ * pre: mask: pointer to current mask that may be modified
+ *      mask_entry: value to or with opt->mask
+ *      flag: flags
+ * post: mask is added if flags permit
+ * return: 1 if mask is added
+ *         0 otherwise
+ **********************************************************************/
+
+int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag);
+
+
+/**********************************************************************
+ * log_options
+ * Log options
+ **********************************************************************/
+int log_options(void);
+
+
+/**********************************************************************
+ * usage
+ * Display usage information
+ * pre: exit_status: status to exit programme with
+ * post: Usage information is displayed stdout if exit_status=0, stderr
+ *       otherwise.
+ *       Programme exits with exit status.
+ * return: does not return
+ **********************************************************************/
+
+void usage(int exit_status);
+
+
+/**********************************************************************
+ * split_str_server_port
+ * Split a string into substrings on a delimiter and store
+ * in server_port_structures in a dynamic array
+ * pre: str: string to split
+ *      delimiter: character to split string on
+ * post: string is split. 
+ *       Note: The string is modified.
+ * return: dynamic array containing server_port structures
+ *         NULL on error
+ *         string being NULL is an error state
+ **********************************************************************/
+
+vanessa_dynamic_array_t *split_str_server_port(
+  char *string, 
+  const char delimiter
+);
+
+
+#endif /* PERDITION_OPT_STIX */

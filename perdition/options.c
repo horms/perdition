@@ -779,7 +779,11 @@ int log_options(void){
 /**********************************************************************
  * usage
  * Display usage information
- * Printed to stdout if exit_status=0, stderr otherwise
+ * pre: exit_status: status to exit programme with
+ * post: Usage information is displayed stdout if exit_status=0, stderr
+ *       otherwise.
+ *       Programme exits with exit status.
+ * return: does not return
  **********************************************************************/
 
 void usage(int exit_status){
