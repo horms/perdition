@@ -36,3 +36,6 @@ Richard Holbert
 
 Liu Jinhui
 * Pass through error messages from real servers
+
+Russell Corker
+* Round robin requests to LDAP servers.
