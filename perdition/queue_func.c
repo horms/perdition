@@ -6,7 +6,7 @@
  *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999  Horms
+ * Copyright (C) 1999-2001  Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -199,9 +199,11 @@ char *queue_to_string(vanessa_queue_t *q){
       return(NULL);
     }
     
-    strncpy(pos, t->buf, t->n);
-    pos+=t->n;
-    *pos++=' ';
+    if (t->n>0 && t->buf!=NULL){
+      strncpy(pos, t->buf, t->n);
+      pos+=t->n;
+      *pos++=' ';
+    }
   }
   
   vanessa_queue_destroy(stack);
