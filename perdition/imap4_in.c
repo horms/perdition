@@ -35,10 +35,20 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#ifdef __FreeBSD__
+#if __FreeBSD_version < 500112
+#include <machine/limits.h> /* For ULONG_MAX on FreeBSD */
+#else
+#include <sys/limits.h>
+#endif
+#endif
+#endif
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
-
 
 #define IMAP4_QUOTED_STRING             0x1
 #define IMAP4_SYNCHRONISING_TOKEN     0x2

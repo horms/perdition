@@ -61,10 +61,20 @@
 #include "setproctitle.h"
 #include "imap4_tag.h"
 
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#ifdef __FreeBSD__
+#if __FreeBSD_version < 500112
+#include <machine/limits.h> /* For ULONG_MAX on FreeBSD */
+#else
+#include <sys/limits.h>
+#endif
+#endif
+#endif
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
-
 
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
@@ -1191,6 +1201,9 @@ unlink:
 
 /*
  * $Log$
+ * Revision 1.82  2003/12/15 16:01:05  horms
+ * Added sys/limits.h for ULONG_MAX on FreeBSD. Clement Laforet
+ *
  * Revision 1.81  2003/12/01 02:31:37  horms
  * Child Processes don't delete the PID file
  *
