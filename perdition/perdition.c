@@ -37,6 +37,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <vanessa_socket.h>
+#include <time.h>
 
 #include "protocol.h"
 #include "log.h"
@@ -252,14 +253,6 @@ int main (int argc, char **argv){
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
-#ifdef WITH_SSL_SUPPORT
-  if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
-      (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
-    PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
-    vanessa_socket_daemon_exit_cleanly(-1);
-  }
-#endif /* WITH_SSL_SUPPORT */
-
   /*Set signal handlers*/
   signal(SIGHUP,    (void(*)(int))perdition_reread_handler);
   signal(SIGINT,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
@@ -341,16 +334,27 @@ int main (int argc, char **argv){
   }
 
   /*Set listen and outgoing port now the protocol structure is accessable*/
-  if((opt.listen_port=(*(protocol->port))(opt.listen_port))==NULL){
+  if((opt.listen_port=protocol->port(opt.listen_port))==NULL){
     PERDITION_DEBUG("protocol->port 1");
     PERDITION_ERR("Fatal error finding port to listen on. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
-  if((opt.outgoing_port=(*(protocol->port))(opt.outgoing_port))==NULL){
+  if((opt.outgoing_port=protocol->port(opt.outgoing_port))==NULL){
     PERDITION_DEBUG("protocol->port 2");
     PERDITION_ERR("Fatal error finding port to connect to. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
+
+#ifdef WITH_SSL_SUPPORT
+  /*Set up the ssl mode*/
+  opt.ssl_mode=protocol->encryption(opt.ssl_mode);
+
+  if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
+      (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
+    PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
+    vanessa_socket_daemon_exit_cleanly(-1);
+  }
+#endif /* WITH_SSL_SUPPORT */
 
   /*
    * Log the options we will be running with.

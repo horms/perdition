@@ -41,6 +41,7 @@ perdition_SOURCES = \
         getserver.c         getserver.h \
         greeting.c          greeting.h \
         imap4.c             imap4.h \
+        imap4s.c            imap4s.h \
         imap4_in.c          imap4_in.h \
         imap4_out.c         imap4_out.h \
         imap4_write.c       imap4_write.h \
@@ -52,6 +53,7 @@ perdition_SOURCES = \
         perdition.c \
         perdition_types.h \
         pop3.c              pop3.h \
+        pop3s.c             pop3s.h \
         pop3_in.c           pop3_in.h \
         pop3_out.c          pop3_out.h \
         pop3_write.c        pop3_write.h \

@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef POP3_FLIM
-#define POP3_FLIM
+#ifndef _PERDITION_POP3_H
+#define _PERDITION_POP3_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -44,6 +44,8 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol);
 void pop3_destroy_protocol(protocol_t *protocol);
 
 char *pop3_port(char *port);
+ 
+flag_t pop3_encryption(flag_t ssl_flags);
 
 #endif
 

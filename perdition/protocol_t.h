@@ -78,6 +78,7 @@ struct protocol_t_struct {
   );
   void (*destroy)(struct protocol_t_struct *);
   char *(*port)(char *);
+  flag_t (*encryption)(flag_t);
 }; 
 
 typedef struct protocol_t_struct protocol_t;

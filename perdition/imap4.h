@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef IMAP4_FLIM
-#define IMAP4_FLIM
+#ifndef _PERDITION_IMAP4_H
+#define _PERDITION_IMAP4_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -44,6 +44,8 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol);
 void imap4_destroy_protocol(protocol_t *protocol);
 
 char *imap4_port(char *port);
+
+flag_t imap4_encryption(flag_t ssl_flags);
 
 #endif
 

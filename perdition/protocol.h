@@ -33,10 +33,7 @@
 
 #include <vanessa_adt.h>
 
-#include "token.h"
 #include "protocol_t.h"
-#include "pop3.h"
-#include "imap4.h"
 
 /* This is nasty
  * protocol_known[1]=number oof protocols as a string
@@ -50,7 +47,9 @@
  */
 
 #define PROTOCOL_POP3 1
-#define PROTOCOL_IMAP4 2
+#define PROTOCOL_POP3S 2
+#define PROTOCOL_IMAP4 3
+#define PROTOCOL_IMAP4S 4
 #define PROTOCOL_DEFAULT PROTOCOL_POP3
 #define PROTOCOL_ALL 0
 

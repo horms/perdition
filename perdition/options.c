@@ -30,6 +30,8 @@
 #include "config.h"
 #endif
 
+#include <sys/utsname.h>
+
 #include "options.h"
 
 #ifdef DMALLOC
@@ -748,7 +750,7 @@ int log_options(void){
     "ssl_key_file=\"%s\", "
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
-    "(mask=0x%x) %u\n",
+    "(mask=0x%x)\n",
     str_null_safe(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
@@ -787,7 +789,7 @@ int log_options(void){
     str_null_safe(opt.ssl_key_file),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
-    opt.mask, time(NULL)
+    opt.mask
   );
 
   if(protocol!=NULL){ free(protocol); }
@@ -965,8 +967,8 @@ void usage(int exit_status){
 #ifdef WITH_SSL_SUPPORT
     " --ssl_mode:\n"
     "    Use SSL and or TLS for the listening and/or outgoing connections.\n"
-    "    A comma delimited list of: none, ssl_incoming, ssl_outgoing,\n"
-    "    ssl_all, tls_incoming, tls_outgoing, tls_all. See manpage for\n"
+    "    A comma delimited list of: none, ssl_listen, ssl_outgoing,\n"
+    "    ssl_all, tls_listen, tls_outgoing, tls_all. See manpage for\n"
     "    details of these options.\n"
     "    (default \"%s\")\n"
     " --ssl_cert_file:\n"

@@ -14,6 +14,7 @@ xxx
   - Added --lookup_domain option which allows different default
     servers to be specified for different domains.
     Ronny Cook <ronny@ronnycook.org>
+  - Addded POP3S and IMAP4S protocol labels
 
 
 

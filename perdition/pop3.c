@@ -64,6 +64,7 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
   protocol->out_response= pop3_out_response;
   protocol->destroy = pop3_destroy_protocol;
   protocol->port = pop3_port;
+  protocol->encryption = pop3_encryption;
 
   return(protocol);
 }
@@ -93,4 +94,16 @@ char *pop3_port(char *port){
   }
 
   return(port);
+}
+
+
+/**********************************************************************
+ * pop3_encryption 
+ * Return the encription states to be used.
+ * pre: ssl_flags: the encryption flags that bave been set
+ * post: return ssl_flags (does nothing)
+ **********************************************************************/
+
+flag_t pop3_encryption(flag_t ssl_flags) {
+  return(ssl_flags);
 }

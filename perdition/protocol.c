@@ -29,6 +29,10 @@
 #include "config.h"
 #endif
 
+#include "pop3.h"
+#include "pop3s.h"
+#include "imap4.h"
+#include "imap4s.h"
 #include "protocol.h"
 
 #ifdef DMALLOC
@@ -36,7 +40,11 @@
 #endif
 
 
+#ifdef WITH_SSL_SUPPORT
+char *protocol_known[] = {"4", "POP3", "POP3S", "IMAP4", "IMAP4S"};
+#else
 char *protocol_known[] = {"2", "POP3", "IMAP4"};
+#endif
 
 /**********************************************************************
  * protocol_intitialise
@@ -61,9 +69,21 @@ protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
 	return(NULL);
       }
       break;
+    case PROTOCOL_POP3S:
+      if((protocol=pop3s_initialise_protocol(protocol))==NULL){
+        PERDITION_DEBUG("pop3s_initialise_protocol");
+	return(NULL);
+      }
+      break;
     case PROTOCOL_IMAP4:
       if((protocol=imap4_initialise_protocol(protocol))==NULL){
         PERDITION_DEBUG("imap4_initialise_protocol");
+	return(NULL);
+      }
+      break;
+    case PROTOCOL_IMAP4S:
+      if((protocol=imap4s_initialise_protocol(protocol))==NULL){
+        PERDITION_DEBUG("imap4s_initialise_protocol");
 	return(NULL);
       }
       break;

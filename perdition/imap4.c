@@ -64,6 +64,7 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->out_response=imap4_out_response;
   protocol->destroy = imap4_destroy_protocol;
   protocol->port = imap4_port;
+  protocol->encryption = imap4_encryption;
 
   return(protocol);
 }
@@ -95,3 +96,14 @@ char *imap4_port(char *port){
   return(port);
 }
 
+
+/**********************************************************************
+ * imap4_encryption 
+ * Return the encription states to be used.
+ * pre: ssl_flags: the encryption flags that bave been set
+ * post: return ssl_flags (does nothing)
+ **********************************************************************/
+
+flag_t imap4_encryption(flag_t ssl_flags) {
+  return(ssl_flags);
+}

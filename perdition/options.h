@@ -65,7 +65,6 @@
   (STATE_GET_SERVER|STATE_LOCAL_AUTH|STATE_REMOTE_LOGIN)
 
 
-#ifdef WITH_SSL_SUPPORT
 /*
  * States for ssl_mode option which may be the logical
  * or of these.
@@ -85,7 +84,6 @@
 
 #define SSL_SSL_MASK           SSL_MODE_SSL_ALL
 #define SSL_TLS_MASK           SSL_MODE_TLS_ALL
-#endif /* WITH_SSL_SUPPORT */
 
 
 #define DEFAULT_ADD_DOMAIN                   STATE_NONE

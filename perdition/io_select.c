@@ -139,7 +139,7 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 
 static int __io_select(int n, fd_set *readfds, fd_set *writefds, 
 		       fd_set *exceptfds, struct timeval *timeout, 
-		       io_select *s) 
+		       io_select_t *s) 
 {
 	return(select(n, readfds, writefds, exceptfds, timeout));
 }

@@ -38,6 +38,7 @@
 #define POP3_OK "+OK"
 #define POP3_ERR "-ERR"
 #define POP3_DEFAULT_PORT "110"
+#define POP3S_DEFAULT_PORT "995"
 
 
 /**********************************************************************

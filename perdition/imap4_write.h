@@ -40,6 +40,7 @@
 #define IMAP4_NO "NO"
 #define IMAP4_UNTAGED "*"
 #define IMAP4_DEFAULT_PORT "143"
+#define IMAP4S_DEFAULT_PORT "993"
 #define IMAP4_ONE_TIME_TAG "flim7"
 
 /**********************************************************************
