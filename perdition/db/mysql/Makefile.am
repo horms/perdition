@@ -37,7 +37,7 @@ perditiondb_mysql.h
 
 libperditiondb_mysql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_mysql_la_LIBADD =  -lvanessa_adt -lmysqlclient \
+libperditiondb_mysql_la_LIBADD =  -lvanessa_adt -lmysqlclient -lz\
   -L@mysql_libraries@
 
 INCLUDES=\

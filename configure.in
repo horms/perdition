@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 0.1.6pre9)
+AM_INIT_AUTOMAKE(perdition, 0.1.6)
 
 AM_PROG_LIBTOOL
 AC_PROG_CC
@@ -134,7 +134,9 @@ AC_ARG_WITH(
     for mysql_libraries in /usr/mysql/lib /usr/local/mysql/lib \
         /usr/lib/mysql /usr/local/lib/mysql \
     	/usr/lib /usr/local/lib; do
-      if [ test -f "${mysql_libraries}/libmysql.a" ]; then
+      AC_MSG_WARN("Checking ${mysql_libraries}/libmysqlclient.a");
+      if [ test -f "${mysql_libraries}/libmysqlclient.a" ]; then
+        AC_MSG_WARN("Found ${mysql_libraries}/libmysqlclient.a");
         break
       fi
     done
@@ -165,11 +167,11 @@ AC_CHECK_LIB(
     AC_MSG_WARN(
       ""
       "**********************************************************************"
-      "* perditiondb_mysql will not be built"
+      "* perditiondb_mysql will not be built: $mysql_libraries"
       "**********************************************************************"
     ) ;\
   ],
-  -L$mysql_libraries
+  -L$mysql_libraries -lz
 )
 fi
 
@@ -478,7 +480,5 @@ etc/rc.d/init.d/perdition.rh
 etc/sysconfig/Makefile 
 Makefile
 INSTALL
-README
-README.perditiondb
 CODING_LOCATIONS
 )

@@ -26,7 +26,8 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
    - LDAP popmax fix for values with only one attribute
      courtesy of Jeremy Nelson 
    - Added perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@ to
-     perdition/Makefile.am to aid finding modules.
+     perdition/Makefile.am to aid finding modules. (Removed because debian
+     doesn't like it,)
      Thanks to Arvid Requate
    - Added NIS map, thanks to Nathan Neulinger
    - Removed uneccessary macros in config parsing code

@@ -57,8 +57,6 @@ install: build
 	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition
 	install -c -m 644 README \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/
-	install -c -m 644 README.perditiondb \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 ChangeLog \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/
 	install -c -m 644 NEWS \

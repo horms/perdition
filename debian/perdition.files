@@ -13,3 +13,4 @@ usr/sbin/perdition
 usr/sbin/perdition.imap4
 usr/sbin/perdition.pop3
 /usr/man/man8/perdition.8
+/usr/man/man5/perditiondb.5

@@ -170,7 +170,7 @@ This is the default library used by perdition.
 The gdbm library reads a users server and port information from a GDBM
 database. The database is opened each time perdition needs to find the
 server and port for a user.  The information for each user is stored in a
-flat file, popmap with the format;
+flat file, popmap with the format:
 .P
 <username>:[<username><domain_delimiter>]<hostname|ip address>[:<port number|service name>]
 .P
@@ -318,7 +318,7 @@ host is the hostname or IP address to connect to and username, if specified
 is the username to use when connecting to host.
 .P
 The database is accesed each time perdition needs to find the host and port
-for a user.  The default database values are as follows;
+for a user.  The default database values are as follows:
 .P
 database host:     localhost
 .br
@@ -330,11 +330,10 @@ database user:     perdition
 .br
 database password: perdition
 .P
-A script is provided in source in etc/perdition/mysql/ to initialise such a
-database. In the RPM distrubution this can be found installed in
-/etc/perdition/mysql/ Alternate values can be set using the
--m|--map_library_opt command line option or configuration file directive
-with an argument of the form;
+A script, perditiondb_mysql_makedb is provided to initialise such a
+database.  Alternate values can be set using the -m|--map_library_opt
+command line option or configuration file directive with an argument of the
+form:
 .P
 [<dbhost>[:<dbname>[:<dbtable>[:<dbuser>[:<dbpwd>]]]]]
 .P
@@ -353,6 +352,9 @@ perdition -M /usr/lib/libperditiondb_mysql.so
 .P
 Where \fB/user/lib\fP is the directory in which the perdition libraries
 were installed.
+.P
+A script, perditiondb_postgresql_makedb is provided to initialise the
+database.
 .P
 For more information please see the MySQL documentaion above.
 .SH LDAP
@@ -379,6 +381,8 @@ ldap://localhost/ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=
 .P
 The URL should contain excactly one %s, which will be filled by the
 name of the user when a query is made.
+.P
+A script, perditiondb_ldap_makedb is provided to initialise LDAP.
 .P
 .SH SEE ALSO
 perditiondb(8), makegdbm(1), make(1), 

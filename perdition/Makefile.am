@@ -89,7 +89,8 @@ INCLUDES= \
   -DPERDITION_LIBDIR=\"${libdir}\" \
   -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\"
 
-LDFLAGS = -Wl,--rpath -Wl,@prefix@
+# Removed because Debian doesn't like it
+#LDFLAGS = -Wl,--rpath -Wl,@prefix@
 
 LDADD = \
 -L../libjain \

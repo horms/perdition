@@ -15,7 +15,8 @@ URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
 Requires: perdition-gdbm-%{ver}-%{rel}
-BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel MySQL-devel postgresql-devel openldap-devel popt pam
+BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel
+gdbm-devel MySQL-devel MySQL-shared postgresql-devel openldap-devel popt pam zlib-devel
 
 %description
 Perdition is allows users to connect to a content-free POP3 or IMAP4 server
@@ -70,7 +71,7 @@ database to be sourced from LDAP.
 Summary: Library to allow perdition to access MySQL based pop maps.
 Group: Applications/Internet
 Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
+Requires: perdition-%{ver}-%{rel} MySQL-shared zlib
 Provides: perdition-mysql-%{ver}-%{rel}
 
 %description mysql
@@ -169,7 +170,7 @@ true
 
 %files
 %defattr(-,root,root)
-%doc %attr(-, root, root) README README.perditiondb
+%doc %attr(-, root, root) README
 %doc %attr(-, root, root) ChangeLog NEWS CODING_LOCATIONS TODO
 %{prefix}/sbin/perdition
 %{prefix}/sbin/perdition.pop3
@@ -179,6 +180,8 @@ true
 /etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition
 %config /etc/perdition/perdition.conf
+%{prefix}/man/man8/perdition.*
+%{prefix}/man/man5/perditiondb.*
 
 %files devel
 %defattr(-,root,root)
@@ -194,6 +197,7 @@ true
 %{prefix}/bin/makegdbm
 /etc/perdition/Makefile
 /etc/perdition/Makefile.popmap
+%{prefix}/man/man1/makegdbm.*
 %config /etc/perdition/popmap
 
 %files ldap
@@ -202,6 +206,7 @@ true
 %{prefix}/lib/libperditiondb_ldap.la
 %{prefix}/lib/libperditiondb_ldap.so
 %{prefix}/bin/perditiondb_ldap_makedb
+%{prefix}/man/man8/perditiondb_ldap_makedb.*
 
 %files mysql
 %defattr(-,root,root)
@@ -209,13 +214,13 @@ true
 %{prefix}/lib/libperditiondb_mysql.la
 %{prefix}/lib/libperditiondb_mysql.so
 %{prefix}/bin/perditiondb_mysql_makedb
+%{prefix}/man/man8/perditiondb_mysql_makedb.*
 
 %files nis
 %defattr(-,root,root)
 %{prefix}/lib/libperditiondb_nis.a
 %{prefix}/lib/libperditiondb_nis.la
 %{prefix}/lib/libperditiondb_nis.so
-/etc/perdition/README.perditiondb_nis
 
 %files posix_regex
 %defattr(-,root,root)
@@ -230,6 +235,7 @@ true
 %{prefix}/lib/libperditiondb_postgresql.la
 %{prefix}/lib/libperditiondb_postgresql.so
 %{prefix}/bin/perditiondb_postgresql_makedb
+%{prefix}/man/man8/perditiondb_postgresql_makedb.*
 
 
 %changelog
