@@ -161,8 +161,27 @@ and detach from the terminal.
 .B \-f, \-\-config_file FILENAME:
 Name of config file to read. If set to "" no config file will be
 used. Command line options override options set in config file.
-.br
-(default "/etc/perdition/perdition.conf")
+.sp
+The default is derived as follows:
+.sp
+The sysconfig dir ("/usr/local/etc/perdition by default")
+is checked for <basename>.conf. If this is found then it is used.
+So if perdition is invoked as /usr/local/sbin/perdition.pop3,
+and /usr/local/etc/perdition/perdition.pop3.conf exists then
+it will be used.
+.sp
+Next the sysconfig dir is checked for peridtion.<protocol>.conf,
+where protocol is the ascii representation of the protocol
+being used, one of "imap4", "imap4s", "pop3", or "pop3s".
+So if perdition is being run in imap4 mode, and
+/usr/local/etc/perdition/perdition.imap4.conf exists, then
+it is used.
+.sp
+Next the sysconfig dir is checked for perdition.conf,
+if it is found then it is used.
+.sp
+If none of these files are found then the default is not
+to use a configuration file.
 .TP
 .B \-g, \-\-group GROUP:
 Group to run as.

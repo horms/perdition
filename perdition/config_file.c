@@ -54,6 +54,10 @@
 void config_file_to_opt(const char *filename){
   vanessa_dynamic_array_t *a;
 
+  if(!filename || !*filename) {
+    return;
+  }
+
   VANESSA_LOGGER_DEBUG_RAW_UNSAFE("Reading configuration file: \"%s\"",
 		  filename);
   a=vanessa_config_file_read(filename, 0);
@@ -71,4 +75,71 @@ void config_file_to_opt(const char *filename){
   vanessa_dynamic_array_destroy(a);
 
   return;
+}
+
+
+#define __CONFIG_FILE_NAME_EXISTS                                      \
+	VANESSA_LOGGER_DEBUG_UNSAFE("Checking: %s", configuration_file); \
+	status = vanessa_config_file_check_exits(configuration_file);  \
+	if(!status) {                                                   \
+		return(configuration_file);                            \
+	}                                                              \
+	free(configuration_file);                                      \
+	configuration_file=NULL;
+
+#define CONFIG_FILE_NAME_BASE   "perdition"
+#define CONFIG_FILE_NAME_SUFFIX ".conf"
+
+char *config_file_name(const char *basename, int protocol) 
+{
+	int status;
+	char *configuration_file = NULL;
+	const char *suffix;
+
+	VANESSA_LOGGER_DEBUG(PERDITION_SYSCONFDIR);
+	if(strcmp(basename, CONFIG_FILE_NAME_BASE)) {
+		configuration_file = str_cat(3, PERDITION_SYSCONFDIR "/", 
+				basename, CONFIG_FILE_NAME_SUFFIX);
+		if(!configuration_file) {
+			VANESSA_LOGGER_DEBUG("str_cat");
+			goto leave;
+		}
+		__CONFIG_FILE_NAME_EXISTS;
+	}
+
+	suffix = NULL;
+	switch(protocol) {
+		case PROTOCOL_IMAP4:
+			suffix = "imap4";
+			break;
+		case PROTOCOL_IMAP4S:
+			suffix = "imap4s";
+			break;
+		case PROTOCOL_POP3:
+			suffix = "pop3";
+			break;
+		case PROTOCOL_POP3S:
+			suffix = "pop3s";
+			break;
+	}
+	if(!suffix) {
+		VANESSA_LOGGER_DEBUG_UNSAFE("Unknown protocol \"%d\"",
+				protocol);
+		goto leave;
+	}
+
+	configuration_file = str_cat(4, PERDITION_SYSCONFDIR "/",
+			CONFIG_FILE_NAME_BASE "." , suffix, 
+			CONFIG_FILE_NAME_SUFFIX);
+	__CONFIG_FILE_NAME_EXISTS;
+
+	configuration_file = str_cat(3, PERDITION_SYSCONFDIR "/",
+			CONFIG_FILE_NAME_BASE, CONFIG_FILE_NAME_SUFFIX);
+	__CONFIG_FILE_NAME_EXISTS;
+
+leave:
+	if(configuration_file) {
+		free(configuration_file);
+	}
+	return(NULL);
 }

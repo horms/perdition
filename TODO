@@ -13,9 +13,6 @@ From Horms
      * Option to only use tls if advertised by server on a per-user basis
 * Fix up LDAP Bind Credentials
 * Fix up LDAP configuration options
-+ Config files for different protocols
-  + Should key of the protocol argument 
-  + should also be able to key off argv[0]
 + Fix regular expression popmap code
 
 From Rob Wyn Jones

@@ -99,8 +99,6 @@
 #endif /* WITH_PAM_SUPPORT */
 #define DEFAULT_BIND_ADDRESS                 NULL
 #define DEFAULT_CLIENT_SERVER_SPECIFICATION  0
-#define DEFAULT_CONFIG_FILE              \
-  PERDITION_SYSCONFDIR "/perdition.conf"
 #define DEFAULT_CONNECTION_LIMIT             0
 #define DEFAULT_CONNECTION_LOGGING           0
 #define DEFAULT_CONNECT_RELOG                300

@@ -33,6 +33,7 @@
 #include <sys/utsname.h>
 
 #include "options.h"
+#include "config_file.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -346,7 +347,11 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
     opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
-    opt_p(opt.config_file,     DEFAULT_CONFIG_FILE,         i, 0, OPT_NOT_SET);
+    if(!(f&OPT_FILE)) {
+      char *filename;
+      filename =  config_file_name(basename, opt.protocol);
+      opt_p(opt.config_file,   filename,                    i, 0, OPT_NOT_SET);
+    }
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
     opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
     opt_p(opt.listen_port,     PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
@@ -1095,7 +1100,7 @@ void usage(int exit_status){
     " -f|--config_file filename:\n"
     "    Name of config file to read. If set to \"\" no config file will be\n"
     "    used. Command line options override options set in config file.\n"
-    "    (default \"%s\")\n"
+    "    See the manpage for details of how the default is derived\n"
     " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
@@ -1115,8 +1120,8 @@ void usage(int exit_status){
     " --lower_case state[,state...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). State may be one of servername_lookup, \n"
-    "    local_authentication, remote_login and all See manpage for details\n"
-    "    of states.\n"
+    "    local_authentication, remote_login and all see the manpage for\n"
+    "    details of states.\n"
     "    (default \"(null)\")\n"
     " -M|--map_library filename:\n"
     "    Library to open that provides functions to look up the server for a\n"
@@ -1205,7 +1210,6 @@ void usage(int exit_status){
     DEFAULT_CONNECT_RELOG,
     str_null_safe(DEFAULT_DOMAIN_DELIMITER),
     str_null_safe(DEFAULT_LOG_FACILITY),
-    str_null_safe(DEFAULT_CONFIG_FILE),
     str_null_safe(DEFAULT_GROUP),
     str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,

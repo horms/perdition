@@ -44,4 +44,6 @@
 
 void config_file_to_opt(const char *filename);
 
+char *config_file_name(const char *basename, int protocol);
+
 #endif /* _CONFIG_FILE_H */

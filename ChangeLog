@@ -79,6 +79,8 @@ XXX
    - Honour IMAP4 LOGINDISABLED capability
    - Added options to enforce TLS negotion on incoming and/or outgoing
      connections.
+   - Different configuration files for different basenames and protocols
+
 
 ----------------------------------------------------------------------
 
