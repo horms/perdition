@@ -52,3 +52,6 @@ Zipworld
 
 Birger Toedtmann
 * Altrernate ldap servers
+
+Richard Holbert
+Lie and say there are 0 messages if a real-server can't be contacted.
