@@ -35,9 +35,6 @@ BSD/OS login.conf support
 From Matt Prigge
 * Modify the necessary Makefiles (etc/perdition/Makefile?) to keep 'make
   install' from overwriting the current configuration.
-* Set the proctitle with the status of the program (whether it is
-  listening, connected, what mode its in, that sort of thing) so that its
-  easier to see what daemons are doing what.
 
 Jack Snodgrass
 * Identify user based on source ip

@@ -51,6 +51,7 @@
 #include "server_port.h"
 #include "username.h"
 #include "ssl.h"
+#include "setproctitle.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -147,7 +148,8 @@ static void perdition_reread_handler(int sig);
     str_null_safe(_servername), \
     str_null_safe(_port), \
     str_null_safe(_status) \
-  );
+  ); \
+  set_proc_title("perdition: auth %s", str_null_safe(_status));
 
 #ifdef WITH_SSL_SUPPORT
 io_t *perdition_ssl_connection(
@@ -216,6 +218,10 @@ int main (int argc, char **argv, char **envp){
 
   /*Parse options*/
   options(argc, argv, OPT_FIRST_CALL);
+
+  /* Initialise setting of proctitle */
+  init_set_proc_title(argc, argv, envp);
+  set_proc_title("perdition");
 
   /*
    * Update Logger
@@ -487,13 +493,14 @@ int main (int argc, char **argv, char **envp){
   srand(time(NULL)*getpid());
   rnd=rand();
 
-  /*Log the session*/
+  /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
     PERDITION_INFO_UNSAFE("Connect: %sinetd_pid=%d", from_to_str, getppid());
   }
   else {
     PERDITION_INFO_UNSAFE("Connect: %s", from_to_str);
   }
+  set_proc_title("perdition: connect");
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
@@ -859,6 +866,8 @@ int main (int argc, char **argv, char **envp){
     bytes_read,
     bytes_written
   );
+  set_proc_title("perdition: close");
+
   getserver_closelib(handle);
   vanessa_socket_daemon_exit_cleanly(0);
 
