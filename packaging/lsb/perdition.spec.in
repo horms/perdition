@@ -31,7 +31,7 @@ Packager: Horms <horms@verge.net.au>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam zlib openssl-devel ghostscript tetex-latex tetex-dvips unixODBC-devel db3-devel
+BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel ghostscript tetex-latex tetex-dvips libtiff unixODBC-devel /usr/include/db.h
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
