@@ -22,7 +22,7 @@
 .\" 02111-1307  USA
 .\"
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH PERDITION 8 "13th May 2002"
+.TH PERDITION 8 "14th May 2002"
 .SH NAME
 perdition \- POP3 and IMAP4 proxy server
 .SH SYNOPSIS
@@ -384,9 +384,9 @@ mode perdition will fork to manage clients.
 In the RPM distribution perdition can be started and 
 stopped in stand\-alone mode using:
 .PP
-/etc/rc.d/init.d/perdition start
+/etc/rc.d/perdition start
 .br
-/etc/rc.d/init.d/perdition stop
+/etc/rc.d/perdition stop
 .PP
 Editing /etc/sysconfig/perdition allows control of whether perdition
 will be started in POP3 mode, IMAP4 mode or both (or neither).
@@ -395,7 +395,9 @@ The syntax for this file is:
 .PP
 .nf
 POP3=[on|off]
+POP3S=[on|off]
 IMAP4=[on|off]
+IMAP4S=[on|off]
 .fi
 .PP
 The file is sourced into the init script so normal bash syntax
@@ -405,7 +407,9 @@ e.g.
 .PP
 .nf
 POP3=on
+POP3S=off
 IMAP4=on
+IMAP4S=off
 .fi
 .PP
 If you are using the RPM and you do not want perdition to run in 
@@ -422,9 +426,10 @@ stopped in stand\-alone mode using:
 .br
 /etc/init.d/perdition stop
 .PP
-Editing the definitions of POP3 and IMAP4 in /etc/init.d/perdition allows 
-control of whether perdition will be started in POP3 mode, IMAP4 mode or 
-both (or neither). The valid values are "on" and "off".
+Editing the definitions of POP3, POP3S, IMAP4 and IMAP4S in
+/etc/init.d/perdition allows control of whether perdition will be started
+in POP3 mode, IMAP4 mode or both (or neither). The valid values are "on"
+and "off".
 .PP
 If you are using a Debian installation of perdition and you do not want 
 perdition to run in stand\-alone mode at boot up after installation run:
@@ -441,13 +446,13 @@ inetd under Red Hat 6.x and Debian 2.2.:
 .PP
 pop3  stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P POP3
 .br
+pop3s stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P POP3S
+.br
 imap2 stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P IMAP4
+.br
+imaps stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P IMAP4S
 .PP
-On RedHat 6.x inetd should then be restarted using:
-.PP
-/etc/rc.d/init.d/inet restart
-.PP
-On Debian inetd should then be restarted using:
+On inetd should then be restarted using:
 .PP
 /etc/init.d/inet restart
 .PP
@@ -512,7 +517,7 @@ will be treated as a literal. Anything other than a (') inside
 double quotes (") will be treated as a literal. Whitespace
 in keys must be escaped or quoted. Whitespace in values
 need not be escaped or quoted.
-
+.P
 Options that do not make sense in the configuration file such
 as h|help and f|config_file  are ignored. Options specified on
 the command line override the options in this file.
@@ -542,8 +547,9 @@ When a user disconnects
 Close: <source_ip_address> user="<username>" received=<bytes> sent=<bytes>
 .SH LOGGING
 By default, logs are logged via syslog using the facility mail.  You should
-inspect /etc/syslog.conf to find where these logs are written.  Under Red
-Hat 6.x these logs will be written to /var/log/maillog, under Solaris 7
+inspect /etc/syslog.conf to find where these logs are written.  Under
+Debian these logs will be written to /var/log/mail.log, under Red Hat 7.x 
+these logs will be written to /var/log/maillog, under Solaris 8
 these logs will be written to /var/log/syslog.  Normally each session will
 have two perdition log entries.  Logs are prepended, depending on syslog
 with the date, host, and perdition[<pid>]: .
@@ -551,17 +557,18 @@ with the date, host, and perdition[<pid>]: .
 Fatal errors are also logged with a prority of err. In stand\-alone mode
 the startup parameters are logged on initialisation.  If the \-d|\-\-debug
 command line option or configuration file directive is used then startup
-parameters are logged in inetd mode and in both stand\-alone and identd
-mode additional debugging messages are logged with a priority of debug. As
-the flag implies, this is useful for debugging but is probably too verbose
-for production systems. If the \-q|\-\-quiet command line option or
-configuration file directive is used, only errors will be logged. This is
-overridden by \-d|\-\-debug.
+parameters are logged regardless of other configuration directives and in
+both stand\-alone and identd mode additional debugging messages are logged
+with a priority of debug. As the flag implies, this is useful for debugging
+but is probably too verbose for production systems. If the \-q|\-\-quiet
+command line option or configuration file directive is used, only errors
+will be logged. This is overridden by \-d|\-\-debug.
 .SH SSL/TLS Support
 Perdition supports using SSLv2 and SSLv3 to encrypt sessions between
 end users and perdition and sessions between perdition and real servers.
 SSL may be used for either, both or none of these classes of connections.
-TLS support will be added at a later date.
+.P
+.B TLS support will be added at a later date.
 .P
 The public key and certificate files should be in PEM format.
 As a quick guide, the files may be generated using openssl with the
