@@ -370,7 +370,7 @@ AC_CHECK_LIB(
   ],
   [ 
     ldap_build_dir="" 
-    AC_MSG_ERROR(
+    AC_MSG_WARN(
       ""
       "**********************************************************************"
       "* perditiondb_ldap will not be built"
