@@ -459,6 +459,12 @@ int main (int argc, char **argv, char **envp){
     }
   }
 
+  /* A child process, or process handling an inetd connection
+   * should exit on reciept of a SIG PIPE.
+   */
+  signal(SIGPIPE,   vanessa_socket_daemon_exit_cleanly);
+
+  /* Get the source and destination ip address as a string */
   if(peername!=NULL){
     snprintf(from_str, 17, "%s", inet_ntoa(peername->sin_addr));
   }
