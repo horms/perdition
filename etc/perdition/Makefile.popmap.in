@@ -36,10 +36,10 @@ MAKEGDBM=$(BINDIR)/makegdbm
 all: popmap.gdbm.db popmap.bdb.db
 
 popmap.gdbm.db: popmap
-	test -x $(MAKEGDBM) || $(MAKEGDBM) $@ < popmap
+	test ! -x $(MAKEGDBM) || $(MAKEGDBM) $@ < popmap
 
 popmap.bdb.db: popmap
-	test -x $(MAKEBDB) || $(MAKEBDB) $@ < popmap
+	test ! -x $(MAKEBDB) || $(MAKEBDB) $@ < popmap
 
 clean:
 	rm -f popmap.gdbm.db popmap.bdb.db *~ *.bak core
