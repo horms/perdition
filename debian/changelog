@@ -1,4 +1,4 @@
-perdition (1.11beta3-1) unstable; urgency=low
+perdition (1.11beta4-1) unstable; urgency=low
 
   *  New Upstream version
      Closes Debian Bugs:
@@ -6,6 +6,14 @@ perdition (1.11beta3-1) unstable; urgency=low
        (closes: Bug#170801)
      - Not a bug (closes: Bug#170783)
      - Not a bug (closes: Bug#170782)
+     - Removed non-atomic syscalls between accept() and fork()
+       (in libvanessa_socket) (closes: Bug#179212)
+     - Restart Daemon on upgrade (closes: Bug#177700)
+     - Not a bug (closes: Bug#179118)
+     - Not a bug (use the domain_delimiter option please)
+       (closes: Bug#171080)
+     - Not a bug (please set the capability of perdition to match your
+       imap servers). (closes: Bug#171558)
 
  -- Simon Horman <horms@vergenet.net>  Fri, 10 Jan 2003 17:07:03 +0900
 

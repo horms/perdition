@@ -43,6 +43,10 @@ install: build
 	install -c -m 755 etc/rc.d/init.d/perdition.debian \
 	  $(pwd)/debian/tmp/etc/init.d/perdition
 
+	./mkinstalldirs $(pwd)/debian/tmp/etc/default
+	install -c -m 644 etc/sysconfig/perdition \
+	  $(pwd)/debian/tmp/etc/default/perdition
+
 	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition
 	install -c -m 644 perdition/db/nis/README.perditiondb_nis \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/README.perditiondb_nis

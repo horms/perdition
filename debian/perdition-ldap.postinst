@@ -4,9 +4,13 @@
 #DEBHELPER#
 
 if [ "$1" = "configure" ]; then
-    ldconfig
+	if [ -f /etc/init.d/perdition ]; then
+		invoke-rc.d perdition start
+	fi
+	ldconfig
+	if [ -f /etc/init.d/perdition ]; then
+		invoke-rc.d perdition stop
+	fi
 fi
 
 exit 0
-
-

@@ -1,6 +1,7 @@
 etc/pam.d/perdition
 etc/perdition/perdition.conf
 etc/init.d/perdition
+etc/default/perdition
 usr/share/doc/perdition/CODING_LOCATIONS.gz
 usr/share/doc/perdition/README.perditiondb_nis.gz
 usr/share/doc/perdition/changelog.gz

@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev (>= 0.0.3), libvanessa-adt-dev (>= 0.0.3), libvanessa-socket-dev (>= 0.0.4), libpopt-dev, libpam0g-dev, libmysqlclient10-dev | libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper, zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb3-dev
+Build-Depends: libvanessa-logger-dev (>= 0.0.3), libvanessa-adt-dev (>= 0.0.3), libvanessa-socket-dev (>= 0.0.4), libpopt-dev, libpam0g-dev, libmysqlclient10-dev | libmysqlclient6-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb3-dev
 Section: non-US
 Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>
@@ -28,6 +28,14 @@ Description: Library to allow perdition to access MySQL based popmaps
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
  allows a user database stored in a MySQL database.
+
+Package: perdition-odbc
+Architecture: any
+Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Description: Library to allow perdition to access ODBC based popmaps
+ Perdition allows for arbitrary user database access through
+ shared libraries much in the manner of NSS in glibc. This package
+ allows a user database stored in a database accessed via ODBC.
 
 Package: perdition-postgresql
 Architecture: any

@@ -324,6 +324,8 @@ int main (int argc, char **argv, char **envp){
   }
   vanessa_logger_set(vl);
  
+  /* Create a PID file */
+
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
@@ -435,7 +437,7 @@ int main (int argc, char **argv, char **envp){
   }
   
 
-  /*Open incoming socket as required*/
+  /* Open incoming socket as required */
   if(!opt.inetd_mode) {
     g = vanessa_socket_server_bind(opt.listen_port, opt.bind_address, 
  		    		   opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);

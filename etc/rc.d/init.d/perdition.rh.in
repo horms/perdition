@@ -38,13 +38,25 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-POP3=yes
-POP3S=yes
-IMAP4=yes
-IMAP4S=yes
-
 if [ -f /etc/sysconfig/perdition ]; then
   . /etc/sysconfig/perdition
+fi
+
+# Please do not edit the values below.
+# Rather, please edit /etc/default/perdition
+RUN_PERDITION="${RUN_PERDITION:=no}"
+FLAGS="${FLAGS:=}"
+POP3="${POP3:=yes}"
+POP3_FLAGS="${POP3_FLAGS:=}"
+POP3S="${POP3S:=yes}"
+POP3S_FLAGS="${POP3S_FLAGS:=}"
+IMAP4_FLAGS="${IMAP4:=yes}"
+IMAP4="${IMAP4_FLAGS:=}"
+IMAP4S="${IMAP4S:=yes}"
+IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+
+if [ "$RUN_PERDITION" != "yes" ]; then
+	exit 0
 fi
 
 # See how we were called.

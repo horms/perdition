@@ -1,4 +1,5 @@
 /etc/init.d/perdition
+/etc/default/perdition
 /etc/perdition/perdition.conf
 /etc/pam.d/perdition
 /etc/perdition/popmap

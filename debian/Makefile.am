@@ -28,20 +28,29 @@ changelog \
 control \
 copyright \
 perdition-dev.files \
+perdition-bdb.files \
+perdition-bdb.postinst \
+perdition-bdb.prerm \
 perdition-ldap.files \
 perdition-ldap.conffiles \
 perdition-ldap.postinst \
+perdition-ldap.prerm \
 perdition-mysql.files \
 perdition-mysql.postinst \
+perdition-mysql.prerm \
 perdition-odbc.files \
 perdition-odbc.postinst \
+perdition-odbc.prerm \
 perdition-postgresql.files \
 perdition-postgresql.postinst \
+perdition-postgresql.prerm \
 perdition.conffiles \
 perdition.dirs \
 perdition.files \
+perdition.preinst \
 perdition.postinst \
 perdition.postrm \
+perdition.prerm \
 rules \
 dpkg-checkbuild
 

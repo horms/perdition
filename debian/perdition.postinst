@@ -4,10 +4,16 @@
 #DEBHELPER#
 
 if [ "$1" = "configure" ]; then
-    ldconfig
-    update-rc.d perdition defaults >/dev/null
+	if [ -f /etc/init.d/perdition ]; then
+		invoke-rc.d perdition stop
+	fi
+
+	ldconfig
+	update-rc.d perdition defaults >/dev/null
+
+	if [ -f /etc/init.d/perdition ]; then
+		invoke-rc.d perdition start
+	fi
 fi
 
 exit 0
-
-

@@ -30,19 +30,31 @@
 
 PATH=@prefix@/sbin:/bin:/usr/bin:/sbin:/usr/sbin
 NAME=perdition
-
-# Run perdition listening as a POP3 proxy [yes|no]
-POP3=yes
-# Run perdition listening as a POP3S proxy [yes|no]
-POP3S=yes
-# Run perdition listening as an IMAP4 proxy [yes|no]
-IMAP4=yes
-# Run perdition listening as an IMAP4S proxy [yes|no]
-IMAP4S=yes
-# Additional runtime flags
-FLAGS=
+DAEMON=@prefix@/sbin/perdition
 
 test -f $DAEMON || exit 0
+
+if [ -e /etc/default/perdition ]; then
+	. /etc/default/perdition
+fi
+
+# Please do not edit the values below.
+# Rather, please edit /etc/default/perdition
+RUN_PERDITION="${RUN_PERDITION:=no}"
+FLAGS="${FLAGS:=}"
+POP3="${POP3:=yes}"
+POP3_FLAGS="${POP3_FLAGS:=}"
+POP3S="${POP3S:=yes}"
+POP3S_FLAGS="${POP3S_FLAGS:=}"
+IMAP4_FLAGS="${IMAP4:=yes}"
+IMAP4="${IMAP4_FLAGS:=}"
+IMAP4S="${IMAP4S:=yes}"
+IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+
+if [ "$RUN_PERDITION" != "yes" ]; then
+        exit 0
+fi
+
 
 case "$1" in
   start)
@@ -86,12 +98,11 @@ case "$1" in
     $0 start 
     ;;
   force-reload|reload)
-    # echo "Reloading $NAME configuration files"
-    # start-stop-daemon --stop --signal 1 --quiet --exec $DAEMON
+    echo "Reloading $NAME configuration files"
+    start-stop-daemon --stop --signal 1 --quiet --exec $DAEMON
     ;;
   *)
-    # echo "Usage: /etc/init.d/$NAME {start|stop|reload}"
-    echo "Usage: /etc/init.d/$NAME {start|stop}"
+    echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}"
     exit 1
     ;;
 esac
