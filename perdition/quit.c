@@ -50,8 +50,6 @@ int quit(io_t *io, const protocol_t *protocol){
   vanessa_queue_t *q;
   int status;
 
-  str_write(io, NULL_FLAG, (size_t) 1, "%s", "bob");
-
   if(str_write(io, 
       NULL_FLAG, 
       3, 
