@@ -58,3 +58,5 @@ Markus Schlosser
 Leen Besselink
 * IPv6 support
 
+"-G.-"
+* Allow SSL key with pashphrase
