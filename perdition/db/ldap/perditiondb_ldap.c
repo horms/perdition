@@ -66,7 +66,6 @@ int dbserver_init(char *options_str)
 	if (options_str == NULL) {
 		options_str = PERDITIONDB_LDAP_DEFAULT_URL;
 	}
-	VANESSA_LOGGER_DEBUG(options_str);
 
 	/*
 	 * Some checks to see if the URL is sane in LDAP terms
