@@ -20,6 +20,8 @@ xxx
     out % that shouldn't be expanded. Erik R. Leo
   - Fixed typo in documentation that refered to log_facility
     as logging_facility. Matt Prigge
+  - Added add_domain option. Chris Stratford
+
 
 ----------------------------------------------------------------------
 
