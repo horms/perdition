@@ -3,7 +3,10 @@
 
 #DEBHELPER#
 
-update-rc.d -f perdition remove >/dev/null
+if [ "$1" = "remove" ]; then
+	ldconfig
+	update-rc.d -f perdition remove >/dev/null
+fi
 
 exit 0
 

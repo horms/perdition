@@ -1,9 +1,16 @@
 perdition (0.1.10-test1) unstable; urgency=low
 
-  * Minor spelling errors. closes: Bug#125229 closes: Bug#125228
-    closes: Bug#12522 closes: Bug#12522
+  * CVS release
 
- -- Simon Horman <horms@vergenet.net>  Wed, 19 Dec 2001 10:24:39 +1100
+ -- Simon Horman <horms@vergenet.net>  Sat, 19 Jan 2002 11:48:59 +1100
+
+perdition (0.1.9-3) unstable; urgency=low
+
+  *  Compile against openldap2. closes: Bug#129843
+  *  Minor spelling errors. closes: Bug#125229 closes: Bug#125228
+      closes: Bug#12522 closes: Bug#12522
+
+ -- Simon Horman <horms@vergenet.net>  Sat, 19 Jan 2002 11:11:58 +1100
 
 perdition (0.1.9-2) unstable; urgency=low
 
