@@ -54,6 +54,13 @@ static vanessa_dynamic_array_t *regex_a;
  *         -3 on other error
  **********************************************************************/
 
+#define DBSERVER_INIT_RESET  \
+{                            \
+	preg = NULL;         \
+	pattern = NULL;      \
+	substitution = NULL; \
+}
+
 int dbserver_init(char *options_str){
 	vanessa_dynamic_array_t *tmp_a=NULL;
 	vanessa_key_value_t *kv=NULL;
@@ -61,6 +68,7 @@ int dbserver_init(char *options_str){
 	char *tmp_str;
 	char *pattern;
 	char *substitution;
+	size_t pattern_len;
 	int status = -3;
 	int count;
 	int i;
@@ -89,15 +97,13 @@ int dbserver_init(char *options_str){
 		goto leave; 
 	}
 
-	pattern = NULL;
-	substitution = NULL;
+	DBSERVER_INIT_RESET;
 	count = vanessa_dynamic_array_get_count(tmp_a);
 	for(i = 0; i < count; i++) {
 		tmp_str = vanessa_dynamic_array_get_element(tmp_a, i);
 		
 		if(!tmp_str || !*tmp_str) {
-			pattern = NULL;
-			substitution = NULL;
+			DBSERVER_INIT_RESET;
 			continue;
 		}
 
@@ -107,8 +113,14 @@ int dbserver_init(char *options_str){
 		}
 
 		substitution = tmp_str;
-		if(*(pattern+strlen(pattern)-1) == ':') {
-			*(pattern+strlen(pattern)-1) = '\0';
+		pattern_len = strlen(pattern);
+		if(pattern_len && *(pattern+pattern_len-1) == ':') {
+			*(pattern+pattern_len-1) = '\0';
+		}
+
+		if(!*pattern || !*substitution) {
+			DBSERVER_INIT_RESET;
+			continue;
 		}
 
 		preg = (regex_t *)malloc(sizeof(regex_t));
@@ -133,9 +145,7 @@ int dbserver_init(char *options_str){
 			goto leave;
 		}
 
-		preg = NULL;
-		pattern = NULL;
-		substitution = NULL;
+		DBSERVER_INIT_RESET;
 	}
 
 	status = 0;
