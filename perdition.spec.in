@@ -216,7 +216,7 @@ make -q	-C /etc/perdition/
 %{prefix}/lib/libperditiondb_nis.so
 %{prefix}/lib/libperditiondb_nis.so.0
 %{prefix}/lib/libperditiondb_nis.so.0.0.0
-%doc $addr(-, root, root) perdition/db/nis/README
+%doc %attr(-, root, root) perdition/db/nis/README
 
 
 %changelog

@@ -54,9 +54,18 @@ static void perdition_reread_handler(int sig);
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
-  if(pw.pw_name!=NULL){ free(pw.pw_name); pw.pw_name=NULL; } \
-  if(pw.pw_passwd!=NULL){ free(pw.pw_passwd); pw.pw_passwd=NULL;} \
-  server_port_destroy(server_port); server_port=NULL; \
+  if(pw.pw_name!=NULL){ \
+    free(pw.pw_name); \
+      pw.pw_name=NULL; \
+  } \
+  if(pw.pw_passwd!=NULL){ \
+    free(pw.pw_passwd); \
+      pw.pw_passwd=NULL;\
+  } \
+  if (!round_robin_server){ \
+    server_port_destroy(server_port); \
+  } \
+  server_port=NULL; \
   destroy_token(&tag);
 
 /* Macro to set the uid and gid */

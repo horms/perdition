@@ -96,263 +96,6 @@ options_t opt;
 
 
 /**********************************************************************
- * opt_help
- * Display help, only if we are in ERR mode
- **********************************************************************/
-
-#define opt_help \
-  if(f&OPT_ERR && !(f&OPT_FILE)){ usage(0); } \
-  break;
-
-
-/**********************************************************************
- * opt_jain
- * Display Jain message, only if we are in ERR mode
- **********************************************************************/
-
-#define opt_jain \
-  if(f&OPT_ERR){ printf( "Jain, Oath\n"); } \
-  break;
-
-
-/**********************************************************************
- * opt_map_library
- * Set map_library
- **********************************************************************/
-
-#define opt_map_library \
-  opt_p(opt.map_library,optarg,opt.mask,MASK_MAP_LIB,f); \
-  break;
-
-
-/**********************************************************************
- * opt_map_library_opt
- * Set map_library_opt
- **********************************************************************/
-
-#define opt_map_library_opt \
-  opt_p(opt.map_library_opt,optarg,opt.mask,MASK_MAP_LIB_OPT,f); \
-  break;
-
-
-/**********************************************************************
- * opt_inetd_mode
- * Turn inetd mode on
- **********************************************************************/
-
-#define opt_inetd_mode \
-  opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f); \
-  break;
-
-
-/**********************************************************************
- * opt_debug
- * Turn debug on
- **********************************************************************/
-
-#define opt_debug \
-  opt_i(opt.debug,1,opt.mask,MASK_DEBUG,f); \
-  break;
-
-
-/**********************************************************************
- * opt_quiet
- * Turn quiet mode
- **********************************************************************/
-
-#define opt_quiet \
-  opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f); \
-  break;
-
-
-/**********************************************************************
- * opt_no_lookup
- * Turn quiet mode
- **********************************************************************/
-
-#define opt_no_lookup \
-  opt_i(opt.no_lookup,1,opt.mask,MASK_NO_LOOKUP,f); \
-  break;
-
-
-/**********************************************************************
- * opt_config_file
- * Set configuration file, unless this is being effected
- * from a configuration file
- **********************************************************************/
-
-#define opt_config_file \
-  if(!(f&OPT_FILE)){  \
-    opt_p(opt.config_file,optarg,opt.mask,MASK_CONFIG_FILE,f);  \
-  } \
-  break;
-
-
-/**********************************************************************
- * opt_domain_delimiter
- * Set domain delimiter
- **********************************************************************/
-
-#define opt_domain_delimiter \
-  opt_p(opt.domain_delimiter,optarg,opt.mask,MASK_DOMAIN_DELIMITER,f); \
-  break;
-
-
-/**********************************************************************
- * opt_outgoing_server
- * Set outgoing server
- **********************************************************************/
-   
-#define opt_outgoing_server \
-  if(options_set_mask(&(opt.mask), f, MASK_OUTGOING_SERVER)){ \
-    if(!(f&OPT_NOT_SET) && opt.outgoing_server!=NULL) { \
-      vanessa_dynamic_array_destroy(opt.outgoing_server); \
-    } \
-    opt.outgoing_server=split_str_server_port( \
-      strdup(optarg),  \
-      OPT_SERVER_DELIMITER \
-    ); \
-  } \
-  break;
-
-
-/**********************************************************************
- * opt_outgoing_port
- * Set outgoing port
- **********************************************************************/
-
-#define opt_outgoing_port \
-  opt_p(opt.outgoing_port,optarg,opt.mask,MASK_OUTGOING_PORT,f); \
-  break;
-
-
-/**********************************************************************
- * opt_client_server_specification
- * Turn client_server_specification on
- **********************************************************************/
-   
-#define opt_client_server_specification \
-  opt_i( \
-    opt.client_server_specification, \
-    1, \
-    opt.mask, \
-    MASK_CLIENT_SERVER_SPECIFICATION, \
-    f \
-  ); \
-  break;
-
-
-/**********************************************************************
- * opt_strip_domain
- * Turn strip domain on
- **********************************************************************/
-   
-#define opt_strip_domain \
-  opt_i(opt.strip_domain,1,opt.mask,MASK_STRIP_DOMAIN,f); \
-  break;
-
-
-#ifdef WITH_PAM_SUPPORT
-/**********************************************************************
- * opt_authenticate_in
- * Turn local authentication on
- **********************************************************************/
-        
-#define opt_authenticate_in \
-  opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
-  break;
-#endif /* WITH_PAM_SUPPORT */
-
-
-/**********************************************************************
- * opt_server_ok_line
- * Turn server ok line on
- **********************************************************************/
-        
-#define opt_server_ok_line \
-  opt_i(opt.server_ok_line,1,opt.mask,MASK_SERVER_OK_LINE,f); \
-  break;
-
-
-/**********************************************************************
- * opt_listen_port
- * Set listen port
- **********************************************************************/
- 
-#define opt_listen_port \
-  opt_p(opt.listen_port,optarg,opt.mask,MASK_LISTEN_PORT,f); \
-  break;
-
-
-/**********************************************************************
- * opt_protocol
- * Set protocol
- **********************************************************************/
-
-#define opt_protocol \
-  if((index=protocol_index(optarg))<0){ \
-    PERDITION_LOG(LOG_DEBUG, "options: invalid protocol: %s", optarg); \
-    if(f&OPT_ERR) usage(-1); \
-  } \
-  else { \
-    opt_i(opt.protocol,index,opt.mask,MASK_PROTOCOL,f); \
-  } \
-  break;
-
-
-/**********************************************************************
- * opt_username
- * Set username
- **********************************************************************/
-
-#define opt_username \
-  opt_p(opt.username,optarg,opt.mask,MASK_USERNAME,f); \
-  break;
-
-
-/**********************************************************************
- * opt_group
- * Set group
- **********************************************************************/
-
-#define opt_group \
-  opt_p(opt.group,optarg,opt.mask,MASK_GROUP,f); \
-  break;
-
-
-/**********************************************************************
- * opt_bind_address
- * Set bind_address
- **********************************************************************/
-
-#define opt_bind_address \
-  opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f); \
-  break;
-
-
-/**********************************************************************
- * opt_timeout
- * Set timeout
- **********************************************************************/
-
-#define opt_timeout \
-  if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ usage(-1); } \
-  opt_i(opt.timeout,atoi(optarg),opt.mask,MASK_TIMEOUT,f); \
-  break;
-
-
-/**********************************************************************
- * opt_connection_limit
- * Set connection_limit
- **********************************************************************/
-
-#define opt_connection_limit \
-  if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ usage(-1); } \
-  opt_i(opt.connection_limit,atoi(optarg),opt.mask,MASK_CONNECTION_LIMIT,f); \
-  break;
-
-
-/**********************************************************************
  * options
  * Read in command line options
  * pre: argc: number or elements in argv
@@ -367,6 +110,7 @@ int options(int argc, char **argv, flag_t f){
   int index;
   flag_t i;
   char *optarg;
+  char *optarg_copy;
   poptContext context;
 
 
@@ -439,7 +183,8 @@ int options(int argc, char **argv, flag_t f){
     switch (c){
       case 'a':
 #ifdef WITH_PAM_SUPPORT
-  	opt_authenticate_in;
+        opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
+        break;
 #else
       if(f&OPT_ERR){
         fprintf(
@@ -459,49 +204,111 @@ int options(int argc, char **argv, flag_t f){
       }
 #endif /* WITH_PAM_SUPPORT */
       case 'b':
-  	opt_bind_address;
+        opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f);
+        break;
       case 'c':
-  	opt_client_server_specification;
+        opt_i(
+          opt.client_server_specification,
+          1,
+          opt.mask,
+          MASK_CLIENT_SERVER_SPECIFICATION,
+          f
+        );
+        break;
       case 'D':
-        opt_domain_delimiter;
+        opt_p(opt.domain_delimiter,optarg,opt.mask,MASK_DOMAIN_DELIMITER,f);
+        break;
       case 'd':
-        opt_debug;
+        opt_i(opt.debug,1,opt.mask,MASK_DEBUG,f);
+        break;
       case 'f':
-        opt_config_file;
+        if(!(f&OPT_FILE)){
+          opt_p(opt.config_file,optarg,opt.mask,MASK_CONFIG_FILE,f);
+        }
+        break;
       case 'g':
-        opt_group;
+        opt_p(opt.group,optarg,opt.mask,MASK_GROUP,f);
+        break;
       case 'h':
-        opt_help;
+        if(f&OPT_ERR && !(f&OPT_FILE)){ 
+	  usage(0); 
+	}
+	break;
       case 'i':
-        opt_inetd_mode;
+        opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
+        break;
       case 'j':
-        opt_jain;
+        if(f&OPT_ERR){ 
+	  printf( "Jain, Oath\n"); 
+	}
+        break;
       case 'L':
-        opt_connection_limit;
+        if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ 
+	  usage(-1); 
+	}
+        opt_i(
+	  opt.connection_limit,
+	  atoi(optarg),
+	  opt.mask,
+	  MASK_CONNECTION_LIMIT,
+	  f
+	); \
+        break;
       case 'l':
-        opt_listen_port;
+        opt_p(opt.listen_port,optarg,opt.mask,MASK_LISTEN_PORT,f);
+        break;
       case 'M':
-        opt_map_library;
+        opt_p(opt.map_library,optarg,opt.mask,MASK_MAP_LIB,f);
+        break;
       case 'm':
-        opt_map_library_opt;
+        opt_p(opt.map_library_opt,optarg,opt.mask,MASK_MAP_LIB_OPT,f);
+        break;
       case 'n':
-        opt_no_lookup;
+        opt_i(opt.no_lookup,1,opt.mask,MASK_NO_LOOKUP,f);
+        break;
       case 'o':
-        opt_server_ok_line;
+        opt_i(opt.server_ok_line,1,opt.mask,MASK_SERVER_OK_LINE,f);
+        break;
       case 'P':
-        opt_protocol;
+        if((index=protocol_index(optarg))<0){
+        }
+        else {
+          opt_i(opt.protocol,index,opt.mask,MASK_PROTOCOL,f);
+        }
+        break;
       case 'p':
-        opt_outgoing_port;
+        opt_p(opt.outgoing_port,optarg,opt.mask,MASK_OUTGOING_PORT,f);
+        break;
       case 'S':
-        opt_strip_domain;
+        opt_i(opt.strip_domain,1,opt.mask,MASK_STRIP_DOMAIN,f);
+        break;
       case 's':
-        opt_outgoing_server;
+        if(options_set_mask(&(opt.mask), f, MASK_OUTGOING_SERVER)){
+          if(!(f&OPT_NOT_SET) && opt.outgoing_server!=NULL) {
+            vanessa_dynamic_array_destroy(opt.outgoing_server);
+          }
+	  if((optarg_copy=strdup(optarg)) == NULL){
+            PERDITION_LOG(LOG_DEBUG, "options: strdup: %s", strerror(errno));
+            if(f&OPT_ERR) daemon_exit_cleanly(-1);
+	  }
+          opt.outgoing_server=split_str_server_port(
+            optarg_copy,
+            OPT_SERVER_DELIMITER
+          );
+        }
+        break;
       case 't':
-        opt_timeout;
+        if(!vanessa_socket_str_is_digigt(optarg) && f&OPT_ERR){ 
+	  usage(-1); 
+	}
+        opt_i(opt.timeout,atoi(optarg),opt.mask,MASK_TIMEOUT,f);
+        break;
       case 'u':
-  	opt_username;
+        opt_p(opt.username,optarg,opt.mask,MASK_USERNAME,f);
+        break;
       case 'q':
-        opt_quiet;
+        opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
+        break;
     }
   }
 

@@ -4,7 +4,7 @@
  *
  * Authenticate a user using pam
  *
- * Taken fromt the pam programming guide
+ * Taken from the pam programming guide
  *
  * perdition
  * Mail retreival proxy server

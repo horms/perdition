@@ -29,6 +29,8 @@ xxx
      perdition/Makefile.am to aid finding modules.
      Thanks to Arvid Requate
    - Added NIS map, thanks to Nathan Neulinger
+   - Removed uneccessary macros in config parsing code
+   - Fixed freeing of sturcture for default server 
 
 ----------------------------------------------------------------------
 
