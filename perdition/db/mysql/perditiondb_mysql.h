@@ -10,7 +10,7 @@
  *                                             http://www.freegates.be/
  *                                                   http://www.nts.be/
  * perdition
- * Mail retreival proxy server, MySQL support
+ * Mail retrieval proxy server, MySQL support
  * Copyright (C) 1999  Horms, Frederic Delchambre
  * 
  * This program is free software; you can redistribute it and/or

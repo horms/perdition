@@ -3,7 +3,7 @@
 # Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retreival proxy server, MySQL support
+# Mail retrieval proxy server, MySQL support
 # Copyright (C) 1999 Horms and Frederic Delchambre
 # 
 # This program is free software; you can redistribute it and/or
@@ -23,7 +23,9 @@
 #
 ######################################################################
 
-EXTRA_DIST = perditiondb_mysql_makedb
+man_MANS = perditiondb_mysql_makedb.1
+
+EXTRA_DIST = perditiondb_mysql_makedb perditiondb_mysql_makedb.1
 
 bin_SCRIPTS = perditiondb_mysql_makedb
 
