@@ -37,6 +37,7 @@
 #include "options.h"
 #include "str.h"
 
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -132,7 +133,7 @@ char *username_strip(char *username, int state){
     return(username);
   }
 
-  if((end=strstr(username, opt.domain_delimiter))==NULL){
+  if((end=strrstr(username, opt.domain_delimiter))==NULL){
     return(username);
   }
 

@@ -42,8 +42,42 @@
 #define STR_NULL "(null)"
 
 /*Flags for str_write */
-#define WRITE_STR_NO_CLLF     0x1     /*Append a CLLF*/
+#define WRITE_STR_NO_CLLF     0x1	/*Append a CLLF */
 #define STR_WRITE_BUF_LEN     MAX_LINE_LENGTH
+
+
+/**********************************************************************
+ * strrstr
+ * Find the last occurrence of substring needle in the string
+ * haystack
+ * pre: haystack: haystack to search
+ *      needle: needle to search for
+ * post: none
+ * return: NULL if needle is not in haystack
+ *         haystack if needle is NULL
+ *         last occurance of needle in haystack
+ **********************************************************************/
+
+char *strrstr(const char *haystack, const char *needle);
+
+
+#define STRSTR_FORWARD 0x1
+#define STRSTR_REVERSE 0x2
+
+/**********************************************************************
+ * strstr_sw
+ * Wrapper for strstr() and strrstr()
+ * pre: haystack: haystack to pass to strstr or strrstr
+ *      needle: needle to pass to strstr or strrstr
+ *      direction: STRSTR_FORWARD to call strstr()
+ *                 STRSTR_REVERSE to call strrstr()
+ * post: none
+ * return: NULL if needle is not in haystack
+ *         haystack if needle is NULL
+ *         last occurance of needle in haystack
+ **********************************************************************/
+
+char *strstr_sw(const char *haystack, const char *needle, int direction);
 
 
 /**********************************************************************
@@ -82,8 +116,8 @@ char *strn_to_str(const char *string, const size_t n);
  * Not 8 bit clean
  **********************************************************************/
 
-int str_write(io_t *io, const flag_t flag, const size_t nargs,
-  const char *fmt, ...);
+int str_write(io_t * io, const flag_t flag, const size_t nargs,
+	      const char *fmt, ...);
 
 
 /**********************************************************************
@@ -223,7 +257,7 @@ const char *str_basename(const char *filename);
  **********************************************************************/
 
 char *str_delete_substring(const char *haystack, const char *needle,
-		const char *delimiter);
+			   const char *delimiter);
 
 
 /**********************************************************************
@@ -240,8 +274,9 @@ char *str_delete_substring(const char *haystack, const char *needle,
  *         NULL on error
  **********************************************************************/
 
-char *str_append_substring_if_missing(const char *haystack, const char *needle,
-		const char *delimiter);
+char *str_append_substring_if_missing(const char *haystack,
+				      const char *needle,
+				      const char *delimiter);
 
 
-#endif /* _PERDITION_STR_H */
+#endif				/* _PERDITION_STR_H */

@@ -135,7 +135,7 @@
 
 #define _GSK_SPLIT_USER(_full_user_str) \
 	if(domain_str == NULL) { \
-		domain_str = strstr((_full_user_str), opt.domain_delimiter); \
+		domain_str = strrstr((_full_user_str), opt.domain_delimiter); \
 		if(domain_str == NULL) { \
 			str_free(key_str); \
 			return(NULL); \
@@ -263,7 +263,7 @@ server_port_t *getserver(
   /* If the user specified a server, and it is allowed then use it */
   if(
     opt.client_server_specification &&
-    (popserver=strstr(user_str, opt.domain_delimiter)) != NULL 
+    (popserver=strrstr(user_str, opt.domain_delimiter)) != NULL 
   ){
     *popserver='\0';
     if((server_port=server_port_create())==NULL){

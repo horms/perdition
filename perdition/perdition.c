@@ -566,7 +566,7 @@ int main (int argc, char **argv, char **envp){
       port=server_port_get_port(server_port);
       servername=server_port_get_servername(server_port);
     
-      if((host=strstr(servername, opt.domain_delimiter))!=NULL){
+      if((host=strrstr(servername, opt.domain_delimiter))!=NULL){
         /* The Username */
         if(opt.username_from_database){
           free(pw.pw_name);

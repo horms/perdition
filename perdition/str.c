@@ -51,6 +51,72 @@
 
 
 /**********************************************************************
+ * strrstr
+ * Find the last occurrence of substring needle in the string
+ * haystack
+ * pre: haystack: haystack to search
+ *      needle: needle to search for
+ * post: none
+ * return: NULL if needle is not in haystack
+ *         haystack if needle is NULL
+ *         last occurance of needle in haystack
+ **********************************************************************/
+
+char *strrstr(const char *haystack, const char *needle)
+{
+	char c;
+	size_t haystack_len;
+	size_t needle_len;
+	const char *p;
+
+	if(!*haystack) {
+		return(NULL);
+	}
+	if(!*needle) {
+		return((char *) haystack);
+	}
+
+	haystack_len = strlen(haystack);
+	needle_len = strlen(needle);
+	if(haystack_len < needle_len) {
+		return(NULL);
+	}
+
+	p = haystack + haystack_len - needle_len;
+	for( ; p >= haystack ; p--) {
+		if(strncmp(p, needle, needle_len) == 0) {
+			return((char *) p);
+		}
+	}
+
+	return(NULL);
+}
+
+
+/**********************************************************************
+ * strstr_sw
+ * Wrapper for strstr() and strrstr()
+ * pre: haystack: haystack to pass to strstr or strrstr
+ *      needle: needle to pass to strstr or strrstr
+ *      direction: STRSTR_FORWARD to call strstr()
+ *                 STRSTR_REVERSE to call strrstr()
+ * post: none
+ * return: NULL if needle is not in haystack
+ *         haystack if needle is NULL
+ *         last occurance of needle in haystack
+ **********************************************************************/
+
+char *strstr_sw(const char *haystack, const char *needle, int direction)
+{
+	if(direction == STRSTR_REVERSE) {
+		return(strrstr(haystack, needle));
+	}
+	return(strstr(haystack, needle));
+
+}
+
+
+/**********************************************************************
  * strn_to_str
  * Convert a non null terminated string into a null terminated string
  * pre: string:  source string
@@ -63,17 +129,18 @@
  * Not 8 bit clean
  **********************************************************************/
 
-char *strn_to_str(const char *string, const size_t n){
-  char *dest;
+char *strn_to_str(const char *string, const size_t n)
+{
+	char *dest;
 
-  if((dest=(char *)malloc(n+1))==NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
-    return(NULL);
-  }
-  strncpy(dest, string, n);
-  *(dest+n)='\0';
+	if ((dest = (char *) malloc(n + 1)) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		return (NULL);
+	}
+	strncpy(dest, string, n);
+	*(dest + n) = '\0';
 
-  return(dest);
+	return (dest);
 }
 
 
@@ -99,67 +166,71 @@ char *strn_to_str(const char *string, const size_t n){
 
 static char __str_write_buf[STR_WRITE_BUF_LEN];
 
-int str_write(io_t *io, const flag_t flag, const size_t nargs,
-  const char *fmt, ...){
-  va_list ap;
-  int bytes=0;
-  int fmt_args;
+int str_write(io_t * io, const flag_t flag, const size_t nargs,
+	      const char *fmt, ...)
+{
+	va_list ap;
+	int bytes = 0;
+	int fmt_args;
 #ifndef HAVE_PARSE_PRINT_FORMAT
-  int place;
-#endif /* HAVE_PARSE_PRINT_FORMAT */
+	int place;
+#endif				/* HAVE_PARSE_PRINT_FORMAT */
 
-  extern options_t opt;
+	extern options_t opt;
 
 #ifndef HAVE_PARSE_PRINT_FORMAT
-  fmt_args = 0;
-  for (place=0; fmt[place]!='\0'; place++) {
-        if (fmt[place]=='%')
-                fmt[place+1]=='%' ? place++ : fmt_args++;
-  }
-  if (fmt_args != nargs) {
-#else /* HAVE_PARSE_PRINT_FORMAT */
-  if((fmt_args=parse_printf_format(fmt, 0, NULL)) != nargs){
-#endif /* HAVE_PARSE_PRINT_FORMAT */
-    VANESSA_LOGGER_DEBUG_UNSAFE(
-      "nargs and fmt missmatch: %d args requested, %d args in format", nargs,
-      fmt_args);
-    return(-1);
-  }
+	fmt_args = 0;
+	for (place = 0; fmt[place] != '\0'; place++) {
+		if (fmt[place] == '%')
+			fmt[place + 1] == '%' ? place++ : fmt_args++;
+	}
+	if (fmt_args != nargs) {
+#else				/* HAVE_PARSE_PRINT_FORMAT */
+	if ((fmt_args = parse_printf_format(fmt, 0, NULL)) != nargs) {
+#endif				/* HAVE_PARSE_PRINT_FORMAT */
+		VANESSA_LOGGER_DEBUG_UNSAFE
+		    ("nargs and fmt missmatch: %d args requested, %d args in format",
+		     nargs, fmt_args);
+		return (-1);
+	}
 
-  va_start(ap, fmt);
-  if((bytes=vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN-2, fmt, ap))<0){
-    VANESSA_LOGGER_DEBUG_ERRNO("vsnprintf");
-    return(-1);
-  }
-  va_end(ap);
+	va_start(ap, fmt);
+	if ((bytes =
+	     vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN - 2, fmt,
+		       ap)) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("vsnprintf");
+		return (-1);
+	}
+	va_end(ap);
 
-  /* Add carriage return,newline to output. */
-  if(!(flag&WRITE_STR_NO_CLLF)){
-    *(__str_write_buf+bytes++) = '\r';
-    *(__str_write_buf+bytes++) = '\n';
-  }
+	/* Add carriage return,newline to output. */
+	if (!(flag & WRITE_STR_NO_CLLF)) {
+		*(__str_write_buf + bytes++) = '\r';
+		*(__str_write_buf + bytes++) = '\n';
+	}
 
-  if(opt.connection_logging){
-    char *dump_str;
+	if (opt.connection_logging) {
+		char *dump_str;
 
-    dump_str = VANESSA_LOGGER_DUMP(__str_write_buf, bytes, 0);
-    if(!dump_str) {
-      VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
-      return(-1);
-    }
-    VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", PERDITION_LOG_STR_SELF,
-		    dump_str);
-    free(dump_str);
-  }
-    
-  /* Attempt one write system call and return an error if it
-     doesn't write all the bytes. */
-  if(io_write(io, __str_write_buf, bytes) != bytes){
-    VANESSA_LOGGER_DEBUG_ERRNO("io_write");
-    return(-1);
-  }
+		dump_str = VANESSA_LOGGER_DUMP(__str_write_buf, bytes, 0);
+		if (!dump_str) {
+			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
+			return (-1);
+		}
+		VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"",
+					  PERDITION_LOG_STR_SELF,
+					  dump_str);
+		free(dump_str);
+	}
 
-  return(0);
+	/* Attempt one write system call and return an error if it
+	   doesn't write all the bytes. */
+	if (io_write(io, __str_write_buf, bytes) != bytes) {
+		VANESSA_LOGGER_DEBUG_ERRNO("io_write");
+		return (-1);
+	}
+
+	return (0);
 }
 
 
@@ -175,54 +246,55 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
  * Not 8 bit clean
  **********************************************************************/
 
-char *str_cat(const int nostring, ...){
-  va_list ap;
-  char **string;
-  char **current_string;
-  char *dest;
-  int length;
-  int i;
+char *str_cat(const int nostring, ...)
+{
+	va_list ap;
+	char **string;
+	char **current_string;
+	char *dest;
+	int length;
+	int i;
 
-  if(nostring<1){
-    return(NULL);
-  }
+	if (nostring < 1) {
+		return (NULL);
+	}
 
-  if((string=(char **)malloc(sizeof(char *)*nostring))==NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
-    return(NULL);
-  }
+	if ((string = (char **) malloc(sizeof(char *) * nostring)) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
+		return (NULL);
+	}
 
-  current_string=string;
-  length=1;
+	current_string = string;
+	length = 1;
 
-  va_start(ap, nostring);
-  for(i=0;i<nostring;i++){
-    *current_string=va_arg(ap, char*);
-    if(*current_string==NULL){
-      VANESSA_LOGGER_DEBUG("null string");
-      free(string);
-      return(NULL);
-    }
-    length+=strlen(*current_string);
-    current_string++;
-  }
-  va_end(ap);
+	va_start(ap, nostring);
+	for (i = 0; i < nostring; i++) {
+		*current_string = va_arg(ap, char *);
+		if (*current_string == NULL) {
+			VANESSA_LOGGER_DEBUG("null string");
+			free(string);
+			return (NULL);
+		}
+		length += strlen(*current_string);
+		current_string++;
+	}
+	va_end(ap);
 
-  if((dest=(char *)malloc(sizeof(char)*length))==NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
-    free(string);
-    return(NULL);
-  }
+	if ((dest = (char *) malloc(sizeof(char) * length)) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
+		free(string);
+		return (NULL);
+	}
 
-  current_string=string;
-  strcpy(dest, *current_string++);
-  for(i=1;i<nostring;i++){
-    strcat(dest, *current_string++);
-  }
+	current_string = string;
+	strcpy(dest, *current_string++);
+	for (i = 1; i < nostring; i++) {
+		strcat(dest, *current_string++);
+	}
 
-  free(string);
+	free(string);
 
-  return(dest);
+	return (dest);
 }
 
 
@@ -257,14 +329,15 @@ char *str_cat(const int nostring, ...){
  * Not 8 bit clean
  **********************************************************************/
 
-char *strn_tolower(char *str, size_t count){
-    char *current;
+char *strn_tolower(char *str, size_t count)
+{
+	char *current;
 
-    for(current=str;count>0;current++,count--){
-      *current=(char)tolower((int)*current);
-    }
+	for (current = str; count > 0; current++, count--) {
+		*current = (char) tolower((int) *current);
+	}
 
-    return(str);
+	return (str);
 }
 
 
@@ -288,14 +361,15 @@ char *strn_tolower(char *str, size_t count){
  * Not 8 bit clean
  **********************************************************************/
 
-char *strn_toupper(char *str, size_t count){
-    char *current;
+char *strn_toupper(char *str, size_t count)
+{
+	char *current;
 
-    for(current=str;count>0;current++,count--){
-      *current=(char)toupper((int)*current);
-    }
+	for (current = str; count > 0; current++, count--) {
+		*current = (char) toupper((int) *current);
+	}
 
-    return(str);
+	return (str);
 }
 
 
@@ -318,16 +392,17 @@ char *strn_toupper(char *str, size_t count){
  * Not 8 bit clean
  **********************************************************************/
 
-const char *str_basename(const char *filename){
-    char *result;
+const char *str_basename(const char *filename)
+{
+	char *result;
 
-    if(filename==NULL){
-      return(NULL);
-    }
-    
-    result=strrchr(filename, '/');
+	if (filename == NULL) {
+		return (NULL);
+	}
 
-    return((result==NULL)?filename:result+1);
+	result = strrchr(filename, '/');
+
+	return ((result == NULL) ? filename : result + 1);
 }
 
 
@@ -347,7 +422,8 @@ const char *str_basename(const char *filename){
  **********************************************************************/
 
 char *str_delete_substring(const char *haystack, const char *needle,
-		const char *delimiter){
+			   const char *delimiter)
+{
 	size_t needle_len;
 	size_t delimiter_len;
 	char *start;
@@ -359,14 +435,14 @@ char *str_delete_substring(const char *haystack, const char *needle,
 	delimiter_len = strlen(delimiter);
 
 	new_haystack = strdup(haystack);
-	if(new_haystack == NULL) {
+	if (new_haystack == NULL) {
 		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
-		return(NULL);
+		return (NULL);
 	}
 
 	start = new_haystack;
-	while(1) {
-		if((start = strstr(start, needle)) == NULL) {
+	while (1) {
+		if ((start = strstr(start, needle)) == NULL) {
 			break;
 		}
 
@@ -374,8 +450,9 @@ char *str_delete_substring(const char *haystack, const char *needle,
 		 * preceded by a delimiter. If not it is not a valid
 		 * match */
 		prefix = start - delimiter_len;
-		if(start != new_haystack && (prefix < new_haystack ||
-				strncmp(prefix, delimiter, delimiter_len))) {
+		if (start != new_haystack && (prefix < new_haystack ||
+					      strncmp(prefix, delimiter,
+						      delimiter_len))) {
 			start += needle_len;
 			continue;
 		}
@@ -384,19 +461,19 @@ char *str_delete_substring(const char *haystack, const char *needle,
 		 * followed by a delimiter. If not it is not a valid
 		 * match */
 		end = start + needle_len;
-		if(*end != '\0' && strncmp(end, delimiter, delimiter_len)) {
+		if (*end != '\0' && strncmp(end, delimiter, delimiter_len)) {
 			start += needle_len;
 			continue;
 		}
 
 		/* leading delimiter */
-		if(start != '\0') {
+		if (start != '\0') {
 			start = prefix;
 		}
 		memmove(start, end, strlen(end) + 1);
 	}
 
-	return(new_haystack);
+	return (new_haystack);
 }
 
 
@@ -414,8 +491,10 @@ char *str_delete_substring(const char *haystack, const char *needle,
  *         NULL on error
  **********************************************************************/
 
-char *str_append_substring_if_missing(const char *haystack, const char *needle,
-		const char *delimiter){
+char *str_append_substring_if_missing(const char *haystack,
+				      const char *needle,
+				      const char *delimiter)
+{
 	size_t n_len;
 	size_t d_len;
 	const char *cursor;
@@ -427,8 +506,8 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 	d_len = strlen(delimiter);
 
 	cursor = haystack;
-	while(1) {
-		if((cursor = strstr(cursor, needle)) == NULL) {
+	while (1) {
+		if ((cursor = strstr(cursor, needle)) == NULL) {
 			break;
 		}
 
@@ -436,8 +515,9 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 		 * preceded by a delimiter. If not it is not a valid
 		 * match */
 		tmp = cursor - d_len;
-		if(cursor != new_haystack && (tmp < new_haystack ||
-				strncmp(tmp, delimiter, d_len))) {
+		if (cursor != new_haystack && (tmp < new_haystack ||
+					       strncmp(tmp, delimiter,
+						       d_len))) {
 			cursor += n_len;
 			continue;
 		}
@@ -446,7 +526,7 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 		 * followed by a delimiter. If not it is not a valid
 		 * match */
 		tmp = cursor + n_len;
-		if(*tmp != '\0' && strncmp(tmp, delimiter, d_len)) {
+		if (*tmp != '\0' && strncmp(tmp, delimiter, d_len)) {
 			cursor += n_len;
 			continue;
 		}
@@ -455,20 +535,20 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 		break;
 	}
 
-	if(found) {
+	if (found) {
 		new_haystack = strdup(haystack);
-		if(new_haystack == NULL) {
+		if (new_haystack == NULL) {
 			VANESSA_LOGGER_DEBUG_ERRNO("strdup");
-			return(NULL);
+			return (NULL);
 		}
-		return(new_haystack);
+		return (new_haystack);
 	}
 
 	new_haystack = str_cat(3, haystack, delimiter, needle);
-	if(new_haystack == NULL) {
+	if (new_haystack == NULL) {
 		VANESSA_LOGGER_DEBUG("str_cat");
-		return(NULL);
+		return (NULL);
 	}
 
-	return(new_haystack);
+	return (new_haystack);
 }

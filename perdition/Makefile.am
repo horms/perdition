@@ -80,10 +80,10 @@ perdition_SOURCES = \
 
 
 INCLUDES= \
-  -I$(top_srcdir)/libjain \
-  -DPERDITION_LIBDIR=\"${libdir}\" \
-  -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
-  @ssl_includes@ 
+-I$(top_srcdir)/libjain \
+-DPERDITION_LIBDIR=\"${libdir}\" \
+-DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
+@ssl_includes@ 
 
 # Removed because Debian doesn't like it
 #LDFLAGS = -Wl,--rpath -Wl,@prefix@
