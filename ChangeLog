@@ -40,12 +40,13 @@ xxx
     This caused perdition to exit if an authentication error occured
     in pop3 mode
   - Added additional LDAP documentation. Richard Holbert <holbert.13@osu.edu>
+  - Fixed memory leaks in LDAP module
 
 
 
 ----------------------------------------------------------------------
 
-29th April 2001
+29th June 2001
 (Horms)
 
   * Version 0.1.9
