@@ -39,7 +39,9 @@
 . /etc/rc.d/init.d/functions
 
 POP3=yes
+POP3S=yes
 IMAP4=yes
+IMAP4S=yes
 
 if [ -f /etc/sysconfig/perdition ]; then
   . /etc/sysconfig/perdition
@@ -50,15 +52,29 @@ case "$1" in
   start)
 	if [ "$POP3" = "yes" ]; then
         	echo -n "Starting perdition services (POP3): "
-		daemon @prefix@/sbin/perdition.pop3 -P POP3 $FLAGS
+		daemon @prefix@/sbin/perdition.pop3 $FLAGS
 		touch /var/lock/subsys/perdition.pop3
+        	echo
+	fi
+
+	if [ "$POP3S" = "yes" ]; then
+        	echo -n "Starting perdition services (POP3S): "
+		daemon @prefix@/sbin/perdition.pop3s $FLAGS
+		touch /var/lock/subsys/perdition.pop3s
         	echo
 	fi
 
 	if [ "$IMAP4" = "yes" ]; then
         	echo -n "Starting perdition services (IMAP4): "
-		daemon @prefix@/sbin/perdition.imap4 -P IMAP4 $FLAGS
+		daemon @prefix@/sbin/perdition.imap4 $FLAGS
 		touch /var/lock/subsys/perdition.imap4
+		echo
+	fi
+
+	if [ "$IMAP4S" = "yes" ]; then
+        	echo -n "Starting perdition services (IMAP4S): "
+		daemon @prefix@/sbin/perdition.imaps $FLAGS
+		touch /var/lock/subsys/perdition.imaps
 		echo
 	fi
 	;;
@@ -66,8 +82,14 @@ case "$1" in
         if [ "$POP3" = "yes" ]; then
         	status perdition.pop3
 	fi
+        if [ "$POP3S" = "yes" ]; then
+        	status perdition.pop3s
+	fi
 	if [ "$IMAP4" = "yes" ]; then
         	status perdition.imap4
+	fi
+	if [ "$IMAP4S" = "yes" ]; then
+        	status perdition.imaps
 	fi
 	;;
   restart|reload)
@@ -82,10 +104,24 @@ case "$1" in
         	echo
 	fi
 
+	if [ "$POP3S" = "yes" ]; then
+        	echo -n "Shutting down perdition services (POP3S): "
+		killproc perdition.pop3s
+		rm -f /var/lock/subsys/perdition.pop3s
+        	echo
+	fi
+
 	if [ "$IMAP4" = "yes" ]; then
         	echo -n "Shutting down perdition services (IMAP4): "
 		killproc perdition.imap4
 		rm -f /var/lock/subsys/perdition.imap4
+		echo
+	fi
+
+	if [ "$IMAP4S" = "yes" ]; then
+        	echo -n "Shutting down perdition services (IMAP4S): "
+		killproc perdition.imaps
+		rm -f /var/lock/subsys/perdition.imaps
 		echo
 	fi
 	;;
@@ -95,4 +131,3 @@ case "$1" in
 esac
 
 exit 0
-

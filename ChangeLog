@@ -5,10 +5,12 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+19th March 2002
 (Horms)
 
-  * Version xxx
+  * Version 0.1.10beta2
+  - Better loging of problems when connecting to real-servers
+  - Debian init scripts and packaging updated.
   - Added LDAP schema, perdition.schema
     This uses the Private Enteprise Number 12856, which belongs
     to Verge Networks, which intern belongs to the author Horms

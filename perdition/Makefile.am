@@ -40,6 +40,8 @@ install-exec-hook:
 	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4.8)
 	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imap4s)
 	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imap4s.8)
+	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imaps)
+	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imaps.8)
 
 
 perdition_SOURCES = \

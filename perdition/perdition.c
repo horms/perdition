@@ -612,6 +612,8 @@ int main (int argc, char **argv, char **envp){
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
+      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+		      "failed: could not determine server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
@@ -634,6 +636,8 @@ int main (int argc, char **argv, char **envp){
         PERDITION_INFO(
 	  "Local authentication failure for client: Allowing retry."
         );
+  	PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+			"failed: local authentication failure");
         PERDITION_CLEAN_UP_MAIN;
         continue;
       }
@@ -675,6 +679,8 @@ int main (int argc, char **argv, char **envp){
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
+      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+		      "failed: could not connect to server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
@@ -771,7 +777,6 @@ int main (int argc, char **argv, char **envp){
 
     if(status==0){
       sleep(PERDITION_ERR_SLEEP);
-      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "failed");
       quit(server_io, protocol);
       if(io_close(server_io)){
         PERDITION_DEBUG("io_close 2");
@@ -791,6 +796,8 @@ int main (int argc, char **argv, char **envp){
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
+      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+		      "failed: authentication of client with real-server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }

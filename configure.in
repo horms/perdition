@@ -591,9 +591,9 @@ AC_ARG_WITH(
                           Open LDAP schema files are in DIR.  ],
   [ 
     if test "$withval" = "no"; then 
-     ldap_build_dir=""; 
+     ldap_schemadir=""; 
     else
-      ldap_schemapath="$withval" 
+      ldap_schemadir="$withval" 
     fi
   ],
   [ 

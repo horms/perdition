@@ -33,8 +33,12 @@ NAME=perdition
 
 # Run perdition listening as a POP3 proxy [yes|no]
 POP3=yes
+# Run perdition listening as a POP3S proxy [yes|no]
+POP3S=yes
 # Run perdition listening as an IMAP4 proxy [yes|no]
 IMAP4=yes
+# Run perdition listening as an IMAP4S proxy [yes|no]
+IMAP4S=yes
 # Additional runtime flags
 FLAGS=
 
@@ -46,9 +50,17 @@ case "$1" in
       start-stop-daemon --start --verbose --name perdition.pop3 \
         --exec @prefix@/sbin/perdition.pop3 -- $FLAGS
     fi
+    if [ "$POP3S" = "yes" ]; then 	
+      start-stop-daemon --start --verbose --name perdition.pop3s \
+        --exec @prefix@/sbin/perdition.pop3s -- $FLAGS
+    fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --start --verbose --name perdition.imap4 \
         --exec @prefix@/sbin/perdition.imap4 -- $FLAGS
+    fi
+    if [ "$IMAP4S" = "yes" ]; then 	
+      start-stop-daemon --start --verbose --name perdition.imaps \
+        --exec @prefix@/sbin/perdition.imaps -- $FLAGS
     fi
     ;;
   stop)
@@ -56,9 +68,17 @@ case "$1" in
       start-stop-daemon --stop --verbose --name perdition.pop3 \
         --exec @prefix@/sbin/perdition.pop3
     fi
+    if [ "$POP3S" = "yes" ]; then 	
+      start-stop-daemon --stop --verbose --name perdition.pop3s \
+        --exec @prefix@/sbin/perdition.pop3s
+    fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --stop --verbose --name perdition.imap4 \
         --exec @prefix@/sbin/perdition.imap4
+    fi
+    if [ "$IMAP4S" = "yes" ]; then 	
+      start-stop-daemon --stop --verbose --name perdition.imaps \
+        --exec @prefix@/sbin/perdition.imaps
     fi
     ;;
   restart)

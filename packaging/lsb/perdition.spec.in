@@ -186,6 +186,7 @@ true
 %{_sbindir}/perdition.pop3s
 %{_sbindir}/perdition.imap4
 %{_sbindir}/perdition.imap4s
+%{_sbindir}/perdition.imaps
 %{_libdir}/libjain.so
 %{_libdir}/libjain.so.0
 %{_libdir}/libjain.so.0.0.0
