@@ -19,7 +19,7 @@ Copyright (C) 1999-2003  Horms <horms@verge.net.au>
   - Fixed bug in callback functions for user_server_port_t
     structure. This caused perdition to segmentation fault when
     the outgoing_server option was used. Thanks to Simon Matter
-    discovering this.
+    for discovering this.
   - Fixed bug where user-supplied username was used for db lookup
     rather than the key derived from the query_string option
     if it is supplied. Roland Rosenfeld
