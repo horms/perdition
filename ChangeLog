@@ -9,6 +9,7 @@ xxx
 (Horms)
 
   * Version 0.1.8
+  *** NB: Several options and defaults have changed meaning ***
   - Fixed Segmentation Fault that occurs when reading strings that
     have a trainling whitespace during the authentication phase.
     Thanks to Ronny Cook
@@ -22,6 +23,10 @@ xxx
     stripped for zero or more of: database lookup, local authentication,
     remote login.
   - Updated documenation of MySQL module Matt Prigge
+  - Added -U|--username_from_database option to control the use of
+    servernames of the form user<delimiter>domain.
+
+----------------------------------------------------------------------
 
 5th April 2001
 (Horms)

@@ -170,9 +170,10 @@ int options(int argc, char **argv, flag_t f){
     {"strip_domain",                'S', POPT_ARG_STRING, NULL, 'S'},
     {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
     {"timeout",                     't', POPT_ARG_STRING, NULL, 't'},
-    {"username",                    'u', POPT_ARG_STRING, NULL, 't'},
+    {"username",                    'u', POPT_ARG_STRING, NULL, 'u'},
+    {"username_from_database",      'U', POPT_ARG_NONE,   NULL, 'U'},
     {"quiet",                       'q', POPT_ARG_NONE,   NULL, 'q'},
-    {NULL,                           0,   0,               NULL, 0  }
+    {NULL,                           0,   0,               NULL, 0 }
   };
 
   basename=basename_str(argv[0]);
@@ -204,6 +205,8 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
+    opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
+                                                            i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
     opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
@@ -368,6 +371,10 @@ int options(int argc, char **argv, flag_t f){
       case 'u':
         opt_p(opt.username,optarg,opt.mask,MASK_USERNAME,f);
         break;
+      case 'U':
+        opt_i(opt.username_from_database,1,opt.mask,
+	  MASK_USERNAME_FROM_DATABASE,f);
+        break;
       case 'q':
         opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
         break;
@@ -479,6 +486,7 @@ int log_options(void){
     "strip_domain=%d, "
     "timeout=%d, "
     "username=\"%s\", "
+    "username_from_database=%d, "
     "quiet=%d " 
     "(mask=0x%x)\n",
 #ifdef WITH_PAM_SUPPORT
@@ -507,6 +515,7 @@ int log_options(void){
     opt.strip_domain,
     opt.timeout,
     str_null_safe(opt.username),
+    opt.username_from_database,
     opt.quiet,
     opt.mask
   );
@@ -646,6 +655,12 @@ void usage(int exit_status){
     "    (default %d)\n"
     " -u|--username username:\n"
     "    Username to run as. (default \"%s\")\n"
+    " -U|--username_from_database:\n"
+    "    If the servername in the popmap specified in the form:\n"
+    "    user<delimiter>domain then use the username given by the servername.\n"
+    "    If a servername is given in this form then the domain will be used\n"
+    "    as the server to connect to, regarless of it the\n"
+    "    -U|--username_from_database option is specified or not.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"
     "\n"

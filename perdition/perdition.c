@@ -381,28 +381,35 @@ int main (int argc, char **argv){
       );
       daemon_exit_cleanly(-1);
     }
+
     if(
       opt.map_library!=NULL &&
       *(opt.map_library)!='\0' &&
       (server_port=getserver(username, dbserver_get))!=NULL
     ){
       char *host;
+
       port=server_port_get_port(server_port);
       servername=server_port_get_servername(server_port);
-      if((host=strstr(servername, opt.domain_delimiter)) != NULL){
-        char *temp1;
-        char *temp2;
+    
+      if((host=strstr(servername, opt.domain_delimiter))!=NULL){
         /* The Username */
-        temp1 = strn_to_str(servername,(size_t)(host-servername));
+        if(opt.username_from_database){
+          free(pw.pw_name);
+	  *host='\0';
+          if((pw.pw_name=strdup(servername))==NULL){
+	    PERDITION_DEBUG("main: strdup");
+            PERDITION_LOG(
+	      LOG_ERR, 
+	      "Fatal error manipulating username for client \"%s\": "
+	      "Exiting child",
+	      from_str
+            );
+	  }
+        }
 
         /* The Host */
-        host++;
-        temp2 = strn_to_str(host,strlen(host));
-        
-        free(pw.pw_name);
-        pw.pw_name = temp1;
-        free(servername);
-	servername=temp2;
+        servername = ++host;
       }
     }
 

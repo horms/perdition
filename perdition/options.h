@@ -97,6 +97,7 @@
 #else
 #define DEFAULT_USERNAME                     "nobody"
 #endif /* WITH_USER */
+#define DEFAULT_USERNAME_FROM_DATABASE       0
 #define DEFAULT_QUIET                        0
 
 typedef struct {
@@ -127,6 +128,7 @@ typedef struct {
   int             server_ok_line;
   int             strip_domain;
   char            *username;
+  int             username_from_database;
   flag_t          mask;
 } options_t;
 
@@ -156,7 +158,8 @@ typedef struct {
 #define MASK_STRIP_DOMAIN                (flag_t) 0x00100000
 #define MASK_TIMEOUT                     (flag_t) 0x00200000
 #define MASK_USERNAME                    (flag_t) 0x00400000
-#define MASK_QUIET                       (flag_t) 0x00800000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x00800000
+#define MASK_QUIET                       (flag_t) 0x01000000
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/
