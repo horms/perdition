@@ -42,6 +42,7 @@
 
 #include "io.h"
 #include "log.h"
+#include "options.h"
 #include "io_select.h"
 
 
@@ -73,10 +74,17 @@ static int io_select_match_io(io_t *io, int *fd) {
 io_select_t *io_select_create()
 {
 	io_select_t *s;
-	s = vanessa_list_create(1, NULL, NULL, NULL, NULL,
+	s = calloc(1, sizeof(io_select_t));
+	if(!s) {
+		VANESSA_LOGGER_DEBUG_ERRNO("calloc");
+		return(NULL);
+	}
+
+	s->fd = vanessa_list_create(1, NULL, NULL, NULL, NULL,
 			        IO_SELECT_MATCH_IO, NULL);
-	if(s == NULL) {
+	if(s->fd == NULL) {
 		VANESSA_LOGGER_DEBUG("vanessa_hash_create");
+		free(s);
 		return(NULL);
 	}
 
@@ -94,7 +102,8 @@ io_select_t *io_select_create()
 
 void io_select_destroy(io_select_t *s) 
 {
-	vanessa_list_destroy(s);
+	vanessa_list_destroy(s->fd);
+	free(s);
 }
 
 
@@ -110,8 +119,8 @@ void io_select_destroy(io_select_t *s)
 
 io_select_t *io_select_add(io_select_t *s, io_t *io)
 {
-	s = vanessa_list_add_element(s, io);
-	if(s == NULL) {
+	s->fd = vanessa_list_add_element(s->fd, io);
+	if(s->fd == NULL) {
 		VANESSA_LOGGER_DEBUG("vanessa_list_add_element");
 		return(NULL);
 	}
@@ -131,7 +140,7 @@ io_select_t *io_select_add(io_select_t *s, io_t *io)
 
 void io_select_remove(io_select_t *s, io_t *io) 
 {
-	vanessa_list_remove_element(s, io);
+	vanessa_list_remove_element(s->fd, io);
 }
 
 
@@ -151,7 +160,7 @@ io_t *io_select_get(io_select_t *s, int fd)
 {
 	io_t *io;
 
-	io = vanessa_list_get_element(s, &fd);
+	io = vanessa_list_get_element(s->fd, &fd);
 	if(io == NULL) {
 		VANESSA_LOGGER_DEBUG("vanessa_list_get_element");
 		return(NULL);
@@ -222,7 +231,6 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 	fd_set want_readfds;
 	struct timeval zero_timeout; 
 	SSL *ssl;
-
 	FD_ZERO(&want_readfds);
 
 	if(readfds != NULL) {
@@ -261,22 +269,77 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 	return(selected);
 #else /* WITH_SSL_SUPPORT */
 	return(select(n, readfds, writefds, exceptfds, timeout));
-
 #endif /* WITH_SSL_SUPPORT */
 }
 
 int io_select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 	   struct timeval *timeout, void *data) 
 {
-	time_t *log_now;
+	int status;
+	io_select_t *s;
 	time_t now;
+	time_t relog;
+	fd_set readfds_save;
+	fd_set writefds_save;
+	fd_set exceptfds_save;
+	struct timeval internal_timeout;
 
-	log_now = (time_t *)log_now;
-	now = time(NULL);
+	extern options_t opt;
+
+	s = (io_select_t *)data;
+	relog = (s && s->log && opt.connect_relog) ? s->log->log_time : 0;
+
+	if(readfds) {
+		memcpy(&readfds_save, readfds, sizeof(fd_set));
+	}
+	if(writefds) {
+		memcpy(&writefds_save, writefds, sizeof(fd_set));
+	}
+	if(exceptfds) {
+		memcpy(&exceptfds_save, exceptfds, sizeof(fd_set));
+	}
+
+	while(1) {
+		now = time(NULL);
+		if(timeout) {
+			internal_timeout.tv_sec = timeout->tv_sec;
+			internal_timeout.tv_usec = timeout->tv_usec;
+		}
+		if(relog && now >= s->log->log_time) {
+			VANESSA_LOGGER_LOG(LOG_NOTICE, s->log->log_str);
+			s->log->log_time = now + opt.connect_relog;
+		}
+		if(relog && (!timeout || internal_timeout.tv_sec > 
+				s->log->log_time - now)) {
+			internal_timeout.tv_sec = s->log->log_time - now;
+			internal_timeout.tv_usec = 0;
+			if(timeout) {
+				timeout->tv_sec -= s->log->log_time - now;
+			}
+		}
+		else if (timeout) {
+			timeout->tv_sec = 0;
+			timeout->tv_usec = 0;
+		}
 	
-	if(log_now && *log_now > now) {
-		
-	
-	return(__io_select(n, readfds, writefds, exceptfds, timeout,
-				(io_select_t *)data));
+		if(readfds) {
+			memcpy(readfds, &readfds_save, sizeof(fd_set));
+		}
+		if(writefds) {
+			memcpy(writefds, &writefds_save, sizeof(fd_set));
+		}
+		if(exceptfds) {
+			memcpy(exceptfds, &exceptfds_save, sizeof(fd_set));
+		}
+		status = __io_select(n, readfds, writefds, 
+				exceptfds, &internal_timeout, s);
+		if(status || (!timeout->tv_sec && !timeout->tv_usec)) {
+			break;
+		}
+	}
+
+	timeout->tv_sec += internal_timeout.tv_sec;
+	timeout->tv_usec += internal_timeout.tv_usec;
+
+	return(status);
 }
