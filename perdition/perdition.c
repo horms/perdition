@@ -236,7 +236,8 @@ int main (int argc, char **argv, char **envp){
   /*
    * Create Logger
    */
-  vl=vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG, LOG_CONS);
+  vl=vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG,
+		  VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_NO_IDENT_PID);
   if(!vl) {
     fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
                     "Fatal error opening logger. Exiting.\n");
@@ -329,11 +330,13 @@ int main (int argc, char **argv, char **envp){
   vanessa_logger_closelog(vl);
   if(fh != NULL) {
     vl=vanessa_logger_openlog_filehandle(fh, LOG_IDENT,
-      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), LOG_CONS);
+      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
+      VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
   }
   else if(opt.log_facility!=NULL && *(opt.log_facility)=='/'){
     vl=vanessa_logger_openlog_filename(opt.log_facility, LOG_IDENT,
-      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), LOG_CONS);
+      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), 
+      VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
   }
   else {
     vl=vanessa_logger_openlog_syslog_byname(opt.log_facility, LOG_IDENT,

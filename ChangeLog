@@ -28,6 +28,11 @@ XXX
     Only effects build _without_ SSL. Andrew McNamara
   - Uniformly use limits.h. Andrew McNamar and myself. 
     See http://www.opengroup.org/onlinepubs/007908799/headix.html.
+  - Don't print ident when making inital log to stdout.
+  - If logs are being sent to stdout, stderr or a file handle,
+    then after parsing of the config is complete add a ident
+    (existing behaviour) and timestamp. If the log fails then
+    send it to stderr.
 
 ----------------------------------------------------------------------
 
