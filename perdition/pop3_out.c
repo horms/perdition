@@ -57,179 +57,167 @@
  *       -1 on error
  **********************************************************************/
 
-int pop3_out_setup(
-  io_t *io,
-  const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol
-){
-  token_t *ok;
-  token_t *capa_cont = NULL;
-  token_t *capa_end = NULL;
-  token_t *stls = NULL;
-  token_t *tmp_token;
-  vanessa_queue_t *q;
-  char *read_string = NULL;
-  char *greeting_string = NULL;
-  int status = -1;
-  int protocol_status = PROTOCOL_S_OK;
-  int have_capa = 0;
+int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
+	      	const protocol_t *protocol)
+{
+	token_t *ok;
+	token_t *capa_end = NULL;
+	token_t *stls = NULL;
+	token_t *tmp_token;
+	vanessa_queue_t *q;
+	char *read_string = NULL;
+	char *greeting_string = NULL;
+	int status = -1;
+	int tmp_status = -1;
+	int protocol_status = PROTOCOL_S_OK;
 
-  extern options_t opt;
+      	extern options_t opt;
 
-  if((ok=token_create())==NULL){
-    VANESSA_LOGGER_DEBUG("token_create");
-    goto leave;
-  }
-  token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
+	ok = token_create();
+	if(!ok){
+		VANESSA_LOGGER_DEBUG("token_create ok");
+		goto leave;
+	}
+	token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
-  if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
-    VANESSA_LOGGER_DEBUG("pop3_out_response 1");
-    status = -1;
-    goto leave;
-  }
-  else if(!status){
-    status = 0;
-    goto leave;
-  }
+	status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	if(status<0){
+		VANESSA_LOGGER_DEBUG("pop3_out_response 1");
+		goto leave;
+	}
+	else if(!status){
+		status = 0;
+		goto leave;
+	}
 
-  if((read_string=queue_to_string(q))==NULL){
-    VANESSA_LOGGER_DEBUG("queue_to_string");
-    status = -1;
-    goto leave;
-  }
-  q = NULL;
+	read_string = queue_to_string(q);
+	if(!read_string){
+		VANESSA_LOGGER_DEBUG("queue_to_string");
+		goto leave;
+	}
+	q = NULL;
 
-  greeting_string = greeting_str(protocol, GREETING_ADD_NODENAME);
-  if(!greeting_string) {
-    VANESSA_LOGGER_DEBUG("greeting_str");
-    status=-1;
-    goto leave;
-  }
-
-  if(!strcmp(read_string, greeting_string)){
-    VANESSA_LOGGER_LOG(LOG_DEBUG, "Loop detected, abandoning connection");
-    status = 0;
-    goto leave;
-  }
-
+	greeting_string = greeting_str(protocol, GREETING_ADD_NODENAME);
+	if(!greeting_string) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		status=-1;
+		goto leave;
+	}
+	
+	if(!strcmp(read_string, greeting_string)){
+		VANESSA_LOGGER_LOG(LOG_DEBUG, 
+				"Loop detected, abandoning connection");
+		status = 0;
+		goto leave;
+	}
+	
 #ifdef WITH_SSL_SUPPORT
-  if(opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
-    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, 0, "")<0){
-      VANESSA_LOGGER_DEBUG("pop3_write");
-      goto leave;
-    }
+	if(!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
+		goto ok;
+	}
+	
+	if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, 0, "")<0){
+		VANESSA_LOGGER_DEBUG("pop3_write");
+		goto leave;
+	}
+	
+	tmp_status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	if(tmp_status<0){
+		VANESSA_LOGGER_DEBUG("pop3_out_response capa");
+		goto leave;
+	}
+	
+	/* NB: It is OK for the server not to support the CAPA command */
+	if(!tmp_status){
+		goto ok;
+	}
+	
+	capa_end=token_create();
+	if(!capa_end){
+		VANESSA_LOGGER_DEBUG("token_create capa_end");
+		goto leave;
+	}
+	token_assign(capa_end, POP3_CAPA_END, 
+			strlen(POP3_CAPA_END), TOKEN_EOL);
+	
+	stls=token_create();
+	if(!stls){
+		VANESSA_LOGGER_DEBUG("token_create stls");
+		goto leave;
+	}
+	token_assign(stls, POP3_CMD_STLS, strlen(POP3_CMD_STLS), TOKEN_EOL);
 
-    if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
-      VANESSA_LOGGER_DEBUG("pop3_out_response capa");
-      goto leave;
-    }
-    /* NB: It is OK for the server not to support the CAPA command */
-    vanessa_queue_destroy(q);
-    q = NULL;
+	/* Loop through  lines */
+	while(1) {
+		vanessa_queue_destroy(q);
+		q = read_line(io, NULL, NULL, TOKEN_POP3, 0, 
+				PERDITION_LOG_STR_REAL);
+      		if(!q) {
+			VANESSA_LOGGER_DEBUG("read_line");
+			goto leave;
+		}
+	
+		/* Do we have a "STLS" or a "."? */
+		q = vanessa_queue_pop(q, &tmp_token);
+		if(!q){
+			VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
+			goto leave;
+		}
+		if(!(protocol_status & PROTOCOL_S_STARTTLS) && 
+		      		token_cmp(stls, tmp_token)) {
+			protocol_status |= PROTOCOL_S_STARTTLS;
+		}
+		tmp_status = token_cmp(capa_end, tmp_token);
+		token_destroy(&tmp_token);
+		
+		if(tmp_status) {
+			break;
+		}
+	}
 
-    if(status){
-      have_capa = 1;
-    }
-  }
+	if(!(protocol_status & PROTOCOL_S_STARTTLS)) {
+		goto ok;
+	}
 
-  if(have_capa && opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
-    if((capa_end=token_create())==NULL){
-      VANESSA_LOGGER_DEBUG("token_create capa_end");
-      goto leave;
-    }
-    token_assign(capa_end, POP3_CAPA_END, strlen(POP3_CAPA_END), TOKEN_EOL);
+	if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_STLS, 0, "")<0){
+		VANESSA_LOGGER_DEBUG("pop3_write");
+		goto leave;
+	}
 
-    if((capa_cont=token_create())==NULL){
-      VANESSA_LOGGER_DEBUG("token_create capa");
-      goto leave;
-    }
-    token_assign(capa_cont, POP3_CAPA_CONT, strlen(POP3_CAPA_CONT), 
-        TOKEN_NONE);
-
-    if((stls=token_create())==NULL){
-      VANESSA_LOGGER_DEBUG("token_create stls");
-      goto leave;
-    }
-    token_assign(stls, POP3_CMD_CAPA, strlen(POP3_CMD_CAPA), TOKEN_EOL);
-
-    /* Loop through "S:" lines */
-    while(1) {
-      if((status=pop3_out_response(io, NULL, capa_cont, &q, NULL, NULL))<0){
-        VANESSA_LOGGER_DEBUG("pop3_out_response capa cont");
-        goto leave;
-      }
-      else if(!status){
-	status=0;
-        goto leave;
-      }
-
-      /* Do we have a "STLS" or a "."? */
-      if((q=vanessa_queue_pop(q, (void *)&tmp_token))==NULL){
-        VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
-        return(-1);
-      }
-      if(!(protocol_status & PROTOCOL_S_STARTTLS) && 
-		      token_cmp(stls, tmp_token)) {
-	protocol_status |= PROTOCOL_S_STARTTLS;
-      }
-      status=token_cmp(capa_end, tmp_token);
-      token_destroy(&tmp_token);
-      vanessa_queue_destroy(q);
-      q = NULL;
-
-      if(status) {
-	break;
-      }
-    }
-  }
-
-  status = 1;
-  if((protocol_status & PROTOCOL_S_STARTTLS) && 
-        (opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
-    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_STLS, 0, "")<0){
-      VANESSA_LOGGER_DEBUG("pop3_write");
-      goto leave;
-    }
-
-    if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
-      VANESSA_LOGGER_DEBUG("pop3_out_response stls");
-      goto leave;
-    }
-    else if(!status){
-      status=0;
-      goto leave;
-    }
-    vanessa_queue_destroy(q);
-    q = NULL;
-  }
+	tmp_status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	if(tmp_status < 0){
+		VANESSA_LOGGER_DEBUG("pop3_out_response stls");
+		goto leave;
+	}
+	else if(!status){
+		status=0;
+		goto leave;
+	}
 #endif /* WITH_SSL_SUPPORT */
 
-  leave:
-  str_free(read_string);
-  str_free(greeting_string);
-  token_unassign(ok);
-  token_destroy(&ok);
-  if(capa_cont) {
-    token_unassign(capa_cont);
-    token_destroy(&capa_cont);
-  }
-  if(capa_end) {
-    token_unassign(capa_end);
-    token_destroy(&capa_end);
-  }
-  if(stls) {
-    token_unassign(stls);
-    token_destroy(&stls);
-  }
-  if(q) {
-    vanessa_queue_destroy(q);
-  }
-
-  if(status == 1) {
-    status = protocol_status;
-  }
-  return(status);
+ok:
+	status = 1;
+leave:
+	str_free(read_string);
+	str_free(greeting_string);
+	token_unassign(ok);
+	token_destroy(&ok);
+	if(capa_end) {
+		token_unassign(capa_end);
+		token_destroy(&capa_end);
+	}
+	if(stls) {
+		token_unassign(stls);
+		token_destroy(&stls);
+	}
+	if(q) {
+		vanessa_queue_destroy(q);
+	}
+	
+	if(status == 1) {
+		status = protocol_status;
+	}
+	return(status);
 }
   
 

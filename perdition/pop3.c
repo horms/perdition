@@ -135,8 +135,6 @@ static flag_t pop3_encryption(flag_t ssl_flags)
 
 /* Be careful with this macro, it does not do bounds checking */
 #define __POP3_CAPABILITY_APPEND(_cursor, _capa, _capa_len)           \
-	strcpy(_cursor, "S: ");                                       \
-	cursor += 3;                                                  \
 	strcpy(_cursor, _capa);                                       \
 	cursor += _capa_len;                                          \
 	strcpy(_cursor, "\r\n");                                      \
@@ -153,16 +151,16 @@ char *pop3_capability(char *capability, char **mangled_capability,
 	int finish;
 	flag_t mode;
 
-	if((tls_flags & SSL_MODE_TLS_OUTGOING) &&
-			!(tls_state & SSL_MODE_TLS_OUTGOING)) {
+	if((tls_flags & SSL_MODE_TLS_LISTEN) &&
+			!(tls_state & SSL_MODE_TLS_LISTEN)) {
 		mode = PROTOCOL_C_ADD;
 	}
 	else {
 		mode = PROTOCOL_C_DEL;
 	}
-	capability = protocol_capability(capability, PROTOCOL_C_ADD,
-			IMAP4_DEFAULT_CAPABILITY, POP3_CMD_STLS,
-			IMAP4_CAPABILITY_DELIMITER);
+	capability = protocol_capability(capability, mode,
+			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
+			POP3_CAPABILITY_DELIMITER);
 	if(capability == NULL) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");
 		return(NULL);
@@ -187,7 +185,7 @@ char *pop3_capability(char *capability, char **mangled_capability,
 			end += d_len;
 			continue;
 		}
-		n_len += 5  /* Space for leading "S: " and trailing "\r\n"*/
+		n_len += 2  /* Space for trailing "\r\n"*/
 			+  end - start;
 		if(finish) {
 			break;
@@ -195,7 +193,7 @@ char *pop3_capability(char *capability, char **mangled_capability,
 		end += d_len;
 	}
 
-	n_len += 7; /* Space for trailing "S: .\r\n\0" */
+	n_len += 4; /* Space for trailing ".\r\n\0" */
 	*mangled_capability = (char *)malloc(n_len + 1);
 	if(*mangled_capability == NULL) {
 		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
