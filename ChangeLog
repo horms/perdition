@@ -29,6 +29,7 @@ XXX
      Rob Mueller, Jeremy Howard and Horms
    - Handle spaces in POP passwords.
      Rob Mueller, Kurian Aerthail, Jeremy Howard and Horms
+   - Make includes in log.h work outside the perdition tree. Mark D. Roth
 
 ----------------------------------------------------------------------
 

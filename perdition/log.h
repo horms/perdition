@@ -29,7 +29,7 @@
 #define _PERDITION_LOG_H
 
 #ifdef HAVE_CONFIG_H
-#include "../config.h"
+#include "<config.h>"
 #endif
 
 #ifdef WITH_SSL_SUPPORT
