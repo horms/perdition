@@ -4,6 +4,21 @@ perdition (0.1.10-beta2-1) unstable; urgency=low
 
  -- Simon Horman <horms@vergenet.net>  Sun, 24 Mar 2002 10:23:01 +1100
 
+perdition (0.1.9-5) unstable; urgency=low
+
+  *  Really compile against libpgsql2 instead of libpgsql2.1.
+     (closes: Bug#141710)
+
+  * The following are here as these bugs do not seem to have been
+     closed for some reason.
+
+  *  Minor spelling errors.
+     (closes: Bug#125229)
+     (closes: Bug#125228)
+     (closes: Bug#125227)
+  *  Compile against openldap2.
+     (closes: Bug#129843)
+
 perdition (0.1.9-3) unstable; urgency=low
 
   *  Compile against openldap2. closes: Bug#129843
