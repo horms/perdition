@@ -27,7 +27,7 @@
 ######################################################################
 
 
-DEFAULT_DC="cn=Manager, dc=my-domain, dc=com"
+DEFAULT_DC="cn=admin,dc=nodomain"
 
 if [ -z "$(type -path ldapadd)" ]; then
   echo "Could not find ldapadd command. Bailing" >&2
@@ -70,9 +70,9 @@ fi
 
 cat << __EOF__
 
-You will need to enter the sevrer for the
+You will need to enter the password for the
 binddn: "$dc".
-The default mau be "secret", you should change
+The default may be "secret", you should change
 your ldap configuration if this is the case.
 __EOF__
 
@@ -85,20 +85,13 @@ echo
 echo "Initialising LDAP popmap..."
 
 ldapadd -x -D "$dc" -w "$rootpw" << __EOF__
-dn: dc=my-domain, dc=com
-objectClass: top
-objectClass: dcObject
-objectClass: organization
-dc: my-domain
-o: mailbox
-
-dn: ou=mailbox, dc=my-domain, dc=com
+dn: ou=mailbox, dc=nodomain
 ou: mailbox
 objectClass: top
 objectClass: organizationalUnit
 description: Popmap for perdition
 
-dn: uid=horms, ou=mailbox,  dc=my-domain, dc=com
+dn: uid=horms, ou=mailbox,  dc=nodomain
 objectClass: top
 objectClass: uidObject
 objectClass: perditionPopmap
@@ -117,7 +110,7 @@ Done
 
 You may add more entries of the form: 
 
-dn: uid=horms, ou=mailbox,  dc=my-domain, dc=com
+dn: uid=horms, ou=mailbox, dc=nodomain
 objectClass: top
 objectClass: uidObject
 objectClass: perditionPopmap
