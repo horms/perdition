@@ -61,6 +61,10 @@
 #include "setproctitle.h"
 #include "imap4_tag.h"
 
+/* limits.h should be sufficient on most systems 
+ * http://www.opengroup.org/onlinepubs/007908799/headix.html */
+#include <limits.h>
+#if 0
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #ifdef __FreeBSD__
@@ -68,6 +72,7 @@
 #include <machine/limits.h> /* For ULONG_MAX on FreeBSD */
 #else
 #include <sys/limits.h>
+#endif
 #endif
 #endif
 #endif

@@ -26,6 +26,8 @@ XXX
     Andrew McNamara
   - Changed PERDITION_DEBUG (no longer defined) to VANESSA_LOGGER_DEBUG 
     Only effects build _without_ SSL. Andrew McNamara
+  - Uniformly use limits.h. Andrew McNamar and myself. 
+    See http://www.opengroup.org/onlinepubs/007908799/headix.html.
 
 ----------------------------------------------------------------------
 
