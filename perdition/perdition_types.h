@@ -31,7 +31,9 @@
 #include "config.h"
 #endif
 
-typedef long int flag_t;
+#include "int.h"
+
+typedef uint32 flag_t;
 
 #define NULL_FLAG (flag_t) 0
 
