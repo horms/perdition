@@ -25,6 +25,10 @@
  *
  **********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "io.h"
 #include "str.h"
 #include "options.h"
@@ -40,6 +44,11 @@
 #endif
 #include <sys/uio.h>
 #include <vanessa_socket.h>
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 
 /**********************************************************************
  * strn_to_str

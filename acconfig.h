@@ -7,5 +7,8 @@
 /* Group to run perdition as */
 /* #define WITH_GROUP "nobody" */
 
-/* Group to run perdition as */
+/* Do we have LDAP LUD extentions */
 /* #define WITH_LDAP_LUD_EXTS 1 */
+
+/* Should we use DMALLOC */
+/* #define WITH_DMALLOC 1 */
