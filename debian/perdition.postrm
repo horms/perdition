@@ -1,0 +1,8 @@
+#! /bin/sh
+# postrm script for perdition
+
+update-rc.d perdition remove >/dev/null
+
+exit 0
+
+

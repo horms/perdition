@@ -22,7 +22,11 @@
 # 02111-1307  USA
 ######################################################################
 
-EXTRA_DIST = README
+EXTRA_DIST = README.perditiondb_nis
+
+confdir = $(sysconfdir)/perdition
+conf_DATA = README.perditiondb_nis
+
 
 lib_LTLIBRARIES = libperditiondb_nis.la
 

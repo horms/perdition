@@ -1,0 +1,6 @@
+usr/bin/perditiondb_postgresql_makedb
+usr/lib/libperditiondb_postgresql.a
+usr/lib/libperditiondb_postgresql.la
+usr/lib/libperditiondb_postgresql.so
+usr/lib/libperditiondb_postgresql.so.0
+usr/lib/libperditiondb_postgresql.so.0.0.0

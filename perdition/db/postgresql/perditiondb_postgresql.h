@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <pgsql/libpq-fe.h>
+#include <libpq-fe.h>
 #include <vanessa_adt.h>
 
 #define PERDITIONDB_PGSQL_FIELD_DELIMITER  ':'

@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 0.1.6pre6)
+AM_INIT_AUTOMAKE(perdition, 0.1.6pre7)
 
 AM_PROG_LIBTOOL
 AC_PROG_CC
@@ -33,6 +33,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
+
 
 dnl Checks for libraries.
 dnl Replace `main' with a function in -ldl:
@@ -101,32 +102,172 @@ AC_CHECK_LIB(
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(
-  mysql/mysql.h, 
+
+
+######################################################################
+# MySQL
+
+AC_ARG_WITH(
+  mysql-includes,
+  [  --with-mysql-includes=DIR  
+                          MySQL include files are in DIR.  ],
+  [ mysql_includes="$withval" ],
+  [ 
+    for mysql_includes in /usr/mysql/include /usr/local/mysql/include \
+        /usr/include/mysql /usr/local/include/mysql \
+    	/usr/include /usr/local/include; do
+      if [ test -f "${mysql_includes}/mysql.h" ]; then
+        break
+      fi
+    done
+  ]
+)
+
+AC_ARG_WITH(
+  mysql-libraries,
+  [  --with-mysql-libraries=DIR 
+                          MySQL library files are in DIR.  ],
+  [  mysql_libraries="$withval" ],
+  [ 
+    for mysql_libraries in /usr/mysql/lib /usr/local/mysql/lib \
+        /usr/lib/mysql /usr/local/lib/mysql \
+    	/usr/lib /usr/local/lib; do
+      if [ test -f "${mysql_libraries}/libmysql.a" ]; then
+        break
+      fi
+    done
+  ]
+)
+
+AC_CHECK_FILE(
+  $mysql_includes/mysql.h,
   [ mysql_build_dir="mysql" ],
   [ 
     mysql_build_dir="" 
-    AC_MSG_WARN([*** perditiondb_mysql will not be built ***])
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_mysql will not be built"
+      "**********************************************************************"
+    ) ;\
   ]
 )
-AC_CHECK_HEADERS(
-  rpcsvc/ypclnt.h, 
-  [ nis_build_dir="nis" ],
+
+if [ test -n "$mysql_build_dir" ]; then
+AC_CHECK_LIB(
+  mysqlclient,
+  mysql_real_connect,
+  [ mysql_build_dir="mysql" ],
   [ 
-    nis_build_dir="" 
-    AC_MSG_WARN([*** perditiondb_nis will not be built ***])
+    mysql_build_dir="" 
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_mysql will not be built"
+      "**********************************************************************"
+    ) ;\
+  ],
+  -L$mysql_libraries
+)
+fi
+
+
+######################################################################
+# PostgreSQL
+
+AC_ARG_WITH(
+  pg-includes,
+  [  --with-pg-includes=DIR  PostgreSQL include files are in DIR.  ],
+  [ pg_includes="$withval" ],
+  [ 
+    for pg_includes in /usr/pgsql/include /usr/local/pgsql/include \
+        /usr/include/pgsql /usr/local/include/pgsql \
+        /usr/postgresql/include /usr/local/postgresql/include \
+        /usr/include/postgresql /usr/local/include/postgresql \
+    	/usr/include /usr/local/include; do
+      if [ test -f "${pg_includes}/libpq-fe.h" ]; then
+        break
+      fi
+    done
   ]
 )
-AC_CHECK_HEADERS(
-  pgsql/libpq-fe.h,
-  [ postgresql_build_dir="postgresql" ],
+
+AC_ARG_WITH(
+  pg-libraries,
+  [  --with-pg-libraries=DIR PostgreSQL library files are in DIR.  ],
+  [  pg_libraries="$withval" ],
+  [ 
+    for pg_libraries in /usr/pgsql/lib /usr/local/pgsql/lib \
+        /usr/lib/pgsql /usr/local/lib/pgsql \
+        /usr/postgresql/lib /usr/local/postgresql/lib \
+        /usr/lib/postgresql /usr/local/lib/postgresql \
+    	/usr/lib /usr/local/lib; do
+      if [ test -f "${mysql_libraries}/libpg.a" ]; then
+        break
+      fi
+    done
+  ]
+)
+
+
+AC_CHECK_FILE(
+  $pg_includes/libpq-fe.h,
+  [ pg_build_dir="postgresql" ],
+  [ 
+    pg_build_dir="" 
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_postgresql will not be built"
+      "**********************************************************************"
+    ) ;\
+  ]
+)
+
+if [ test -n "$pg_build_dir" ]; then
+AC_CHECK_LIB(
+  pq,
+  PQstatus,
+  [ pg_build_dir="postgresql" ],
   [ 
     postgresql_build_dir="" 
-    AC_MSG_WARN([*** perditiondb_postgresql will not be built ***])
-  ]
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_postgresql will not be built"
+      "**********************************************************************"
+    ) ;\
+  ],
+  -L$pg_libraries
 )
+fi
+
+
+######################################################################
+# GDBM
+
 AC_CHECK_HEADERS(
   gdbm.h,
+  [ 
+    gdbm_build_dir="gdbm" 
+    makegdbm_build_dir="makegdbm" 
+  ],
+  [
+    gdbm_build_dir="" 
+    makegdbm_build_dir="" 
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_gdbm and makegdbm will not be built"
+      "**********************************************************************"
+    ) ;\
+  ]
+)
+
+if [ test -n "$gdbm_build_dir" ]; then
+AC_CHECK_LIB(
+  gdbm,
+  gdbm_fetch,
   [ 
     gdbm_build_dir="gdbm" 
     makegdbm_build_dir="makegdbm" 
@@ -134,28 +275,106 @@ AC_CHECK_HEADERS(
   [ 
     gdbm_build_dir="" 
     makegdbm_build_dir="" 
-    AC_MSG_WARN([*** perditiondb_gdbm and makegdbm will not be built ***])
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_gdbm and makegdbm will not be built"
+      "**********************************************************************"
+    ) ;\
   ]
 )
-AC_CHECK_HEADERS(
-  ldap.h,
+fi
+
+
+######################################################################
+# Open LDAP
+
+AC_ARG_WITH(
+  ldap-includes,
+  [  --with-ldap-includes=DIR  
+                          Open LDAP include files are in DIR.  ],
+  [ ldap_includes="$withval" ],
+  [ 
+    for ldap_includes in /usr/openldap/include /usr/local/openldap/include \
+        /usr/include/openldap /usr/local/include/openldap \
+    	/usr/include /usr/local/include; do
+      if [ test -f "${ldap_includes}/ldap.h" ]; then
+        break
+      fi
+    done
+  ]
+)
+
+AC_ARG_WITH(
+  ldap-libraries,
+  [  --with-ldap-libraries=DIR 
+                          Open LDAP library files are in DIR.  ],
+  [  ldap_libraries="$withval" ],
+  [ 
+    for ldap_libraries in /usr/openldap/lib /usr/local/openldap/lib \
+        /usr/lib/openldap /usr/local/lib/openldap \
+    	/usr/lib /usr/local/lib; do
+      if [ test -f "${ldap_libraries}/libldap.a" ]; then
+        break
+      fi
+    done
+  ]
+)
+
+
+AC_CHECK_FILE(
+  $ldap_includes/ldap.h,
   [
     ldap_build_dir="ldap"
     ldap_lib="-lldap -llber"
   ],
-  [
-    ldap_build_dir=""
-    ldap_lib=""
-    AC_MSG_WARN([*** perditiondb_ldap will not be built ***])
+  [ 
+    ldap_build_dir="" 
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_ldap will not be built"
+      "**********************************************************************"
+    ) ;\
   ]
 )
+
+if [ test -n "$ldap_build_dir" ]; then
+AC_CHECK_LIB(
+  ldap,
+  ldap_url_parse,
+  [
+    ldap_build_dir="ldap"
+    ldap_lib="-lldap -llber"
+  ],
+  [ 
+    ldap_build_dir="" 
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* perditiondb_ldap will not be built"
+      "**********************************************************************"
+    ) ;\
+  ],
+  -L$ldap_libraries -llber
+)
+fi
+
+######################################################################
+# PAM
+
 pam=yes
 AC_CHECK_HEADERS(
   security/pam_appl.h, 
   true,
   [
     pam=no
-    AC_MSG_WARN([*** pam support will not be built ***])
+    AC_MSG_WARN(
+      ""
+      "**********************************************************************"
+      "* pam support will not be built"
+      "**********************************************************************"
+    ) ;\
   ]
 )
 if test $pam = yes; then
@@ -164,18 +383,47 @@ if test $pam = yes; then
     true,
     [
       pam=no
-      AC_MSG_WARN([*** pam support will not be built ***])
+      AC_MSG_WARN(
+        ""
+        "**********************************************************************"
+        "* pam support will not be built"
+        "**********************************************************************"
+      ) ;\
     ]
   )
 fi
 if test $pam = yes; then
   pam_lib="-lpam"
   pam_source="pam.c pam.h"
+  pam_dir="pam.d"
   AC_DEFINE(WITH_PAM_SUPPORT, 1, Compile with PAM support)
 else
   pam_lib=""
+  pam_dir=""
   pam_source=""
 fi
+
+
+######################################################################
+# User and Group to run as
+
+AC_ARG_WITH(
+  user,
+  [  --with-user=USER        Run perdition as USER. [default=nobody]  ],
+  [ perdition_user="$withval" ],
+  [ perdition_user="nobody" ],
+)
+AC_DEFINE_UNQUOTED(WITH_USER, "$perdition_user", User to run perdition as )
+
+
+AC_ARG_WITH(
+  group,
+  [  --with-group=GROUP      Run perdition as GROUP. [default=nobody]  ],
+  [ perdition_group="$withval" ],
+  [ perdition_group="nobody" ],
+)
+AC_DEFINE_UNQUOTED(WITH_GROUP, "$perdition_group", Group to run perdition as )
+
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -189,31 +437,41 @@ AC_CHECK_FUNCS(select socket strdup strerror flim)
 
 AC_SUBST(gdbm_build_dir)
 AC_SUBST(makegdbm_build_dir)
-AC_SUBST(postgresql_build_dir)
+AC_SUBST(pg_build_dir)
+AC_SUBST(pg_libraries)
+AC_SUBST(pg_includes)
 AC_SUBST(mysql_build_dir)
-AC_SUBST(nis_build_dir)
+AC_SUBST(mysql_libraries)
+AC_SUBST(mysql_includes)
 AC_SUBST(ldap_build_dir)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
 AC_SUBST(nsl_lib)
 AC_SUBST(ldap_lib)
+AC_SUBST(pam_dir)
 AC_SUBST(pam_lib)
 AC_SUBST(pam_source)
 
 AC_OUTPUT(
 perdition.spec
 libjain/Makefile 
+debian/Makefile 
 perdition/Makefile 
-perdition/perdition_config.h 
 perdition/db/Makefile 
 perdition/db/gdbm/Makefile 
+perdition/db/gdbm/Makefile.popmap
 perdition/db/posix_regex/Makefile 
 perdition/db/mysql/Makefile 
 perdition/db/nis/Makefile 
 perdition/db/postgresql/Makefile 
 perdition/db/ldap/Makefile 
 makegdbm/Makefile 
+etc/Makefile 
+etc/pam.d/Makefile 
 etc/perdition/Makefile 
+etc/rc.d/Makefile 
+etc/rc.d/init.d/Makefile 
+etc/sysconfig/Makefile 
 Makefile
 INSTALL
 README

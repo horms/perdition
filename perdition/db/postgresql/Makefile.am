@@ -23,6 +23,10 @@
 #
 ######################################################################
 
+EXTRA_DIST = perditiondb_postgresql_makedb
+
+bin_SCRIPTS = perditiondb_postgresql_makedb
+
 lib_LTLIBRARIES = libperditiondb_postgresql.la
 
 libperditiondb_postgresql_la_SOURCES = \
@@ -31,10 +35,11 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_postgresql_la_LIBADD = -lvanessa_adt -lpq 
+libperditiondb_postgresql_la_LIBADD = -lvanessa_adt -lpq -L@pg_libraries@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain
+-I$(top_srcdir)/libjain \
+-I@pg_includes@
 

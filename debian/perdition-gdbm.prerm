@@ -1,0 +1,8 @@
+#! /bin/sh
+# prerm script for perdition
+
+make -C /etc/perdition/ clean > /dev/null
+
+exit 0
+
+

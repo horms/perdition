@@ -38,7 +38,6 @@
 #include <jain.h>
 
 #ifdef HAVE_CONFIG_H
-#include "perdition_config.h"
 #include "config.h"
 #endif
 
@@ -59,10 +58,14 @@
 #define DEFAULT_CONNECTION_LIMIT             0
 #define DEFAULT_DEBUG                        0
 #define DEFAULT_DOMAIN_DELIMITER             "@"
+#ifdef WITH_GROUP
+#define DEFAULT_GROUP                        WITH_GROUP
+#else
 #define DEFAULT_GROUP                        "nobody"
+#endif /* WITH_GROUP */
 #define DEFAULT_INETD_MODE                   0
 #define DEFAULT_MAP_LIB \
-  PREFIX "/lib/libperditiondb_gdbm.so"
+  PERDITION_LIBDIR "/libperditiondb_gdbm.so"
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
@@ -70,7 +73,11 @@
 #define DEFAULT_STRIP_DOMAIN                 0
 #define DEFAULT_SERVER_OK_LINE               0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
+#ifdef WITH_USER
+#define DEFAULT_USERNAME                     WITH_USER
+#else
 #define DEFAULT_USERNAME                     "nobody"
+#endif /* WITH_USER */
 #define DEFAULT_QUIET                        0
 
 typedef struct {

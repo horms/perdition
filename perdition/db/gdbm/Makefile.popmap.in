@@ -1,10 +1,13 @@
 ######################################################################
-# Makefile.am                                               March 2000
-# ChrisS                                              chriss@uk.uu.net
+# Makefile.popmap                                        February 2000
+# Horms                                             horms@vergenet.net
+#
+# Make file to build a GDBM popmap.db from an ASCII popmap 
+# using makegdbm.
 #
 # perdition
-# Mail retreival proxy server, LDAP support
-# Copyright (C) 1999  ChrisS and Horms
+# Mail retreival proxy server
+# Copyright (C) 1999  Horms
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -23,21 +26,15 @@
 #
 ######################################################################
 
-EXTRA_DIST = perditiondb_ldap_makedb
+BINDIR=@prefix@/bin
+MAKEGDBM=$(BINDIR)/makegdbm
 
-bin_SCRIPTS = perditiondb_ldap_makedb
+.PHONY = all clean
 
-lib_LTLIBRARIES = libperditiondb_ldap.la
+all: popmap.db
 
-libperditiondb_ldap_la_SOURCES = \
-perditiondb_ldap.c \
-perditiondb_ldap.h
+popmap.db: popmap
+	$(MAKEGDBM) $@ < $<
 
-libperditiondb_ldap_la_LDFLAGS    = -version-info 0:0:0
-
-INCLUDES=\
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain
-
-libperditiondb_ldap_la_LIBADD = -lldap -llber
+clean:
+	rm -f popmap.db *~ *.bak core

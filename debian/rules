@@ -1,0 +1,81 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+export DH_COMPAT=2
+
+pwd:=$(shell pwd)
+cfg:=--prefix=/usr --sysconfdir=/etc --with-group=nogroup
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+
+	test -x autogen.sh && ./autogen.sh $(cfg) || ./configure $(cfg)
+	
+	$(MAKE)
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+
+	-$(MAKE) distclean
+
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	$(MAKE) \
+	  prefix=$(pwd)/debian/tmp/usr \
+	  sysconfdir=$(pwd)/debian/tmp/etc \
+  	  install
+
+	./mkinstalldirs $(pwd)/debian/tmp/etc/init.d
+	install -c -m 644 etc/rc.d/init.d/perdition.debian \
+	  $(pwd)/debian/tmp/etc/init.d/perdition
+
+	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition
+	install -c -m 644 README \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	install -c -m 644 README.perditiondb \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	install -c -m 644 ChangeLog \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	install -c -m 644 NEWS \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	install -c -m 644 CODING_LOCATIONS \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	install -c -m 644 TODO \
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+
+	dh_movefiles --source=debian/tmp
+
+binary-indep: build install
+
+binary-arch: build install
+	dh_testversion 2.0
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installchangelogs
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_suidregister
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

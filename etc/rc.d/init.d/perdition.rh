@@ -3,6 +3,7 @@
 # Version:                                              September 1999
 # Author:                                   Horms <horms@vergenet.net>
 #
+# Red Hat init script for perdition
 # Adapted from: Tomasz K³oczko, <kloczek@rudy.mif.pg.gda.pl>
 #               Michele Marziani <marziani@fe.infn.it>
 #
@@ -49,15 +50,15 @@ case "$1" in
   start)
 	if [ "$POP3" = "yes" ]; then
         	echo -n "Starting perdition services (POP3): "
-		daemon /usr/sbin/perdition.0 -P POP3 $FLAGS
-		touch /var/lock/subsys/perdition.0
+		daemon /usr/sbin/perdition.pop3 -P POP3 $FLAGS
+		touch /var/lock/subsys/perdition.pop3
         	echo
 	fi
 
 	if [ "$IMAP4" = "yes" ]; then
         	echo -n "Starting perdition services (IMAP4): "
-		daemon /usr/sbin/perdition.1 -P IMAP4 $FLAGS
-		touch /var/lock/subsys/perdition.1
+		daemon /usr/sbin/perdition.imap4 -P IMAP4 $FLAGS
+		touch /var/lock/subsys/perdition.imap4
 		echo
 	fi
 	;;
@@ -71,15 +72,15 @@ case "$1" in
   stop)
 	if [ "$POP3" = "yes" ]; then
         	echo -n "Shutting down perdition services (POP3): "
-		killproc perdition.0
-		rm -f /var/lock/subsys/perdition.0
+		killproc perdition.pop3
+		rm -f /var/lock/subsys/perdition.pop3
         	echo
 	fi
 
 	if [ "$IMAP4" = "yes" ]; then
         	echo -n "Shutting down perdition services (IMAP4): "
-		killproc perdition.1
-		rm -f /var/lock/subsys/perdition.1
+		killproc perdition.imap4
+		rm -f /var/lock/subsys/perdition.imap4
 		echo
 	fi
 	;;

@@ -1,10 +1,10 @@
 ######################################################################
-# Makefile.in                                            February 2000
+# Makefile.am                                            November 2000
 # Horms                                             horms@vergenet.net
 #
 # perdition
 # Mail retreival proxy server
-# Copyright (C) 1999  Horms
+# Copyright (C) 1999  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -23,15 +23,7 @@
 #
 ######################################################################
 
-BINDIR=@prefix@/bin
-MAKEGDBM=$(BINDIR)/makegdbm
+EXTRA_DIST = perdition
 
-.PHONY = all clean
-
-all: popmap.db
-
-popmap.db: popmap
-	$(MAKEGDBM) $@ < $<
-
-clean:
-	rm -f popmap.db *~ *.bak core
+perditionconfdir = $(sysconfdir)/pam.d
+perditionconf_DATA = perdition

@@ -23,18 +23,29 @@
 #
 ######################################################################
 
+EXTRA_DIST = popmap Makefile.popmap.in Makefile.popmap
+
+confdir = $(sysconfdir)/perdition
+conf_DATA = popmap Makefile.popmap
+
+install-data-hook:
+	(cd $(sysconfdir)/perdition/ && ln -sf Makefile.popmap Makefile)
+
 lib_LTLIBRARIES = libperditiondb_gdbm.la
 
 libperditiondb_gdbm_la_SOURCES = \
-perditiondb_gdbm.c \
-perditiondb_gdbm.h
+  perditiondb_gdbm.c \
+  perditiondb_gdbm.h
 
 libperditiondb_gdbm_la_LDFLAGS    = -version-info 0:0:0
 
 libperditiondb_gdbm_la_LIBADD = -lgdbm
 
 INCLUDES=\
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain
+  -I$(top_srcdir)/ \
+  -I$(top_srcdir)/perdition \
+  -I$(top_srcdir)/libjain \
+  -DPERDITIONDB_GDBM_SYSCONFDIR=\"$(sysconfdir)/perdition\"
+
+
 

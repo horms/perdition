@@ -25,9 +25,12 @@
 
 SUBDIRS = db
 
-EXTRA_DIST = perdition_config.h.in
-
 sbin_PROGRAMS = perdition
+	          
+install-exec-hook:
+	(cd $(sbindir) && ln -sf perdition perdition.pop3)
+	(cd $(sbindir) && ln -sf perdition perdition.imap4)
+
 
 perdition_SOURCES = \
         config_file.c \
@@ -44,7 +47,6 @@ perdition_SOURCES = \
 	pam.h \
         perdition.c \
         perdition.h \
-        perdition_config.h \
         perdition_types.h \
         pop3.c \
         pop3.h \
@@ -77,7 +79,7 @@ perdition_SOURCES = \
         str.h \
         log.h
 
-INCLUDES= -I$(top_srcdir)/libjain
+INCLUDES= -I$(top_srcdir)/libjain -DPERDITION_LIBDIR=\"${libdir}\"
 
 perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@
 

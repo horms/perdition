@@ -1,0 +1,71 @@
+#! /bin/sh
+# /etc/init.d/radiusd-lucent: to start and stop radiusd
+# based on /etc/init.d/skeleton
+#
+# Written by Miquel van Smoorenburg <miquels@drinkel.ow.org>.
+# Modified for Debian GNU/Linux by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+# Modified for radiusd by Chris Fearnley <cjf@netaxs.com>.
+# Modified for radiusd-lucent by Horms <horms@vergenet.net>
+#!/bin/sh
+######################################################################
+# Version:                                              September 1999
+# Author:                                   Horms <horms@vergenet.net>
+#
+# Debian init script for perdition
+# based on /etc/init.d/skeleton
+#
+# perdition
+# Mail retreival proxy server
+# Copyright (C) 1999  Horms
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=perdition
+
+# Run perdition listening as a POP3 proxy [yes|no]
+POP3=yes
+# Run perdition listening as an IMAP4 proxy [yes|no]
+IMAP4=yes
+
+test -f $DAEMON || exit 0
+
+case "$1" in
+  start)
+    start-stop-daemon --start --verbose --exec perdition.pop3
+    start-stop-daemon --start --verbose --exec perdition.imap4
+    ;;
+  stop)
+    start-stop-daemon --stop --verbose --exec perdition.pop3
+    rm -f /var/run/perdition.pop3.pid
+    start-stop-daemon --stop --verbose --exec perdition.imap4
+    rm -f /var/run/perdition.imap4.pid
+    ;;
+  reload)
+    # echo "Reloading $NAME configuration files"
+    # start-stop-daemon --stop --signal 1 --quiet --exec $DAEMON
+    ;;
+  *)
+    # echo "Usage: /etc/init.d/$NAME {start|stop|reload}"
+    echo "Usage: /etc/init.d/$NAME {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

@@ -4,7 +4,7 @@
 #
 # perdition
 # Mail retreival proxy server
-# Copyright (C) 1999  Horms
+# Copyright (C) 1999  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -23,7 +23,7 @@
 #
 ######################################################################
 
-SUBDIRS = libjain @makegdbm_build_dir@ perdition
+SUBDIRS = libjain @makegdbm_build_dir@ perdition debian etc
 
 EXTRA_DIST = \
 configure \
@@ -36,18 +36,6 @@ CODING_LOCATIONS.in\
 CODING_LOCATIONS \
 perdition.spec.in \
 perdition.spec \
-etc/perdition/perdition.conf \
-etc/perdition/Makefile.in \
-etc/perdition/popmap \
-etc/perdition/popmap.re \
-etc/perdition/mysql/makedb \
-etc/perdition/mysql/perdition.sql \
-etc/perdition/ldap/makedb \
-etc/perdition/ldap/popmap.ldif \
-etc/perdition/postgresql/makedb \
-etc/rc.d/init.d/perdition \
-etc/sysconfig/perdition \
-etc/pam.d/perdition \
 acconfig.h
 
 m4datadir = $(datadir)/aclocal

@@ -1,0 +1,64 @@
+Source: perdition
+Section: devel
+Priority: optional
+Maintainer: Horms <horms@vergenet.net>
+Standards-Version: 3.1.1
+
+Package: perdition-gdbm
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access GDBM based pop maps.
+
+Package: perdition-ldap
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access LDAP based pop maps.
+
+Package: perdition-mysql
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access MySQL based pop maps.
+
+Package: perdition-nis
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access NIS based pop maps.
+
+Package: perdition-postgresql
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access PosgreSQL based pop maps.
+
+Package: perdition-posix-regex
+Architecture: any
+Depends: perdition (= ${Source-Version})
+Description: 
+  Library to allow perdition to access Posix Regular Expression based pop maps.
+
+Package: perdition-dev
+Architecture: any
+Depends: perdition (= ${Source-Version}), libvanessa-logger-dev, libvanessa-adt-dev, libvanessa-socket-dev, libc6-dev
+Description: 
+  Perdition allows for arbitrary user database access through
+  shared libraries much in the maner of NSS in glibc. This package
+  provides headers and libraries that may be useful in the development
+  of perditiondb libraries.
+
+Package: perdition
+Architecture: any
+Depends: ${shlibs:Depends}, perdition-gdbm  (= ${Source-Version})
+Description:
+  Perdition is allows users to connect to a content-free POP3 or IMAP4
+  server that will redirect them to their real POP3 or IMAP4 server. This
+  enables mail retrieval for a domain to be split across multiple backend
+  servers on a per user basis. This can also be used to as a POP3 or IMAP4
+  proxy especially in firewall applications. Perdition supports arbitrary
+  library based map access to determine the server for a user. POSIX
+  Regular Expression, GDBM, MySQL, PostgreSQL and LDAP libraries ship with
+  the distribution.
+

@@ -1,0 +1,6 @@
+etc/perdition/README.perditiondb_nis
+usr/lib/libperditiondb_nis.a
+usr/lib/libperditiondb_nis.la
+usr/lib/libperditiondb_nis.so
+usr/lib/libperditiondb_nis.so.0
+usr/lib/libperditiondb_nis.so.0.0.0

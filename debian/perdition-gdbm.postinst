@@ -1,0 +1,8 @@
+#! /bin/sh
+# postinst script for perdition
+
+make -C /etc/perdition/ > /dev/null
+
+exit 0
+
+

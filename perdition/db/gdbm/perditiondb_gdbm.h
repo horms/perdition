@@ -34,7 +34,12 @@
 extern gdbm_error gdbm_errno;
 extern char *gdbm_version;
 
-#define PERDITIONDB_GDBM_DEFAULT_MAPNAME "/etc/perdition/popmap.db"
+#ifndef PERDITIONDB_GDBM_SYSCONFDIR
+#define PERDITIONDB_GDBM_SYSCONFDIR "/usr/local/etc/perdition"
+#endif
+
+#define PERDITIONDB_GDBM_DEFAULT_MAPNAME \
+  PERDITIONDB_GDBM_SYSCONFDIR "/popmap.db"
 
 int dbserver_get(
   char *key_str, 

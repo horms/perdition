@@ -23,6 +23,10 @@
 #
 ######################################################################
 
+EXTRA_DIST = perditiondb_mysql_makedb
+
+bin_SCRIPTS = perditiondb_mysql_makedb
+
 lib_LTLIBRARIES = libperditiondb_mysql.la
 
 libperditiondb_mysql_la_SOURCES = \
@@ -31,10 +35,12 @@ perditiondb_mysql.h
 
 libperditiondb_mysql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_mysql_la_LIBADD =  -lvanessa_adt -lmysqlclient
+libperditiondb_mysql_la_LIBADD =  -lvanessa_adt -lmysqlclient \
+  -L@mysql_libraries@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain
+-I$(top_srcdir)/libjain \
+-I@mysql_includes@
 
