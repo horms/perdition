@@ -8,6 +8,10 @@
  * Mail retrieval proxy server
  * Copyright (C) 1999-2003  Horms
  *
+ * With assistance from:
+ * Eric Rescorla, SSL and TLS - Designing and Building Secure Systems,
+ * Addison-Wesley, Reading, MA, USA (2001)
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -123,11 +127,38 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
  *       be non-NULL.
  **********************************************************************/
 
+static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
+{
+	char buf[MAX_LINE_LENGTH];
+	X509 *cert;
+
+	extern options_t opt;
+
+	if(opt.debug) {
+		cert = X509_STORE_CTX_get_current_cert(ctx);
+		X509_NAME_oneline(X509_get_subject_name(cert),
+				buf, MAX_LINE_LENGTH);
+        	VANESSA_LOGGER_DEBUG_UNSAFE("cert: %s", buf);
+        	VANESSA_LOGGER_DEBUG_UNSAFE("depth: %d", 
+				X509_STORE_CTX_get_error_depth(ctx));
+	}
+
+	if(opt.ssl_cert_verify_depth < X509_STORE_CTX_get_error_depth(ctx)) {
+		VANESSA_LOGGER_DEBUG("Chain too long");
+	        X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
+		return(0);
+	}
+
+	return(ok);
+}
+
 SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert, 
 		const char *privkey, const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx;
+
+	extern options_t opt;
 
 	/* 
 	 * If either the certificate or private key is non-NULL the
@@ -206,7 +237,10 @@ SSL_CTX *perdition_ssl_ctx(const char *ca, const char *cert,
 		SSL_CTX_free(ssl_ctx);
 		return (NULL);
 	}
-	SSL_CTX_set_verify_depth(ssl_ctx, 0);
+	SSL_CTX_set_verify_depth(ssl_ctx, opt.ssl_cert_verify_depth + 1);
+
+	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_CLIENT_ONCE, 
+			__perdition_verify_callback);
 
 	/* NB: We do not need to call SSL_CTX_check_private_key()
 	 * because SSL_CTX_set_verify_depth has been called */
@@ -294,7 +328,7 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 	if (!cert) {
 		return(0);
 	}
-
+	
 	str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 	if (!str) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");

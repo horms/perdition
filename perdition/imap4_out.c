@@ -238,7 +238,11 @@ leave:
   return(status);
 
   /* Stop compiler from complaining */
-  capability_status = 0;
+  if(capability_status);
+  if(n);
+  if(buf);
+  if(&opt);
+  goto ok;
 }
   
 

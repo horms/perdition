@@ -39,6 +39,8 @@
 #include <dmalloc.h>
 #endif
 
+#define USAGE_ERROR_SLEEP 3
+
 
 options_t opt;
 
@@ -196,7 +198,7 @@ options_t opt;
        new=SSL_MODE_TLS_ALL; \
     } \
     else { \
-     VANESSA_LOGGER_ERR_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
+     VANESSA_LOGGER_ERR_RAW_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
       if(f&OPT_ERR) { \
         usage(-1); \
       } \
@@ -208,12 +210,25 @@ options_t opt;
         ( new!=SSL_MODE_NONE || \
           (opt.ssl_mode!=SSL_MODE_NONE && opt.ssl_mode!=SSL_MODE_EMPTY) ) \
      ){ \
-      VANESSA_LOGGER_DEBUG("invalid ssl_mode combination"); \
+      VANESSA_LOGGER_DEBUG_RAW("invalid ssl_mode combination"); \
       if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
     opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
   }
+#else /* WITH_SSL_SUPPORT */
+#define NO_SSL_OPT(_opt)                                                     \
+      VANESSA_LOGGER_DEBUG_RAW(_opt                                          \
+	" is only supported when ssl support is compiled in");               \
+      if(f&OPT_ERR){                                                         \
+        usage(-1);                                                           \
+      }                                                                      \
+      else{                                                                  \
+        poptFreeContext(context);                                            \
+        return(-1);                                                          \
+      }
+
 #endif /* WITH_SSL_SUPPORT */
+
 
 /**********************************************************************
  * options
@@ -284,10 +299,12 @@ int options(int argc, char **argv, flag_t f){
       TAG_NO_DAEMON},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_MODE },
-    {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
-      TAG_SSL_CERT_FILE },
     {"ssl_ca_file",                 '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CA_FILE },
+    {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CERT_FILE },
+    {"ssl_cert_verify_depth",       '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CERT_VERIFY_DEPTH },
     {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_KEY_FILE },
     {"ssl_listen_ciphers",          '\0', POPT_ARG_STRING, NULL, 
@@ -320,16 +337,16 @@ int options(int argc, char **argv, flag_t f){
       opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.imap4s", basename)){
-      opt_i(opt.protocol,      PROTOCOL_IMAP4S,              i, 0, OPT_NOT_SET);
+      opt_i(opt.protocol,      PROTOCOL_IMAP4S,             i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.imaps", basename)){
-      opt_i(opt.protocol,      PROTOCOL_IMAP4S,              i, 0, OPT_NOT_SET);
+      opt_i(opt.protocol,      PROTOCOL_IMAP4S,             i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3", basename)){
       opt_i(opt.protocol,      PROTOCOL_POP3,               i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3s", basename)){
-      opt_i(opt.protocol,      PROTOCOL_POP3S,               i, 0, OPT_NOT_SET);
+      opt_i(opt.protocol,      PROTOCOL_POP3S,              i, 0, OPT_NOT_SET);
     }
     else {
       opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
@@ -346,7 +363,6 @@ int options(int argc, char **argv, flag_t f){
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
     opt_i(opt.connect_relog,   DEFAULT_CONNECT_RELOG,       i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_no_cn_verify,DEFAULT_SSL_NO_CN_VERIFY,    i, 0, OPT_NOT_SET);
     opt_p(opt.capability,      PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
@@ -367,13 +383,16 @@ int options(int argc, char **argv, flag_t f){
     opt_da(opt.query_key,      DEFAULT_QUERY_KEY,           i, 0, OPT_NOT_SET);
 #ifdef WITH_SSL_SUPPORT
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_ca_file,     DEFAULT_SSL_CA_FILE,         i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_cert_verify_depth, DEFAULT_SSL_CERT_VERIFY_DEPTH,
+		                                            i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
 		                                            i, 0, OPT_NOT_SET);
+    opt_i(opt.ssl_no_cn_verify,DEFAULT_SSL_NO_CN_VERIFY,    i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -403,8 +422,8 @@ int options(int argc, char **argv, flag_t f){
         opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
         break;
 #else
-      VANESSA_LOGGER_DEBUG(
-	"-a|--authenticate is only supported when compiled against libpam");
+      VANESSA_LOGGER_DEBUG_RAW(
+	"authenticate is only supported when compiled against libpam");
       if(f&OPT_ERR){
         usage(-1);
       }
@@ -581,60 +600,36 @@ int options(int argc, char **argv, flag_t f){
 	}
 	OPT_SSL_MODE;
 #else /* WITH_SSL_SUPPORT */
-        VANESSA_LOGGER_DEBUG(
-	  "--ssl_mode is only supported when ssl support is compiled in");
-        if(f&OPT_ERR){
-          usage(-1);
-        }
-        else{
-          poptFreeContext(context);
-          return(-1);
-        }
+	NO_SSL_OPT("ssl_mode");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CA_FILE:
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_ca_file,optarg,opt.ssl_mask,MASK_SSL_CA_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_ca_file is only supported when ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_ca_file");
+#endif /* WITH_SSL_SUPPORT */
+      break;
+      case TAG_SSL_CERT_VERIFY_DEPTH:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(opt.ssl_cert_verify_depth,atoi(optarg),opt.ssl_mask,
+			MASK_SSL_CERT_VERIFY_DEPTH,f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_ca_verify_depth");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_CERT_FILE:
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_CERT_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_cert_file is only supported when ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_cert_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_KEY_FILE:
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_key_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_key_file is only supported when ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_key_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_LISTEN_CIPHERS:
@@ -642,16 +637,7 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.ssl_listen_ciphers,optarg,opt.ssl_mask,
 			MASK_SSL_LISTEN_CIPHERS,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_listen_ciphers is only supported when "
-	"ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_listen_ciphers");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_OUTGOING_CIPHERS:
@@ -659,47 +645,25 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.ssl_outgoing_ciphers,optarg,opt.ssl_mask,
 			MASK_SSL_OUTGOING_CIPHERS,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_outgoing_ciphers is only supported when "
-	"ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_outgoing_ciphers");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_NO_CN_VERIFY:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_no_cn_verify,1,opt.ssl_mask,
-			MASK_SSL_NO_CN_VERIFY,f);
+        opt_i(opt.ssl_no_cn_verify,1,opt.ssl_mask, MASK_SSL_NO_CN_VERIFY,f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_no_cn_verify is only supported when "
-	"ssl support is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+	NO_SSL_OPT("ssl_no_cn_verify");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       default:
-        VANESSA_LOGGER_DEBUG("Unknown Option");
+        VANESSA_LOGGER_DEBUG_RAW("Unknown Option");
         exit;
     }
   }
 
   if (c < -1) {
-    VANESSA_LOGGER_DEBUG_UNSAFE(
-      "options: %s: %s",
-      poptBadOption(context, POPT_BADOPTION_NOALIAS),
-      poptStrerror(c)
-    );
+    VANESSA_LOGGER_DEBUG_UNSAFE( "%s: %s",
+      poptBadOption(context, POPT_BADOPTION_NOALIAS), poptStrerror(c));
       
     if(f&OPT_ERR){
       usage(-1);
@@ -713,8 +677,7 @@ int options(int argc, char **argv, flag_t f){
   trailing_argv = poptGetArgs(context);
   if(trailing_argv && *trailing_argv) {
     while(*trailing_argv) {
-      VANESSA_LOGGER_DEBUG_UNSAFE("options: trailing argument: %s", 
-          *trailing_argv);
+      VANESSA_LOGGER_DEBUG_UNSAFE("trailing argument: %s", *trailing_argv);
       trailing_argv++;
     }
     usage(-1);
@@ -923,6 +886,7 @@ int log_options_str(char *str, size_t n){
     "ssl_mode=\"%s\", "
     "ssl_ca_file=\"%s\", "
     "ssl_cert_file=\"%s\", "
+    "ssl_cert_verify_depth=%d, "
     "ssl_key_file=\"%s\", "
     "ssl_listen_ciphers=\"%s\", "
     "ssl_outgoing_ciphers=\"%s\", "
@@ -969,6 +933,7 @@ int log_options_str(char *str, size_t n){
     ssl_mode,
     str_null_safe(opt.ssl_ca_file),
     str_null_safe(opt.ssl_cert_file),
+    opt.ssl_cert_verify_depth,
     str_null_safe(opt.ssl_key_file),
     str_null_safe(opt.ssl_listen_ciphers),
     str_null_safe(opt.ssl_outgoing_ciphers),
@@ -1028,7 +993,7 @@ void usage(int exit_status){
   char *default_protocol_str=NULL;
 
   if(exit_status < 0) {
-	  sleep(1);
+	  sleep(USAGE_ERROR_SLEEP);
   }
 
   stream=(exit_status)?stderr:stdout;
@@ -1202,6 +1167,9 @@ void usage(int exit_status){
     " --ssl_cert_file:\n"
     "    Certificate to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_cert_verify_depth:\n"
+    "    Chain Depth to recurse to when vierifying certificates.\n"
+    "    (default %d)\n"
     " --ssl_key_file:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
@@ -1239,6 +1207,7 @@ void usage(int exit_status){
     str_null_safe(NULL),
     str_null_safe(DEFAULT_SSL_CA_FILE),
     str_null_safe(DEFAULT_SSL_CERT_FILE),
+    DEFAULT_SSL_CERT_VERIFY_DEPTH,
     str_null_safe(DEFAULT_SSL_KEY_FILE),
     str_null_safe(DEFAULT_SSL_LISTEN_CIPHERS),
     str_null_safe(DEFAULT_SSL_OUTGOING_CIPHERS)

@@ -61,8 +61,7 @@
     unsigned long e; \
     SSL_load_error_strings(); \
     while((e=ERR_get_error())) { \
-      vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, "%s", \
-        ERR_error_string(e, NULL)); \
+      VANESSA_LOGGER_DEBUG(ERR_error_string(e, NULL)); \
     } \
     ERR_free_strings(); \
   }

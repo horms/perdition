@@ -5,7 +5,15 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-8th january 2002
+XXX
+(Horms)
+   * 1.11beta3 unreleased
+   - Added option to limit the chain length used when verifying certificates
+   - Cleaned up build when compiled without SSL
+
+----------------------------------------------------------------------
+
+8th January 2002
 (Horms)
    * 1.11beta2
    - Fixed handling of POP3 CAPA command
