@@ -95,6 +95,33 @@ options_t opt;
   } \
 
 
+#define opt_i_or(opt, value, mask, mask_entry, flag) \
+  opt_i(opt, opt|value, mask, mask_entry, flag)
+
+#define OPT_STRIP_DOMAIN \
+  if(strcasecmp(optarg_copy, "all")==0){ \
+    opt_i_or(opt.strip_domain,STATE_ALL,opt.mask,MASK_STRIP_DOMAIN,f); \
+  } \
+  else if( \
+    strcasecmp(optarg_copy, "servername_lookup")==0 || \
+    strcasecmp(optarg_copy, "server_lookup")==0 \
+  ){ \
+    opt_i_or(opt.strip_domain,STATE_GET_SERVER,opt.mask,MASK_STRIP_DOMAIN,f); \
+  } \
+  else if( \
+    strcasecmp(optarg_copy, "local_authentication")==0 || \
+    strcasecmp(optarg_copy, "local_auth")==0 \
+  ){ \
+    opt_i_or(opt.strip_domain,STATE_LOCAL_AUTH,opt.mask,MASK_STRIP_DOMAIN,f); \
+  } \
+  else if(strcasecmp(optarg_copy, "remote_login")==0){ \
+    opt_i_or(opt.strip_domain,STATE_REMOTE_LOGIN,opt.mask,MASK_STRIP_DOMAIN,f);\
+  } \
+  else { \
+   PERDITION_LOG(LOG_DEBUG, "options: unknown state: %s", optarg_copy); \
+   if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+  }
+
 /**********************************************************************
  * options
  * Read in command line options
@@ -109,9 +136,10 @@ int options(int argc, char **argv, flag_t f){
   int c=0;
   int index;
   flag_t i;
-  char *optarg;
+  const char *optarg;
   char *basename;
   char *optarg_copy;
+  char *end;
   poptContext context;
 
   static struct poptOption options[] =
@@ -139,7 +167,7 @@ int options(int argc, char **argv, flag_t f){
     {"server_ok_line",              'o', POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P', POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p', POPT_ARG_STRING, NULL, 'p'},
-    {"strip_domain",                'S', POPT_ARG_NONE,   NULL, 'S'},
+    {"strip_domain",                'S', POPT_ARG_STRING, NULL, 'S'},
     {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
     {"timeout",                     't', POPT_ARG_STRING, NULL, 't'},
     {"username",                    'u', POPT_ARG_STRING, NULL, 't'},
@@ -195,7 +223,7 @@ int options(int argc, char **argv, flag_t f){
   context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
-    optarg=(char *)poptGetOptArg(context);
+    optarg=poptGetOptArg(context);
     switch (c){
       case 'a':
 #ifdef WITH_PAM_SUPPORT
@@ -305,7 +333,16 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.outgoing_port,optarg,opt.mask,MASK_OUTGOING_PORT,f);
         break;
       case 'S':
-        opt_i(opt.strip_domain,1,opt.mask,MASK_STRIP_DOMAIN,f);
+	if((optarg_copy=strdup(optarg)) == NULL){
+          PERDITION_LOG(LOG_DEBUG, "options: strdup: %s", strerror(errno));
+          if(f&OPT_ERR) daemon_exit_cleanly(-1);
+	}
+	while((end=strchr(optarg_copy, ','))!=NULL){
+	  *end='\0';
+	  OPT_STRIP_DOMAIN;
+	  optarg_copy=end+1;
+	}
+	OPT_STRIP_DOMAIN;
         break;
       case 's':
         if(options_set_mask(&(opt.mask), f, MASK_OUTGOING_SERVER)){
@@ -530,53 +567,53 @@ void usage(int exit_status){
     "    and the reverse-lookup of this will be used in the greeting. This\n"
     "    option disables this behaviour an reverts to using the uname to\n"
     "    derive the hostname for the greeting.\n"
-    " -b|--bind_address:\n"
+    " -b|--bind_address ipaddress|hostname:\n"
     "    Bind to interfaces with this address. In non-inetd mode, connections\n"
     "    will only be accepted on interfaces with this address. If NULL\n"
     "    connections will be accepted from all interfaces. In inetd and\n"
     "    non-inetd mode the source address of connections to real servers\n"
     "    will be this address, if NULL then the operating system will select\n"
-    "    a source address. The address may be an IP address or a hostname.\n"
+    "    a source address.\n"
     "    (default \"%s\")\n"
     " -C|--connection_logging:\n"
     "    Log interaction during authentication phase\n"
     "    Note: -d|--debug must be specified for this option to take effect.\n"
     " -c|--client_server_specification:\n"
     "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
-    "    server and port for a user. Note: over-rides -S|--strip_domain.\n"
-    " -D|--domain_delimiter:\n"
+    "    server and port for a user.\n"
+    " -D|--domain_delimiter string:\n"
     "    Delimiter used for -c|--client_server_specification and\n"
     "    -S|--strip_domain options. Multicharacter delimiters are permitted.\n"
     "    (default \"%s\")\n"
     " -d|--debug:\n"
     "    Turn on verbose debuging.\n"
-    " -F|--logging_facility:\n"
+    " -F|--logging_facility facility:\n"
     "    Syslog facility to log to. If the faclilty has a leading '/' then it\n"
     "    will be treated as a file to log to. (default \"%s\")\n"
-    "    Note: If an error occurs before options are read it may be loged\n"
+    "    Note: If an error occurs before options are read it may be logged\n"
     "    to syslog faclilty mail\n"
-    " -f|--config_file:\n"
+    " -f|--config_file filename:\n"
     "    Name of config file to read. If set to \"\" no config file will be\n"
     "    used. Command line options override options set in config file.\n"
     "    (default \"%s\")\n"
-    " -g|--group:\n"
+    " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
     "    Display this message\n"
     " -i|--inetd_mode:\n"
     "    Run in inetd mode\n"
-    " -L|--connection_limit:\n"
+    " -L|--connection_limit number:\n"
     "    Maximum number of connections to accept simultaneously. A value of\n"
     "    zero sets no limit on the number of simultaneous connections.\n"
     "    (default %d)\n"
     " -l|--listen_port:\n"
     "    Port to listen on. (default \"%s\")\n"
-    " -M|--map_library:\n"
+    " -M|--map_library filename:\n"
     "    Library to open that provides functions to look up the server for a\n"
     "    user. A null library mean no library will be accessed and hence, no\n"
     "    lookup will take place.\n"
     "    (default \"%s\")\n"
-    " -m|--map_library_opt:\n"
+    " -m|--map_library_opt string:\n"
     "    String option to pass to databse access function provided by the\n"
     "    library specified by the -M|--map_library option. The treatment of\n"
     "    this string is up to the library, in the case of perditiondb_gdbm\n"
@@ -586,26 +623,28 @@ void usage(int exit_status){
     " -o|--server_ok_line:\n"
     "    If authentication with the back-end server is successful then send\n"
     "    the servers +OK line to the client, instead of generting one.\n"
-    " -P|--protocol:\n"
+    " -P|--protocol protocol:\n"
     "    Protocol to use.\n"
     "    (default \"%s\")\n"
     "    available protocols: \"%s\"\n"
-    " -p|--outgoing_port:\n"
+    " -p|--outgoing_port port:\n"
     "    Define a port to use if a port is not defined for a user in popmap,\n"
     "    or a default server if it is used. (default \"%s\")\n"
-    " -s|--outgoing_server:\n"
+    " -s|--outgoing_server servername[,servername...]:\n"
     "    Define a server to use if a user is not in the popmap. Format is\n"
-    "    servername[:port]. Multipleservers can be delimited by a ','. If\n"
+    "    servername[:port]. Multiple servers can be delimited by a ','. If\n"
     "    multiple servers are specified then they are used in a round robin.\n"
     "    (default \"%s\")\n"
-    " -S|--strip_domain:\n"
+    " -S|--strip_domain state[,state...]:\n"
     "    Allow USER of the from user<delimiter>domain where <delimiter>domain\n"
-    "    will be striped off Note: over-ridden by\n"
-    "    -c|--client_server_specification.\n"
-    " -t|--timeout:\n"
-    "    Idle timeout in seconds. Value of zero sets infinite timeout.\n"
+    "    will be striped off in given state(s). State may be one of\n"
+    "    servername_lookup, local_authentication, remote_login and all\n"
+    "    See manpage for details of states.\n"
+    "    (default \"(null)\")\n"
+    " -t|--timeout seconds:\n"
+    "    Idle timeout. Value of zero sets infinite timeout.\n"
     "    (default %d)\n"
-    " -u|--username:\n"
+    " -u|--username username:\n"
     "    Username to run as. (default \"%s\")\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"

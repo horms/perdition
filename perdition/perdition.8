@@ -22,7 +22,7 @@
 .\" 02111-1307  USA
 .\"
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH PERDITION 8 "25th December 2000"
+.TH PERDITION 8 "4th May 2001"
 .SH NAME
 perdition \- POP3 and IMAP4 proxy server
 .SH SYNOPSIS
@@ -55,7 +55,8 @@ the LOGIN command are accepted.
 .TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end
-server is made.
+server is made. Only available if perdition is compiled with pam
+support.
 .TP
 .B \-B, \-\-no_bind_banner:
 If \-b|\-\-bind_address is specified, then the address will be resolved
@@ -63,13 +64,13 @@ and the reverse\-lookup of this will be used in the greeting. This
 option disables this behaviour an reverts to using the uname to
 derive the hostname for the greeting.
 .TP
-.B \-b, \-\-bind_address:
+.B \-b, \-\-bind_address ip_address|hostname:
 Bind to interfaces with this address. In non\-inetd mode, connections
 will only be accepted on interfaces with this address. If NULL
 connections will be accepted from all interfaces. In inetd and
 non\-inetd mode the source address of connections to real servers
 will be this address, if NULL then the operating system will select
-a source address. The address may be an IP address or a hostname.
+a source address.
 .br
 (default "(null)")
 .TP
@@ -81,11 +82,9 @@ authentication phase.
 .TP
 .B \-c, \-\-client_server_specification:
 Allow USER of the form user<delimiter>server[:port] to specify the
-server and port for a user. 
-.sp
-\fBNote:\fP Overrides \-S|\-\-strip_domain.
+server and port for a user.
 .TP
-.B \-D, \-\-domain_delimiter:
+.B \-D, \-\-domain_delimiter string:
 Delimiter used for \-c|\-\-client_server_specification and
 \-S|\-\-strip_domain options. Multi-character delimiters are permitted.
 .br
@@ -94,14 +93,19 @@ Delimiter used for \-c|\-\-client_server_specification and
 .B \-d, \-\-debug:
 Turn on verbose debugging.
 .TP
-.B \-f, \-\-config_file:
+.B \-F, \-\-logging_facility facility:
+Syslog facility to log to. If the faclilty has a leading '/' then it will
+be treated as a file to log to. (default "mail").  Note: If an error occurs
+before options are read it may be logged to syslog faclilty mail
+.TP
+.B \-f, \-\-config_file filename:
 Name of config file to read. If set to "" no config file will be
 used. Command line options override options set in config file.
 .br
 (default "/etc/perdition/perdition.conf")
 .TP
-.B \-g, \-\-group:
-Group to run as. 
+.B \-g, \-\-group group:
+Group to run as.
 .br
 (default "nobody")
 .TP
@@ -117,64 +121,82 @@ zero sets no limit on the number of simultaneous connections.
 .br
 (default 0)
 .TP
-.B \-l, \-\-listen_port:
-Port to listen on. 
+.B \-l, \-\-listen_port port:
+Port to listen on.
 .br
 (default "protocol dependent")
 .TP
-.B \-M, \-\-map_library:
+.B \-M, \-\-map_library filename:
 Library to open that provides functions to look up the server for a
 user. A null library mean no library will be accessed and hence, no
 lookup will take place.
 .br
 (default "/usr/lib/libperditiondb_gdbm.so.0")
 .TP
-.B \-m, \-\-map_library_opt:
+.B \-m, \-\-map_library_opt string:
 String option to pass to database access function provided by the
 library specified by the \-M|\-\-map_library option. The treatment of
 this string is up to the library, in the case of perditiondb_gdbm
-the gdbm map to access is set. 
+the gdbm map to access is set.
 .br
 (default "(null)")
 .TP
 .B \-n, \-\-no_lookup:
-Disable host and port lookup Implies \-B|\-\-no_bind_banner
+Disable host and port lookup Implies \-B|\-\-no_bind_banner.
 .TP
 .B \-o, \-\-server_ok_line:
 If authentication with the back\-end server is successful then send
 the servers +OK line to the client, instead of generating one.
 .TP
-.B \-P, \-\-protocol:
+.B \-P, \-\-protocol protocol:
 Protocol to use.
 .br
 (default "POP3")
 available protocols: "POP3, IMAP4"
 .TP
-.B \-p, \-\-outgoing_port:
+.B \-p, \-\-outgoing_port port:
 Define a port to use if a port is not defined for a user in popmap,
-or a default server if it is used. 
+or a default server if it is used.
 .br
 (default "protocol dependent")
 .TP
-.B \-s, \-\-outgoing_server:
+.B \-s, \-\-outgoing_server servername[,servername...]:
 Define a server to use if a user is not in the popmap. Format is
 servername[:port]. Multiple servers can be delimited by a ','. If
 multiple servers are specified then they are used in a round robin.
 .br
 (default "(null)")
 .TP
-.B \-S, \-\-strip_domain:
+.B \-S, \-\-strip_domain state[,state]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain
-will be striped off Note: over\-ridden by
-\-c|\-\-client_server_specification.
+will be striped off in given state(s). State may be one of servername_lookup,
+local_authentication, remote_login and all.
+.br
+(default "(null)")
+.sp
+.B servername_lookup:
+strip domain of username for lookup of username in
+Popmap. Will not take effect if \-c|\-\-client_server_specification
+is specified.
+.sp
+.B local_authentication:
+Strip fomain of username for use in local
+authentication. Only has effect if \-a|\-\-authenticate_in is specified.
+.sp
+.B remote_login:
+Send a stripped version of the username to the back-end
+server for authentication.
+.sp
+.B all:
+Shorthand for all of above states.
 .TP
 .B \-t, \-\-timeout:
 Idle timeout in seconds. Value of zero sets infinite timeout.
 .br
 (default 1800)
 .TP
-.B \-u, \-\-username:
-Username to run as. 
+.B \-u, \-\-username username:
+Username to run as.
 .br
 (default "nobody")
 .TP
@@ -301,12 +323,6 @@ POP3
 
 user james@other.host
 .fi
-.SH STRIP DOMAIN
-IF strip domain is set using the \-S|\-\-strip_domain option then servers
-giving usernames of the form user<delimiter>host[:port] will have the text
-including and after <delimiter> removed from their username before
-authentication takes place.  This option does not take effect if User Port
-Specification, \-c|\-\-client_server_specification is turned on.
 .SH IDLE TIMEOUTS
 If there is no input from the client or back\-end server for greater than
 timeout seconds then the connection is closed. The default timeout is 1800
@@ -348,13 +364,12 @@ group       mail            #Long option used as key
 a                           #Option with no argument
 .fi
 .SH LOGGING
-Logs are logged via syslog using the facility mail.  You should
-inspect /etc/syslog.conf to find where these logs are written.
-Under Red Hat 6.x these logs will be written to /var/log/maillog,
-under Solaris 7 these logs will be written to /var/log/syslog.
-Normally each session will have two perdition log entries.
-Logs are prepended, depending on syslog with the date, host, and
-perdition[<pid>]: .
+By default, logs are logged via syslog using the facility mail.  You should
+inspect /etc/syslog.conf to find where these logs are written.  Under Red
+Hat 6.x these logs will be written to /var/log/maillog, under Solaris 7
+these logs will be written to /var/log/syslog.  Normally each session will
+have two perdition log entries.  Logs are prepended, depending on syslog
+with the date, host, and perdition[<pid>]: .
 .PP
 When the user connects the format of the logs is:
 .PP
@@ -412,7 +427,7 @@ logged. This is overridden by \-d|\-\-debug.
 .TP
 \fC/etc/perdition/perdition.conf
 .SH SEE ALSO
-perditiondb(5), inetd(8)
+perditiondb(5), inetd(8), syslog.conf(5), syslogd(8)
 .SH AUTHORS
 .B Lead
 .br

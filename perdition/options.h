@@ -53,6 +53,18 @@
 
 #define OPT_SERVER_DELIMITER                ','
 
+/*
+ * States for strip_domain option which may be the logical
+ * or of these.
+ */
+
+#define STATE_NONE         0x0
+#define STATE_GET_SERVER   0x1
+#define STATE_LOCAL_AUTH   0x2
+#define STATE_REMOTE_LOGIN 0x4
+#define STATE_ALL          STATE_GET_SERVER|STATE_LOCAL_AUTH|STATE_REMOTE_LOGIN
+
+
 #ifdef WITH_PAM_SUPPORT
 #define DEFAULT_AUTHENTICATE_IN              0
 #endif /* WITH_PAM_SUPPORT */
@@ -77,7 +89,7 @@
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
-#define DEFAULT_STRIP_DOMAIN                 0
+#define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_OK_LINE               0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
 #ifdef WITH_USER

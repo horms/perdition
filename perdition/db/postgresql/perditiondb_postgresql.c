@@ -46,7 +46,7 @@ static char *dbpwd   = PERDITIONDB_PGSQL_DEFAULT_DBPWD;
  * Show an error message with postgresql errors
  * pre: msg_str: message to prepent to message
  *      conn: postgresql database connection that error is for
- * post: msg_str is loged to PERDITION_LOG with postgresql error appended
+ * post: msg_str is logged to PERDITION_LOG with postgresql error appended
  * return: none
  **********************************************************************/
 

@@ -137,16 +137,7 @@ server_port_t *getserver(
     );
   }
   else{
-    if(
-      opt.strip_domain && 
-      (popserver=strstr(key_str, opt.domain_delimiter)) != NULL
-    ){
-      key_len=(size_t)(popserver-key_str);
-      *popserver='\0';
-    }
-    else{
-      key_len=strlen(key_str);
-    }
+    key_len=strlen(key_str);
     status=dbserver_get(key_str,opt.map_library_opt,&content_str,&content_len);
     if(status<0){
       if(status!=-2){

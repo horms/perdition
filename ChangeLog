@@ -18,8 +18,9 @@ xxx
   - Correct handling of litereals quoted with \" characters in
     IMAP mode.
   - Removed mutiple calls to dlerror() for a single error
-  - Fixed error in options parsing so that -S|--strip_domain
-    can be called without an argument.
+  - A modified S|strip_domain option such that domain may optionally be
+    stripped for zero or more of: database lookup, local authentication,
+    remote login.
 
 5th April 2001
 (Horms)

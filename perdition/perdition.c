@@ -51,6 +51,8 @@ static int (*dbserver_get)(char *, char *, char **, size_t *);
 static void *handle;
 
 static void perdition_reread_handler(int sig);
+static char *strip_username(char *username, int state);
+static void strip_username_free(void);
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
@@ -66,7 +68,8 @@ static void perdition_reread_handler(int sig);
     server_port_destroy(server_port); \
   } \
   server_port=NULL; \
-  token_destroy(&tag);
+  token_destroy(&tag); \
+  strip_username_free();
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -97,6 +100,7 @@ int main (int argc, char **argv){
   struct sockaddr_in from;
   struct sockaddr_in to;
   struct passwd pw;
+  struct passwd pw2;
   unsigned char *server_ok_buf=NULL;
   unsigned char *buffer;
   server_port_t *server_port=NULL;
@@ -107,6 +111,7 @@ int main (int argc, char **argv){
   char from_str[17];
   char to_str[17];
   char *servername=NULL;
+  char *username;
   char *port=NULL;
   int bytes_written=0;
   int bytes_read=0;
@@ -350,8 +355,8 @@ int main (int argc, char **argv){
       PERDITION_LOG(LOG_DEBUG, "main: protocol->in_get_pw");
       PERDITION_LOG(
 	LOG_ERR, 
-	"Fatal Error reading authentication information from client. %s. "
-	"Exiting child.", 
+	"Fatal Error reading authentication information from client \"%s\": "
+	"Exiting child", 
 	from_to_str
       );
       daemon_exit_cleanly(-1);
@@ -367,10 +372,19 @@ int main (int argc, char **argv){
     }
 
     /*Read the server from the map, if we have a map*/
+    if((username=strip_username(pw.pw_name, STATE_GET_SERVER))==NULL){
+      PERDITION_DEBUG("main: strip_username STATE_GET_SERVER");
+      PERDITION_LOG(
+	LOG_ERR, 
+	"Fatal error manipulating username for client \"%s\": Exiting child",
+	from_str
+      );
+      daemon_exit_cleanly(-1);
+    }
     if(
       opt.map_library!=NULL &&
       *(opt.map_library)!='\0' &&
-      (server_port=getserver(pw.pw_name, dbserver_get))!=NULL
+      (server_port=getserver(username, dbserver_get))!=NULL
     ){
       char *host;
       port=server_port_get_port(server_port);
@@ -436,7 +450,18 @@ int main (int argc, char **argv){
 
 #ifdef WITH_PAM_SUPPORT
     if(opt.authenticate_in){
-      if((status=protocol->in_authenticate(&pw, client_out, tag))==0){
+      if((pw2.pw_name=strip_username(pw.pw_name, STATE_LOCAL_AUTH))==NULL){
+        PERDITION_DEBUG("main: strip_username STATE_LOCAL_AUTH");
+        PERDITION_LOG(
+	  LOG_ERR, 
+	  "Fatal error manipulating username for client \"%s\": Exiting child",
+	  from_str
+        );
+        daemon_exit_cleanly(-1);
+      }
+      pw2.pw_passwd=pw.pw_passwd;
+
+      if((status=protocol->in_authenticate(&pw2, client_out, tag))==0){
         PERDITION_LOG(LOG_DEBUG, "main: protocol->in_authenticate");
         PERDITION_LOG(
 	  LOG_INFO, 
@@ -489,13 +514,24 @@ int main (int argc, char **argv){
     }
 
     /*Authenticate the user with the pop server*/
+    if((pw2.pw_name=strip_username(pw.pw_name, STATE_REMOTE_LOGIN))==NULL){
+      PERDITION_DEBUG("main: strip_username STATE_REMOTE_LOGIN");
+      PERDITION_LOG(
+	LOG_ERR, 
+	"Fatal error manipulating username for client \"%s\": Exiting child",
+	from_str
+      );
+      daemon_exit_cleanly(-1);
+    }
+    pw2.pw_passwd=pw.pw_passwd;
+
     if(opt.server_ok_line){
       server_ok_buf_size=MAX_LINE_LENGTH-1;
     }
     status = (*(protocol->out_authenticate))(
       server, 
       server, 
-      &pw, 
+      &pw2, 
       tag,
       protocol,
       server_ok_buf,
@@ -504,7 +540,7 @@ int main (int argc, char **argv){
 
     if(status==0){
       sleep(PERDITION_ERR_SLEEP);
-      PERDITION_LOG(LOG_INFO, "Fail reauthentication for user %s", pw.pw_name);
+      PERDITION_LOG(LOG_INFO, "Fail reauthentication for user %s", pw2.pw_name);
       quit(server, server, protocol);
       if(close(server)){
         PERDITION_LOG(LOG_DEBUG, "main: close(server) 2");
@@ -647,4 +683,97 @@ static void perdition_reread_handler(int sig){
   }
 
   signal(sig, (void(*)(int))perdition_reread_handler);
+}
+
+
+/**********************************************************************
+ * strip_username
+ * Strip the domain name, all characters after opt.domain_delimiter,
+ * from a username if it is permitted for a given state.
+ * pre: username: username to strip domain from
+ *      state: The current state. Should be one of STATE_GET_SERVER,
+ *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
+ * post: if state&opt.strip_domain
+ *         if state is STATE_GET_SERVER and opt.client_server_specification 
+ *           return username
+ *         else strip the domain name if it is present
+ *       else return username
+ * return: username, stripped as appropriate
+ *         NULL on error
+ * Note: to free any memory that may be used call strip_username_free()
+ *       You should call this each time username changes as the result
+ *       is chached internally and is not checked for staleness.
+ **********************************************************************/
+
+static char *__striped_username=NULL;
+static flag_t __striped_username_alloced=0;
+
+static char *__strip_username(char *username){
+  char *end;
+  size_t len;
+
+  extern options_t opt;
+  extern int errno;
+
+  if(__striped_username==NULL){
+    if((end=strstr(username, opt.domain_delimiter))==NULL){
+      __striped_username=username;
+    }
+    else {
+      len=end-username;
+      if((__striped_username=(char *)malloc(len+1))==NULL){
+	PERDITION_DEBUG_ERRNO("__strip_username: malloc", errno);
+	return(NULL);
+      }
+      __striped_username_alloced=1;
+      strncpy(__striped_username, username, len);
+      *(__striped_username+len)='\0';
+    }
+  }
+
+  return(__striped_username);
+}
+
+static char *strip_username(char *username, int state){
+  extern options_t opt;
+
+  if(!(opt.strip_domain&state)){
+    return(username);
+  }
+
+  switch(state){
+    case STATE_GET_SERVER:
+      if(opt.client_server_specification){
+        return(username);
+      }
+      else {
+        return(__strip_username(username));
+      }
+    case STATE_LOCAL_AUTH:
+      return(__strip_username(username));
+    case STATE_REMOTE_LOGIN:
+      return(__strip_username(username));
+    default:
+      PERDITION_DEBUG("strip_username: unknown state\n");
+      return(NULL);
+  }
+
+  return(NULL);
+}
+
+
+/**********************************************************************
+ * strip_username_free
+ * Free any memory held by strip_username state
+ * pre: none
+ * post: If any memory has been allocated internally by strip_username()
+ *       then it is freed
+ * return: none
+ **********************************************************************/
+
+static void strip_username_free(void){
+  if(__striped_username_alloced){
+    free(__striped_username);
+  }
+  __striped_username=NULL;
 }

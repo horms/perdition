@@ -49,7 +49,7 @@ static char *db_port_col     = PERDITIONDB_MYSQL_DEFAULT_DBPORTCOL;
  * Show an error message with mysql errors
  * pre: msg_str: message to prepent to message
  *      db: mysql database that error is for
- * post: msg_str is loged to PERDITION_LOG with mysql error appended
+ * post: msg_str is logged to PERDITION_LOG with mysql error appended
  * return: none
  **********************************************************************/
 
