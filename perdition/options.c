@@ -883,7 +883,7 @@ void usage(int exit_status){
     "    lookup will take place.\n"
     "    (default \"%s\")\n"
     " -m|--map_library_opt string:\n"
-    "    String option to pass to databse access function provided by the\n"
+    "    String option to pass to database access function provided by the\n"
     "    library specified by the -M|--map_library option. The treatment of\n"
     "    this string is up to the library, in the case of perditiondb_gdbm\n"
     "    the gdbm map to access is set. (default \"%s\")\n"

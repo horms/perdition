@@ -10,7 +10,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
 Description: Library to allow perdition to access LDAP based pop maps.
  Perdition allows for arbitrary user database access through
- shared libraries much in the maner of NSS in glibc. This package
+ shared libraries much in the manner of NSS in glibc. This package
  allows a user database to be sourced from LDAP.
 
 Package: perdition-mysql
@@ -18,23 +18,23 @@ Architecture: any
 Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
 Description: Library to allow perdition to access MySQL based pop maps.
  Perdition allows for arbitrary user database access through
- shared libraries much in the maner of NSS in glibc. This package
- allows a user database stored in a MySQL databse.
+ shared libraries much in the manner of NSS in glibc. This package
+ allows a user database stored in a MySQL database.
 
 Package: perdition-postgresql
 Architecture: any
 Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
-Description: Library to allow perdition to access PosgreSQL based pop maps.
+Description: Library to allow perdition to access PostgreSQL based pop maps.
  Perdition allows for arbitrary user database access through
- shared libraries much in the maner of NSS in glibc. This package
- allows a user database stored in a PostgreSQL databse.
+ shared libraries much in the manner of NSS in glibc. This package
+ allows a user database stored in a PostgreSQL database.
 
 Package: perdition-dev
 Architecture: any
 Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.2), libvanessa-adt-dev (>= 0.0.2), libvanessa-socket-dev (>= 0.0.3), libc6-dev
 Description: Development libraries and headers for perdition
  Perdition allows for arbitrary user database access through
- shared libraries much in the maner of NSS in glibc. This package
+ shared libraries much in the manner of NSS in glibc. This package
  provides headers and libraries that may be useful in the development
  of perditiondb libraries.
 

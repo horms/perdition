@@ -153,7 +153,7 @@ fi
 
 echo
 echo "The system user postgres password should already be set."
-echo "It is needed to add a PosgreSQL perdition user that will"
+echo "It is needed to add a PostgreSQL perdition user that will"
 echo "own the perdition database. Please enter the postgres user's"
 echo "password at the prompt"
 

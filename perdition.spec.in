@@ -50,7 +50,7 @@ Requires: perdition-%{ver}-%{rel}
 
 %description devel
 Perdition allows for arbitrary user database access through
-shared libraries much in the maner of NSS in glibc. This package
+shared libraries much in the manner of NSS in glibc. This package
 provides headers and libraries that may be useful in the development
 of perditiondb libraries.
 
@@ -64,7 +64,7 @@ Provides: perdition-ldap-%{ver}-%{rel}
 
 %description ldap
 Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
+libraries much in the manner of NSS in glibc. This package allows a user
 database to be sourced from LDAP.
 
 
@@ -77,12 +77,12 @@ Provides: perdition-mysql-%{ver}-%{rel}
 
 %description mysql
 Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database stored in a MySQL databse.
+libraries much in the manner of NSS in glibc. This package allows a user
+database stored in a MySQL database.
 
 
 %package postgresql
-Summary: Library to allow perdition to access PosgreSQL based pop maps.
+Summary: Library to allow perdition to access PostgreSQL based pop maps.
 Group: Applications/Internet
 Copyright: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -90,8 +90,8 @@ Provides: perdition-postgresql-%{ver}-%{rel}
 
 %description postgresql
 Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database stored in a PostgreSQL databse.
+libraries much in the manner of NSS in glibc. This package allows a user
+database stored in a PostgreSQL database.
 
 
 
