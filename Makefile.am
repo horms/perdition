@@ -35,3 +35,6 @@ CODING_LOCATIONS.in\
 CODING_LOCATIONS \
 acconfig.h \
 autogen.sh
+
+clean-local:
+	rm -f build-stamp

@@ -43,6 +43,6 @@ rules \
 dpkg-checkbuild
 
 clean-local:
-	rm -f *.substvars *.debhelper
+	rm -f *.substvars *.debhelper files
 	rm -r -f perdition perdition-dev perdition-ldap perdition-mysql \
 		perdition-postgresql tmp
