@@ -41,6 +41,7 @@ INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain \
+@ssl_includes@ \
 @ldap_includes@
 
-libperditiondb_ldap_la_LIBADD = @ldap_libs@
+libperditiondb_ldap_la_LIBADD = @ssl_libs@ @ldap_libs@

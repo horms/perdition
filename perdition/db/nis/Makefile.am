@@ -36,10 +36,11 @@ perditiondb_nis.h
 
 libperditiondb_nis_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_nis_la_LIBADD = 
+libperditiondb_nis_la_LIBADD = @ssl_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain
+-I$(top_srcdir)/libjain \
+@ssl_includes@
 

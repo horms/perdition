@@ -37,10 +37,11 @@ perditiondb_mysql.h
 
 libperditiondb_mysql_la_LDFLAGS = -version-info 0:0:0
 
-libperditiondb_mysql_la_LIBADD =  @mysql_libs@
+libperditiondb_mysql_la_LIBADD =  @ssl_libs@ @mysql_libs@
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain \
+@ssl_includes@ \
 @mysql_includes@

@@ -133,11 +133,11 @@ AC_ARG_WITH(
                           OpenSSL include files are in DIR.  ],
   [  ssl_includepath="$withval" ],
   [ 
-    AC_MSG_CHECKING(OpenSSL library path)
+    AC_MSG_CHECKING(OpenSSL include path)
     for ssl_includepath in /usr/openssl/include /usr/local/openssl/include \
-        /usr/include/openssl /usr/local/include/openssl \
-  	  /usr/include /usr/local/include; do
-      if test -f "${ssl_includepath}/ssl.h"; then
+        /usr/local/include/openssl /usr/local/ssl/include \
+	/usr/include /usr/local/include; do
+      if test -f "${ssl_includepath}/openssl/ssl.h"; then
         break
       fi
     done
@@ -155,9 +155,10 @@ AC_ARG_WITH(
   [ 
     AC_MSG_CHECKING(OpenSSL library path)
     for ssl_libpath in /usr/openssl/lib /usr/local/openssl/lib \
-        /usr/lib/openssl /usr/local/lib/openssl \
+        /usr/lib/openssl /usr/local/lib/openssl /usr/local/ssl/lib \
   	  /usr/lib /usr/local/lib; do
-      if test -f "${ssl_libpath}/libssl.a"; then
+      if test -f "${ssl_libpath}/libssl.a" -o -f "${ssl_libpath}/libssl.so" 
+      then
         break
       fi
     done
@@ -168,7 +169,7 @@ AC_ARG_WITH(
 ssl_libs="-L$ssl_libpath -lssl -lcrypto"
 
 AC_CHECK_FILE(
-  $ssl_includepath/ssl.h,
+  $ssl_includepath/openssl/ssl.h,
   :,
   [ 
     enable_ssl=no;
@@ -222,7 +223,7 @@ AC_ARG_WITH(
     AC_MSG_CHECKING(MySQL include path)
     for mysql_includepath in /usr/mysql/include /usr/local/mysql/include \
         /usr/include/mysql /usr/local/include/mysql \
-    	/usr/include /usr/local/include; do
+	/usr/local/mysql/include/mysql /usr/include /usr/local/includel; do
       if test -f "${mysql_includepath}/mysql.h"; then
         break
       fi
@@ -242,8 +243,9 @@ AC_ARG_WITH(
     AC_MSG_CHECKING(MySQL include path)
     for mysql_libpath in /usr/mysql/lib /usr/local/mysql/lib \
         /usr/lib/mysql /usr/local/lib/mysql \
-    	/usr/lib /usr/local/lib; do
-      if test -f "${mysql_libpath}/libmysqlclient.a"; then
+    	/usr/local/mysql/lib/mysql /usr/lib /usr/local/lib; do
+      if test -f "${mysql_libpath}/libmysqlclient.a" \
+      	-o -f "${mysql_libpath}/libmysqlclient.so"; then
         break
       fi
     done
@@ -323,7 +325,7 @@ AC_ARG_WITH(
         /usr/postgresql/lib /usr/local/postgresql/lib \
         /usr/lib/postgresql /usr/local/lib/postgresql \
     	/usr/lib /usr/local/lib; do
-      if test -f "${pg_libpath}/libpq.a"; then
+      if test -f "${pg_libpath}/libpq.a" -o -f "${pg_libpath}/libpq.so"; then
         break
       fi
     done
@@ -446,7 +448,8 @@ AC_ARG_WITH(
     for ldap_libpath in /usr/openldap/lib /usr/local/openldap/lib \
         /usr/lib/openldap /usr/local/lib/openldap \
     	/usr/lib /usr/local/lib; do
-      if test -f "${ldap_libpath}/libldap.a"; then
+      if test -f "${ldap_libpath}/libldap.a" \
+      	-o -f "${ldap_libpath}/libldap.so"; then
         break
       fi
     done

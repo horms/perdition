@@ -6,13 +6,18 @@ Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 To install perdition 
+--------------------
+
 tar zxf perdition-@VERSION@.tar.gz
 cd perdition-@VERSION@
 ./configure [--prefix=/usr]
 make
 make install
 
+
 To build RPMS
+-------------
+
 rpm -ta perdition-@VERSION@.tar.gz
 
 or
@@ -24,7 +29,27 @@ rpm -ta perdition-@VERSION@.tar.gz
 
 
 To build Debian Packages
+------------------------
+
 dpkg-build [-us] [-uc]
 
 You will need to create a popmap and decide on your invocation method.
 For details on this please see the README
+
+
+To install on Solaris 8
+-----------------------
+
+You may need to set some envirnoment variables to aid the build process.
+The following worked for me using a bourne shell. Make apropriate
+adjustments if you are using a C shell.
+
+export CPPFLAGS="-I/usr/local/include/"
+export LDFLAGS="-L/usr/local/lib/"
+
+cd perdition-@VERSION@
+./configure [--prefix=/usr]
+make
+make install
+
+
