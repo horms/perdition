@@ -496,16 +496,7 @@ int dbserver_get(const char *key_str,
 		}
 	}
 
-	/* If there is no opt.domain_delimiter present in *str_return,
-	 * then no servername has been found and the result is useless */
-	if (strstr(*str_return, opt.domain_delimiter) == NULL) {
-		free(*str_return);
-		*str_return = NULL;
-		*len_return = 0;
-		status = -2;
-	} else {
-		status = 0;
-	}
+	status = 0;
 
       leave:
 	if (returns) {
