@@ -45,14 +45,14 @@ install: build
 
 	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition
 	install -c -m 644 README \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/README
 	install -c -m 644 ChangeLog \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
 	install -c -m 644 CODING_LOCATIONS \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/CODING_LOCATIONS
 	install -c -m 644 TODO \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/
+	  $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
 
 	dh_movefiles --source=debian/tmp
 
