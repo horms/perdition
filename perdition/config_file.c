@@ -54,6 +54,8 @@
 void config_file_to_opt(const char *filename){
   vanessa_dynamic_array_t *a;
 
+  VANESSA_LOGGER_DEBUG_RAW_UNSAFE("Reading configuration file: \"%s\"",
+		  filename);
   a=vanessa_config_file_read(filename, 0);
   if(!a) {
     return;
