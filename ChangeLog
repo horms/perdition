@@ -12,6 +12,8 @@ xxx
   - Fixed problem with setting ssl_key_file.
   - Brief documentation for how to generate .pem files for SSL/TLS
   - Handle systems that don't have socklen_t
+  - Duplicate strings before calling vanessa_dynamic_array_split_str()
+    to avoid strings being truncated in debuging output.
 
 
 ----------------------------------------------------------------------

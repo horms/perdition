@@ -98,55 +98,68 @@ int dbserver_fini(void){
 
 int dbserver_init(char *options_str){
    int count;
+   char *tmp_str;
 
-   if(options_str!=NULL && a==NULL){
-     if((a=vanessa_dynamic_array_split_str(
-       options_str, 
-       PERDITIONDB_MYSQL_FIELD_DELIMITER
-     ))==NULL){
-       PERDITION_DEBUG("vanessa_dynamic_array_split_str");
-       a=NULL;
-       return(-1);
-     }
-     count=vanessa_dynamic_array_get_count(a);
-     if(count>PERDITIONDB_MYSQL_DBHOST){ 
-       dbhost=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBHOST); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBNAME){ 
-       dbname=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBNAME); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBPORT){ 
-       dbport=atoi(vanessa_dynamic_array_get_element(a, 
+   if(options_str==NULL || a!=NULL){
+     return(0);
+   }
+
+   if((tmp_str=strdup(options_str))==NULL) {
+     PERDITION_DEBUG_ERRNO("strdup");
+     a=NULL;
+     return(-1);
+   }
+
+   if((a=vanessa_dynamic_array_split_str(
+     tmp_str, 
+     PERDITIONDB_MYSQL_FIELD_DELIMITER
+   ))==NULL){
+     PERDITION_DEBUG("vanessa_dynamic_array_split_str");
+     a=NULL;
+     free(tmp_str);
+     return(-1);
+   }
+
+   count=vanessa_dynamic_array_get_count(a);
+   if(count>PERDITIONDB_MYSQL_DBHOST){ 
+     dbhost=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBHOST); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBNAME){ 
+     dbname=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBNAME); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBPORT){ 
+     dbport=atoi(vanessa_dynamic_array_get_element(a, 
 	   PERDITIONDB_MYSQL_DBPORT)); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBTABLE){ 
-       dbtable=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBTABLE);
-     }
-     if(count>PERDITIONDB_MYSQL_DBUSER){ 
-       dbuser=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBUSER); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBPWD){ 
-       dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPWD); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
-       db_user_col=vanessa_dynamic_array_get_element(
+   }
+   if(count>PERDITIONDB_MYSQL_DBTABLE){ 
+     dbtable=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBTABLE);
+   }
+   if(count>PERDITIONDB_MYSQL_DBUSER){ 
+     dbuser=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBUSER); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBPWD){ 
+     dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPWD); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
+     db_user_col=vanessa_dynamic_array_get_element(
 	 a, 
 	 PERDITIONDB_MYSQL_DBUSERCOL
-       ); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
-       db_srv_col=vanessa_dynamic_array_get_element(
+     ); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
+     db_srv_col=vanessa_dynamic_array_get_element(
 	 a, 
 	 PERDITIONDB_MYSQL_DBSRVCOL
-       ); 
-     }
-     if(count>PERDITIONDB_MYSQL_DBPORTCOL){ 
-       db_port_col=vanessa_dynamic_array_get_element(
+     ); 
+   }
+   if(count>PERDITIONDB_MYSQL_DBPORTCOL){ 
+     db_port_col=vanessa_dynamic_array_get_element(
 	 a, 
 	 PERDITIONDB_MYSQL_DBPORTCOL
-       ); 
-     }
+     ); 
    }
+
+   free(tmp_str);
 
    return(0);
 }
