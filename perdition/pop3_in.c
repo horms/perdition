@@ -106,6 +106,15 @@ int pop3_in_authenticate(
  *         -1 on error
  **********************************************************************/
 
+#define __POP3_IN_ERR(_reason)                                             \
+	sleep(VANESSA_LOGGER_ERR_SLEEP);                                   \
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 1,                    \
+				"%s", (_reason))<0){                       \
+          VANESSA_LOGGER_DEBUG("pop3_write err");                          \
+          break;                                                           \
+        }                                                                  \
+        goto loop;
+
 int pop3_in_get_pw(
   io_t *io,
   struct passwd *return_pw,
@@ -132,25 +141,14 @@ int pop3_in_get_pw(
       break;
     }
 
-    if(!token_len(t)) {
-	    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-				    "Null command")<0) {
-		    VANESSA_LOGGER_DEBUG("pop3_write null command");
-	    	break;
-	    }
-	    goto loop;
+    if(token_is_null(t)) {
+	    __POP3_IN_ERR("Null command, mate");
     }
 
 
     if(strncasecmp(token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
       if(vanessa_queue_length(q)!=0){
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-				"Mate, try: " POP3_CMD_CAPA)<0){
-          VANESSA_LOGGER_DEBUG("pop3_write capa args");
-          break;
-        }
-        goto loop;
+	    __POP3_IN_ERR("Mate, try: " POP3_CMD_CAPA);
       }
       pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
 		      "Capability list follows, mate");
@@ -163,17 +161,7 @@ int pop3_in_get_pw(
     if(opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
         !strncasecmp(token_buf(t), POP3_CMD_STLS, token_len(t))){
       if(vanessa_queue_length(q)!=0){
-	VANESSA_LOGGER_DEBUG_UNSAFE(
-	  "vanessa_queue_length(q)=%d\n",
-	  vanessa_queue_length(q)
-	);
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-				"Mate, try: " POP3_CMD_STLS)<0){
-          VANESSA_LOGGER_DEBUG("pop3_write stls args");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR("Mate, try: " POP3_CMD_STLS);
       }
       if(io_get_type(io) != io_type_ssl){
         pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
@@ -184,39 +172,17 @@ int pop3_in_get_pw(
       }
       else
       {
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-	    "TLS already active, mate")<0){
-          VANESSA_LOGGER_DEBUG("pop3_write stls set");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR("TLS already active, mate");
       }
     } 
 #endif /* WITH_SSL_SUPPORT */
 
     if(strncasecmp(token_buf(t), POP3_CMD_USER, token_len(t))==0){
       if(return_pw->pw_name!=NULL){
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-	    POP3_CMD_USER " is already set, mate")<0){
-          VANESSA_LOGGER_DEBUG("pop3_write user set");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR(POP3_CMD_USER " is already set, mate");
       }
       if(vanessa_queue_length(q)!=1){
-	VANESSA_LOGGER_DEBUG_UNSAFE(
-	  "vanessa_queue_length(q)=%d\n",
-	  vanessa_queue_length(q)
-	);
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR,0,
-	    "Mate, try: " POP3_CMD_USER " <username>")<0){
-          VANESSA_LOGGER_DEBUG("pop3_write user args");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR("Mate, try: " POP3_CMD_USER " <username>");
       }
 
       if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
@@ -242,22 +208,10 @@ int pop3_in_get_pw(
     }
     else if(strncasecmp(token_buf(t), POP3_CMD_PASS, token_len(t))==0){
       if(return_pw->pw_name==NULL){
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-	    POP3_CMD_USER " not yet set, mate")<0){
-          VANESSA_LOGGER_DEBUG("pop3_write pass, user not set");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR(POP3_CMD_USER " not yet set, mate");
       }
       if(vanessa_queue_length(q)>1){
-        sleep(VANESSA_LOGGER_ERR_SLEEP);
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-	    "Mate, try: " POP3_CMD_PASS " <password>")<0){
-          VANESSA_LOGGER_DEBUG("pop3_write pass args");
-          break;
-        }
-        goto loop;
+	      __POP3_IN_ERR("Mate, try: " POP3_CMD_PASS " <password>");
       }
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
@@ -287,12 +241,9 @@ int pop3_in_get_pw(
       return(1);
     }
     else{
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-            "Mate, the command must be one of " POP3_CMD_CAPA ", " 
-	    POP3_CMD_USER ", " POP3_CMD_PASS " or " POP3_CMD_QUIT) < 0) {
-        VANESSA_LOGGER_DEBUG("pop3_write command");
-        break;
-      }
+	    __POP3_IN_ERR("Mate, the command must be one of " 
+			    POP3_CMD_CAPA ", " POP3_CMD_USER ", " 
+			    POP3_CMD_PASS " or " POP3_CMD_QUIT);
     }
 
     /*Clean up before looping*/

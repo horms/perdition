@@ -270,12 +270,12 @@ int imap4_in_authenticate(
 		free(return_pw->pw_passwd);                                 \
 		return_pw->pw_passwd=NULL;                                  \
 	}                                                                   \
-	__IMAP4_IN_BAD("Try " IMAP4_CMD_LOGIN " <username> <passwd>");
+	__IMAP4_IN_BAD("Mate, try " IMAP4_CMD_LOGIN " <username> <passwd>");
 
 #define __IMAP4_IN_CHECK_NO_ARG(_cmd)                                       \
 	if(vanessa_queue_length(q)) {                                       \
 		__IMAP4_IN_BAD("Argument given to " _cmd                    \
-					" but there shouldn't be one");     \
+				" but there shouldn't be one, mate");       \
 	}
 
 int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
@@ -302,10 +302,10 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     if(token_is_eol(tag)){
       if(token_is_null(tag)){
 	token_assign(tag, strdup(IMAP4_BAD), strlen(IMAP4_BAD), 0);
-	__IMAP4_IN_BAD("Null tag");
+	__IMAP4_IN_BAD("Null tag, mate");
       }
       else {
-	__IMAP4_IN_BAD("Missing command");
+	__IMAP4_IN_BAD("Missing command, mate");
       }
       goto loop;
     }
@@ -317,7 +317,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
 
     if(token_is_null(t)){
-      __IMAP4_IN_BAD("Null command");
+      __IMAP4_IN_BAD("Null command, mate");
     }
 
     if(strncasecmp(token_buf(t), IMAP4_CMD_NOOP, token_len(t))==0){
@@ -340,7 +340,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         return(2);
       }
       else {
-	__IMAP4_IN_BAD("SSL already active");
+	__IMAP4_IN_BAD("SSL already active, mate");
       }
     }    
 #endif /* WITH_SSL_SUPPORT */
@@ -354,7 +354,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     else if(strncasecmp(token_buf(t), IMAP4_CMD_AUTHENTICATE,
 			    token_len(t))==0){
       if(vanessa_queue_length(q) != 1) {
-        __IMAP4_IN_BAD("Try " IMAP4_CMD_AUTHENTICATE " <mechanism>");
+        __IMAP4_IN_BAD("Mate, try " IMAP4_CMD_AUTHENTICATE " <mechanism>");
       }
       if(imap4_in_authenticate_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop 2");
@@ -462,7 +462,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       return(0);
     }
     else {
-      __IMAP4_IN_BAD("Unrecognised command");
+      __IMAP4_IN_BAD("Unrecognised command, mate");
     }
 
     /*Clean up before looping*/
@@ -511,7 +511,7 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag){
 
 int imap4_in_logout_cmd(io_t *io, const token_t *tag){
   if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
-			  "IMAP4 server loging out")<0){
+			  "IMAP4 server loging out, mate")<0){
     VANESSA_LOGGER_DEBUG("imap4_write untagged");
     return(-1);
   }
@@ -566,7 +566,7 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag){
 int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
 	if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0, 
 				IMAP4_CMD_AUTHENTICATE 
-				" mechchanism not supported")<0){
+				" mechchanism not supported, mate")<0){
 		VANESSA_LOGGER_DEBUG("imap4_write");
 		return(-1);
 	}
