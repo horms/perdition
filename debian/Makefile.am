@@ -27,12 +27,12 @@ EXTRA_DIST = \
 changelog \
 control \
 copyright \
-perdition-dev.files \
 perdition-bdb.files \
 perdition-bdb.postinst \
 perdition-bdb.prerm \
-perdition-ldap.files \
+perdition-dev.files \
 perdition-ldap.conffiles \
+perdition-ldap.files \
 perdition-ldap.postinst \
 perdition-ldap.prerm \
 perdition-mysql.files \
@@ -47,9 +47,9 @@ perdition-postgresql.prerm \
 perdition.conffiles \
 perdition.dirs \
 perdition.files \
-perdition.preinst \
 perdition.postinst \
 perdition.postrm \
+perdition.preinst \
 perdition.prerm \
 rules \
 dpkg-checkbuild
