@@ -23,6 +23,13 @@
 #
 ######################################################################
 
+man_MANS = perditiondb_ldap_makedb.8
+
+EXTRA_DIST = perditiondb_ldap_makedb perditiondb_ldap_makedb.8
+
+bin_SCRIPTS = perditiondb_ldap_makedb
+
+libperditiondb_ldap_la_LIBADD = @ssl_lib@ @ldap_libs@
 lib_LTLIBRARIES = libperditiondb_odbc.la
 
 libperditiondb_odbc_la_SOURCES = \

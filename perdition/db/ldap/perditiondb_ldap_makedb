@@ -45,7 +45,7 @@ include         /etc/ldap/schema/perdition.schema
 
 __EOF__
 
-echo -n "Has perdition.schema been added to /etc/ldap/slapd.conf? [Y/n]: "
+echo -n "Has perdition.schema been added to /etc/ldap/slapd.conf? [y/N]: "
 read flim
 if ! [ -z "$flim" -o "$flim" = "y" -o "$flim" = "Y" ]; then
   echo Bailing...

@@ -1,0 +1,170 @@
+#!/bin/bash
+######################################################################
+# makedb                                                    March 2002
+# Horms                                             horms@vergenet.net
+#
+# Sample programme to seed a perdition database using ODBC
+#
+# perdition
+# Mail retrieval proxy server ODBC support
+# Copyright (C) 1999  Horms, Frederic Delchambre
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+DEFAULT_DBSERVER=localhost
+DEFAULT_DBNAME=dbPerdition
+DEFAULT_DBUSER=perdition
+DEFAULT_DBHOST=localhost
+DEFAULT_DBTABLE=tblPerdition
+
+quit () {
+  stty echo
+}
+
+trap quit HUP
+trap quit TERM
+trap quit STOP
+
+if [ -z "$(type -path isql)" ]; then
+  echo "Could not find isql command. Bailing" >&2
+  exit 1
+fi
+
+
+cat << __EOF__
+
+ODBC should already be configured on a host. A DSN and user for perdition
+to use should have been created.  This is typically done using the
+underlying RDBMS.
+__EOF__
+echo -n "Has ODBC, a DSN and user been set up? [y/N]: "
+read flim
+if [ "$flim" != "y" -a "$flim" != "Y" ]; then
+  echo Bailing...
+  exit 0
+fi
+
+cat << __EOF__
+
+The default host to connect to is $DEFAULT_DBSERVER.  To use this host hit
+return. Otherwise enter a host to connect to.
+__EOF__
+echo -n "Enter host name [$DEFAULT_DBSERVER]: " >&2
+read dbserver
+if [ -z "$dbserver" ]; then
+  dbserver="$DEFAULT_DBSERVER"
+elif [ "$dbserver" != "localhost" ]; then
+  DEFAULT_DBHOST="$(hostname)"
+fi
+
+cat << __EOF__
+
+Perdition information will be sotored in a DSN which should already exist
+in the underlying RDBMS.  The default name for this DSN is $DEFAULT_DBNAME.
+If you want to use this hit return, otherwise enter the name for the DSN.
+__EOF__
+echo -n "Enter DSN [$DEFAULT_DBNAME]: "
+read dbname
+if [ -z "$dbname" ]; then
+  dbname="$DEFAULT_DBNAME"
+fi
+
+cat << __EOF__
+
+Perdition information will be stored in table in the $dbname DSN. The
+default name for this table is $DEFAULT_DBTABLE. If you want to use this
+hit return, otherwise enter the name for the table.
+__EOF__
+echo -n "Enter table name [$DEFAULT_DBTABLE]: "
+read dbtable
+if [ -z "$dbtable" ]; then
+  dbtable="$DEFAULT_DBTABLE"
+fi
+
+cat << __EOF__
+
+A user, other than root should be used to access the $dbname DSN. This user
+should already exist in the underlying RDBMS and have query and insert
+access to the $dbmname DSN. The default name for this user is
+$DEFAULT_DBUSER. If you want to use this name, hit return, otherwise enter
+the name for the user.
+__EOF__
+echo -n "Enter user [$DEFAULT_DBUSER]: "
+read dbuser
+if [ -z "$dbuser" ]; then
+  dbuser="$DEFAULT_DBUSER"
+fi
+
+while [ 1 ]; do
+  echo -n "Enter the password for the $dbuser user: " >&2
+  stty -echo
+  read dbpw
+  stty echo
+  echo
+  if [ -z "$dbpw" ]; then
+    echo "Password is empty, please try again." >& 2
+    continue
+  fi
+  break
+done
+
+echo
+echo "Server: $dbserver"
+echo "DSN:    $dbname"
+echo "Table:  $dbtable"
+echo "User:   $dbuser"
+echo -n "Proceed (May destroy existing data in database) [y/N]? " >&2
+read answer
+if [ "$answer" != "y" -a "$answer" != "Y" ]; then
+  exit 0
+fi
+
+
+
+echo -n "Creating table $dbtable in database $dbname..."
+#Seed table with data as user perdition
+
+{
+cat << __EOF__
+drop table if exists $dbtable;
+create table $dbtable ( user varchar(128) not null primary key, servername varchar(255) not null, port varchar(8) default null);
+create index idx${dbtable}_user on $dbtable (user);
+__EOF__
+} | isql "$dbname" "$dbuser" "$dbpw" >& /dev/null
+if [ $? != 0 ]; then
+  echo "Error creating $dbtable in $dbname. Bailing"
+  exit 1
+fi
+echo " Done"
+
+cat << __EOF__
+
+You may now add entries to $dbtable in $dbname.
+To connect to $dbname use:
+
+isql "$dbname" "$dbuser" "$dbpw"
+
+To insert rows into $dbtable use the following once
+logged into $dbname
+
+insert into $dbtable values (\"user\", \"servername\", \"port\");
+where: 
+  user:       name of user. Up to 128 characters. May not be NULL.
+  servername: name of server for user. Up to 255 characters. May not be NULL.
+  port:       port to connect to on server. May be NULL.
+__EOF__
