@@ -10,7 +10,9 @@ xxx
 
   * Version xxx
   - Added SSL Support
-  - Added loging of successful Authentication
+  - Added loging of successful Authentication. Carlos Canau
+  - Added code to log source and destination IP address
+    when in inetd mode. Carlos Canau
   - Added logging of reread or map library
   - Removed code that expands % to %25 in LDAP urls as it
     handles some RFC 1959 compliant URLS incorrectly by expanding
