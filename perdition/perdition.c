@@ -418,9 +418,9 @@ int main (int argc, char **argv){
       str_null_safe(port)
     );
 
-    /*Try again ig we didn't get anything useful*/
+    /*Try again if we didn't get anything useful*/
     if(servername==NULL){
-      sleep(PERDITION_ERR_SLEEP);
+      sleep(PERDITION_AUTH_FAIL_SLEEP);
       if((*(protocol->write))(
         client_out, 
         NULL_FLAG,
