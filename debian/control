@@ -3,7 +3,7 @@ Build-Depends: libvanessa-logger-dev (>= 0.0.4), libvanessa-adt-dev (>= 0.0.4), 
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>
-Standards-Version: 3.5.9
+Standards-Version: 3.5.10
 
 Package: perdition
 Architecture: any

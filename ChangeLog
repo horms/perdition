@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+6th June 2003
 (Horms)
-   * XXX
+   * 1.11
    - Minor clean up of warning about missing root privalges
      if authenticate_in is in effect.
    - Minor clean up of per-module check messages in configure
