@@ -44,6 +44,7 @@ AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
 AC_CHECK_LIB(resolv, inet_aton, [ resolv_lib="-lresolv" ], [ resolv_lib="" ])
+AC_CHECK_LIB(crypt, crypt, [ crypt_lib="-lresolv" ], [ crypt_lib="" ])
 AC_CHECK_LIB(
   popt,
   poptGetContext,
@@ -347,7 +348,6 @@ AC_CHECK_FILE(
   $ldap_includepath/ldap.h,
   [
     ldap_build_dir="ldap"
-    ldap_lib="-lldap -llber"
   ],
   [ 
     ldap_build_dir="" 
@@ -367,7 +367,6 @@ AC_CHECK_LIB(
   ldap_url_parse,
   [
     ldap_build_dir="ldap"
-    ldap_lib="-lldap -llber"
   ],
   [ 
     ldap_build_dir="" 
@@ -429,22 +428,21 @@ else
 fi
 
 pg_includes="-I$pg_includepath"
-pg_libs="-L$pg_libpath"
+pg_libs="-lpq -L$pg_libpath"
 mysql_includes="-I$mysql_includepath"
-mysql_libs="-L$mysql_libpath"
+mysql_libs="-lmysqlclient -L$mysql_libpath"
 ldap_includes="-I$ldap_includepath"
 ldap_libs="-L$ldap_libpath -lldap -llber"
+posix_regex_libs="-lvanessa_adt"
 AC_MSG_CHECKING("for Linux style shared object linking")
 if test "$host_os" = "linux" -o "$host_os" = "linux-gnu"; then
   AC_MSG_RESULT(Yes)
-  pg_libs="-lpq $pg_libs"
-  mysql_libs="-lmysqlclient -lz $mysql_libs"
-  posix_regex_libs="-lvanessa_adt"
 else
   AC_MSG_RESULT(No)
-  pg_libs="-lvanessa_logger -lvanessa_adt -lpq $pg_libs"
-  mysql_libs="-lvanessa_logger -lvanessa_adt -lmysqlclient -lz $mysql_libs"
-  posix_regex_libs="-lvanessa_logger -lvanessa_adt"
+  pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt $pg_libs"
+  mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm $mysql_libs"
+  ldap_libs="$socket_lib $nsl_lib $ldap_libs"
+  posix_regex_libs="-lvanessa_logger $posix_regex_libs"
 fi
 
 
@@ -495,7 +493,7 @@ AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
 AC_SUBST(nsl_lib)
 AC_SUBST(resolv_lib)
-AC_SUBST(ldap_lib)
+AC_SUBST(crypt_lib)
 AC_SUBST(pam_dir)
 AC_SUBST(pam_lib)
 AC_SUBST(pam_source)
