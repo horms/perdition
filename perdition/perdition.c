@@ -532,9 +532,8 @@ int main (int argc, char **argv){
 
     /*Read the server from the map, if we have a map*/
     if(
-      opt.map_library!=NULL &&
-      *(opt.map_library)!='\0' &&
-      (server_port=getserver(username, dbserver_get))!=NULL
+      opt.map_library != NULL && *(opt.map_library) != '\0' &&
+      (server_port = getserver(username, dbserver_get)) != NULL
     ){
       char *host;
 

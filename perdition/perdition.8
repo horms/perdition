@@ -220,7 +220,14 @@ specified or not.
 .B \-q, \-\-quiet:
 Only log errors. Overridden by \-d|\-\-debug
 .TP
-.B \-X|\-\-lower_case state[,state...]:
+.B \-\-lookup_domain:
+If the username is not found on a popmap lookup, and the domain-delimiter
+is part of the username, then lookup up the domain portion of the username,
+prefixed by the domain_delimiter in the database. Allows different default
+servers to be defined for different domains. Overriden by
+\-c|\-\-client_server_specification.
+.TP
+.B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
 state(s). State may be one of servername_lookup,
 local_authentication, remote_login and all. See \-A|\-\-add_domain for a

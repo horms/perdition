@@ -10,6 +10,10 @@ xxx
 
   * Version xxx
   - Added LDAP schema, perdition.schema
+  - -X is no longer a synonym for --lower_case
+  - Added --lookup_domain option which allows different default
+    servers to be specified for different domains.
+    Ronny Cook <ronny@ronnycook.org>
 
 
 

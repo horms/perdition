@@ -125,11 +125,11 @@ server_port_t *getserver(
   char *content_str;
   int  content_len;
   char *popserver;
-  int  key_len;
   int status;
  
   extern options_t opt;
 
+  /* If the user specified a server, and it is allowed then use it */
   if(
     opt.client_server_specification &&
     (popserver=strstr(key_str, opt.domain_delimiter)) != NULL 
@@ -144,16 +144,33 @@ server_port_t *getserver(
       popserver+opt.domain_delimiter_length,
       strlen(popserver+opt.domain_delimiter_length)
     );
+
+    return(server_port);
   }
-  else{
-    key_len=strlen(key_str);
-    status=dbserver_get(key_str,opt.map_library_opt,&content_str,&content_len);
-    if(status<0){
-      if(status!=-2){
-        PERDITION_DEBUG("dbserver_get");
-      }
-      return(NULL);
+
+  /* Look up the user in the database */
+  status=dbserver_get(key_str,opt.map_library_opt,&content_str,&content_len);
+
+  /* If that didn't work look up the domain in the database */
+  if(
+    status == -2 && opt.lookup_domain &&
+    (popserver=strstr(key_str, opt.domain_delimiter)) != NULL &&
+    popserver != key_str
+  ) {
+    status=dbserver_get(popserver, opt.map_library_opt,
+                        &content_str, &content_len);
+  }
+
+  /* Catch errors from either of the two dbserver_get calls */
+  if(status<0){
+    if(status == -2) {
+      PERDITION_DEBUG("dbserver_get");
     }
+    return(NULL);
+  }
+
+  /* Parse the result */
+  if(status == 0) {
     if((server_port=server_port_create())==NULL){
       PERDITION_DEBUG("server_port_create");
       return(NULL);
@@ -161,6 +178,7 @@ server_port_t *getserver(
     server_port=server_port_strn_assign(server_port, content_str, content_len);
     free(content_str);
   }
+
   return(server_port);
 } 
 

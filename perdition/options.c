@@ -261,7 +261,10 @@ int options(int argc, char **argv, flag_t f){
     {"username",                    'u',  POPT_ARG_STRING, NULL, 'u'},
     {"username_from_database",      'U',  POPT_ARG_NONE,   NULL, 'U'},
     {"quiet",                       'q',  POPT_ARG_NONE,   NULL, 'q'},
-    {"lower_case",                  'x',  POPT_ARG_STRING, NULL, 'X'},
+    {"lower_case",                  '\0', POPT_ARG_STRING, NULL,
+      TAG_LOWER_CASE},
+    {"lookup_domain",               '\0', POPT_ARG_NONE,   NULL,
+      TAG_LOOKUP_DOMAIN},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_MODE },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
@@ -288,6 +291,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.connection_logging,DEFAULT_CONNECTION_LOGGING,i, 0, OPT_NOT_SET);
     opt_i(opt.debug,           DEFAULT_DEBUG,               i, 0, OPT_NOT_SET);
     opt_i(opt.inetd_mode,      DEFAULT_INETD_MODE,          i, 0, OPT_NOT_SET);
+    opt_i(opt.lookup_domain,   DEFAULT_LOOKUP_DOMAIN,       i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE) && !strcmp("perdition.imap4", basename)){
       opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
     }
@@ -485,15 +489,6 @@ int options(int argc, char **argv, flag_t f){
       case 'q':
         opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
         break;
-      case 'X':
-        OPTARG_DUP;
-	while((end=strchr(optarg_copy, ','))!=NULL){
-	  *end='\0';
-	  OPT_LOWER_CASE;
-	  optarg_copy=end+1;
-	}
-	OPT_LOWER_CASE;
-        break;
       case TAG_SSL_MODE:
 #ifdef WITH_SSL_SUPPORT
         OPTARG_DUP;
@@ -545,6 +540,18 @@ int options(int argc, char **argv, flag_t f){
       }
 #endif /* WITH_SSL_SUPPORT */
         break; 
+      case TAG_LOWER_CASE:
+        OPTARG_DUP;
+	while((end=strchr(optarg_copy, ','))!=NULL){
+	  *end='\0';
+	  OPT_LOWER_CASE;
+	  optarg_copy=end+1;
+	}
+	OPT_LOWER_CASE;
+        break;
+      case TAG_LOOKUP_DOMAIN:
+	opt_i(opt.lookup_domain,1,opt.mask,MASK_LOOKUP_DOMAIN,f);
+        break;
       default:
         PERDITION_DEBUG("Unknown Option");
         exit;
@@ -719,6 +726,7 @@ int log_options(void){
     "imap_capability=\"%s\", "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
+    "lookup_domain=%s, "
     "lower_case=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
@@ -757,6 +765,7 @@ int log_options(void){
     str_null_safe(opt.imap_capability),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
+    BIN_OPT_STR(opt.lookup_domain),
     str_null_safe(lower_case),
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
@@ -941,7 +950,13 @@ void usage(int exit_status){
     "    -U|--username_from_database option is specified or not.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"
-    " -X|--lower_case state[,state...]:\n"
+    " --lookup_domain:\n"
+    "    If the username is not found on a popmap lookup, and the\n"
+    "    domain-delimiter is part of the username, then lookup up the domain\n"
+    "    portion of the username, prefixed by the domain_delimiter in the\n"
+    "    database. Allows different default servers to be defined for\n"
+    "    different domains. Overriden by -c|--client_server_specification.\n"
+    " --lower_case state[,state...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). State may be one of servername_lookup, \n"
     "    local_authentication, remote_login and all See manpage for details\n"

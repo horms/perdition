@@ -110,6 +110,7 @@
 #define DEFAULT_MAP_LIB \
   PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"
 #define DEFAULT_LOG_FACILITY                 "mail"
+#define DEFAULT_LOOKUP_DOMAIN                STATE_NONE
 #define DEFAULT_LOWER_CASE                   STATE_NONE
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
@@ -154,6 +155,7 @@ typedef struct {
   int             timeout;
   char            *listen_port;
   char            *log_facility;
+  int             lookup_domain;
   int             lower_case;
   char            *map_library;
   char            *map_library_opt;
@@ -193,20 +195,21 @@ typedef struct {
 #define MASK_IMAP_CAPABILITY             (flag_t) 0x00000800
 #define MASK_LOG_FACILITY                (flag_t) 0x00001000
 #define MASK_LISTEN_PORT                 (flag_t) 0x00002000
-#define MASK_LOWER_CASE                  (flag_t) 0x00004000
-#define MASK_MAP_LIB                     (flag_t) 0x00008000
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00010000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00020000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00040000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00080000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00100000
-#define MASK_PROTOCOL                    (flag_t) 0x00200000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00400000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x00800000
-#define MASK_TIMEOUT                     (flag_t) 0x01000000
-#define MASK_USERNAME                    (flag_t) 0x02000000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x04000000
-#define MASK_QUIET                       (flag_t) 0x08000000
+#define MASK_LOOKUP_DOMAIN               (flag_t) 0x00004000
+#define MASK_LOWER_CASE                  (flag_t) 0x00008000
+#define MASK_MAP_LIB                     (flag_t) 0x00010000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00020000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00040000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00080000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00100000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00200000
+#define MASK_PROTOCOL                    (flag_t) 0x00400000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x00800000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x01000000
+#define MASK_TIMEOUT                     (flag_t) 0x02000000
+#define MASK_USERNAME                    (flag_t) 0x04000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x08000000
+#define MASK_QUIET                       (flag_t) 0x10000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -216,14 +219,16 @@ typedef struct {
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
- * popt keys of the short value returned. But we are running
- * out of short vales, so the poor ssl arguments are log argument
+ * popt keys off the short value returned. But we are running
+ * out of short vales, so some poor arguments are long argument
  * only. So as we still have a key, use integer values outside
- * of the values we might use for a sort value
+ * of the values we might use for a short value
  */
-#define TAG_SSL_CERT_FILE              (int) 128
-#define TAG_SSL_KEY_FILE               (int) 129
-#define TAG_SSL_MODE                   (int) 130
+#define TAG_LOOKUP_DOMAIN              (int) 128
+#define TAG_LOWER_CASE                 (int) 129
+#define TAG_SSL_CERT_FILE              (int) 130
+#define TAG_SSL_KEY_FILE               (int) 131
+#define TAG_SSL_MODE                   (int) 132
 
 
 /*Flag values for options()*/
