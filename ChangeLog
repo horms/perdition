@@ -28,6 +28,7 @@ xxx
   - Added support for Username and Password in LDAP URL
     Chris Stratford <Chris.Stratford@uk.uu.net>
   - Code to detatch from terminal moved into libvanessa_socket
+  - makegdbm now compiles with --disable-static. Vyt <vyt@vzljot.ru>
 
 
 

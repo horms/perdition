@@ -93,11 +93,23 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
   va_list ap;
   int bytes=0;
   int fmt_args;
+#ifdef HAVE_PARSE_PRINT_FORMAT
+  int place;
+#endif /* HAVE_PARSE_PRINT_FORMAT */
 
   extern options_t opt;
   extern vanessa_logger_t *perdition_vl;
 
+#if HAVE_PARSE_PRINT_FORMAT
+  fmt_args = 0;
+  for (place=0; fmt[place]!='\0'; place++) {
+        if (fmt[place]=='%')
+                fmt[place+1]=='%' ? place++ : fmt_args++;
+  }
+  if (fmt_args != nargs) {
+#else /* HAVE_PARSE_PRINT_FORMAT */
   if((fmt_args=parse_printf_format(fmt, 0, NULL)) != nargs){
+#endif /* HAVE_PARSE_PRINT_FORMAT */
     PERDITION_DEBUG_UNSAFE(
       "nargs and fmt missmatch: %d args requested, %d args in format", nargs,
       fmt_args);

@@ -29,6 +29,7 @@
 #ifndef USERNAME_BERT
 #define USERNAME_BERT
 
+#include <sys/types.h>
 #include <netinet/in.h>
 
 /**********************************************************************

@@ -600,7 +600,7 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
-AC_CHECK_FUNCS(select socket strdup strerror flim)
+AC_CHECK_FUNCS(select socket strdup strerror parse_printf_format flim)
 
 AC_SUBST(gdbm_build_dir)
 AC_SUBST(makegdbm_build_dir)
