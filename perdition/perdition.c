@@ -363,7 +363,7 @@ int main (int argc, char **argv, char **envp){
   }
 
 #ifdef WITH_SSL_SUPPORT
-  /*Set up the ssl mode*/
+  /*Set up the ssl mode */
   opt.ssl_mode=protocol->encryption(opt.ssl_mode);
   opt.capability = protocol->capability(opt.capability, 
 		  &(opt.mangled_capability), opt.ssl_mode, tls_state);
