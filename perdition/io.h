@@ -29,9 +29,13 @@
 #ifndef IO_FRUB_H
 #define IO_FRUB_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <unistd.h>
 
-typedef void io_t;
+typedef struct io_t_struct io_t;
 
 
 /**********************************************************************
@@ -61,11 +65,7 @@ io_t *io_create_fd(int read_fd, int write_fd);
  *         NULL on error
  **********************************************************************/
 
-io_t *io_create_ssl(
-  SSL *ssl, 
-  int read_fd, 
-  int write_fd
-);
+io_t *io_create_ssl(SSL *ssl, int read_fd, int write_fd);
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -91,11 +91,7 @@ void io_destroy(io_t *io);
  *         -1 on error
  **********************************************************************/
 
-ssize_t io_write(
-  io_t *io, 
-  const void *buf, 
-  size_t count
-);
+ssize_t io_write(io_t *io, const void *buf, size_t count);
 
 
 /**********************************************************************
@@ -108,12 +104,7 @@ ssize_t io_write(
  *         -1 on error
  **********************************************************************/
 
-
-ssize_t io_read(
-  io_t *io, 
-  void *buf, 
-  size_t count
-);
+ssize_t io_read(io_t *io, void *buf, size_t count);
 
 
 /**********************************************************************

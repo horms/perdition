@@ -1,5 +1,5 @@
 /**********************************************************************
- * io_.c                                         May 2001
+ * io.c                                                        May 2001
  * Horms                                             horms@vergenet.net
  *
  * Abstraction layer to allow I/O to file descriptors or SSL objects
@@ -68,12 +68,12 @@ typedef enum {
   __io_ssl,
 #endif /* WITH_SSL_SUPPORT */
   __io_none
-} __io_type_t;
+} io_type_t;
 
-typedef struct {
-  __io_type_t type;
+struct io_t_struct {
+  io_type_t type;
   __io_data_t data;
-} __io_t;
+};
 
 
 /**********************************************************************
@@ -86,12 +86,9 @@ typedef struct {
  *         NULL on error
  **********************************************************************/
 
-static __io_t *__io_create_fd(
-  int read_fd, 
-  int write_fd
-){
+io_t *io_create_fd(int read_fd, int write_fd){
   __io_fd_t *io_fd;
-  __io_t *io;
+  io_t *io;
 
   if((io_fd=(__io_fd_t *)malloc(sizeof(__io_fd_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 1");
@@ -101,7 +98,7 @@ static __io_t *__io_create_fd(
   io_fd->read=read_fd;
   io_fd->write=write_fd;
 
-  if((io=(__io_t *)malloc(sizeof(__io_t)))==NULL){
+  if((io=(io_t *)malloc(sizeof(io_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 2");
     free(io_fd);
     return(NULL);
@@ -111,11 +108,6 @@ static __io_t *__io_create_fd(
   io->data.d_fd=io_fd;
 
   return(io);
-}
-
-io_t *io_create_fd(int read_fd, int write_fd){
-  return((io_t *)__io_create_fd(read_fd, 
-      write_fd));
 }
 
 
@@ -131,13 +123,9 @@ io_t *io_create_fd(int read_fd, int write_fd){
  *         NULL on error
  **********************************************************************/
 
-static __io_t *__io_create_ssl(
-  SSL *ssl, 
-  int read_fd, 
-  int write_fd
-){
+io_t *io_create_ssl(SSL *ssl, int read_fd, int write_fd){
   __io_ssl_t *io_ssl;
-  __io_t *io;
+  io_t *io;
 
   if((io_ssl=(__io_ssl_t *)malloc(sizeof(__io_ssl_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 1");
@@ -151,7 +139,7 @@ static __io_t *__io_create_ssl(
   io_ssl->read=read_fd;
   io_ssl->write=write_fd;
 
-  if((io=(__io_t *)malloc(sizeof(__io_t)))==NULL){
+  if((io=(io_t *)malloc(sizeof(io_t)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc 2");
     free(io_ssl);
     return(NULL);
@@ -161,14 +149,6 @@ static __io_t *__io_create_ssl(
   io->data.d_ssl=io_ssl;
 
   return(io);
-}
-
-io_t *io_create_ssl(
-  SSL *ssl, 
-  int read_fd, 
-  int write_fd
-){
-  return((io_t *)__io_create_ssl(ssl, read_fd, write_fd));
 }
 #endif /* WITH_SSL_SUPPORT */
 
@@ -182,7 +162,7 @@ io_t *io_create_ssl(
  * return: none
  **********************************************************************/
 
-static void __io_destroy(__io_t *io){
+void io_destroy(io_t *io){
   if(io==NULL){
     return;
   }
@@ -209,10 +189,6 @@ static void __io_destroy(__io_t *io){
   free(io);
 }
 
-void io_destroy(io_t *io){
-  __io_destroy((__io_t *)io);
-}
-
 
 /**********************************************************************
  * io_write
@@ -224,11 +200,7 @@ void io_destroy(io_t *io){
  *         -1 on error
  **********************************************************************/
 
-static ssize_t __io_write(
-  __io_t *io, 
-  const void *buf, 
-  size_t count
-){
+ssize_t io_write(io_t *io, const void *buf, size_t count){
   ssize_t bytes=0;
 
   if(io==NULL){
@@ -266,14 +238,6 @@ static ssize_t __io_write(
   return(bytes);
 }
 
-ssize_t io_write(
-  io_t *io, 
-  const void *buf, 
-  size_t count
-){
-  return(__io_write((__io_t *)io, buf, count));
-}
-
 
 /**********************************************************************
  * io_read
@@ -285,11 +249,7 @@ ssize_t io_write(
  *         -1 on error
  **********************************************************************/
 
-static ssize_t __io_read(
-  __io_t *io, 
-  void *buf, 
-  size_t count
-){
+ssize_t io_read(io_t *io, void *buf, size_t count){
   ssize_t bytes=0;
 
   if(io==NULL){
@@ -327,14 +287,6 @@ static ssize_t __io_read(
   return(bytes);
 }
 
-ssize_t io_read(
-  io_t *io, 
-  void *buf, 
-  size_t count
-){
-  return(__io_read((__io_t *)io, buf, count));
-}
-
 
 /**********************************************************************
  * io_get_rfd
@@ -344,7 +296,7 @@ ssize_t io_read(
  *         -1 on error
  **********************************************************************/
 
-static int __io_get_rfd(__io_t *io){
+int io_get_rfd(io_t *io){
   int fd;
 
   if(io==NULL){
@@ -370,10 +322,6 @@ static int __io_get_rfd(__io_t *io){
   return(fd);
 }
 
-int io_get_rfd(io_t *io){
-  return(__io_get_rfd((__io_t *)io));
-}
-
 
 /**********************************************************************
  * io_get_wfd
@@ -383,7 +331,7 @@ int io_get_rfd(io_t *io){
  *         -1 on error
  **********************************************************************/
 
-static int __io_get_wfd(__io_t *io){
+int io_get_wfd(io_t *io){
   int fd;
 
   if(io==NULL){
@@ -409,10 +357,6 @@ static int __io_get_wfd(__io_t *io){
   return(fd);
 }
 
-int io_get_wfd(io_t *io){
-  return(__io_get_wfd((__io_t *)io));
-}
-
 
 #ifdef WITH_SSL_SUPPORT
 /**********************************************************************
@@ -423,7 +367,7 @@ int io_get_wfd(io_t *io){
  *         NULL on error if if there is no ssl object for this io
  **********************************************************************/
 
-SSL *__io_get_ssl(__io_t *io){
+SSL *io_get_ssl(io_t *io){
   SSL *ssl;
 
   if(io==NULL){
@@ -443,10 +387,6 @@ SSL *__io_get_ssl(__io_t *io){
   
   return(ssl);
 }
-
-SSL *io_get_ssl(io_t *io){
-  return(__io_get_ssl((__io_t *)io));
-}
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -459,7 +399,7 @@ SSL *io_get_ssl(io_t *io){
  *         -1 on error
  **********************************************************************/
 
-static int __io_close(__io_t *io){
+int io_close(io_t *io){
   int read_fd;
   int write_fd;
 
@@ -471,8 +411,8 @@ static int __io_close(__io_t *io){
   switch(io->type){
     case __io_fd:
 
-    read_fd=__io_get_rfd(io);
-    write_fd=__io_get_wfd(io);
+    read_fd=io_get_rfd(io);
+    write_fd=io_get_wfd(io);
   
     if(close(read_fd)){ \
       PERDITION_DEBUG_ERRNO("close 1"); \
@@ -505,10 +445,6 @@ static int __io_close(__io_t *io){
   return(0);
 }
 
-int io_close(io_t *io){
-  return(__io_close((__io_t *)io));
-}
-
 
 /**********************************************************************
  * io_pipe
@@ -530,26 +466,26 @@ int io_close(io_t *io){
  *
  **********************************************************************/
 
-int __io_pipe_read(int fd, void *buf, size_t count, void *data){
-  __io_t *io;
+static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
+  io_t *io;
 
-  io=(__io_t *)data;
+  io=(io_t *)data;
 
-  return(__io_read(io, buf, count));
+  return(io_read(io, buf, count));
 }
          
 
-int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
-  __io_t *io;
+static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
+  io_t *io;
 
-  io=(__io_t *)data;
+  io=(io_t *)data;
 
-  return(__io_write(io, buf, count));
+  return(io_write(io, buf, count));
 }
          
-static ssize_t __io_pipe(
-  __io_t *io_a,
-  __io_t *io_b,
+ssize_t io_pipe(
+  io_t *io_a,
+  io_t *io_b,
   unsigned char *buffer,
   int buffer_length,
   int idle_timeout,
@@ -559,10 +495,10 @@ static ssize_t __io_pipe(
   int bytes;
 
   if((bytes=vanessa_socket_pipe_func(
-    __io_get_rfd(io_a),
-    __io_get_wfd(io_a),
-    __io_get_rfd(io_b),
-    __io_get_wfd(io_b),
+    io_get_rfd(io_a),
+    io_get_wfd(io_a),
+    io_get_rfd(io_b),
+    io_get_wfd(io_b),
     buffer,
     buffer_length,
     idle_timeout,
@@ -578,25 +514,3 @@ static ssize_t __io_pipe(
 
   return(bytes);
 }
-
-ssize_t io_pipe(
-  io_t *io_a,
-  io_t *io_b,
-  unsigned char *buffer,
-  int buffer_length,
-  int idle_timeout,
-  int *return_a_read_bytes,
-  int *return_b_read_bytes
-){
-  return(__io_pipe(
-    (__io_t *)io_a,
-    (__io_t *)io_b,
-    buffer,
-    buffer_length,
-    idle_timeout,
-    return_a_read_bytes,
-    return_b_read_bytes
-  ));
-}
-
-

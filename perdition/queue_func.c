@@ -203,12 +203,7 @@ char *queue_to_string(vanessa_queue_t *q){
     return(NULL);
   }
 
-  while(q->first!=NULL){
-    if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_pop 1");
-      return(NULL);
-    }
-
+  while(vanessa_queue_pop(q, (void **)&t)==NULL) {
     length+=1+t->n;
 
     if((stack=vanessa_queue_push(stack, (void *)t))==NULL){
@@ -225,14 +220,8 @@ char *queue_to_string(vanessa_queue_t *q){
     return(NULL);
   }
 
-  pos=string;
-  while(stack->first!=NULL){
-    if((stack=vanessa_queue_pop(stack, (void **)&t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_pop 2");
-      free(string);
-      return(NULL);
-    }
-    
+  pos = string;
+  while(vanessa_queue_pop(stack, (void **)&t)==NULL){
     if (t->n>0 && t->buf!=NULL){
       strncpy(pos, t->buf, t->n);
       pos+=t->n;
