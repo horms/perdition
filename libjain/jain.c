@@ -4,7 +4,7 @@
  *
  * libjain
  * Important functions involving Jain
- * Copyright (C) 1999-2001  Horms
+ * Copyright (C) 1999-2002  Horms
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
