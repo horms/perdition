@@ -55,12 +55,13 @@
  *        -1 otherwise
  **********************************************************************/
 
+static char __imap4_write_fmt_str[MAX_LINE_LENGTH];
+
 static const char *__imap4_write_fmt(io_t *io, flag_t *flag, 
 		const token_t *tag, const char *command, const char *fmt)
 {
 	char *tag_str = NULL;
 	char *new_fmt_end = NULL;
-	char new_fmt[MAX_LINE_LENGTH];
 	size_t tag_str_len;
 	size_t command_len;
 	size_t fmt_len;
@@ -72,7 +73,7 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 
 	/* Slow Path */
 
-	memset(new_fmt, 0, MAX_LINE_LENGTH);
+	memset(__imap4_write_fmt_str, 0, MAX_LINE_LENGTH);
 
       	if(!tag) {
 		tag_str = IMAP4_UNTAGED;
@@ -85,8 +86,8 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 
 	fmt_len = strlen(fmt);
 
-	memcpy(new_fmt, tag_str, tag_str_len);
-	new_fmt_end = new_fmt + tag_str_len;
+	memcpy(__imap4_write_fmt_str, tag_str, tag_str_len);
+	new_fmt_end = __imap4_write_fmt_str + tag_str_len;
 
 	if(command){
 		command_len = strlen(command);
@@ -106,7 +107,7 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 		*flag |= WRITE_STR_NO_CLLF;
 	}
 
-	return(new_fmt);
+	return(__imap4_write_fmt_str);
 }
 
 int imap4_write(io_t *io, flag_t flag, const token_t *tag, 
