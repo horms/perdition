@@ -623,27 +623,29 @@ AC_CHECK_HEADERS(
   ]
 )
 
-if [ test -n "$bdb_build_dir" ]; then
-AC_CHECK_LIB(
-  db,
-  db_create,
-  [ 
-    bdb_build_dir="bdb" 
-    makebdb_build_dir="makebdb" 
-  ],
-  [ 
-    bdb_build_dir="" 
-    makebdb_build_dir="" 
-AC_MSG_WARN(
-""
-"**********************************************************************"
-"* perditiondb_bdb and makebdb will not be built"
-"**********************************************************************"
-) ;\
-    sleep 5
-  ]
-)
-fi
+# Removed because different versions of libdb.a actually
+# have different symbols. Pitty you can't legistlate against stupidity.
+#if [ test -n "$bdb_build_dir" ]; then
+#AC_CHECK_LIB(
+#  db,
+#  db_create,
+#  [ 
+#    bdb_build_dir="bdb" 
+#    makebdb_build_dir="makebdb" 
+#  ],
+#  [ 
+#    bdb_build_dir="" 
+#    makebdb_build_dir="" 
+#AC_MSG_WARN(
+#""
+#"**********************************************************************"
+#"* perditiondb_bdb and makebdb will not be built"
+#"**********************************************************************"
+#) ;\
+#    sleep 5
+#  ]
+#)
+#fi
 fi
 
 

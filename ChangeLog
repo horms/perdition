@@ -18,6 +18,8 @@ Copyright (C) 1999-2003  Horms <horms@verge.net.au>
      ignored. Perviously they caused the URL to be treated as invalid.
    - Fixed ODBC module so that it should no longer segmentation fault
      when trying to do a query.
+   - Don't check for symbols in libdb.a at configure time,
+     the symbols seem to be different between versions of libdb.a.
 
 ----------------------------------------------------------------------
 
