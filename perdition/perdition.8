@@ -96,7 +96,7 @@ Send the username with the domain appended to the back-end
 server for authentication.
 .sp
 .B all:
-Shorthand for all of above states.
+Short-Hand for all of above states.
 .sp
 (default "(null)")
 .TP
@@ -355,7 +355,8 @@ Escape codes interspersed with literals
 .B \-\-ssl_mode MODE:
 Use SSL and or TLS for the listening and/or outgoing connections.
 A comma delimited list of: none, ssl_listen, ssl_outgoing,
-ssl_all, tls_listen, tls_outgoing, tls_all. TLS is defined
+ssl_all, tls_listen, tls_outgoing, tls_all, tls_listen_force,
+tls_outgoing_force, tls_all_force. TLS is defined
 in RFC 2595. Only available if perdition is compiled with SSL support.
 .br
 (default "(null)")
@@ -372,7 +373,7 @@ as SSL connections.
 Use SSL to connect to real pop/imap servers.
 .sp
 .B ssl_all:
-Short hand for ssl_listen,ssl_outoing.
+Short-Hand for ssl_listen,ssl_outgoing.
 .sp
 .B tls_listen:
 When listening for incoming connections they will be treated
@@ -382,7 +383,23 @@ as TLS connections.
 Use TLS to connect to real pop/imap servers.
 .sp
 .B tls_all:
-Short hand for tls_listen,tls_all.
+Short-Hand for tls_listen,tls_outgoing.
+.sp
+.B tls_listen_force:
+Do not accept plain text authentication. In IMAP4 mode,
+the LOGINDISABLED capability until TLS has been intialised
+by the client issuing a STARTTLS. In both IMAP4 and POP3 mode
+any plain-text authentication is ignored.
+Used in conjunction with tls_listen,(or tls_all),
+ignored otherwise.
+.sp
+.B tls_outgoing_force:
+Do not send authenticat information if TLS cannot be negotiated.
+Used in conjunction with tls_outgoing (or tls_all), ignored otherwise.
+.sp
+.B
+tls_all_force:
+Short-Hand for tls_listen_force,tls_outgoing_force.
 .TP
 .B \-\-ssl_ca_file FILENAME:
 Certificate Authorities to use when verifying certificates of

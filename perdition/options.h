@@ -71,17 +71,23 @@
  * or of these.
  * 
  */
-#define SSL_MODE_EMPTY         0x0    /* 00000 */
-#define SSL_MODE_NONE          0x10   /* 10000 */
-#define SSL_MODE_SSL_LISTEN    0x1    /* 00001 */
-#define SSL_MODE_SSL_OUTGOING  0x2    /* 00010 */
-#define SSL_MODE_SSL_ALL       0x3    /* 00011 (SSL_OUTGOING|SSL_LISTEN) */
-#define SSL_MODE_TLS_LISTEN    0x4    /* 00100 */
-#define SSL_MODE_TLS_OUTGOING  0x8    /* 01000 */
-#define SSL_MODE_TLS_ALL       0xc    /* 01100 (TLS_OUTGOING|TLS_LISTEN) */
+#define SSL_MODE_EMPTY         0x00   /* 0000000 */
+#define SSL_MODE_NONE          0x40   /* 1000000 */
+#define SSL_MODE_SSL_LISTEN    0x01   /* 0000001 */
+#define SSL_MODE_SSL_OUTGOING  0x02   /* 0000010 */
+#define SSL_MODE_SSL_ALL       0x03   /* 0000011 (SSL_OUTGOING|SSL_LISTEN) */
+#define SSL_MODE_TLS_LISTEN    0x04   /* 0000100 */
+#define SSL_MODE_TLS_OUTGOING  0x08   /* 0001000 */
+#define SSL_MODE_TLS_ALL       0x0c   /* 0001100 (TLS_OUTGOING|TLS_LISTEN) */
+#define SSL_MODE_TLS_LISTEN_FORCE \
+	                       0x10   /* 0010000 */
+#define SSL_MODE_TLS_OUTGOING_FORCE \
+			       0x20   /* 0100000 */
+#define SSL_MODE_TLS_ALL_FORCE 0x30   /* 0110000 (SSL_MODE_TLS_LISTEN_FORCE|
+					       SSL_MODE_TLS_OUTGOING_FORCE) */
  
-#define SSL_LISTEN_MASK        0x5    /* 00101 (SSL_LISTEN|TLS_LISTEN) */
-#define SSL_OUTGOING_MASK      0xa   /* 10010 (SSL_OUTGOING|TLS_OUTGOING) */
+#define SSL_LISTEN_MASK        0x05   /* 000101 (SSL_LISTEN|TLS_LISTEN) */
+#define SSL_OUTGOING_MASK      0x0a   /* 001010 (SSL_OUTGOING|TLS_OUTGOING) */
 
 #define SSL_SSL_MASK           SSL_MODE_SSL_ALL
 #define SSL_TLS_MASK           SSL_MODE_TLS_ALL

@@ -31,12 +31,21 @@
 
 #include "pop3.h"
 #include "pop3s.h"
+#include "pop3_write.h"
+#include "pop3_in.h"
+#include "pop3_out.h"
 #include "options.h"
 #include "protocol.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+
+static void pop3s_destroy_protocol(protocol_t *protocol);
+static char *pop3s_port(char *port);
+static flag_t pop3s_encryption(flag_t ssl_flags);
+static char *pop3s_capability(char *capability, char **mangled_capability,
+		flag_t tls_flags, flag_t tls_state);
 
 
 /**********************************************************************
@@ -65,10 +74,10 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
   protocol->out_setup = pop3_out_setup;
   protocol->out_authenticate = pop3_out_authenticate;
   protocol->out_response= pop3_out_response;
-  protocol->destroy = pop3_destroy_protocol;
+  protocol->destroy = pop3s_destroy_protocol;
   protocol->port = pop3s_port;
   protocol->encryption = pop3s_encryption;
-  protocol->capability = pop3_capability;
+  protocol->capability = pop3s_capability;
 
   return(protocol);
 }
@@ -79,7 +88,8 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
  * Destory protocol specifig elements of the protocol struture
  **********************************************************************/
 
-void pop3s_destroy_protocol(protocol_t *protocol){
+static void pop3s_destroy_protocol(protocol_t *protocol)
+{
   ;
 }
 
@@ -92,7 +102,8 @@ void pop3s_destroy_protocol(protocol_t *protocol){
  *       port otherwise
  **********************************************************************/
 
-char *pop3s_port(char *port){
+static char *pop3s_port(char *port)
+{
   if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
     return(POP3S_DEFAULT_PORT);
   }
@@ -109,7 +120,8 @@ char *pop3s_port(char *port){
  *       Else return SSL_MODE_SSL_ALL
  **********************************************************************/
 
-flag_t pop3s_encryption(flag_t ssl_flags) {
+static flag_t pop3s_encryption(flag_t ssl_flags) 
+{
   if(ssl_flags != SSL_MODE_EMPTY) {
     return(ssl_flags);
   }
@@ -121,18 +133,25 @@ flag_t pop3s_encryption(flag_t ssl_flags) {
  * pop3s_capability 
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
+ *      mangled_capability: ignored
+ *      tls_flags: ignored
+ *      tls_state: ignored
  * post: capability to use, as per protocol_capability
  *       with POP parameters
  **********************************************************************/
 
-char *pop3s_capability(char *capability, flag_t ssl_flags) {
-  capability = protocol_capability(capability, ssl_flags, 
-		  POP3_DEFAULT_CAPABILITY, POP3_TLS_CAPABILITY,
-		  POP3_CAPABILITY_DELIMITER);
-  if(capability == NULL) {
-	  VANESSA_LOGGER_DEBUG("protocol_capability");
-	  return(NULL);
-  }
+static char *pop3s_capability(char *capability, 
+		char **mangled_capability, flag_t tls_flags,
+		flag_t tls_state)
+{
+      	capability = protocol_capability(capability, PROTOCOL_C_DEL, 
+      			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
+      			POP3_CAPABILITY_DELIMITER);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return(NULL);
+	}
 
-  return(capability);
+	return(capability);
 }
+

@@ -71,7 +71,7 @@ struct protocol_t_struct {
 	char *(*port) (char *port);
 	flag_t(*encryption) (flag_t ssl_flags);
 	char *(*capability) (char *capability, char **mangled_capability,
-			flag_t ssl_flags);
+			flag_t ssl_flags, flag_t ssl_state);
 };
 
 typedef struct protocol_t_struct protocol_t;

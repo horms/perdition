@@ -170,7 +170,8 @@ int pop3_out_setup(
         VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
         return(-1);
       }
-      if(!(protocol_status & PROTOCOL_S_STARTTLS)) {
+      if(!(protocol_status & PROTOCOL_S_STARTTLS) && 
+		      token_cmp(stls, tmp_token)) {
 	protocol_status |= PROTOCOL_S_STARTTLS;
       }
       status=token_cmp(capa_end, tmp_token);
@@ -185,9 +186,9 @@ int pop3_out_setup(
   }
 
   status = 1;
-  if(protocol_status & PROTOCOL_S_STARTTLS && 
-        opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
-    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, NULL)<0){
+  if((protocol_status & PROTOCOL_S_STARTTLS) && 
+        (opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
+    if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_STLS, NULL)<0){
       VANESSA_LOGGER_DEBUG("pop3_write");
       goto leave;
     }

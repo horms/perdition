@@ -57,6 +57,9 @@
 #define PROTOCOL_S_STARTTLS      0x2
 #define PROTOCOL_S_LOGINDISABLED 0x4
 
+#define PROTOCOL_C_ADD           0x01
+#define PROTOCOL_C_DEL           0x02
+
 /*End of nastiness*/
 
 protocol_t *protocol_initialise(int protocol_type, protocol_t *protocol);

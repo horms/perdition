@@ -182,6 +182,15 @@ options_t opt;
     else if(strcasecmp(optarg_copy, "tls_outgoing")==0){ \
        new=SSL_MODE_TLS_OUTGOING; \
     } \
+    else if(strcasecmp(optarg_copy, "tls_listen_force")==0){ \
+       new=SSL_MODE_TLS_LISTEN_FORCE; \
+    } \
+    else if(strcasecmp(optarg_copy, "tls_outgoing_force")==0){ \
+       new=SSL_MODE_TLS_OUTGOING_FORCE; \
+    } \
+    else if(strcasecmp(optarg_copy, "tls_all_force")==0){ \
+       new=SSL_MODE_TLS_ALL_FORCE; \
+    } \
     else if(strcasecmp(optarg_copy, "tls_all")==0){ \
        new=SSL_MODE_TLS_ALL; \
     } \
@@ -847,6 +856,16 @@ int log_options_str(char *str, size_t n){
           *ssl_mode_p='\0';
       }
       break;
+  }
+  if((opt.ssl_mode&SSL_MODE_TLS_OUTGOING_FORCE) &&
+		  (opt.ssl_mode&SSL_MODE_TLS_LISTEN_FORCE)) {
+    LOG_OPTIONS_ADD_STR("tls_all_force", ssl_mode_p, ssl_mode)
+  }
+  else {
+    if(opt.ssl_mode&SSL_MODE_TLS_OUTGOING_FORCE)
+      LOG_OPTIONS_ADD_STR("tls_outgoing_force", ssl_mode_p, ssl_mode)
+    if(opt.ssl_mode&SSL_MODE_TLS_LISTEN_FORCE)
+      LOG_OPTIONS_ADD_STR("tls_listen_force", ssl_mode_p, ssl_mode)
   }
 #endif /* WITH_SSL_SUPPORT */
 

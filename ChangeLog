@@ -77,6 +77,8 @@ XXX
    - Fixed handling of a client not supplying a password to
      the IMAP4 LOGIN Command
    - Honour IMAP4 LOGINDISABLED capability
+   - Added options to enforce TLS negotion on incoming and/or outgoing
+     connections.
 
 ----------------------------------------------------------------------
 

@@ -230,7 +230,7 @@ int pop3_in_get_pw(
       token_destroy(&t);
       
       if((message=str_cat(3, POP3_CMD_USER " ", return_pw->pw_name, 
-				      " set"))<0){
+				      " set, mate"))<0){
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
@@ -287,17 +287,9 @@ int pop3_in_get_pw(
       return(1);
     }
     else{
-      char *tmp_str = "Mate, the command must be one of "
-	      POP3_CMD_USER ", " POP3_CMD_PASS " or " POP3_CMD_QUIT;
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-#ifdef WITH_SSL_SUPPORT
-      if(opt.ssl_mode & SSL_MODE_TLS_LISTEN) {
-        tmp_str = "Mate, the command must be one of "
-	      POP3_CMD_CAPA ", " POP3_CMD_USER ", " POP3_CMD_PASS " or "
-	      POP3_CMD_QUIT;
-      }
-#endif /* WITH_SSL_SUPPORT */
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, tmp_str) < 0) {
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 
+            "Mate, the command must be one of " POP3_CMD_CAPA ", " 
+	    POP3_CMD_USER ", " POP3_CMD_PASS " or " POP3_CMD_QUIT) < 0) {
         VANESSA_LOGGER_DEBUG("pop3_write command");
         break;
       }

@@ -244,9 +244,10 @@ int imap4_in_authenticate(
  *                 will be returned if one is found
  *      return_tag: pointer to return clients tag
  * Post: pw_return structure with pw_name and pw_passwd set
- * Return: 0 on success
- *         1 if user quits (LOGOUT command)
- *         -1 on error
+ * Return: 0: on success
+ *         1: if user quits (LOGOUT command)
+ *         2: if TLS negotion should be done
+ *        -1: on error
  **********************************************************************/
 
 #define __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR \

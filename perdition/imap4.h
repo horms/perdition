@@ -52,46 +52,18 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol);
 
 
 /**********************************************************************
- * imap4_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
- **********************************************************************/
-
-void imap4_destroy_protocol(protocol_t *protocol);
-
-
-/**********************************************************************
- * imap4_port 
- * Return the port to be used
- * pre: port: port that has been set
- * post: IMAP4_DEFAULT_PORT if port is PERDITION_PROTOCOL_DEPENDANT
- *       port otherwise
- **********************************************************************/
-
-char *imap4_port(char *port);
-
-
-/**********************************************************************
- * imap4_encryption 
- * Return the encription states to be used.
- * pre: ssl_flags: the encryption flags that bave been set
- * post: return ssl_flags (does nothing)
- **********************************************************************/
-
-flag_t imap4_encryption(flag_t ssl_flags);
-
-
-/**********************************************************************
  * imap4_capability 
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
  *      mangled_capability: not used
- *      ssl_flags: the encryption flags that bave been set
+ *      tls_flags: the encryption flags that bave been set
+ *      tls_state: the current state of encryption for the session
  * post: capability to use, as per protocol_capability
  *       with IMAP4 parameters
  **********************************************************************/
 
 char *imap4_capability(char *capability, char **mangled_capability,
-		flag_t ssl_flags);
+		flag_t tls_flags, flag_t tls_mode);
 
 
 #endif

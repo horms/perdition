@@ -38,6 +38,10 @@
 #endif
 
 
+static void imap4s_destroy_protocol(protocol_t *protocol);
+static char *imap4s_port(char *port);
+static flag_t imap4s_encryption(flag_t ssl_flags);
+
 /**********************************************************************
  * imap4s_intitialise_proto
  * Intialialoise the protocol structure for the imap4s protocol
@@ -78,7 +82,8 @@ protocol_t *imap4s_initialise_protocol(protocol_t *protocol){
  * Destory protocol specifig elements of the protocol struture
  **********************************************************************/
 
-void imap4s_destroy_protocol(protocol_t *protocol){
+static void imap4s_destroy_protocol(protocol_t *protocol)
+{
   ;
 }
 
@@ -91,7 +96,8 @@ void imap4s_destroy_protocol(protocol_t *protocol){
  *       port otherwise
  **********************************************************************/
 
-char *imap4s_port(char *port){
+static char *imap4s_port(char *port)
+{
   if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
     return(IMAP4S_DEFAULT_PORT);
   }
@@ -108,7 +114,8 @@ char *imap4s_port(char *port){
  *       Else return SSL_MODE_SSL_ALL
  **********************************************************************/
 
-flag_t imap4s_encryption(flag_t ssl_flags) {
+static flag_t imap4s_encryption(flag_t ssl_flags) 
+{
   if(ssl_flags != SSL_MODE_EMPTY) {
     return(ssl_flags);
   }

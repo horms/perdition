@@ -31,11 +31,16 @@
 
 #include "imap4.h"
 #include "protocol.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
+
+static void imap4_destroy_protocol(protocol_t *protocol);
+static char *imap4_port(char *port);
+static flag_t imap4_encryption(flag_t ssl_flags);
 
 /**********************************************************************
  * imap4_intitialise_proto
@@ -77,7 +82,8 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
  * Destory protocol specifig elements of the protocol struture
  **********************************************************************/
 
-void imap4_destroy_protocol(protocol_t *protocol){
+static void imap4_destroy_protocol(protocol_t *protocol)
+{
   ;
 }
 
@@ -90,7 +96,8 @@ void imap4_destroy_protocol(protocol_t *protocol){
  *       port otherwise
  **********************************************************************/
 
-char *imap4_port(char *port){
+static char *imap4_port(char *port)
+{
   if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
     return(IMAP4_DEFAULT_PORT);
   }
@@ -106,7 +113,8 @@ char *imap4_port(char *port){
  * post: return ssl_flags (does nothing)
  **********************************************************************/
 
-flag_t imap4_encryption(flag_t ssl_flags) {
+static flag_t imap4_encryption(flag_t ssl_flags) 
+{
   return(ssl_flags);
 }
 
@@ -116,20 +124,56 @@ flag_t imap4_encryption(flag_t ssl_flags) {
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
  *      mangled_capability: not used
- *      ssl_flags: the encryption flags that bave been set
+ *      tls_flags: the encryption flags that bave been set
+ *      tls_state: the current state of encryption for the session
  * post: capability to use, as per protocol_capability
  *       with IMAP4 parameters
  **********************************************************************/
 
 char *imap4_capability(char *capability, char **mangled_capability,
-		flag_t ssl_flags) {
-  capability = protocol_capability(capability, ssl_flags, 
-		  IMAP4_DEFAULT_CAPABILITY, IMAP4_TLS_CAPABILITY,
-		  IMAP4_CAPABILITY_DELIMITER);
-  if(capability == NULL) {
-	  VANESSA_LOGGER_DEBUG("protocol_capability");
-	  return(NULL);
-  }
+		flag_t tls_flags, flag_t tls_state) 
+{
+	flag_t mode;
 
-  return(capability);
+	if(!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
+		free(capability);
+		capability = strdup(IMAP4_DEFAULT_CAPABILITY);
+	}
+  
+      	if((tls_flags & SSL_MODE_TLS_LISTEN) && 
+			!(tls_state & SSL_MODE_TLS_LISTEN)) {
+		mode = PROTOCOL_C_ADD;
+	}
+	else {
+		mode = PROTOCOL_C_DEL;
+	}
+	capability = protocol_capability(capability, mode, 
+			capability, IMAP4_CMD_STARTTLS, 
+			IMAP4_CAPABILITY_DELIMITER);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return(NULL);
+	}
+
+	if(!(tls_flags & SSL_MODE_TLS_LISTEN) ||
+			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)) {
+		return(capability);
+	}
+
+      	if(!(tls_state & SSL_MODE_TLS_LISTEN)) {
+		mode = PROTOCOL_C_ADD;
+	}
+	else {
+		mode = PROTOCOL_C_DEL;
+	}
+	capability = protocol_capability(capability, mode, 
+			capability, IMAP4_CMD_LOGINDISABLED, 
+			IMAP4_CAPABILITY_DELIMITER);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return(NULL);
+	}
+
+	return(capability);
 }
+

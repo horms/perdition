@@ -32,12 +32,7 @@
 #include "config.h"
 #endif
 
-#include "log.h"
 #include "protocol_t.h"
-#include "str.h"
-#include "pop3_in.h"
-#include "pop3_out.h"
-#include "pop3_write.h"
 
 
 /**********************************************************************
@@ -50,34 +45,4 @@
 
 protocol_t *pop3s_initialise_protocol(protocol_t *protocol);
 
-
-/**********************************************************************
- * pop3s_destroy_proto 
- * Destory protocol specifig elements of the protocol struture
- **********************************************************************/
-
-void pop3s_destroy_protocol(protocol_t *protocol);
-
-
-/**********************************************************************
- * pop3s_port 
- * Return the port to be used
- * pre: port: port that has been set
- * post: POP3S_DEFAULT_PORT if port is PERDITION_PROTOCOL_DEPENDANT
- *       port otherwise
- **********************************************************************/
-
-char *pop3s_port(char *port);
-
-
-/**********************************************************************
- * pop3s_encryption 
- * Return the encription states to be used.
- * pre: ssl_flags: the encryption flags that bave been set
- * post: If ssl_flags != SSL_MODE_EMPTY then return them,
- *       Else return SSL_MODE_SSL_ALL
- **********************************************************************/
-
-flag_t pop3s_encryption(flag_t ssl_flags);
-
-#endif
+#endif /* _PERDITION_POP3S_H */

@@ -113,7 +113,10 @@ static void perdition_reread_handler(int sig);
   } \
   server_io=NULL; \
   server_port=NULL; \
-  token_destroy(&client_tag);
+  token_destroy(&client_tag); \
+  tls_state=0; \
+  opt.capability = protocol->capability(opt.capability, \
+    &(opt.mangled_capability), opt.ssl_mode, tls_state);
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -164,6 +167,7 @@ int main (int argc, char **argv, char **envp){
   token_t *our_tag=NULL;
   token_t *client_tag=NULL;
   size_t server_ok_buf_size=0;
+  flag_t tls_state=0;
   timed_log_t auth_log;
   char from_to_str[36];
   char from_str[17];
@@ -351,7 +355,7 @@ int main (int argc, char **argv, char **envp){
   /*Set up the ssl mode*/
   opt.ssl_mode=protocol->encryption(opt.ssl_mode);
   opt.capability = protocol->capability(opt.capability, 
-		  &(opt.mangled_capability), opt.ssl_mode);
+		  &(opt.mangled_capability), opt.ssl_mode, tls_state);
 
   if(opt.ssl_mode & SSL_LISTEN_MASK) {
     ssl_ctx = perdition_ssl_ctx(NULL, opt.ssl_cert_file, 
@@ -364,7 +368,7 @@ int main (int argc, char **argv, char **envp){
   }
 #else
   opt.capability = protocol->capability(opt.capability, 
-		  &(opt.mangled_capability), SSL_MODE_NONE);
+		  &(opt.mangled_capability), SSL_MODE_NONE, SSL_MODE_NONE);
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -551,7 +555,7 @@ int main (int argc, char **argv, char **envp){
       vanessa_socket_daemon_exit_cleanly(0);
     }
 #ifdef WITH_SSL_SUPPORT
-    else if(status == 2 && opt.ssl_mode & SSL_MODE_TLS_LISTEN){
+    else if((status == 2) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN)){
       /* We have received a STLS */
       client_io = perdition_ssl_server_connection(client_io, ssl_ctx);
       if(!client_io) {
@@ -559,6 +563,23 @@ int main (int argc, char **argv, char **envp){
 	VANESSA_LOGGER_ERR("Fatal error establishing TLS connection");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
+      tls_state |= SSL_MODE_TLS_LISTEN;
+      opt.capability = protocol->capability(opt.capability,
+            &(opt.mangled_capability), opt.ssl_mode, tls_state);
+      continue;
+    }
+    else if((status == 0) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN) &&
+		    (opt.ssl_mode & SSL_MODE_TLS_LISTEN_FORCE) &&
+		    !(tls_state & SSL_MODE_TLS_LISTEN)) {
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
+          protocol->type[PROTOCOL_NO], "Login Disabled")<0){
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
+        vanessa_socket_daemon_exit_cleanly(-1);
+      }
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
+            port, "failed: server set LOGINDISABLED");
+      PERDITION_CLEAN_UP_MAIN;
       continue;
     }
 #endif /* WITH_SSL_SUPPORT */
@@ -742,7 +763,6 @@ int main (int argc, char **argv, char **envp){
     pw2.pw_passwd=pw.pw_passwd;
 
     status = (*(protocol->out_setup))(server_io, &pw2, our_tag, protocol);
-    VANESSA_LOGGER_DEBUG_UNSAFE("out_setup=%d", status);
     if(status==0){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
       quit(server_io, protocol, our_tag);
@@ -764,7 +784,8 @@ int main (int argc, char **argv, char **envp){
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 #ifdef WITH_SSL_SUPPORT
-    else if(status & PROTOCOL_S_STARTTLS) {
+    else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
+          (status & PROTOCOL_S_STARTTLS)) {
       server_io=perdition_ssl_client_connection(server_io,
             opt.ssl_ca_file, opt.ssl_listen_ciphers, servername);
       if(!server_io) {
@@ -772,6 +793,21 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
+      tls_state |= SSL_MODE_TLS_OUTGOING;
+    }
+    else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
+		    (opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE) &&
+		    !(status & PROTOCOL_S_STARTTLS)) {
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
+          protocol->type[PROTOCOL_NO], "TLS not present")<0){
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
+        vanessa_socket_daemon_exit_cleanly(-1);
+      }
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
+            port, "failed: TLS not present");
+      PERDITION_CLEAN_UP_MAIN;
+      continue;
     }
 #endif /* WITH_SSL_SUPPORT */
 

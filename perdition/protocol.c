@@ -34,7 +34,6 @@
 #include "imap4.h"
 #include "imap4s.h"
 #include "protocol.h"
-#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -204,13 +203,14 @@ char *protocol_list(char *string, const char *delimiter, const int request){
 }
 
 
-char *protocol_capability(char *capability, flag_t ssl_flags,
-		const char *default_capability, const char *tls_capability,
-		const char *capability_delimiter) {
+char *protocol_capability(char *capability, flag_t flag,
+		const char *existing_capability, const char *add_capability,
+		const char *capability_delimiter) 
+{
   char *tmp_str;
   
   if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, capability)){
-    tmp_str = strdup(default_capability);
+    tmp_str = strdup(existing_capability);
     if(tmp_str == NULL) {
       VANESSA_LOGGER_DEBUG_ERRNO("strdup");
       return(NULL);
@@ -220,8 +220,8 @@ char *protocol_capability(char *capability, flag_t ssl_flags,
     tmp_str = capability;
   }
 
-  if(ssl_flags & SSL_MODE_TLS_LISTEN) {
-    capability = str_append_substring_if_missing(tmp_str, tls_capability, 
+  if(flag & PROTOCOL_C_ADD) {
+    capability = str_append_substring_if_missing(tmp_str, add_capability, 
 		    capability_delimiter);
     if(capability == NULL) {
       VANESSA_LOGGER_DEBUG("str_delete_substring");
@@ -230,7 +230,7 @@ char *protocol_capability(char *capability, flag_t ssl_flags,
     }
   }
   else {
-    capability = str_delete_substring(tmp_str, tls_capability, 
+    capability = str_delete_substring(tmp_str, add_capability, 
 		    capability_delimiter);
     if(capability == NULL) {
       VANESSA_LOGGER_DEBUG("str_delete_substring");
