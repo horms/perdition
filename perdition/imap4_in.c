@@ -475,9 +475,10 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
 	  goto loop;
 	}
 
-        return_pw->pw_name=imap4_token_to_string(t, status);
-        if(!return_pw->pw_name) {
+        return_pw->pw_passwd=imap4_token_to_string(t, status);
+        if(!return_pw->pw_passwd) {
           VANESSA_LOGGER_DEBUG("imap4_token_to_string");
+	  free(return_pw->pw_name);
           break;
         }
       }
