@@ -138,14 +138,16 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 		cert = X509_STORE_CTX_get_current_cert(ctx);
 		X509_NAME_oneline(X509_get_subject_name(cert),
 				buf, MAX_LINE_LENGTH);
-        	VANESSA_LOGGER_DEBUG_UNSAFE("cert: %s", buf);
-        	VANESSA_LOGGER_DEBUG_UNSAFE("depth: %d", 
-				X509_STORE_CTX_get_error_depth(ctx));
+        	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("depth:%d cert:\"%s\"", 
+				X509_STORE_CTX_get_error_depth(ctx), buf);
 	}
 
 	if(opt.ssl_cert_verify_depth < X509_STORE_CTX_get_error_depth(ctx)) {
-		VANESSA_LOGGER_DEBUG("Chain too long");
-	        X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
+		VANESSA_LOGGER_DEBUG_UNSAFE("Chain too long, try adjusting "
+				"ssl_cert_verify_depth: %d > %d",
+				X509_STORE_CTX_get_error_depth(ctx), 
+				opt.ssl_cert_verify_depth);
+		X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
 		return(0);
 	}
 
