@@ -10,7 +10,7 @@
  *                                             http://www.freegates.be/
  *                                                   http://www.nts.be/
  * perdition
- * Mail retreival proxy server
+ * Mail retrieval proxy server
  * Copyright (C) 1999  Horms and Frederic Delchambre
  * 
  * This program is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@
 #define PERDITIONDB_PGSQL_MAX_SLEEP        1800
 #define PERDITIONDB_PGSQL_DEFAULT_DBHOST   "localhost"
 #define PERDITIONDB_PGSQL_DEFAULT_DBPORT   NULL
-#define PERDITIONDB_PGSQL_DEFAULT_DBNAME   "dbPerdition"
+#define PERDITIONDB_PGSQL_DEFAULT_DBNAME   "dbperdition"
 #define PERDITIONDB_PGSQL_DEFAULT_DBTABLE  "tblPerdition"
 #define PERDITIONDB_PGSQL_DEFAULT_DBUSER   "perdition"
 #define PERDITIONDB_PGSQL_DEFAULT_DBPWD    "perdition"

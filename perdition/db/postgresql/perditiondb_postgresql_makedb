@@ -1,15 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 ######################################################################
-# perditiondb_postgresql_makedb                             April 2000
+# perditiondb_postgresql_makedb                          December 2000
 # Horms                                             horms@vergenet.net
 #
-# Sample programme to create a PostgreSQL database 
+# Sample programme to create a perdition database in a PostgreSQL 
+# RDMS
 #
 # Adapted from a similar script for MySQL by 
 # Frederic Delchambre <dedel@freegates.be>
 #
 # perdition
-# Mail retreival proxy server
+# Mail retrieval proxy server
 # Copyright (C) 1999  Horms
 # 
 # This program is free software; you can redistribute it and/or
@@ -30,35 +31,176 @@
 ######################################################################
 
 
+DEFAULT_DBNAME=dbPerdition
+DEFAULT_DBUSER=perdition
+DEFAULT_DBTABLE=tblPerdition
+DEFAULT_DBUID=$(id -u)
 
-#Create user perdition in the database
-echo "Enter Password for user postgres"
-su postgres -c "\
-  echo y | destroyuser -q perdition ; \
-  createuser -d -i $(id -u)  -U perdition ; \
+quit () {
+  stty echo
+}
+
+trap quit HUP
+trap quit TERM
+trap quit STOP
+
+
+echo
+echo "Perdition information will be sotored in a separeate"
+echo "database within the PostgreSQL RDBMS. The default name for"
+echo "this database is $DEFAULT_DBNAME. If you want to use this"
+echo "hit return, otherwise enter the name for the database."
+echo -n "Enter database name [$DEFAULT_DBNAME]: "
+read dbname
+if [ -z "$dbname" ]; then
+  dbname="$DEFAULT_DBNAME"
+fi
+
+echo
+echo "Perdition information will be stored in table in the"
+echo "$dbname database. The default name for this table is"
+echo "$DEFAULT_DBTABLE. If you want to use this hit return,"
+echo "otherwise enter the name for the table."
+echo -n "Enter table name [$DEFAULT_DBTABLE]: "
+read dbtable
+if [ -z "$dbtable" ]; then
+  dbtable="$DEFAULT_DBTABLE"
+fi
+
+echo
+echo "A PostgreSQL user, other than root should be used to access"
+echo "the $dbname database. The default name for this user"
+echo "is $DEFAULT_DBUSER. If you want to use this name, hit return,"
+echo "otherwise enter the name for the user."
+echo -n "Enter database user [$DEFAULT_DBUSER]: "
+read dbuser
+if [ -z "$dbuser" ]; then
+  dbuser="$DEFAULT_DBUSER"
+fi
+
+while [ 1 ]; do
+  echo -n "Enter a numeric userid for the $dbuser user [$DEFAULT_DBUID]: " >&2
+  read dbuid
+  if [ -z "$dbuid" ]; then
+    dbuid="$DEFAULT_DBUID"
+  fi
+  if echo $dbuid | grep "[^0-9]" > /dev/null; then
+    echo "Userid is contains non-numbers, please try again." >& 2
+  else
+    break
+  fi
+done
+
+while [ 1 ]; do
+  echo -n "Enter a password for the $dbuser user: " >&2
+  stty -echo
+  read dbpw
+  stty echo
+  echo
+  if [ -z "$dbpw" ]; then
+    echo "Password is empty, please try again." >& 2
+    continue
+  fi
+  echo -n "Enter password again to verify: " >&2
+  stty -echo
+  read dbpw2
+  stty echo
+  echo
+  if [ "$dbpw" != "$dbpw2" ]; then
+    echo "Passwords do not match, please try again." >& 2
+    continue
+  fi
+  break
+done
+
+echo
+echo "Database name:            $dbname"
+echo "Database user id:         $dbuid"
+echo "Database table:           $dbtable"
+echo "Database user:            $dbuser"
+echo -n "Procede (May destroy existing data in database) [y/n]? " >&2
+read answer
+if [ "$answer" != "y" -a "$answer" != "Y" ]; then
+  exit 0
+fi
+
+
+echo
+echo "Creating user $dbuser:"
+echo "Enter Password for user postgres" >& 2
+su - postgres -c "\
+  createuser -i $dbuid -U -d $dbuser > /dev/null ; \
   psql -q template1 -c \" \
-  	update pg_shadow set passwd='flim',\
+  	update pg_shadow set passwd='$dbpw',\
 	valuntil='Fri Jan 30 22:00:00 2037 PST' \
-	where usename='perdition';\" " > /dev/null
+	where usename='$dbuser';\""
+if [ $? != 0 ]; then
+  echo "Error creating user $dbuser. Bailing"
+  exit 1
+fi
 
 
-#Create database as user perdition
-createdb -u dbPerdition > /dev/null << _EOF_
-perdition
-perdition
+echo -n "Droping database $dbname... "
+destroydb -u $dbname &> /dev/null << _EOF_
+$dbuser
+$dbpw
 _EOF_
+echo " Done"
 
-#Seed table with data as user perdition
-psql -q -u  dbPerdition << _EOF_
-perdition
-perdition
-create table tblPerdition (
+
+echo -n "Creating database $dbname..."
+createdb -u $dbname > /dev/null << _EOF_
+$dbuser
+$dbpw
+_EOF_
+if [ $? != 0 ]; then
+  echo
+  echo "Error, Bailing" >&2
+  exit 1
+fi
+echo " Done"
+
+
+echo -n "Droppint table $dbtable in database $dbname..."
+psql -q -u  -d $dbname >& /dev/null  << _EOF_
+$dbuser
+$dbpw
+drop table $dbtable;
+_EOF_
+echo " Done"
+
+
+echo -n "Creating table $dbtable in database $dbname..."
+psql -q -u  -d $dbname >& /dev/null  << _EOF_
+$dbuser
+$dbpw
+create table $dbtable (
   "user" char(16) not null primary key, 
   "servername" char(255) not null, 
   "port" char(8) default null
 );
-insert into tblPerdition values ('dedel', 'mail.freegates.be', '');
-insert into tblPerdition values ('fred', 'mail.nts.be', '1974');
-insert into tblPerdition values ('tymm', 'localhost',   '');
-insert into tblPerdition values ('horms','localhost',   '');
 _EOF_
+if [ $? != 0 ]; then
+  echo "Error creating $dbtable in $dbname. Bailing"
+  exit 1
+fi
+echo " Done"
+
+
+echo
+echo
+echo "You may now add entries to $dbtable in $dbname."
+echo "To connect to $dbname use:"
+echo
+echo "psql -u \"$dbname\""
+echo
+echo "At the Username prompt enter $dbuser"
+echo
+echo "To insert rows into $dbtable use the following once"
+echo "logged into $dbname"
+echo
+echo "insert into $dbtable values (\"user\", \"servername\", \"port\");"
+echo "where: "
+echo "  user:       name of user. Up to 16 characters. May not be NULL."
+echo "  servername: name of server for user. Up to 256 characters. May not be NULL."
+echo "  port:       port to connect to on server. May be NULL."

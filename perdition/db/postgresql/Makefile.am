@@ -3,7 +3,7 @@
 # Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retreival proxy server
+# Mail retrieval proxy server
 # Copyright (C) 1999  Horms
 # 
 # This program is free software; you can redistribute it and/or
@@ -23,7 +23,9 @@
 #
 ######################################################################
 
-EXTRA_DIST = perditiondb_postgresql_makedb
+man_MANS = perditiondb_postgresql_makedb.1
+
+EXTRA_DIST = perditiondb_postgresql_makedb perditiondb_postgresql_makedb.8
 
 bin_SCRIPTS = perditiondb_postgresql_makedb
 
