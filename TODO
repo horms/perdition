@@ -53,3 +53,10 @@ Birger Toedtmann
 
 Richard Holbert
 Lie and say there are 0 messages if a real-server can't be contacted.
+
+
+LDAP documentation
+   - ldap.schema
+   - using ldap credentials
+   - multiple servers
+   - existing ldap system documentation
