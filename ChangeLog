@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-XXX
+17th May 2002
 (Horms)
-   * XXX
+   * 0.1.10
    - May log to stdout or stderr.
    - Updated debian dependancies
    - Updated man page dates
@@ -19,7 +19,7 @@ XXX
 11th May 2002
 (Horms)
 
-  * Version 0.1.10beta4
+  * 0.1.10beta4
   - Flush internal buffers for tokeniser when switching between
     the client and the real server in unauthenticated mode.
     This resolves a problem with IMAP literal strings not working.
@@ -35,7 +35,7 @@ XXX
 30th April 2002
 (Horms)
 
-  * Version 0.1.10beta3
+  * 0.1.10beta3
   - Uninstall symlinks created by -hook targets in various Makefile.am
   - Handle the return of an empty string from db_getserver routines
   - Minor changes to ldap module to use ldap_init as ldap_open
@@ -62,7 +62,7 @@ XXX
 19th April 2002
 (Horms)
 
-  * Version 0.1.10beta2
+  * 0.1.10beta2
   - Better loging of problems when connecting to real-servers
   - Debian init scripts and packaging updated.
   - Added LDAP schema, perdition.schema
@@ -84,7 +84,7 @@ XXX
 14th March 2002
 (Horms)
 
-  * Version 0.1.10beta1
+  * 0.1.10beta1
   - Fixed problem with setting ssl_key_file.
   - Brief documentation for how to generate .pem files for SSL/TLS
   - Handle systems that don't have socklen_t
@@ -127,7 +127,7 @@ XXX
 29th June 2001
 (Horms)
 
-  * Version 0.1.9
+  * 0.1.9
   - Added SSL Support
   - Modified logging semantics to have Connect, Auth, and Close logs
     suitable for pop/imap-before-smtp. Carlos Canau & Matt Prigge
@@ -152,7 +152,7 @@ XXX
 9th May 2001
 (Horms)
 
-  * Version 0.1.8
+  * 0.1.8
   *** NB: Several options and defaults have changed meaning ***
   - Fixed Segmentation Fault that occurs when reading strings that
     have a trainling whitespace during the authentication phase.
@@ -178,7 +178,7 @@ XXX
 5th April 2001
 (Horms)
 
-   * Version 0.1.7
+   * 0.1.7
    - Red Hat init script reports status correctly
    - Fixed minor spelling errors in documentation
    - Added missing library symlings to spec file
@@ -200,7 +200,7 @@ XXX
 9th January 2001
 (Horms)
 
-   * Version 0.1.6
+   * 0.1.6
    - Fixed Bug in specifying port of PostgreSQL server.
      Thanks to Michael J. Maravillo.
    - Fixed Bug in reporting of reauthenication failures in IMAP4 mode
@@ -248,7 +248,7 @@ XXX
 2nd May 2000
 (Horms)
 
-   * Version 0.1.5
+   * 0.1.5
    - Removed bug that caused 0.1.4 not to background when in stand
      alone mode.
    - Fixed potential buffer overun problems in perditiondb_mysql
@@ -262,7 +262,7 @@ XXX
 15th April 2000
 (Horms)
 
-   * Version 0.1.4
+   * 0.1.4
    - Updated perditiondb_mysql so it no longer used the depreciated
      myslq_real_connect. Thanks to Krzysztof Sierota for the patch.
    - Removed missing define that prevented copilation without pam
@@ -291,7 +291,7 @@ XXX
 8th February 2000
 (Horms)
 
-    * Version 0.1.3
+    * 0.1.3
     - Options structure is now global
     - Configuration file support added
     - Logs Client IP address when not in inetd mode
@@ -319,7 +319,7 @@ XXX
 14th November 1999
 (Horms)
 
-    * Version 0.1.2
+    * 0.1.2
     - \" is ignored duting authenticatin phase. Netscape
       seems to put these in during imap authentication.
 
@@ -328,7 +328,7 @@ XXX
 10th November 1999
 (Horms)
 
-     * Version 0.1.1
+     * 0.1.1
      *** NB: Several options have changed meaning between 0.1.0 and 0.1.1 ***
      - Added default server option
      - Added option to strip domain
@@ -349,7 +349,7 @@ XXX
 12th October 1999
 (Horms)
 
-      * Version 0.1.0
+      * 0.1.0
       - IMAP4 protocol support
       - Fixed bug were port wasn't closed cleanly on exit on failure
       - Fixed bug where perdition would loop if client died unexpectedly

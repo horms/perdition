@@ -1,6 +1,4 @@
-perdition (0.1.10-beta4-1) unstable; urgency=low
-
-  * CVS release
+perdition (0.1.10-1) unstable; urgency=low
 
   * The following are here as these bugs do not seem to have been
      closed for some reason.
@@ -8,7 +6,7 @@ perdition (0.1.10-beta4-1) unstable; urgency=low
   *  Minor spelling errors.
      (closes: Bug#125226)
 
- -- Simon Horman <horms@vergenet.net>  Sat, 11 May 2002 16:26:10 +1000
+ -- Simon Horman <horms@vergenet.net>  Fri, 17 May 2002 17:29:47 +1000
 
 perdition (0.1.9-5) unstable; urgency=low
 
