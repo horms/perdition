@@ -152,7 +152,6 @@ int dbserver_get(
   int msgid;
   int count;
   int attrcount;
-  int attrcopied=0;
   char *pstr;
   char **bv_val=NULL;
   char *filter;
@@ -208,13 +207,17 @@ int dbserver_get(
     return(-3);
   }
 
+  for (count = 0; count < attrcount; count++) {
+    ldap_returns[count] = NULL;
+  }
+
   *len_return = 0;
   for (pstr = ldap_first_attribute(connection, mptr, &ber); pstr != NULL;
        pstr = ldap_next_attribute(connection, mptr, ber)){
     bv_val = ldap_get_values(connection, mptr, pstr);
 
     for (count = 0; count < attrcount; count++) {
-      if (strcmp(ludp->lud_attrs[count], pstr) == 0) {
+      if (strcasecmp(ludp->lud_attrs[count], pstr) == 0) {
         *len_return += strlen(*bv_val);
         if ((ldap_returns[count] = (char *)malloc(strlen(*bv_val)+1)) == NULL) {
           ldap_value_free(bv_val);
@@ -222,7 +225,6 @@ int dbserver_get(
           return(-3);
         }
         strcpy(ldap_returns[count], *bv_val);
-	attrcopied=count+1;
       }
     }
     ldap_value_free(bv_val);
@@ -238,10 +240,10 @@ int dbserver_get(
   }
 
   /* Build the return string */
-  if(attrcopied){
-    strcpy(*str_return, ldap_returns[0]);
-    free(ldap_returns[0]);
-    for (count = 1; count < attrcopied; count++) {
+  strcpy(*str_return, ldap_returns[0]);
+  free(ldap_returns[0]);
+  for (count = 1; count < attrcount; count++) {
+    if (ldap_returns[count] != NULL) {
       if (perditiondb_ldap_vanessa_socket_str_is_digit(ldap_returns[count])) {
         strcat(*str_return, ":");
       }
