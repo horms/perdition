@@ -3,7 +3,7 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 pwd:=$(shell pwd)
-cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=/etc/ldap/schema --enable-shared
+cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=/etc/ldap/schema --enable-shared --disable-ldap-doc
 
 build: checkbuild build-stamp
 build-stamp:
@@ -62,10 +62,6 @@ install: build
 	install -c -m 644 TODO \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
-
-	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition-ldap
-	install -c -m 644 perdition/db/ldap/doc/perdition_ldap.pdf \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition-ldap/perdition_ldp.pdf
 
 	dh_movefiles --source=debian/tmp
 
