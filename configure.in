@@ -574,6 +574,9 @@ AC_C_CONST
 AC_TYPE_UID_T
 AC_TYPE_SIZE_T
 
+AC_CHECK_TYPE(socklen_t, 
+        AC_DEFINE(HAVE_SOCKLEN_T,1, socklen_t type is available))
+
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
