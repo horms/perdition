@@ -41,13 +41,9 @@
 #include <stdio.h>
 #include <vanessa_adt.h>
 
-#ifdef WITH_UNIX_ODBC
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
-#elif WITH_INTERSOLV_ODBC
-#include <qeodbc.h>
-#endif
 
 
 #define PERDITIONDB_ODBC_FIELD_DELIMITER   ':'

@@ -290,6 +290,8 @@ fi
 ######################################################################
 # ODBC
 
+odbc_build_dir="odbc"
+
 AC_ARG_WITH(
   odbc-includes,
   [  --with-odbc-includes=DIR  
@@ -299,10 +301,8 @@ AC_ARG_WITH(
     AC_MSG_CHECKING(ODBC include path)
     for odbc_includepath in /usr/odbc/include /usr/local/odbc/include \
         /usr/include/odbc /usr/local/include/odbc \
-	/usr/local/odbc/include/odbc /usr/include /usr/local/include \
-        /opt/ISLIodbc/2.11/include ; do
-      if test -f "${odbc_includepath}/sql.h" \
-          -o -f "${odbc_includepath}/qeodbc.h"; then
+	/usr/local/odbc/include/odbc /usr/include /usr/local/include ; do
+      if test -f "${odbc_includepath}/sql.h" ; then
         break
       fi
     done
@@ -321,9 +321,8 @@ AC_ARG_WITH(
     AC_MSG_CHECKING(ODBC include path)
     for odbc_libpath in /usr/odbc/lib /usr/local/odbc/lib \
         /usr/lib/odbc /usr/local/lib/odbc \
-    	/usr/local/odbc/lib/odbc /usr/lib /usr/local/lib \
-        /opt/ISLIodbc/2.11/lib ; do
-      if test -f "${odbc_libpath}/odbc.a" -o -f "${odbc_libpath}/odbc.so"; then
+    	/usr/local/odbc/lib/odbc /usr/lib /usr/local/lib ; do
+      if test -f "${odbc_libpath}/odbc.a" ; then
         break
       fi
     done
@@ -333,44 +332,32 @@ AC_ARG_WITH(
 
 odbc_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$odbc_libpath -lodbc"
 
-if test -f "${odbc_includepath}/qeodbc.h"; then
-  AC_DEFINE(WITH_INTERSOLV_ODBC, 1, Use Intersolve ODBC Manager)
-  sleep 5
-else
 AC_CHECK_FILES(
   $odbc_includepath/sql.h $odbc_includepath/sqlext.h $odbc_includepath/sqltypes.h,
-  [ odbc_build_dir="odbc" 
-    AC_DEFINE(WITH_UNIX_ODBC, 1, Use unixodbc ODBC Manager) ],
-  [ 
-    odbc_build_dir="" 
-AC_MSG_WARN(
-""
-"**********************************************************************"
-"* perditiondb_odbc will not be built"
-"**********************************************************************"
-) ;\
-    sleep 5
-  ]
+  AC_DEFINE(WITH_UNIX_ODBC, 1, Use unixodbc ODBC Manager),
+  odbc_build_dir="" 
 )
-fi
 
-if [ test -n "$odbc_build_dir" ]; then
+if test -n "$odbc_build_dir"; then
 AC_CHECK_LIB(
   odbc,
   SQLSetEnvAttr,
-  [ odbc_build_dir="odbc" ],
-  [ 
-    odbc_build_dir="" 
+  :, 
+  [ odbc_build_dir="" ],
+  $odbc_libs
+)
+fi
+
+if test -z "$odbc_build_dir"; then
 AC_MSG_WARN(
 ""
 "**********************************************************************"
 "* perditiondb_odbc will not be built: $odbc_libraries"
+"* There a many ODBC Managers available including UnixODBC"
+"* which is available from www.unixodbc.org"
 "**********************************************************************"
 ) ;\
     sleep 5
-  ],
-  $odbc_libs
-)
 fi
 
 
@@ -572,7 +559,7 @@ AC_CHECK_LIB(
   ldap,
   ldap_url_parse,
   [ : ],
-  [ ldap_build_dir="" ]
+  [ ldap_build_dir="" ],
   $ldap_libs
 )
 fi
@@ -589,7 +576,7 @@ if test "$ldap_build_dir" = "ldap"; then
 AC_MSG_WARN(
 ""
 "************************************************************"
-"* Password and Username support will not be build in the"
+"* Password and Username support will not be built in the"
 "* LDAP module. For Password and Username support compile"
 "* openldap2. Available from openldap.org"
 "************************************************************"
