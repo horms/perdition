@@ -344,11 +344,16 @@ int main (int argc, char **argv, char **envp){
    * Only used for IMAP based protocols, but it is harmless to have it
    * lying about
    */
-  our_tag = imap4_tag_create();
-  if(!our_tag) {
-	  VANESSA_LOGGER_DEBUG("imap4_tag_create");
-	  VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-	  vanessa_socket_daemon_exit_cleanly(-1);
+  if(opt.protocol == PROTOCOL_IMAP4 || opt.protocol == PROTOCOL_IMAP4S) {
+  	our_tag = imap4_tag_create();
+  	if(!our_tag) {
+	  	VANESSA_LOGGER_DEBUG("imap4_tag_create");
+	  	VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
+	  	vanessa_socket_daemon_exit_cleanly(-1);
+  	}
+  }
+  else {
+	  our_tag = NULL;
   }
 
 #ifdef WITH_SSL_SUPPORT
@@ -806,6 +811,7 @@ int main (int argc, char **argv, char **envp){
       }
       VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
             port, "failed: TLS not present");
+      quit(server_io, protocol, our_tag);
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
