@@ -49,15 +49,19 @@ fi
 
 
 echo
-echo "Initialising LDAP popmap..."
-echo
 echo "You will need to enter the sevrer for the"
 echo "binddn: \"$dc\"."
 echo "The default mau be \"secret\", you should change"
 echo "your ldap configuration if this is the case."
+echo -n "Enter the password for \"$dc\": " >&2
+stty -echo
+read rootpw
+stty echo
 echo
 
-ldapadd -D "$dc" -W << __EOF__
+echo "Initialising LDAP popmap..."
+
+ldapadd -D "$dc" -w "$rootpw" << __EOF__
 dn: dc=my-domain, dc=com
 dc: my-domain
 
@@ -80,3 +84,4 @@ if [ $? != 0 ]; then
   echo "Error initialising LDAP popmap. Bailing" >&2
   exit 1
 fi
+echo Done
