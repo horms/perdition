@@ -27,10 +27,19 @@ EXTRA_DIST = \
 changelog \
 control \
 copyright \
-perdition-dev.dirs \
 perdition-dev.files \
+perdition-gdbm.files \
+perdition-gdbm.postinst \
+perdition-gdbm.prerm \
+perdition-ldap.files \
+perdition-mysql.files \
+perdition-nis.files \
+perdition-posix-regex.files \
+perdition-postgresql.files \
 perdition.dirs \
 perdition.files \
-perdition0.postinst
+perdition.postinst \
+perdition.postrm \
+rules
 
 m4datadir = $(datadir)/aclocal
