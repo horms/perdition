@@ -14,6 +14,8 @@ perdition (1.11beta4-1) unstable; urgency=low
        (closes: Bug#171080)
      - Not a bug (please set the capability of perdition to match your
        imap servers). (closes: Bug#171558)
+     - Not a bug (added to TODO list). (closes: Bug#178969)
+     - Build with WITH_LDAP_LUD_EXTS (closes: Bug#170801)
 
  -- Simon Horman <horms@vergenet.net>  Fri, 10 Jan 2003 17:07:03 +0900
 

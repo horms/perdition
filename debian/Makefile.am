@@ -57,4 +57,4 @@ dpkg-checkbuild
 clean-local:
 	rm -f *.substvars *.debhelper files
 	rm -r -f perdition perdition-dev perdition-ldap perdition-mysql \
-		perdition-postgresql perdition-bdb tmp
+		perdition-postgresql perdition-bdb perdition-odbc tmp
