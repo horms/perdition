@@ -128,8 +128,8 @@ int main (int argc, char **argv){
   /*
    * Create Logger
    */
-  if((perdition_vl=vanessa_logger_openlog_syslog(
-    LOG_FACILITY,
+  if((perdition_vl=vanessa_logger_openlog_syslog_byname(
+    DEFAULT_LOG_FACILITY,
     LOG_IDENT,
     opt.debug?LOG_DEBUG:LOG_INFO,
     LOG_CONS
@@ -200,13 +200,13 @@ int main (int argc, char **argv){
    * and configuration file has been read.
    */
   vanessa_logger_closelog(perdition_vl);
-  if((perdition_vl=vanessa_logger_openlog_syslog(
-    LOG_FACILITY,
+  if((perdition_vl=vanessa_logger_openlog_syslog_byname(
+    opt.log_facility,
     LOG_IDENT,
     opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
     LOG_CONS
   ))==NULL){
-    fprintf(stderr, "main: vanessa_logger_openlog_syslog 2");
+    fprintf(stderr, "main: vanessa_logger_openlog_syslog 2\n");
     fprintf(stderr, "Fatal error opening logger. Exiting.\n");
     daemon_exit_cleanly(-1);
   }

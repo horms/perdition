@@ -92,7 +92,8 @@ char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
       }
       else {
 	bcopy(hp->h_addr, &in, hp->h_length);
-	if((hp=gethostbyaddr(&in, sizeof(struct in_addr), AF_INET))==NULL){
+	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
+	if(hp==NULL){
           PERDITION_LOG(
 	    LOG_DEBUG, 
 	    "warning: greeting_str: gethostbyaddr: %s", 

@@ -11,7 +11,7 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
 *  tdb module
 
 From Daniel Rosen
-* Enable specification of syslog facility and non-sylog logging.
+* Enable specification of non-sylog logging.
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

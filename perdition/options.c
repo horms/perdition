@@ -119,6 +119,7 @@ int options(int argc, char **argv, flag_t f){
     {"authenticate_in",             'a', POPT_ARG_NONE,   NULL, 'a'},
     {"no_bind_banner",              'B', POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b', POPT_ARG_STRING, NULL, 'b'},
+    {"log_facility",                'F', POPT_ARG_STRING, NULL, 'F'},
     {"config_file",                 'f', POPT_ARG_STRING, NULL, 'f'},
     {"connection_limit",            'L', POPT_ARG_STRING, NULL, 'L'},
     {"client_server_specification", 'c', POPT_ARG_STRING, NULL, 'c'},
@@ -165,6 +166,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
+    opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
     opt_p(opt.config_file,     DEFAULT_CONFIG_FILE,         i, 0, OPT_NOT_SET);
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
     opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
@@ -234,6 +236,9 @@ int options(int argc, char **argv, flag_t f){
         if(!(f&OPT_FILE)){
           opt_p(opt.config_file,optarg,opt.mask,MASK_CONFIG_FILE,f);
         }
+        break;
+      case 'F':
+        opt_p(opt.log_facility,optarg,opt.mask,MASK_LOG_FACILITY,f);
         break;
       case 'g':
         opt_p(opt.group,optarg,opt.mask,MASK_GROUP,f);
@@ -403,7 +408,6 @@ int log_options(void){
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%d, "
 #endif /* WITH_PAM_SUPPORT */
-    "no_bind_banner=%d, "
     "bind_address=\"%s\", "
     "client_server_specification=%d, "
     "config_file=\"%s\", "
@@ -413,8 +417,10 @@ int log_options(void){
     "group=\"%s\", "
     "inetd_mode=%d, "
     "listen_port=\"%s\", "
+    "log_facility=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
+    "no_bind_banner=%d, "
     "no_lookup=%d, "
     "nodename=\"%s\", "
     "outgoing_port=\"%s\", "
@@ -429,7 +435,6 @@ int log_options(void){
 #ifdef WITH_PAM_SUPPORT
     opt.authenticate_in,
 #endif /* WITH_PAM_SUPPORT */
-    opt.no_bind_banner,
     str_null_safe(opt.bind_address),
     opt.client_server_specification,
     opt.config_file,
@@ -438,9 +443,11 @@ int log_options(void){
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
     opt.inetd_mode,
+    str_null_safe(opt.log_facility),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
+    opt.no_bind_banner,
     opt.no_lookup,
     str_null_safe(system_uname->nodename),
     str_null_safe(opt.outgoing_port),
@@ -498,108 +505,98 @@ void usage(int exit_status){
     "perdition is an mail retrieval proxy daemon\n"
     "\n"
     "Usage: perdition [options]\n"
-    "  options:\n"
-#ifdef WITH_PAM_SUPPORT
-    "     -a|--authenticate_in:\n"
-    "                      User is authenticated by perdition before\n"
-    "                      connection to backend server is made.\n"
-#endif /* WITH_PAM_SUPPORT */
-    "     -B|--no_bind_banner:\n"
-    "                      If -b|--bind_address is specified, then the\n"
-    "                      address will be resolved and the reverse-lookup\n"
-    "                      of this will be used in the greeting. This option\n"
-    "                      disables this behaviour an reverts to using the\n"
-    "                      uname to derive the hostname for the greeting\n"
-    "     -b|--bind_address:\n"
-    "                      Bind to interfaces with this address.\n"
-    "                      In non-inetd mode, connections will only be\n"
-    "                      accepted on interfaces with this address. If\n"
-    "                      NULL connections will be accepted from all\n"
-    "                      interfaces. In inetd and non-inetd mode the source\n"
-    "                      address of connections to real servers will be\n"
-    "                      this address, if NULL then the operating system\n"
-    "                      will select a source address.\n"
-    "                      The address may be an IP address or a hostname.\n"
-    "                      (default \"%s\")\n"
-    "     -c|--client_server_specification:\n"
-    "                      Allow USER of the form ser<delimiter>server[:port]\n"
-    "                      to specify the server and port for a user.\n"
-    "                      Note: over-rides -s|--strip_domain.\n"
-    "     -D|--domain_delimiter:\n"
-    "                      Delimiter used for\n"
-    "                      -c|--client_server_specification and\n"
-    "                      -s|--strip_domain options. Multicharacter\n"
-    "                      delimiters are permitted.\n"
-    "                      (default \"%s\")\n"
-    "     -d|--debug:      Turn on verbose debuging.\n"
-    "     -f|--config_file:\n"
-    "                      Name of config file to read. If set to \"\" no\n"
-    "                      config file will be used. Command line options\n"
-    "                      override options set in config file.\n"
-    "                      (default \"%s\")\n"
-    "     -g|--group:      Group to run as.\n"
-    "                      (default \"%s\")\n"
-    "     -h|--help:       Display this message\n"
-    "     -i|--inetd_mode: Run in inetd mode\n"
-    "     -L|--connection_limit:\n"
-    "                      Maximum number of connections to accept\n"
-    "                      simultaneously. A value of zero sets\n"
-    "                      no limit on the number of simultaneous\n"
-    "                      connections.\n"
-    "                      (default %d)\n"
-    "     -l|--listen_port:\n"
-    "                      Port to listen on.\n"
-    "                      (default \"%s\")\n"
-    "     -M|--map_library:\n"
-    "                      Library to open that provides functions to look\n"
-    "                      up the server for a user. A null library mean\n"
-    "                      no library will be accessed and hence, no lookup\n"
-    "                      will take place.\n"
-    "                      (default \"%s\")\n"
-    "     -m|--map_library_opt:\n"
-    "                      String option to pass to databse access function\n"
-    "                      provided by the library specified by the\n"
-    "                      -M|--map_library option. The treatment of this\n"
-    "                      string is up to the library, in the case of\n"
-    "                      perditiondb_gdbm the gdbm map to access is set.\n"
-    "                      (default \"%s\")\n"
-    "     -n|--no_lookup:  Disable host and port lookup\n"
-    "                      Implies -B|--no_bind_banner\n"
-    "     -o|--server_ok_line:\n"
-    "                      If authentication with the back-end server is\n"
-    "                      successful then send the servers +OK line to\n"
-    "                      the client, instead of generting one\n"
-    "     -P|--protocol:   Protocol to use.\n"
-    "                      (default \"%s\")\n"
-    "                      available protocols: \"%s\"\n"
-    "     -p|--outgoing_port:\n"
-    "                      Define a port to use if a port is not defined for\n"
-    "                      a user in popmap, or a default server if it is\n"
-    "                      used.\n"
-    "                      (default \"%s\")\n"
-    "     -s|--outgoing_server:\n"
-    "                      Define a server to use if a user is not in the\n"
-    "                      popmap. Format is servername[:port]. Multiple\n"
-    "                      servers can be delimited by a ','. If multiple\n"
-    "                      servers are specified then they are used in a\n"
-    "                      round robin.\n"
-    "                      (default \"%s\")\n"
-    "     -S|--strip_domain:\n"
-    "                      Allow USER of the from user<delimiter>domain where\n"
-    "                      <delimiter>domain will be striped off\n"
-    "                      Note: over-ridden by\n"
-    "                      -c|--client_server_specification\n"
-    "     -t|--timeout:    Idle timeout in seconds. Value of zero sets\n"
-    "                      infinite timeout.\n"
-    "                      (default %d)\n"
-    "     -u|--username:   Username to run as\n"
-    "                      (default \"%s\")\n"
-    "     -q|--quiet  :    Only log errors. Overriden by -d|--debug\n"
     "\n"
-    "     Note: default value for binary flags is off\n",
+    "Options:\n"
+#ifdef WITH_PAM_SUPPORT
+    " -a|--authenticate_in:\n"
+    "    User is authenticated by perdition before connection to backend\n"
+    "    server is made.\n"
+#endif /* WITH_PAM_SUPPORT */
+    " -B|--no_bind_banner:\n"
+    "    If -b|--bind_address is specified, then the address will be resolved\n"
+    "    and the reverse-lookup of this will be used in the greeting. This\n"
+    "    option disables this behaviour an reverts to using the uname to\n"
+    "    derive the hostname for the greeting.\n"
+    " -b|--bind_address:\n"
+    "    Bind to interfaces with this address. In non-inetd mode, connections\n"
+    "    will only be accepted on interfaces with this address. If NULL\n"
+    "    connections will be accepted from all interfaces. In inetd and\n"
+    "    non-inetd mode the source address of connections to real servers\n"
+    "    will be this address, if NULL then the operating system will select\n"
+    "    a source address. The address may be an IP address or a hostname.\n"
+    "    (default \"%s\")\n"
+    " -c|--client_server_specification:\n"
+    "    Allow USER of the form ser<delimiter>server[:port] to specify the\n"
+    "    server and port for a user. Note: over-rides -s|--strip_domain.\n"
+    " -D|--domain_delimiter:\n"
+    "    Delimiter used for -c|--client_server_specification and\n"
+    "    -s|--strip_domain options. Multicharacter delimiters are permitted.\n"
+    "    (default \"%s\")\n"
+    " -d|--debug:\n"
+    "    Turn on verbose debuging.\n"
+    " -F|--logging_facility:\n"
+    "    Syslog facility to log to. If the faclilty has a leading '/' then it\n"
+    "    will be treated as a file to log to. (default \"%s\")\n"
+    " -f|--config_file:\n"
+    "    Name of config file to read. If set to \"\" no config file will be\n"
+    "    used. Command line options override options set in config file.\n"
+    "    (default \"%s\")\n"
+    " -g|--group:\n"
+    "     Group to run as. (default \"%s\")\n"
+    " -h|--help:\n"
+    "    Display this message\n"
+    " -i|--inetd_mode:\n"
+    "    Run in inetd mode\n"
+    " -L|--connection_limit:\n"
+    "    Maximum number of connections to accept simultaneously. A value of\n"
+    "    zero sets no limit on the number of simultaneous connections.\n"
+    "    (default %d)\n"
+    " -l|--listen_port:\n"
+    "    Port to listen on. (default \"%s\")\n"
+    " -M|--map_library:\n"
+    "    Library to open that provides functions to look up the server for a\n"
+    "    user. A null library mean no library will be accessed and hence, no\n"
+    "    lookup will take place.\n"
+    "    (default \"%s\")\n"
+    " -m|--map_library_opt:\n"
+    "    String option to pass to databse access function provided by the\n"
+    "    library specified by the -M|--map_library option. The treatment of\n"
+    "    this string is up to the library, in the case of perditiondb_gdbm\n"
+    "    the gdbm map to access is set. (default \"%s\")\n"
+    " -n|--no_lookup:\n"
+    "    Disable host and port lookup Implies -B|--no_bind_banner\n"
+    " -o|--server_ok_line:\n"
+    "    If authentication with the back-end server is successful then send\n"
+    "    the servers +OK line to the client, instead of generting one.\n"
+    " -P|--protocol:\n"
+    "    Protocol to use.\n"
+    "    (default \"%s\")\n"
+    "    available protocols: \"%s\"\n"
+    " -p|--outgoing_port:\n"
+    "    Define a port to use if a port is not defined for a user in popmap,\n"
+    "    or a default server if it is used. (default \"%s\")\n"
+    " -s|--outgoing_server:\n"
+    "    Define a server to use if a user is not in the popmap. Format is\n"
+    "    servername[:port]. Multipleservers can be delimited by a ','. If\n"
+    "    multiple servers are specified then they are used in a round robin.\n"
+    "    (default \"%s\")\n"
+    " -S|--strip_domain:\n"
+    "    Allow USER of the from user<delimiter>domain where <delimiter>domain\n"
+    "    will be striped off Note: over-ridden by\n"
+    "    -c|--client_server_specification.\n"
+    " -t|--timeout:\n"
+    "    Idle timeout in seconds. Value of zero sets infinite timeout.\n"
+    "    (default %d)\n"
+    " -u|--username:\n"
+    "    Username to run as. (default \"%s\")\n"
+    " -q|--quiet:\n"
+    "    Only log errors. Overriden by -d|--debug\n"
+    "\n"
+    " Note: default value for binary flags is off\n",
     VERSION,
     str_null_safe(DEFAULT_BIND_ADDRESS),
     str_null_safe(DEFAULT_DOMAIN_DELIMITER),
+    str_null_safe(DEFAULT_LOG_FACILITY),
     str_null_safe(DEFAULT_CONFIG_FILE),
     str_null_safe(DEFAULT_GROUP),
     DEFAULT_CONNECTION_LIMIT,
@@ -614,6 +611,7 @@ void usage(int exit_status){
     str_null_safe(DEFAULT_USERNAME)
   );
 
+  fflush(stream);
   daemon_exit_cleanly(exit_status);
 }
 

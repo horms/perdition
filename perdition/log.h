@@ -34,7 +34,6 @@
 #include <errno.h>
 
 #define LOG_IDENT "perdition"
-#define LOG_FACILITY LOG_MAIL
 
 extern vanessa_logger_t *perdition_vl;
 

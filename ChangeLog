@@ -44,6 +44,7 @@ xxx
      be in keys or values.
    - Buffered reads from client during authentication (and about time too)
    - Empty passwords are accepted. This is a mechanism, not a policy.
+   - Syslog facility may be specified
 
 
 ----------------------------------------------------------------------
