@@ -108,7 +108,7 @@ AC_HEADER_SYS_WAIT
 # OpenSSL
 
 
-AC_MSG_CHECKING("if SSL/TLS support has been disabled");
+AC_MSG_CHECKING([if SSL/TLS support has been disabled]);
 AC_ARG_ENABLE(
   ssl,
   [  --disable-ssl           DO not compile with SSL/TLS support.  ],
@@ -219,7 +219,7 @@ AC_SUBST(ssl_includes)
 ######################################################################
 # MySQL
 
-AC_MSG_CHECKING("if MySQL support has been disabled");
+AC_MSG_CHECKING([if MySQL support has been disabled]);
 AC_ARG_ENABLE(
   mysql,
   [  --disable-mysql         DO not compile with MySQL support.  ],
@@ -322,7 +322,7 @@ fi
 ######################################################################
 # ODBC
 
-AC_MSG_CHECKING("if ODBC support has been disabled");
+AC_MSG_CHECKING([if ODBC support has been disabled]);
 AC_ARG_ENABLE(
   odbc,
   [  --disable-odbc          DO not compile with ODBC support.  ],
@@ -420,7 +420,7 @@ fi
 ######################################################################
 # PostgreSQL
 
-AC_MSG_CHECKING("if PostgreSQL support has been disabled");
+AC_MSG_CHECKING([if PostgreSQL support has been disabled]);
 AC_ARG_ENABLE(
   pg,
   [  --disable-pg            DO not compile with PostgreSQL support.  ],
@@ -525,7 +525,7 @@ fi
 ######################################################################
 # GDBM
 
-AC_MSG_CHECKING("if GDBM support has been disabled");
+AC_MSG_CHECKING([if GDBM support has been disabled]);
 AC_ARG_ENABLE(
   gdbm,
   [  --disable-gdbm          DO not compile with GDBM support.  ],
@@ -590,7 +590,7 @@ fi
 # BerkeleyDB
 
 
-AC_MSG_CHECKING("if Berkely DB support has been disabled");
+AC_MSG_CHECKING([if Berkely DB support has been disabled]);
 AC_ARG_ENABLE(
   bdb,
   [  --disable-bdb           DO not compile with Berkely DB support.  ],
@@ -671,7 +671,7 @@ fi
 ######################################################################
 # NIS
 
-AC_MSG_CHECKING("if NIS support has been disabled");
+AC_MSG_CHECKING([if NIS support has been disabled]);
 AC_ARG_ENABLE(
   nis,
   [  --disable-nis           DO not compile with NIS support.  ],
@@ -696,7 +696,7 @@ fi
 ######################################################################
 # Posix Regular Expression
 
-AC_MSG_CHECKING("if Posix Regular Expression support has been disabled");
+AC_MSG_CHECKING([if Posix Regular Expression support has been disabled]);
 AC_ARG_ENABLE(
   posix_regex,
   [  --disable-posix-regex   DO not compile with Posix Regular Expression support.],
@@ -721,7 +721,7 @@ fi
 ######################################################################
 # Open LDAP
 
-AC_MSG_CHECKING("if LDAP support has been disabled");
+AC_MSG_CHECKING([if LDAP support has been disabled]);
 AC_ARG_ENABLE(
   ldap,
   [  --disable-ldap          DO not compile with LDAP support.  ],

@@ -8,6 +8,7 @@ Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 XXX
 (Horms)
    * XXX
+   - Minor clean up of per-module check messages in configure
    - New Debian standards version
    - Fixed debian init script so it can stop perdition correctly
    - Removed spurious multi line string literal in ssl.c
