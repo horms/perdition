@@ -33,3 +33,5 @@ From Rob Wyn Jones
 From Krzysztof Sierota
 * Method of evaluating if mailboxes are empty to avoid have to
   authenticate with the backend server. Method is yet to be determined :)
+
+Specifying map_library "" in perdition.conf does _not_ work.
