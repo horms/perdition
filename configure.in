@@ -170,7 +170,6 @@ AC_CHECK_FILE(
   $ssl_includepath/openssl/ssl.h,
   :,
   [ 
-    enable_ssl=no;
     if test "$enable_ssl" = "yes"; then
 AC_MSG_WARN(
 ""
@@ -180,6 +179,7 @@ AC_MSG_WARN(
 ) ;\
       sleep 5
     fi
+    enable_ssl="no";
   ]
 )
   
@@ -188,7 +188,6 @@ AC_CHECK_LIB(
   ERR_error_string,
   :,
   [ 
-    enable_ssl=no;
     if test "$enable_ssl" = "yes"; then
 AC_MSG_WARN(
 ""
@@ -198,6 +197,7 @@ AC_MSG_WARN(
 ) ;\
       sleep 5
     fi
+    enable_ssl="no";
   ],
   $ssl_lib
 )

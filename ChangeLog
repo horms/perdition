@@ -48,6 +48,9 @@ XXX
      if needed.
    - Use vanessa_logger's (new) convenience macros
    - Use vanessa_config_file_read() instead of our own
+   - Logic errors in configure script when --disable-ssl
+     was in effect, such that configure would fail
+     if openssl libraries were not installed.
 
 ----------------------------------------------------------------------
 
