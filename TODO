@@ -9,6 +9,7 @@ From Horms
 +  Make TLS IMAP and POP Server support RFC 2595 compliant
       + Option to only use tls if advertised by server
         + On a global and per-user basis
+	  (perhaps only global for now, per-user sounds like a PITA)
       + Client checks
         + Copmare server hostname used to connect with that in certificate
 	+ Hostname must not be derived from an insecure source such as DNS
@@ -20,6 +21,8 @@ From Horms
 * Fix up LDAP Bind Credentials
 * Fix up LDAP configuration options
 + Config files for different protocols
++ Periodically issue a log message, so perdition-pbs will work
+  for long imap sessions
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

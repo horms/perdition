@@ -265,10 +265,18 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 #endif /* WITH_SSL_SUPPORT */
 }
 
-	
 int io_select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 	   struct timeval *timeout, void *data) 
 {
+	time_t *log_now;
+	time_t now;
+
+	log_now = (time_t *)log_now;
+	now = time(NULL);
+	
+	if(log_now && *log_now > now) {
+		
+	
 	return(__io_select(n, readfds, writefds, exceptfds, timeout,
 				(io_select_t *)data));
 }

@@ -559,6 +559,7 @@ int main (int argc, char **argv, char **envp){
     if(
       dbserver_get != NULL &&
       (server_port = getserver(username, from_str, to_str, 
+			       peername==NULL?0:ntohs(peername->sin_port), 
 			       sockname==NULL?0:ntohs(sockname->sin_port), 
 			       dbserver_get)) != NULL
     ){

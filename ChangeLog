@@ -58,6 +58,7 @@ XXX
    - Added infomration on how to use bind passwords to LDAP documentation.
      Russell Corker
    - Allow cipher suite list to be set
+   - Added source port to available escape sequences for query_key
 
 ----------------------------------------------------------------------
 

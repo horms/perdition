@@ -45,7 +45,7 @@
 
 server_port_t *getserver(
   const char *user_str, const char *from_str, const char *to_str, 
-  const uint16 port, 
+  const uint16 from_port, const uint16 to_port,
   int (*dbserver_get)(const char *, const char *, char **, size_t *)  
 );
 
