@@ -56,6 +56,18 @@
 #define PERDITION_SSL_SERVER (flag_t) 0x2
 
 static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, 
+		void *data);
+static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx);
+static long __perdition_verify_result(long verify, X509 *cert);
+static int __perdition_ssl_check_common_name(X509 *cert, const char *server);
+static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert);
+static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
+		const char *ca_path, const char *server);
+static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx, 
+		flag_t flag);
+
+
+static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, 
 		void *data)
 {
 	ssize_t nbytes;
@@ -131,43 +143,15 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
  *       be non-NULL.
  **********************************************************************/
 
-#define __PERDITION_VERIFY_CALLBACK_ELEMENT(_key, _value)                   \
-	X509_NAME_oneline((_value), buf, MAX_LINE_LENGTH);                  \
-	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), buf);
-
-#define __PERDITION_VERIFY_CALLBACK_TIME(_key, _time)                       \
-{                                                                           \
-	BIO *tmp_bio;                                                       \
-	char *tmp_str;                                                      \
-	tmp_bio = BIO_new(BIO_s_mem());                                     \
-	if(!tmp_bio) {                                                      \
-		VANESSA_LOGGER_DEBUG("BIO_new");                            \
-		goto fail;                                                  \
-	}                                                                   \
-	ASN1_TIME_print(tmp_bio, (_time));                                  \
-	BIO_get_mem_data(tmp_bio, &tmp_str);                                \
-	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), tmp_str);      \
-	if(!BIO_free(tmp_bio)) {                                            \
-		VANESSA_LOGGER_DEBUG("BIO_free");                           \
-		goto fail;                                                  \
-	}                                                                   \
-}
-	
-#define __PERDITION_VERIFY_CALLBACK_WARN(_msg)                              \
-	 VANESSA_LOGGER_DEBUG_RAW("warning: " _msg)
-	
-#define __PERDITION_VERIFY_CALLBACK_ERROR(_msg)                              \
-	 VANESSA_LOGGER_DEBUG_RAW("error: " _msg)
-
 static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
-	char buf[MAX_LINE_LENGTH];
 	X509 *cert;
 
 	extern options_t opt;
 
+	cert = X509_STORE_CTX_get_current_cert(ctx);
 	if(opt.debug) {
-		cert = X509_STORE_CTX_get_current_cert(ctx);
+		char buf[MAX_LINE_LENGTH];
 		X509_NAME_oneline(X509_get_subject_name(cert),
 				buf, MAX_LINE_LENGTH);
         	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("depth:%d cert:\"%s\"", 
@@ -180,184 +164,228 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 				X509_STORE_CTX_get_error_depth(ctx), 
 				opt.ssl_cert_verify_depth);
 		X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
-		goto fail;
+		return(0);
 	}
+
+	if(__perdition_verify_result(ctx->error, cert) 
+			== X509_V_OK) {
+		return(1);
+	}
+
+	return(ok);
+}
+
+
+#define __PERDITION_VERIFY_RESULT_ELEMENT(_key, _value)                     \
+	X509_NAME_oneline((_value), buf, MAX_LINE_LENGTH);                  \
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), buf);
+
+#define __PERDITION_VERIFY_RESULT_TIME(_key, _time, _err)                   \
+{                                                                           \
+	BIO *tmp_bio;                                                       \
+	char *tmp_str;                                                      \
+	tmp_bio = BIO_new(BIO_s_mem());                                     \
+	if(!tmp_bio) {                                                      \
+		VANESSA_LOGGER_DEBUG("BIO_new");                            \
+		verify = (_err);                                            \
+	}                                                                   \
+	ASN1_TIME_print(tmp_bio, (_time));                                  \
+	BIO_get_mem_data(tmp_bio, &tmp_str);                                \
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), tmp_str);      \
+	if(!BIO_free(tmp_bio)) {                                            \
+		VANESSA_LOGGER_DEBUG("BIO_free");                           \
+		verify = (_err);                                            \
+	}                                                                   \
+}
+
+#define __PERDITION_VERIFY_RESULT_WARN(_msg)                                \
+	 VANESSA_LOGGER_DEBUG_RAW("warning: " _msg)
+	
+#define __PERDITION_VERIFY_RESULT_ERROR(_msg)                               \
+	 VANESSA_LOGGER_DEBUG_RAW("error: " _msg)
+
+static long __perdition_verify_result(long verify, X509 *cert) 
+{
+	char buf[MAX_LINE_LENGTH];
+
+	extern options_t opt;
 
 	/*
 	 * Handle all error codes. See verify(1) 
 	 */
-	switch (ctx->error) {
+	switch (verify) {
 		case X509_V_OK:
-			goto ok;
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"unable to get issuer certificate");
-			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
-				X509_get_issuer_name(ctx->current_cert));
+			__PERDITION_VERIFY_RESULT_ELEMENT("issuer",
+				X509_get_issuer_name(cert));
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_CRL: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"unable to get certificate CRL");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE:
-			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decrypt "
+			__PERDITION_VERIFY_RESULT_ERROR("unable to decrypt "
 					"certificate's signature");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decrypt "
+			__PERDITION_VERIFY_RESULT_ERROR("unable to decrypt "
 					"CLR's signature");
 			break;
 		case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
-			__PERDITION_VERIFY_CALLBACK_ERROR("unable to decode "
+			__PERDITION_VERIFY_RESULT_ERROR("unable to decode "
 					"issuer public key");
-			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
-				X509_get_issuer_name(ctx->current_cert));
+			__PERDITION_VERIFY_RESULT_ELEMENT("issuer",
+				X509_get_issuer_name(cert));
 			break;
 		case X509_V_ERR_CERT_SIGNATURE_FAILURE:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"certificate signature failure");
 			break;
 		case X509_V_ERR_CRL_SIGNATURE_FAILURE: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"CRL signature failure");
 			break;
 		case X509_V_ERR_CERT_NOT_YET_VALID:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
-					"signature not yet valid");
-			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
-				X509_get_notBefore(ctx->current_cert));
+			if(opt.ssl_cert_accept_not_yet_valid) {
+				__PERDITION_VERIFY_RESULT_WARN(
+						"signature not yet valid");
+				verify = X509_V_OK;
+			}
+			else {
+				__PERDITION_VERIFY_RESULT_ERROR(
+						"signature not yet valid");
+			}
 			break;
 		case X509_V_ERR_CRL_NOT_YET_VALID: /* Unused */
-			if(opt.ssl_cert_accept_not_yet_valid) {
-				__PERDITION_VERIFY_CALLBACK_WARN(
-						"CRL not yet valid");
-				ok = 1;
-				goto ok;
-			}
-			__PERDITION_VERIFY_CALLBACK_ERROR("CRL not yet valid");
+			__PERDITION_VERIFY_RESULT_ERROR(
+					"CRL not yet valid");
+			__PERDITION_VERIFY_RESULT_TIME("notBefore",
+				X509_get_notBefore(cert),
+				X509_V_ERR_CRL_NOT_YET_VALID);
 			break;
 		case X509_V_ERR_CERT_HAS_EXPIRED:
 			if(opt.ssl_cert_accept_expired) {
-				__PERDITION_VERIFY_CALLBACK_WARN(
+				__PERDITION_VERIFY_RESULT_WARN(
 						"certificate has expired");
+				verify = X509_V_OK;
 			}
 			else {
-				__PERDITION_VERIFY_CALLBACK_ERROR(
+				__PERDITION_VERIFY_RESULT_ERROR(
 						"certificate has expired");
 			}
-			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
-				X509_get_notAfter(ctx->current_cert));
-			if(opt.ssl_cert_accept_expired) {
-				ok = 1;
-				goto ok;
-			}
+			__PERDITION_VERIFY_RESULT_TIME("notAfter",
+				X509_get_notAfter(cert),
+				X509_V_ERR_CERT_HAS_EXPIRED);
 			break;
 		case X509_V_ERR_CRL_HAS_EXPIRED: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"CLR has expired");
 			break;
 		case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
-			__PERDITION_VERIFY_CALLBACK_ERROR("format error in "
+			__PERDITION_VERIFY_RESULT_ERROR("format error in "
 					"certificate's notBefore field");
-			__PERDITION_VERIFY_CALLBACK_TIME("notBefore",
-				X509_get_notBefore(ctx->current_cert));
+			__PERDITION_VERIFY_RESULT_TIME("notBefore",
+				X509_get_notBefore(cert),
+				X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD);
 			break;
 		case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
-			__PERDITION_VERIFY_CALLBACK_ERROR( "format error in "
+			__PERDITION_VERIFY_RESULT_ERROR( "format error in "
 					"certificate's notAfter field");
-			__PERDITION_VERIFY_CALLBACK_TIME("notAfter",
-				X509_get_notAfter(ctx->current_cert));
+			__PERDITION_VERIFY_RESULT_TIME("notAfter",
+				X509_get_notAfter(cert),
+				X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD);
 			break;
 		case X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR("format error in "
+			__PERDITION_VERIFY_RESULT_ERROR("format error in "
 					"CRL's lastUpdate field");
 			break;
 		case X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR( "format error in "
+			__PERDITION_VERIFY_RESULT_ERROR( "format error in "
 					"CRL's nextUpdate field");
 			break;
 		case X509_V_ERR_OUT_OF_MEM:
-			__PERDITION_VERIFY_CALLBACK_ERROR("out of memory");
+			__PERDITION_VERIFY_RESULT_ERROR("out of memory");
 			break;
 		case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
 			if(opt.ssl_cert_accept_self_signed) {
-				__PERDITION_VERIFY_CALLBACK_WARN(
+				__PERDITION_VERIFY_RESULT_WARN(
 						"self signed certificate");
-				ok = 1;
-				goto ok;
+				verify = X509_V_OK;
 			}
-			__PERDITION_VERIFY_CALLBACK_ERROR(
-					"self signed certificate");
+			else {
+				__PERDITION_VERIFY_RESULT_ERROR(
+						"self signed certificate");
+			}
 			break;
 		case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
 			if(opt.ssl_ca_accept_self_signed) {
-				__PERDITION_VERIFY_CALLBACK_WARN("self signed "
+				__PERDITION_VERIFY_RESULT_WARN("self signed "
 						"certificate in chain");
-				ok = 1;
-				goto ok;
+				verify = X509_V_OK;
 			}
-			__PERDITION_VERIFY_CALLBACK_ERROR("self signed "
-					"certificate in chain");
+			else {
+				__PERDITION_VERIFY_RESULT_ERROR("self signed "
+						"certificate in chain");
+			}
 			break;
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-			__PERDITION_VERIFY_CALLBACK_ERROR("unable to get "
+			__PERDITION_VERIFY_RESULT_ERROR("unable to get "
 					"local issuer certificate");
 			break;
 		case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
-			__PERDITION_VERIFY_CALLBACK_ERROR("unable to verify "
+			__PERDITION_VERIFY_RESULT_ERROR("unable to verify "
 					"the first certificate");
 			break;
 		case X509_V_ERR_CERT_CHAIN_TOO_LONG: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"certificate chain too long");
 			break;
 		case X509_V_ERR_CERT_REVOKED: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"certificate revoked");
 			break;
 		case X509_V_ERR_INVALID_CA:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"invalid CA certificate");
 			break;
 		case X509_V_ERR_PATH_LENGTH_EXCEEDED:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"path length constraint exceeded");
 			break;
 		case X509_V_ERR_INVALID_PURPOSE:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"unsuported certificate purpose");
 			break;
 		case X509_V_ERR_CERT_UNTRUSTED:
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"certificate not trusted");
 			break;
 		case X509_V_ERR_SUBJECT_ISSUER_MISMATCH:
-			__PERDITION_VERIFY_CALLBACK_ERROR("
+			__PERDITION_VERIFY_RESULT_ERROR("
 					subject issuer mismatch");
-			__PERDITION_VERIFY_CALLBACK_ELEMENT("subject",
-				X509_get_subject_name(ctx->current_cert));
-			__PERDITION_VERIFY_CALLBACK_ELEMENT("issuer",
-				X509_get_issuer_name(ctx->current_cert));
+			__PERDITION_VERIFY_RESULT_ELEMENT("subject",
+				X509_get_subject_name(cert));
+			__PERDITION_VERIFY_RESULT_ELEMENT("issuer",
+				X509_get_issuer_name(cert));
 			break;
 		case X509_V_ERR_AKID_SKID_MISMATCH:
-			__PERDITION_VERIFY_CALLBACK_ERROR("authority and "
+			__PERDITION_VERIFY_RESULT_ERROR("authority and "
 					"subject key identifier mismatch");
 			break;
 		case X509_V_ERR_KEYUSAGE_NO_CERTSIGN:
-			__PERDITION_VERIFY_CALLBACK_ERROR("key usage does "
+			__PERDITION_VERIFY_RESULT_ERROR("key usage does "
 					"not include certificate signing");
 			break;
 		case X509_V_ERR_APPLICATION_VERIFICATION: /* Unused */
-			__PERDITION_VERIFY_CALLBACK_ERROR(
+			__PERDITION_VERIFY_RESULT_ERROR(
 					"application verification failure");
 			break;
 	}
 
-fail:
-	ok = 0;
-ok:
-	return(ok);
+	return(verify);
 }
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
@@ -610,7 +638,8 @@ static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 
 	if(!opt.ssl_no_cert_verify &&
 			((ca_file && *ca_file) || (ca_path && *ca_path)) &&
-			SSL_get_verify_result(ssl) != X509_V_OK) {
+			__perdition_verify_result(SSL_get_verify_result(ssl),
+				cert) != X509_V_OK) {
 		VANESSA_LOGGER_ERR("Certificate was not verified");
 		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_get_verify_result");
 		status = -3;
