@@ -43,6 +43,13 @@ install-exec-hook:
 	(cd $(DESTDIR)$(sbindir) && ln -sf perdition perdition.imaps)
 	(cd $(DESTDIR)$(mandir)/man8 && ln -sf perdition.8 perdition.imaps.8)
 
+uninstall-local:
+	(cd $(DESTDIR)$(sbindir) && rm -f perdition.pop3 \
+	perdition.pop3s perdition.imap4 perdition.imap4s \
+	perdition.imaps)
+	(cd $(DESTDIR)$(mandir)/man8 && rm perdition.pop3.8 \
+	perdition.pop3s.8 perdition.imap4.8 perdition.imap4s.8 \
+	perdition.imaps.8)
 
 perdition_SOURCES = \
         config_file.c       config_file.h \

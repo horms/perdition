@@ -31,6 +31,9 @@ conf_DATA = popmap Makefile.popmap
 install-data-hook:
 	(cd $(DESTDIR)$(sysconfdir)/perdition/ && ln -sf Makefile.popmap Makefile)
 
+uninstall-local:
+	(cd $(DESTDIR)$(sysconfdir)/perdition/ && rm -f Makefile)
+
 lib_LTLIBRARIES = libperditiondb_gdbm.la
 
 libperditiondb_gdbm_la_SOURCES = \

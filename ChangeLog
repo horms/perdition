@@ -5,6 +5,15 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+
+  * Version XXX
+  - Uninstall symlinks created by -hook targets in various Makefile.am
+
+
+----------------------------------------------------------------------
+
 19th March 2002
 (Horms)
 
