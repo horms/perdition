@@ -1255,7 +1255,7 @@ void usage(int exit_status){
     " --ssl_ca_accept_self_signed:\n"
     "    Accept signed certificate authorities when verifying a certificate\n"
     " --ssl_cert_file:\n"
-    "    Certificate to use when listening for SSL or TLS connections.\n"
+    "    Certificate chain to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
     " --ssl_cert_accept_self_signed:\n"
     "    Accept signed certificates\n"

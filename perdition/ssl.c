@@ -411,12 +411,11 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	/*
 	 * Load and check the certificate and private key
 	 */
-	if (cert && SSL_CTX_use_certificate_file(ssl_ctx, cert, 
-			SSL_FILETYPE_PEM) <= 0) {
+	if (cert && SSL_CTX_use_certificate_chain_file(ssl_ctx, cert) <= 0) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE
-		    ("SSL_CTX_use_certificate_file: \"%s\"", cert);
+		    ("SSL_CTX_use_certificate_chain_file: \"%s\"", cert);
 		VANESSA_LOGGER_ERR_UNSAFE
-		    ("Error loading certificate file \"%s\"", cert);
+		    ("Error loading certificate chain file \"%s\"", cert);
 		SSL_CTX_free(ssl_ctx);
 		return (NULL);
 	}
