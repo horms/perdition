@@ -728,10 +728,9 @@ AC_ARG_WITH(
   [  --with-dmalloc          Compile with dmalloc debugging  ],
   [ dmalloc_lib="-ldmalloc" 
     AC_SUBST(dmalloc_lib) 
-    AC_DEFINE(WITH_DMALLOC) ],
+    AC_DEFINE(WITH_DMALLOC, 1, Should we use DMALLOC) ],
   
 )
-AC_DEFINE_UNQUOTED(WITH_USER, "$perdition_user", User to run perdition as )
 
 
 ######################################################################

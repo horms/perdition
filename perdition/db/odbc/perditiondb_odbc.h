@@ -45,7 +45,7 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
-#elsif WITH_INTERSOLV_ODBC
+#elif WITH_INTERSOLV_ODBC
 #include <qeodbc.h>
 #endif
 
