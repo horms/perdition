@@ -1,5 +1,5 @@
 %define ver      @VERSION@
-%define rel      1
+%define rel      2
 %define prefix   /usr
 
 Summary: Mail Retrieval Proxy
@@ -14,7 +14,6 @@ Packager: Horms <horms@vergenet.net>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-Requires: perdition-gdbm-%{ver}-%{rel}
 BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel MySQL-devel MySQL-shared postgresql-devel openldap-devel popt pam zlib-devel
 
 %description
@@ -37,92 +36,6 @@ Perdition allows for arbitrary user database access through
 shared libraries much in the maner of NSS in glibc. This package
 provides headers and libraries that may be useful in the development
 of perditiondb libraries.
-
-
-%package gdbm
-Summary: Library to allow perdition to access GDBM based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
-Provides: perdition-gdbm-%{ver}-%{rel}
-
-%description gdbm
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database stored in a GDBM databse.
-
-
-
-%package ldap
-Summary: Library to allow perdition to access LDAP based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
-Provides: perdition-ldap-%{ver}-%{rel}
-
-%description ldap
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database to be sourced from LDAP.
-
-
-%package mysql
-Summary: Library to allow perdition to access MySQL based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel} MySQL-shared zlib
-Provides: perdition-mysql-%{ver}-%{rel}
-
-%description mysql
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database stored in a MySQL databse.
-
-
-%package nis
-Summary: Library to allow perdition to access NIS based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
-Provides: perdition-ldap-%{ver}-%{rel}
-
-%description nis
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database to be sourced from NIS.
-
-It is suggested that you use one of the other database modules instead of
-NIS unless you already have a NIS infrastructure.
-
-
-
-%package postgresql
-Summary: Library to allow perdition to access PosgreSQL based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
-Provides: perdition-postgresql-%{ver}-%{rel}
-
-%description postgresql
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database stored in a PostgreSQL databse.
-
-
-%package posix_regex
-Summary: Library to allow perdition to access Posig Regular Expression based pop maps.
-Group: Applications/Internet
-Copyright: GPL
-Requires: perdition-%{ver}-%{rel}
-Provides: perdition-posix_regex-%{ver}-%{rel}
-
-%description posix_regex
-Perdition allows for arbitrary user database access through shared
-libraries much in the maner of NSS in glibc. This package allows a user
-database to be expreses as a series of Posix Regular Expressions.
-
-
-
 
 
 %prep
@@ -151,8 +64,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add perdition
-
-%post gdbm
 make -q -C /etc/perdition/
 true
 
@@ -160,8 +71,6 @@ true
 
 %preun
 /sbin/chkconfig --del perdition
-
-%preun gdbm
 make -q -C /etc/perdition/ clean
 true
 
@@ -183,14 +92,7 @@ true
 %{prefix}/man/man8/perdition.*
 %{prefix}/man/man5/perditiondb.*
 
-%files devel
-%defattr(-,root,root)
-%{prefix}/include/jain.h
-%{prefix}/lib/libjain.a
-%{prefix}/lib/libjain.la
-
-%files gdbm
-%defattr(-,root,root)
+# gdbm
 %{prefix}/lib/libperditiondb_gdbm.a
 %{prefix}/lib/libperditiondb_gdbm.la
 %{prefix}/lib/libperditiondb_gdbm.so
@@ -202,8 +104,7 @@ true
 %{prefix}/man/man1/makegdbm.*
 %config /etc/perdition/popmap
 
-%files ldap
-%defattr(-,root,root)
+# ldap
 %{prefix}/lib/libperditiondb_ldap.a
 %{prefix}/lib/libperditiondb_ldap.la
 %{prefix}/lib/libperditiondb_ldap.so
@@ -212,8 +113,7 @@ true
 %{prefix}/bin/perditiondb_ldap_makedb
 %{prefix}/man/man8/perditiondb_ldap_makedb.*
 
-%files mysql
-%defattr(-,root,root)
+# mysql
 %{prefix}/lib/libperditiondb_mysql.a
 %{prefix}/lib/libperditiondb_mysql.la
 %{prefix}/lib/libperditiondb_mysql.so
@@ -222,16 +122,14 @@ true
 %{prefix}/bin/perditiondb_mysql_makedb
 %{prefix}/man/man8/perditiondb_mysql_makedb.*
 
-%files nis
-%defattr(-,root,root)
+# nis
 %{prefix}/lib/libperditiondb_nis.a
 %{prefix}/lib/libperditiondb_nis.la
 %{prefix}/lib/libperditiondb_nis.so
 %{prefix}/lib/libperditiondb_nis.so.0
 %{prefix}/lib/libperditiondb_nis.so.0.0.0
 
-%files posix_regex
-%defattr(-,root,root)
+# posix_regex
 %{prefix}/lib/libperditiondb_posix_regex.a
 %{prefix}/lib/libperditiondb_posix_regex.la
 %{prefix}/lib/libperditiondb_posix_regex.so
@@ -239,8 +137,7 @@ true
 %{prefix}/lib/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
-%files postgresql
-%defattr(-,root,root)
+# postgresql
 %{prefix}/lib/libperditiondb_postgresql.a
 %{prefix}/lib/libperditiondb_postgresql.la
 %{prefix}/lib/libperditiondb_postgresql.so
@@ -249,8 +146,17 @@ true
 %{prefix}/bin/perditiondb_postgresql_makedb
 %{prefix}/man/man8/perditiondb_postgresql_makedb.*
 
+%files devel
+%defattr(-,root,root)
+%{prefix}/include/jain.h
+%{prefix}/lib/libjain.a
+%{prefix}/lib/libjain.la
+
 
 %changelog
+* Wed Apr 18 2001 Horms <horms@vergenet.net>
+- Merged db packages into main package
+
 * Mon Nov 27 2000 Horms <horms@vergenet.net>
 - Modified to reflect build process handling instalation of config files
 - Split GDBM and Posix_Regex into separate packages

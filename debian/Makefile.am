@@ -4,7 +4,7 @@
 #
 # perdition
 # Mail retrieval proxy server
-# Copyright (C) 1999-2001  Horms <horms@vergenet.net>
+# Copyright (C) 1999  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -28,21 +28,6 @@ changelog \
 control \
 copyright \
 perdition-dev.files \
-perdition-gdbm.conffiles \
-perdition-gdbm.files \
-perdition-gdbm.prerm \
-perdition-gdbm.postinst \
-perdition-ldap.files \
-perdition-ldap.postinst \
-perdition-mysql.files \
-perdition-mysql.postinst \
-perdition-nis.files \
-perdition-nis.postinst \
-perdition-posix-regex.conffiles \
-perdition-posix-regex.files \
-perdition-posix-regex.postinst \
-perdition-postgresql.files \
-perdition-postgresql.postinst \
 perdition.conffiles \
 perdition.dirs \
 perdition.files \
