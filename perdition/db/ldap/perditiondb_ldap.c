@@ -322,6 +322,7 @@ int dbserver_get(
   /* Build the return string */
   strcpy(*str_return, ldap_returns[0]);
   free(ldap_returns[0]);
+  ldap_returns[0] = NULL;
   for (count = 1; count < attrcount; count++) {
     if (ldap_returns[count] != NULL) {
       if (perditiondb_ldap_vanessa_socket_str_is_digit(ldap_returns[count])) {
@@ -332,6 +333,7 @@ int dbserver_get(
       }
       strcat(*str_return, ldap_returns[count]);
       free(ldap_returns[count]);
+      ldap_returns[count] = NULL;
     }
   }
 
@@ -348,8 +350,6 @@ leave:
   }
   if(ber != NULL)
     ber_free(ber, 0);
-  if(ldap_returns != NULL)
-    free(ldap_returns);
   if(res != NULL)
     ldap_msgfree(res);
   if(connection != NULL)
