@@ -48,3 +48,5 @@ Mark D. Roth
        inetd_mode = TRUE;
      }
 
+Erwin Lubbers <erwin@box.nl>
+* Periodically send a NOOP to keep connections alive (IMAP)

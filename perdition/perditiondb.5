@@ -22,7 +22,7 @@
 .\" 02111-1307  USA
 .\"
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH PERDITIONDB 5 "12th June 2003"
+.TH PERDITIONDB 5 "6th August 2003"
 .SH NAME
 perditiondb \- perdition modular popmap support
 .SH DESCRIPTION
@@ -452,7 +452,9 @@ appear.  For full details of this, take a look at RFC2255.
 .B Multiple LDAP Servers
 .P 
 It is possible to specify multiple LDAP servers by specifying
-them, space delimited, in the LDAP UDL.
+them, space delimited, in the LDAP UDL. If this is the case an
+attemtp will be made to open a connetion to each host in order,
+the first host to which a connection is successfully made will be used.
 .P 
 For example: (N.B.: this example has been split over multiple lines
 for ease or reading)

@@ -23,6 +23,7 @@ XXX
      Previously it would only ever try the first query key.
      Jeremy Rumpf
    - Make popmap Makefile more portable. Pascal Schumacher and Horms
+   - Clarify the way that multiple LDAP servers works. Jeremy Rumpf
 
 ----------------------------------------------------------------------
 
