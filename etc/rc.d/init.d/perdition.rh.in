@@ -43,15 +43,15 @@ if [ -f /etc/sysconfig/perdition ]; then
 fi
 
 # Please do not edit the values below.
-# Rather, please edit /etc/default/perdition
-RUN_PERDITION="${RUN_PERDITION:=no}"
+# Rather, please edit /etc/sysconfig/perdition
+RUN_PERDITION="${RUN_PERDITION:=yes}"
 FLAGS="${FLAGS:=}"
 POP3="${POP3:=yes}"
 POP3_FLAGS="${POP3_FLAGS:=}"
 POP3S="${POP3S:=yes}"
 POP3S_FLAGS="${POP3S_FLAGS:=}"
-IMAP4_FLAGS="${IMAP4:=yes}"
-IMAP4="${IMAP4_FLAGS:=}"
+IMAP4="${IMAP4:=yes}"
+IMAP4_FLAGS="${IMAP4_FLAGS:=}"
 IMAP4S="${IMAP4S:=yes}"
 IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
 

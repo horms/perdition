@@ -55,27 +55,26 @@
  *        -1 otherwise
  **********************************************************************/
 
-static char __imap4_write_fmt_str[MAX_LINE_LENGTH];
-
 static const char *__imap4_write_fmt(io_t *io, flag_t *flag, 
 		const token_t *tag, const char *command, const char *fmt)
 {
 	char *tag_str = NULL;
 	char *new_fmt_end = NULL;
+	char new_fmt[MAX_LINE_LENGTH];
 	size_t tag_str_len;
 	size_t command_len;
 	size_t fmt_len;
 
 	/* Fast Path */
-	if(!command) {
+	if(!command && !tag) {
 		return(fmt);
 	}
 
 	/* Slow Path */
 
-	memset(__imap4_write_fmt_str, 0, MAX_LINE_LENGTH);
+	memset(new_fmt, 0, MAX_LINE_LENGTH);
 
-      	if(tag==NULL){
+      	if(!tag) {
 		tag_str = IMAP4_UNTAGED;
 		tag_str_len = strlen(IMAP4_UNTAGED);
 	}
@@ -84,15 +83,17 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 		tag_str_len = token_len(tag);
 	}
 
-	command_len = strlen(command);
 	fmt_len = strlen(fmt);
 
-	memcpy(__imap4_write_fmt_str, tag_str, tag_str_len);
-	new_fmt_end = __imap4_write_fmt_str + tag_str_len;
+	memcpy(new_fmt, tag_str, tag_str_len);
+	new_fmt_end = new_fmt + tag_str_len;
 
-	*(new_fmt_end) = ' ';
-	memcpy(new_fmt_end + 1, command, command_len);
-	new_fmt_end += command_len + 1;
+	if(command){
+		command_len = strlen(command);
+		*(new_fmt_end) = ' ';
+		memcpy(new_fmt_end + 1, command, command_len);
+		new_fmt_end += command_len + 1;
+	}
 
 	if(*fmt){
 		*(new_fmt_end) = ' ';
@@ -105,7 +106,7 @@ static const char *__imap4_write_fmt(io_t *io, flag_t *flag,
 		*flag |= WRITE_STR_NO_CLLF;
 	}
 
-	return(__imap4_write_fmt_str);
+	return(new_fmt);
 }
 
 int imap4_write(io_t *io, flag_t flag, const token_t *tag, 

@@ -6,8 +6,16 @@ Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
 XXX
-(XXX)
-   * XXX
+(Horms)
+   * 1.11beta5 unreleased
+   - Return correct tag for server_ok_line
+     broke somewhere in the 1.11beta series
+
+----------------------------------------------------------------------
+
+7th February 2003
+(Horms)
+   * 1.11beta4
    - Updated configure.in's download references
    - Fixed bug in server_ok_line option that caused
      connections to fail. Found by Marc Langer

@@ -70,6 +70,13 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 	token_t *capability = NULL;
 	size_t new_buf_n = 0;
 
+	if(buf) {
+		memset(buf, 0, *buf_n);
+	}
+  	if(buf_n) { 
+		new_buf_n = *buf_n; 
+	}
+
 	if((capability=token_create())==NULL){
 	    	VANESSA_LOGGER_DEBUG("token_create");
 		goto leave;
@@ -118,6 +125,17 @@ static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag,
 
 	status = found;
 leave:
+	if(buf) {
+		char *tag_offset;
+		tag_offset = strchr(buf, ' ');
+		if(tag_offset) {
+			memmove(buf, tag_offset + 1, 
+					strlen(tag_offset + 1) + 1);
+		}
+	}
+	if(buf_n) {
+		*buf_n = new_buf_n;
+	}
 	token_unassign(capability);
   	token_destroy(&capability);
 	token_destroy(&t);
@@ -342,6 +360,17 @@ int imap4_out_authenticate(
   vanessa_queue_destroy(q);
 
   leave:
+  if(buf) {
+  	  char *tag_offset;
+  	  tag_offset = strchr(buf, ' ');
+  	  if(tag_offset) {
+  		  memmove(buf, tag_offset + 1, 
+  				  strlen(tag_offset + 1) + 1);
+  	  }
+  }
+  if(n) {
+  	  *n = new_n;
+  }
   imap4_tag_inc(tag);
   token_unassign(ok);
   token_destroy(&ok);
