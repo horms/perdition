@@ -1,3 +1,11 @@
+perdition (0.1.9-2) unstable; urgency=low
+
+  * Build against libpgsql2.1. closes: Bug#104503
+
+  * Requires vanessa_socket >= 0.0.3. closes: Bug#104095
+
+ -- Simon Horman <horms@vergenet.net>  Tue, 24 Jul 2001 14:58:12 -0700
+
 perdition (0.1.9-1) unstable; urgency=low
 
   * Fixed gramatical error in control file. closes: Bug#99764.

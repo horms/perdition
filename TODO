@@ -11,8 +11,6 @@ From Horms
 *  Fix perditiondb_ldap_makedb so it is more robust and informative
 *  Port column specification code for MySQL module to PostgreSQL module
 *  Add TLS IMAP and POP support
-*  Add version-specific dependancy on vanessa_socket >= 0.0.3
-   Debian Bug#104095
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

@@ -36,5 +36,3 @@ CODING_LOCATIONS \
 perdition.spec.in \
 perdition.spec \
 acconfig.h
-
-m4datadir = $(datadir)/aclocal
