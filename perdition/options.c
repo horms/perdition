@@ -801,7 +801,7 @@ int log_options_str(char *str, size_t n){
   char strip_domain[40];
 #ifdef WITH_SSL_SUPPORT
   char ssl_mode[26];
-  char *ssl_mode_p;
+  char *ssl_mode_p = NULL;
 #endif /* WITH_SSL_SUPPORT */
 
   extern options_t opt;

@@ -18,14 +18,18 @@ make install
 To build RPMS
 -------------
 
-rpm -ta perdition-@VERSION@.tar.gz
+rpmbuild -ta perdition-@VERSION@.tar.gz
 
 or
 
 cd perdition-@VERSION@
 ./configure --enable-static --prefix=/usr
 make distcheck
-rpm -ta perdition-@VERSION@.tar.gz
+rpmbuild -ta perdition-@VERSION@.tar.gz
+
+N.B: If you have an older version of rpm you may need to use
+     the "rpm" command instead of "rpmbuild". The command line
+     options should be the same.
 
 
 To build Debian Packages

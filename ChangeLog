@@ -5,11 +5,12 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+8th january 2002
 (Horms)
-   * 1.11beta2 unreleased
+   * 1.11beta2
    - Fixed handling of POP3 CAPA command
    - Cleaned up perditiondb(5) man page
+   - Fixed packaging
 
 ----------------------------------------------------------------------
 

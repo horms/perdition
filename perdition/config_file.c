@@ -79,8 +79,6 @@ void config_file_to_opt(const char *filename){
 
 
 #define __CONFIG_FILE_NAME_EXISTS                                      \
-	VANESSA_LOGGER_DEBUG_UNSAFE("Checking: %s", configuration_file); \
-	status = vanessa_config_file_check_exits(configuration_file);  \
 	if(!status) {                                                   \
 		return(configuration_file);                            \
 	}                                                              \
@@ -92,11 +90,10 @@ void config_file_to_opt(const char *filename){
 
 char *config_file_name(const char *basename, int protocol) 
 {
-	int status;
+	int status = -1;
 	char *configuration_file = NULL;
 	const char *suffix;
 
-	VANESSA_LOGGER_DEBUG(PERDITION_SYSCONFDIR);
 	if(strcmp(basename, CONFIG_FILE_NAME_BASE)) {
 		configuration_file = str_cat(3, PERDITION_SYSCONFDIR "/", 
 				basename, CONFIG_FILE_NAME_SUFFIX);

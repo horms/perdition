@@ -158,7 +158,7 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 		}
 	
 		/* Do we have a "STLS" or a "."? */
-		q = vanessa_queue_pop(q, &tmp_token);
+		q = vanessa_queue_pop(q, (void **)&tmp_token);
 		if(!q){
 			VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
 			goto leave;
