@@ -46,6 +46,8 @@ XXX
    - perdition_vl has been renamed vl and is no longer global.
      The logger can be obtained using vanessa_logger_get()
      if needed.
+   - Use vanessa_logger's (new) convenience macros
+   - Use vanessa_config_file_read() instead of our own
 
 ----------------------------------------------------------------------
 

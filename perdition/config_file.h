@@ -27,22 +27,21 @@
  **********************************************************************/
 
 
-#ifndef CONFIG_FILE_BERT
-#define CONFIG_FILE_BERT
+#ifndef _CONFIG_FILE_H
+#define _CONFIG_FILE_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <vanessa_adt.h>
 
-#include "options.h"
-
-/* Flags for config_file_to_opt */
-#define CONFIG_FILE_ERR (flag_t) 0x1    /*Log errors to stderr*/
+/**********************************************************************
+ * config_file_to_opt
+ * Configure opt structire according to options specified in a config
+ * file.
+ * pre: filename: file to read options from
+ * post: options in global options_t opt are set according to
+ *       config file. Options specified onthe command line
+ *       override config file options
+ **********************************************************************/
 
 void config_file_to_opt(const char *filename);
-vanessa_dynamic_array_t *config_file_read (const char *filename);
-void config_file_reread_handler(int sig);
 
-#endif
+#endif /* _CONFIG_FILE_H */
