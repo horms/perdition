@@ -118,6 +118,17 @@ static void strip_username_free(void);
   }
 #endif
 
+/* Macro to log session just after Authentication */
+#define PERDITION_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
+  PERDITION_INFO( \
+    "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
+    from_to_str, \
+    str_null_safe(_user), \
+    str_null_safe(_servername), \
+    str_null_safe(_port), \
+    str_null_safe(_status) \
+  );
+
 #ifdef WITH_SSL_SUPPORT
 io_t *perdition_ssl_connection(
   io_t *io,
@@ -440,6 +451,14 @@ int main (int argc, char **argv){
   srand(time(NULL)*getpid());
   rnd=rand();
 
+  /*Log the session*/
+  if(opt.inetd_mode) {
+    PERDITION_INFO("Connect: %sinetd_pid=%d", from_to_str, getppid());
+  }
+  else {
+    PERDITION_INFO("Connect: %s", from_to_str);
+  }
+
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
       client_io, ssl_ctx, PERDITION_SERVER))==NULL){
@@ -452,7 +471,7 @@ int main (int argc, char **argv){
   if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
     PERDITION_DEBUG("greeting");
     PERDITION_ERR(
-      "Fatal error writing to client. %s Exiting child.",
+      "Fatal error writing to client. %sExiting child.",
       from_to_str
     );
     daemon_exit_cleanly(-1);
@@ -534,15 +553,6 @@ int main (int argc, char **argv){
     if(port==NULL){
       port=opt.outgoing_port;
     }
-
-    /*Log the session*/
-    PERDITION_INFO(
-      "Connect: %suser=\"%s\" server=\"%s\" port=\"%s\"", 
-      from_to_str,
-      str_null_safe(pw.pw_name),
-      str_null_safe(servername),
-      str_null_safe(port)
-    );
 
     /*Try again if we didn't get anything useful*/
     if(servername==NULL){
@@ -717,7 +727,7 @@ int main (int argc, char **argv){
 
     if(status==0){
       sleep(PERDITION_ERR_SLEEP);
-      PERDITION_INFO("Fail reauthentication for user %s", pw2.pw_name);
+      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "failed");
       quit(server_io, protocol);
       if(io_close(server_io)){
         PERDITION_DEBUG("io_close 2");
@@ -746,14 +756,6 @@ int main (int argc, char **argv){
       daemon_exit_cleanly(-1);
     }
 
-    PERDITION_INFO(
-      "Authentication successful: %suser=\"%s\" server=\"%s\" port=\"%s\"", 
-      from_to_str,
-      str_null_safe(pw.pw_name),
-      str_null_safe(servername),
-      str_null_safe(port)
-    );
-    
     if(opt.server_ok_line){
       *(server_ok_buf+server_ok_buf_size)='\0';
       buffer=server_ok_buf;
@@ -786,6 +788,8 @@ int main (int argc, char **argv){
     break;
   }
 
+  PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "ok");
+
   if(opt.server_ok_line){
      free(server_ok_buf);
   }
@@ -814,9 +818,9 @@ int main (int argc, char **argv){
 
   /*Time to leave*/
   PERDITION_INFO(
-    "Closing: %suser=%s %d %d", 
-    from_to_str,
-    pw.pw_name,
+    "Close: %suser=\"%s\" received=%d sent=%d", 
+    str_null_safe(from_to_str),
+    str_null_safe(pw.pw_name),
     bytes_read,
     bytes_written
   );

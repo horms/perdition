@@ -423,7 +423,26 @@ with the date, host, and perdition[<pid>]: .
 .PP
 When the user connects the following is logged:
 .PP
-Connect: [<client_ip>\-><server_ip>] user=<username> server=<server> port=<port>
+Connect: <client_ip>\-><server_ip>[ inetd_pid=<pid>]
+.TP
+.B client_ip:
+The source ip address for the client.
+.TP
+.B server_ip:
+The ip address that the connection was accepted for by the server.
+.TP
+.B inetd_pid:
+The process id of the parent proccess. This is only displayed
+when perdition is run in inetd mode, and should be the process id
+of the inetd process that spawned perdition.
+.fi
+.PP
+.PP
+After the user attemps authentication with the back\-end server
+the following is logged:
+.PP
+Auth: <client_ip>\-><server_ip> username="<username>" server="<server>"
+port="<port>" status="<status>"
 .TP
 .B client_ip:
 The source ip address for the client.
@@ -432,27 +451,22 @@ The source ip address for the client.
 The ip address that the connection was accepted for by the server.
 .TP
 .B username:
-The username given by the user to perdition
+The user that has requested authentication
 .TP
 .B server:
 The back end server for the user
+Server will be "(null)" if no server was found.
 .TP
 .B port:
 The port to connect to on the server
-
-Server will be "(null)" if no server was found.
-.fi
-.PP
-.PP
-When the user has successfully authenticated with the back\-end server
-the following is logged:
-.PP
-Authentication successful
+.TP
+.B status:
+"ok" if authentication was successful, "failed" otherwise.
 .PP
 When a user disconnects after a successful connection to
 a back\-end server the following is logged:
 .PP
-Closing:  [<client_ip>\-><server_ip> ]username=<username> <bytes_in> <bytes_out>
+Closing:  <client_ip>\-><server_ip> username="<username>" received=<bytes_in> sent=<bytes_out>
 .TP
 .B client_ip:
 The source ip address for the client.
@@ -464,7 +478,7 @@ The ip address that the connection was accepted for by the server.
 The username given by the user to perdition
 .TP
 .B bytes_in:
-The number of bytes sent from the client to the server
+The number of bytes received from the client to the server
 .TP
 .B bytes_out:
 The number of bytes sent to the client from the server

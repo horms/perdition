@@ -10,7 +10,8 @@ xxx
 
   * Version xxx
   - Added SSL Support
-  - Added loging of successful Authentication. Carlos Canau
+  - Modified logging semantics to have Connect, Auth, and Close logs
+    suitable for pop/imap-before-smtp. Carlos Canau & Matt Prigge
   - Added code to log source and destination IP address
     when in inetd mode. Carlos Canau
   - Added logging of reread or map library

@@ -234,8 +234,14 @@ static ssize_t __io_write(
 #ifdef WITH_SSL_SUPPORT
     case __io_ssl:
       if((bytes=(ssize_t)SSL_write(io->data.d_ssl->ssl, buf, (int)count))<=0){
-	PERDITION_DEBUG_SSL_ERR("__io_write");
-	return(-1);
+        if(bytes==0 && errno &&
+            SSL_get_error(io->data.d_ssl->ssl, bytes)==SSL_ERROR_SYSCALL){
+          PERDITION_DEBUG_ERRNO("SSL_write");
+	  return(-1);
+        }
+        else {
+          return(0);
+        }
       }
       break;
 #endif /* WITH_SSL_SUPPORT */
@@ -289,16 +295,14 @@ static ssize_t __io_read(
 #ifdef WITH_SSL_SUPPORT
     case __io_ssl:
       if((bytes=(ssize_t)SSL_read(io->data.d_ssl->ssl, buf, (int)count))<=0){
-	PERDITION_DEBUG_SSL_ERR("SSL_read");
-        PERDITION_DEBUG("flim: %d, %d", bytes, SSL_get_error(io->data.d_ssl->ssl, bytes));
         if(bytes==0 && errno &&
             SSL_get_error(io->data.d_ssl->ssl, bytes)==SSL_ERROR_SYSCALL){
-          PERDITION_DEBUG_ERRNO("flim");
+          PERDITION_DEBUG_ERRNO("SSL_read");
+	  return(-1);
         }
-
-
-          
-	return(-1);
+        else {
+          return(0);
+        }
       }
       break;
 #endif /* WITH_SSL_SUPPORT */
