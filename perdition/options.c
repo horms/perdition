@@ -279,7 +279,6 @@ int options(int argc, char **argv, flag_t f){
     {"map_library",                 'M',  POPT_ARG_STRING, NULL, 'M'},
     {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
-    {"pop_capability",              'O',  POPT_ARG_STRING, NULL, 'O'},
     {"server_ok_line",              'o',  POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P',  POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p',  POPT_ARG_STRING, NULL, 'p'},
@@ -1110,7 +1109,7 @@ void usage(int exit_status){
     "Usage: perdition [options]\n"
     "\n"
     "Options:\n"
-    " -A|--add_domain STATE[, STATE[,STATE...]STATE...]:\n"
+    " -A|--add_domain STATE[,STATE...]:\n"
     "    Appends a domain to the USER based on the IP address connected to\n"
     "    in given state(s). (default \"\")\n"
 #ifdef WITH_PAM_SUPPORT
@@ -1171,7 +1170,7 @@ void usage(int exit_status){
     "    Disable host and port lookup.\n"
     " -o|--server_ok_line:\n"
     "    If authentication with the back-end server is successful then send\n"
-    "    the servers +OK line to the client, instead of generating one.\n"
+    "    the servers OK line to the client, instead of generating one.\n"
     " -P|--protocol PROTOCOL:\n"
     "    Protocol to use.\n"
     "    (default \"%s\")\n"
