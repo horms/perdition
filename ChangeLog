@@ -16,6 +16,8 @@ XXX
     returned. Eric <edk@ypass.net>
   - A child process, or process handling an inetd connection
     will exit on reciept of a SIG PIPE.
+  - Document that if no_lookup is used then popmaps must
+    not contain hostnames
 
 
 

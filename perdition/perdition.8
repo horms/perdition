@@ -189,6 +189,9 @@ the gdbm map to access is set.
 .TP
 .B \-n, \-\-no_lookup:
 Disable host and port lookup Implies \-B|\-\-no_bind_banner.
+Please note that if this option is enabled, then perdition will
+not resolve hostnames returned by popmap lookups, thus your popmap
+must return ip addresses instead.
 .TP
 .B \-o, \-\-server_ok_line:
 If authentication with the back\-end server is successful then send
