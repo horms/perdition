@@ -519,7 +519,7 @@ int options(int argc, char **argv, flag_t f){
         break; 
       case TAG_SSL_KEY_FILE:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
+        opt_p(opt.ssl_key_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
 #else /* WITH_SSL_SUPPORT */
       PERDITION_DEBUG(
 	"--ssl_key_file is only supported when ssl support is compiled in");
