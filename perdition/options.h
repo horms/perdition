@@ -181,6 +181,7 @@ typedef struct {
   int             debug;
   char            *domain_delimiter;
   int             domain_delimiter_length;
+  char            *explicit_domain;
   char            *group;
   int             inetd_mode;
   char            *pop_capability;
@@ -263,6 +264,7 @@ typedef struct {
 
 #define MASK2_OK_LINE                    (flag_t) 0x00000001
 #define MASK2_PID_FILE                   (flag_t) 0x00000002
+#define MASK2_EXPLICIT_DOMAIN            (flag_t) 0x00000004
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */

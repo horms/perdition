@@ -263,6 +263,7 @@ int options(int argc, char **argv, flag_t f){
     {"client_server_specification", 'c',  POPT_ARG_NONE,   NULL, 'c'},
     {"domain_delimiter",            'D',  POPT_ARG_STRING, NULL, 'D'},
     {"debug",                       'd',  POPT_ARG_NONE,   NULL, 'd'},
+    {"explicit_domain",             'e',  POPT_ARG_STRING, NULL, 'e'},
     {"log_facility",                'F',  POPT_ARG_STRING, NULL, 'F'},
     {"config_file",                 'f',  POPT_ARG_STRING, NULL, 'f'},
     {"group",                       'g',  POPT_ARG_STRING, NULL, 'g'},
@@ -372,7 +373,6 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
     opt_i(opt.login_disabled,  DEFAULT_LOGIN_DISABLED,      i, 0, OPT_NOT_SET);
     opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
-    opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.server_resp_line,DEFAULT_SERVER_RESP_LINE,    i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
@@ -390,6 +390,7 @@ int options(int argc, char **argv, flag_t f){
       opt_p(opt.config_file,   filename,                    i, 0, OPT_NOT_SET);
     }
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
+    opt_p(opt.explicit_domain, NULL,                        i, 0, OPT_NOT_SET);
     opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
     opt_p(opt.listen_port,     PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.map_library,     DEFAULT_MAP_LIB,             i, 0, OPT_NOT_SET);
@@ -508,6 +509,9 @@ int options(int argc, char **argv, flag_t f){
       case 'd':
         opt_i(opt.debug,1,opt.mask,MASK_DEBUG,f);
         break;
+      case 'e':
+	opt_p(opt.explicit_domain,optarg,opt.mask2,MASK2_EXPLICIT_DOMAIN,f);
+	break;
       case 'f':
         if(!(f&OPT_FILE)){
           opt_p(opt.config_file,optarg,opt.mask,MASK_CONFIG_FILE,f);
@@ -982,6 +986,7 @@ int log_options_str(char *str, size_t n){
     "connect_relog=%d, "
     "debug=%s, "
     "domain_delimiter=\"%s\", "
+    "explicit_domain=\"%s\", "
     "group=\"%s\", "
     "inetd_mode=%s, "
     "listen_port=\"%s\", "
@@ -1037,6 +1042,7 @@ int log_options_str(char *str, size_t n){
     opt.connect_relog,
     BIN_OPT_STR(opt.debug),
     OPT_STR(opt.domain_delimiter),
+    OPT_STR(opt.explicit_domain),
     OPT_STR(opt.group),
     BIN_OPT_STR(opt.inetd_mode),
     OPT_STR(opt.listen_port),
@@ -1188,6 +1194,9 @@ void usage(int exit_status){
     "    Delimiter between username and domain. (default \"%s\")\n"
     " -d|--debug:\n"
     "    Turn on verbose debugging.\n"
+    " -e|--explicit_domain STRING:\n"
+    "    With -A, use STRING as the default domain rather than deriving\n"
+    "    from the IP address connected to.\n"
     " -F|--log_facility FACILITY:\n"
     "    Facility to log to. (default \"%s\")\n"
     " -f|--config_file FILENAME:\n"

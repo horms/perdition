@@ -74,17 +74,21 @@ char *username_add_domain(char *username, struct in_addr *to_addr, int state){
   if(strstr(username, opt.domain_delimiter)!=NULL)
     return(username);
 
-  /* If we have no reverse IP address, stop now */
-  if((hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET))==NULL){
-    VANESSA_LOGGER_DEBUG("no reverse IP lookup, domain not added");
-    return(username);
-  }
+  /* no fixed domain string; lookup */
+  if ((domainpart != opt.explicit_domain) || (!*domainpart)){
+    /* If we have no reverse IP address, stop now */
+    hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET);
+    if (!hp) {
+      VANESSA_LOGGER_DEBUG("no reverse IP lookup, domain not added");
+      return(username);
+    }
 
-  /* Make some space for the domain part */
-  domainpart=strchr(hp->h_name, '.');
-  if (domainpart == NULL || *(++domainpart)=='\0'){
-    VANESSA_LOGGER_DEBUG("No domain in reverse lookup, domain not added");
-    return(username);
+    /* Make some space for the domain part */
+    domainpart=strchr(hp->h_name, '.');
+    if (domainpart == NULL || *(++domainpart)=='\0'){
+      VANESSA_LOGGER_DEBUG("No domain in reverse lookup, domain not added");
+      return(username);
+    }
   }
 
   if ((new_str=(char *)malloc(

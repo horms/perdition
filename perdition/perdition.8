@@ -140,6 +140,12 @@ Delimiter between username and domain.
 .B \-d, \-\-debug:
 Turn on verbose debugging.
 .TP
+.B \-e, \-\-explicit_domain STRING:
+With \-A, use STRING as the default domain rather than deriving
+from the IP address connected to.
+.br
+(default NULL)
+.TP
 .B \-F, \-\-log_facility FACILITY:
 Facility to log to. If the facility has a leading '/' then it will
 be treated as a file. If is "-" or "+" then log to stdout or stderr 

@@ -5,6 +5,13 @@ Mail retrieval proxy server
 Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+ * XXX
+ - Added explicit domain option. Brendan O'Dea
+
+----------------------------------------------------------------------
+
 27th May 2004
 (Horms)
  * 1.15
