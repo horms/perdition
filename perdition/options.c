@@ -317,7 +317,9 @@ int options(int argc, char **argv, flag_t f){
 
   if(f&OPT_CLEAR_MASK){
     opt.mask=(flag_t)0;
+#ifdef WITH_SSL_SUPPORT
     opt.ssl_mask=(flag_t)0;
+#endif /* WITH_SSL_SUPPORT */
   }
 
   context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
