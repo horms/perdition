@@ -93,6 +93,9 @@ void makebdb_new(const makebdb_options_t options){
   }
   if ((ret=dbp->open(
     dbp,
+#ifdef HAVE_BDB_4_1
+    NULL,
+#endif
     options.mapname,
     NULL,
     DB_HASH,
@@ -175,6 +178,9 @@ void makebdb_undo(makebdb_options_t options){
   }
   if ((ret=dbp->open(
     dbp,
+#ifdef HAVE_BDB_4_1
+    NULL,
+#endif
     options.mapname,
     NULL,
     DB_HASH,
