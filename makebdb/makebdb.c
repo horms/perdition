@@ -99,7 +99,7 @@ void makebdb_new(const makebdb_options_t options){
     options.mapname,
     NULL,
     DB_HASH,
-    DB_CREATE,
+    DB_CREATE|DB_TRUNCATE,
     0644
   )) != 0) {
     fprintf(stderr,"makebdb_new: DB->open: %s\n",db_strerror(ret));
@@ -201,8 +201,13 @@ void makebdb_undo(makebdb_options_t options){
 
   while((ret=dbcp->c_get(dbcp,&key,&content,DB_NEXT))==0)
   {
-    printf("%*s:%*s\n", key.size, (char *)key.data, 
-		    content.size, (char *) content.data);
+    char c;
+    fwrite((char *)key.data,  key.size, 1, stdout);
+    c = ':';
+    fwrite(&c, 1, 1, stdout);
+    fwrite((char *)content.data,  content.size, 1, stdout);
+    c = '\n';
+    fwrite(&c, 1, 1, stdout);
   }
   if(ret != DB_NOTFOUND){
     fprintf(stderr,"makebdb_undo: DBcursor->get: %s\n",db_strerror(ret));

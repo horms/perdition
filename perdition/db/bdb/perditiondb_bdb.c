@@ -74,7 +74,7 @@ int dbserver_get(
   memset(&key, 0, sizeof(key));
   memset(&value, 0, sizeof(value));
   key.data = (void *)key_str;
-  key.size = strlen(key_str) + 1;
+  key.size = strlen(key_str);
 
   if ((ret = dbp->get(dbp, NULL, &key, &value, 0)) != 0) {
     VANESSA_LOGGER_INFO_UNSAFE("No match for %s", key_str);

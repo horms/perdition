@@ -14,6 +14,9 @@ XXX
    - Updated init information in man page
    - Fixed configure.in so --disable-ssl should actually work
    - Tidied up naming of loging macros
+   - Fixed output of makebdb -u
+   - makebdb recreated database rather than adding to it
+   - bdb module no longer appends a spurious "\0" to keys
 
 ----------------------------------------------------------------------
 
