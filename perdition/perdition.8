@@ -477,6 +477,16 @@ messages are logged. As the flag implies, this is useful for debugging but
 is probably too verbose for production systems. If the \-q|\-\-quiet command
 line option or configuration file directive is used, only errors will be
 logged. This is overridden by \-d|\-\-debug.
+.SH SSL/TLS Support
+Perdition supports using SSLv2 and SSLv3 to encrypt sessions between
+end users and perdition and sessions between perdition and real servers.
+SSL may be used for either, both or none of these classes of connections.
+TLS support will be added at a later date.
+.P
+The public key and certificate files should be in PEM format.
+The mod_SSL faq contains comprehensive information on how
+to generate public keys and certificates. See
+http://www.modssl.org/docs/2.8/ssl_faq.html#ToC27.
 .SH FILES
 .TP
 \fC/etc/perdition/perdition.conf
