@@ -1,7 +1,7 @@
 Begin3
 Title:          perdition
 Version:        0.1.8
-Entered-date:   19APR2001
+Entered-date:   09MAY2001
 Description:    Perdition is allows users to connect to a content-free 
                 POP3 or IMAP4 server that will redirect them to their real 
                 POP3 or IMAP4 server. This enables mail retrieval for a 
