@@ -1,3 +1,25 @@
+perdition (1.15-4) unstable; urgency=low
+
+  * Rebuilt with correct libary dependancies.
+    It turns out that when 1.15-3 (and possibly other releases) were
+    built the vanessa libraries were present in a local directory,
+    as well /usr/lib, which caused some dependancies to be omitted.
+    (closes:  Bug#290794)
+  * Move shared packet code for deamon module into a staticly linked library
+    as having multiple objects link against packet.o breaks the build
+    sometimes.
+
+ -- Simon Horman <horms@debian.org>  Mon, 17 Jan 2005 12:50:05 +0900
+
+perdition (1.15-3) unstable; urgency=low
+
+  * Fixed problem with SSL+inetd mode not working if debug was enabled.
+  (Roberto Suarez Soto) (closes: Bug#287017)
+  * Fixed compile gcc-4.0 compile problem. 
+  (Andreas Jochens) (closes: Bug#287911)
+
+ -- Simon Horman <horms@debian.org>  Tue, 11 Jan 2005 17:14:51 +0900
+
 perdition (1.15-2) unstable; urgency=low
 
   * Removed ldap (latex) documentation as it can no longer be built
