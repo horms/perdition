@@ -207,7 +207,6 @@ fi
 if test "$enable_ssl" = "yes"; then
    AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
 else
-  AC_DEFINE(WITH_SSL_SUPPORT, 0, Compile with SSL/TLS support)
   ssl_lib=""
   ssl_includes=""
 fi
