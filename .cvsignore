@@ -2,8 +2,6 @@
 remove
 libtool
 CODING_LOCATIONS
-README
-README.perditiondb
 INSTALL
 config.*
 configure

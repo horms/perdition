@@ -28,7 +28,6 @@ SUBDIRS = libjain @makegdbm_build_dir@ perdition debian etc
 EXTRA_DIST = \
 configure \
 configure.in \
-README.in \
 README \
 TODO \
 INSTALL.in \

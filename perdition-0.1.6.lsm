@@ -10,7 +10,8 @@ Description:    Perdition is allows users to connect to a content-free
                 proxy especially in firewall applications. Supports
                 arbitrary library based map access to determine the server
                 for a user. POSIX Regular Expression, GDBM,
-                MySQL, PostgreSQL and LDAP libraries ship with the distribution.
+                MySQL, PostgreSQL, NIS and LDAP libraries ship with 
+		the distribution.
 Keywords:       POP3 IMAP4 Email Proxy
 Author:         Horms <horms@vergenet.net>
 Maintained-by:  Horms <horms@vergenet.net>

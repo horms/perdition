@@ -25,9 +25,9 @@
 
 SUBDIRS = db
 
-man_MANS = perdition.8
+man_MANS = perdition.8 perditiondb.5
 
-EXTRA_DIST = perdition.8
+EXTRA_DIST = perdition.8 perditiondb.5
 
 sbin_PROGRAMS = perdition
 	          

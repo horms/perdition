@@ -1,16 +1,34 @@
-README.dbperdition
-
-perdition
-Mail retrieval proxy server
-Copyright (C) 1999  Horms <horms@vergenet.net>
-----------------------------------------------------------------------
-
-Database access mechanism
--------------------------
-
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.\" perditiondb.5                                           January 2001
+.\" Horms                                             horms@vergenet.net
+.\"
+.\" perdition
+.\" Mail retrieval proxy server
+.\" Copyright (C) 2000  Horms <horms@vergenet.net>
+.\" 
+.\" This program is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of the
+.\" License, or (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+.\" 02111-1307  USA
+.\"
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TH PERDITIONDB 5 "8th January 2001"
+.SH NAME
+perditiondb \- perdition modular popmap support
+.SH DESCRIPTION
 Perdition supports a dynamic library mechanism to access
 arbitrary databases that resolve a user to a host and port.
-
+.P
 Note: If you are using the -s|--default server option then
 creating an empty database will cause all users to use
 the default server. Alternatively, setting no popmap by passing
@@ -19,222 +37,267 @@ map lookups to take place and only the default server to
 be used. If in this situation no default server is set then
 perdition will still run but users will not be able
 to get past authentication.
-
+.SH LIBRARY FUNCTIONS
 The database is accessed using the dlopen mechanism on a library.
 The library should define the symbol
-int (*dbserver_get)(char *, char *, char **, size_t *)
+\fBint (*dbserver_get)(char *, char *, char **, size_t *)\fP
 with the following semantics.
-
-dbserver_get
-
+.P
+.B dbserver_get
+.P
 Find the server (value) given the user (key)
-pre: key_str:     Key as a null terminated string
-     options_str: Options string. The usage of this is 
-                  implementation dependant.
-     str_return:  Value is returned here
-     len_return:  Length of value is returned here
-post: The str_key is looked up and the corresponding value is 
-      returned in str_return and len_return.
-return:  0 on success
-        -1 on db access error
-           This inclides file, connection and other data access
-           errors. It does not cover memory allocation problems.
-        -2 if key cannot be found in map
-        -3 on other error
-Note: The string returned in str_return should be of the 
+.TP
+.B pre: 
+.sp
+.B key_str: 
+Key as a null terminated string
+.sp
+.B options_str:
+Options string. The usage of this is implementation dependant.
+.sp
+.B str_return:
+Value is returned here
+.sp
+.B len_return:
+Length of value is returned here
+.TP
+.B post: 
+The str_key is looked up and the corresponding value is 
+returned in str_return and len_return.
+.TP
+.B return:  
+0 on success
+.sp
+-1 on db access error
+This inclides file, connection and other data access
+errors. It does not cover memory allocation problems.
+.sp
+-2 if key cannot be found in map
+.sp
+-3 on other error
+.TP
+.B Note: 
+The string returned in str_return should be of the 
 form [<username><domain_delimiter>]<servername>[:<port>].
-Setting the domain_delimiter is discussed in the README,
+Setting the domain_delimiter is discussed in the \fBperdition\fP(8),
 @ is used in the example.
-
-E.g.: localhost:110
-      user@localhost:110
-      user@localhost
-      localhost
-
+.sp
+E.g.: 
+.sp
+localhost:110
+.br
+user@localhost:110
+.br
+user@localhost
+.br
+localhost
+.P
 As the library is opened using the dlopen mechanism the libary
-may also export functions _init and _fini that will be
+may also export functions \fB_init\fP and \fB_fini \fPthat will be
 executed when the library is opened and closed respectively.
-In addition if the symbols int *(*dbserver_init)(char *) and 
-int *(*dbserver_fini)(void) are defined then these are run when 
+In addition if the symbols \fBint *(*dbserver_init)(char *)\fP and 
+\fBint *(*dbserver_fini)(void)\fP are defined then these are run when 
 the library is opened and closed respectivley.  If defined these 
 symbols should have the following semantics.
-
-dbserver_init
+.P
+.B dbserver_init
+.P
 Initialise db as necessary
-pre: options_str: Options string. The usage of this is 
-                  implementation dependant.
-post: db is intialised
-return:  0 on success
-        -1 on db access error
-           This inclides file, connection and other data access
-           errors. It does not cover memory allocation problems.
-        -2 if key cannot be found in map
-        -3 on other error
-
-dbserver_fini
+.TP
+.B pre: 
+.sp
+.B options_str: 
+Options string. The usage of this is implementation dependant.
+.TP
+.B post: 
+db is intialised
+.TP
+.B return:  
+0 on success
+.sp
+-1 on db access error This inclides file, connection and other data access
+errors. It does not cover memory allocation problems.
+.sp
+-2 if key cannot be found in map
+.sp
+-3 on other error
+.P
+.B dbserver_fini
+.P
 Shut down db as necessary
-pre: none
-post: db is shut down
-return:  0 on success
-        -1 on db access error
-           This inclides file, connection and other data access
-           errors. It does not cover memory allocation problems.
-        -2 if key cannot be found in map
-        -3 on other error
-
+.TP
+.B pre: 
+none
+.TP
+.B post: 
+db is shut down
+.TP
+.B return:  
+0 on success
+.sp
+-1 on db access error
+This inclides file, connection and other data access
+errors. It does not cover memory allocation problems.
+.sp
+-2 if key cannot be found in map
+.sp
+-3 on other error
+.P
 In addition, if a SIGHUP is sent to a process then a signal handler
 will call dbserver_fini if it is defined and then
 dbserver_init if it is defined. Note: dbserver_init will be 
-called if defined, even if dbserver_fini id not defoned.
-
+called if defined, even if dbserver_fini is not defined.
+.P
 The shared library has access to the following global symbols exported 
 by perdition.
+.TP
+.B struct utsname *system_uname  
+The uname information for the system as per uname(2)
+.TP
+.B struct sockaddr_in *peername
+The sockaddr_in for the connected client.
+.TP
+.B struct sockaddr_in *sockname 
+The sockaddr_in for the local interface that the client connected to.
+Note: Under Solaris 7 this is actually the sockaddr_in bound to, not the
+interface the connection was accepted to.
+.P
+.SH DATABASE ACCESS LIBRARIES SHIPPED WITH PERDITION
 
-struct utsname *system_uname  The uname information for the system
-                              as per uname(2)
-
-struct sockaddr_in *peername  The sockaddr_in for the connected client.
-
-struct sockaddr_in *sockname; The sockaddr_in for the local interface
-                              that the client connected to.
-                              Note: Under Solaris 7 this is actually
-                              the sockaddr_in bound to, not the 
-                              interface the connection was accepted to.
-
-Database access libraries shipped with Perdition
-------------------------------------------------
-
-At this stage three database access libraries ship with perdition
-to access a users server information using GDBM, POSIX Regular Expressions
-and MySQL respectivley.
-
-
-GDBM
-----
-
+.SH GDBM
 This is the default library used by perdition.
-
+.P
 The gdbm library reads a users server and port information from a GDBM
 database. The database is opened each time perdition needs to find the
 server and port for a user.  The information for each user is stored in a
 flat file, popmap with the format;
-
+.P
 <username>:[<username><domain_delimiter>]<hostname|ip address>[:<port number|service name>]
-
+.P
 A domain_delimiter of @ is used in this example. Setting the
-domain_delimiter is discussed in the README.
-
+domain_delimiter is discussed in the \fBperdition\fP(8).
+.P
 E.g.
-
+.P
 horms:foo.bar:110
+.br
 jain:jane@foo.bar
-
-
+.P
 To build the flat file into a binary format the makegdbm which is provided
 as part of perdition is used. To rebuild the popmap run:
-
+.P
 makegdbm popmap.db < popmap
-
+.P
 Alternatively a makefile is provided in the source distribution in
-etc/perdition/ and you can simply run make in /etc/perdition to rebuild the
-popmap. This is installed into /etc/perdition/ in the RPM distribution.
-
+etc/perdition/ and you can simply run \fBmake\fP in /etc/perdition to
+rebuild the popmap. This is installed into /etc/perdition/ in the RPM
+distribution.
+.P
 An alternate location for the popmap.db can be specified using the
 -m|--map_library_opt command line option or configuration file directive.
-
+.P
 E.g.
-
+.P
 perdition -m /etc/my_popmap.db
-
-
-NIS
----
-
-Ths nis library reads a YP/NIS map, the key is the userid, the value is the servername.
-
-The default map name is 'user_mail_server', and can be changed by specifying the map
-name with the -m flag.
-
-To use this library, you need to specify something like:
-
+.P
+.SH NIS
+Ths NIS library reads a YP/NIS map, the key is the userid, the value is the
+servername.
+.P
+The default map name is 'user_mail_server', and can be changed by
+specifying the map name with the -m flag.
+.P
+To use this library, you need to specify:
+.P
 perdition -M /usr/lib/libperditiondb_nis.so
-
-Note - you will need to customize your yp server's Makefile to actually get a new
-map on the server. This is intended for sites that already have a significant
-infrastructure based around yp.
-
-
-Posix Regex
------------
-
+.P
+Where \fB/user/lib\fP is the directory in which the perdition libraries
+were installed.
+.P
+.BNote:
+you will need to customise your yp server's Makefile to actually get
+a new map on the server. This is intended for sites that already have a
+significant infrastructure based around yp.
+.SH POSIX REGULAR EXPRESSIONS
+.P
 The backerference substitution code in this library is courtesy 
 of Wim Bonis <bonis@solution-service.de> and in turn the PHP3
 project.
-
+.P
 This library can be used by specifying the full path to the libary using
 the -M|--map_library command line option or configuration file directive.
-
-e.g.
-
-perdition -M /usr/lib/libperditiondb_posix_regex.so
-
-The regex is kept in a flat file, by default /etc/perdition/popmap.re .  A
-sample map file is shipped with the source and can be found in
-etc/perdition/popmap.re, this is intalled into /etc/perdition/popmap.re in
-the RPM distribution.  The format for the flat file is;
-
-<regular expression>: [<username><domain_delimiter>]<server>[:<port>]
-
-Information on setting the domain_delimiter is found in the README,
-@ is used in this example.
-
+.P
 E.g.
-
+.P
+perdition -M /usr/lib/libperditiondb_posix_regex.so
+.P
+Where \fB/user/lib\fP is the directory in which the perdition libraries
+were installed.
+.P
+The regular expression is kept in a flat file, by default
+\fB/etc/perdition/popmap.re\fP .  A sample map file is shipped with the source
+and can be found in etc/perdition/popmap.re, this is intalled into
+/etc/perdition/popmap.re in the RPM distribution.  The format for the flat
+file is:
+.P
+<regular expression>: [<username><domain_delimiter>]<server>[:<port>]
+.P
+Information on setting the domain_delimiter is found in \fBperdition\fP(8),
+@ is used in this example.
+.P
+E.g.
+.P
 ^[a-k]: localhost
+.br
 ^[^a-k]: localhost:110
-
+.br
 ^user: user2@localhost
+.br
 (.*)@(.*): $1_$2@localhost
-
+.P
 The first matching regular expression will be used. The regular expressions
 are extended posix regulare expressions. The last example illustrates
 the ability to expand backreferances.
-
+.P
 E.g. 
-
+.P
 For the regex (.*)@(.*): $1_$2@localhost
+.br
 bonis@solution-service.de
+.br
 would return 
+.br
 bonis_solution-service_de@localhost
-
+.P
 The map file is read once on startup and cached. This is to increase
 performance as the regular expressions must be compiled internally before
 they can be used. The map file can be re read by sending perdition as
 SIGHUP.  An alternate location for the popmap.re can be specified using the
 -m|--map_library_opt command line option or configuration file directive.
-
+.P
 E.g.
-
+.P
 perdition -m /etc/my_popmap.re
-
-
-MySQL
------
-
+.P
+.SH MYSQL
 Many thanks to Frederic Delchambre <dedel@freegates.be> for
 his invaluable contribution to this library.
-
+.P
 As per Posix Regex, this library can be used by specifying the full path to
 the libary using the -M|--map_library command line option or configuration
 file directive.
-
-e.g.
-
+.P
+E.g.
+.P
 perdition -M /usr/lib/libperditiondb_mysql.so
-
+.P
+Where \fB/user/lib\fP is the directory in which the perdition libraries
+were installed.
+.P
 The library will connect to a MySQL database and do a query on a table
 expected to have the columns:
-
+.P
+.nf
 +------------+-----------+------+-----+---------+-------+
 | Field      | Type      | Null | Key | Default | Extra |
 +------------+-----------+------+-----+---------+-------+
@@ -242,75 +305,110 @@ expected to have the columns:
 | servername | char(255) |      |     |         |       |
 | port       | char(8)   | YES  |     | NULL    |       |
 +------------+-----------+------+-----+---------+-------+
-
+.fi
+.P
 While the names of the fields - other than "user" - are not important the
 order is.  All fields are literal character strings, the allowed length of
 the strings is not important. The first field, in this case the user must
 be a primary key and an exact match will be made of this field from the
 username supplied by the user.
-
+.P
 The servername is of the form [<username><domain_delimiter>]<host>, where
 host is the hostname or IP address to connect to and username, if specified
 is the username to use when connecting to host.
-
+.P
 The database is accesed each time perdition needs to find the host and port
 for a user.  The default database values are as follows;
-
+.P
 database host:     localhost
+.br
 database name:     dbPerdition
+.br
 database table:    tblPerdition
+.br
 database user:     perdition
+.br
 database password: perdition
-
+.P
 A script is provided in source in etc/perdition/mysql/ to initialise such a
 database. In the RPM distrubution this can be found installed in
 /etc/perdition/mysql/ Alternate values can be set using the
 -m|--map_library_opt command line option or configuration file directive
 with an argument of the form;
-
+.P
 [<dbhost>[:<dbname>[:<dbtable>[:<dbuser>[:<dbpwd>]]]]]
-
-e.g.
-
+.P
+E.g.
+.P
 perdition -M some.host.com:aDb:bTable:cuser:horrage
-
-
-PostgreSQL
-----------
-
+.SH POSTGRESQL
+.P
 This is a port of the MySQL library to PostgreSQL, The library can be used
 by specifying the full path to the libary using the -M|--map_library
 command line option or configuration file directive.
-
-e.g.
-
+.P
+E.g.
+.P
 perdition -M /usr/lib/libperditiondb_mysql.so
-
+.P
+Where \fB/user/lib\fP is the directory in which the perdition libraries
+were installed.
+.P
 For more information please see the MySQL documentaion above.
-
-
-LDAP
-----
-
+.SH LDAP
 This library allows access to LDAP based popmaps. This library can be used
 by specifying the full path to the libary using the -M|--map_library
 command line option or configuration file directive.
-
-e.g.
-
+.P
+E.g.
+.P
 perdition -M /usr/lib/libperditiondb_ldap.so
-
+.P
+Where \fB/user/lib\fP is the directory in which the perdition libraries
+were installed.
+.P
 A script is provided in etc/perdition/ldap/ to initialise an
 LDAP popmap for the default URL.
 In the RPM distrubution this can be found installed in
 /etc/perdition/ldap/ . An alternate URL can be set using the
 -m|--map_library_opt command line option or configuration file directive.
-
+.P
 The default URL is:
-
+.P
 ldap://localhost/ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)
-
+.P
 The URL should contain excactly one %s, which will be filled by the
 name of the user when a query is made.
-
-
+.P
+.SH SEE ALSO
+perditiondb(8), makegdbm(1), make(1), 
+perditiondb_mysql_makedb(8), perditiondb_postgresql_makedb(8)
+perditiondb_ldap_makedb(8)
+.SH AUTHORS
+.B Lead
+.br
+Horms <horms@vergenet.net>
+.PP
+.B Perditiondb Library Authors
+.br
+Frederic Delchambre <dedel@freegates.be>      (MySQL)
+.br
+Chris Stratford: <chriss@uk.uu.net>           (LDAP)
+.br
+Nathan Neulinger <nneul@umr.edu>              (NIS)
+.PP
+.B Contributing Authors
+.br
+Daniel Rosen <droesen@entire\-systems.com>
+.br
+Clinton Work <work@scripty.com>
+.br
+Youri <ya@linkline.be>
+.br
+Jeremy Nelson <jnelson@optusnet.com.au>
+.br
+Wim Bonis <bonis@solution\-service.de>
+.br
+Arvid Requate <arvid@Team.OWL\-Online.DE>
+.br
+Mikolaj J. Habryn <dichro@rcpt.to>
