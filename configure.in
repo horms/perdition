@@ -944,7 +944,6 @@ AC_SUBST(dmalloc_lib)
 
 AC_OUTPUT(
 packaging/Makefile
-packaging/redhat/Makefile
 packaging/lsb/Makefile
 packaging/lsb/perdition.spec
 libjain/Makefile 
