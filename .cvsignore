@@ -16,3 +16,4 @@ autooption
 logfile
 *.tar.gz
 tags
+autom4te.cache
