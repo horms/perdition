@@ -80,7 +80,7 @@ errors. It does not cover memory allocation problems.
 The string returned in str_return should be of the 
 form [<username><domain_delimiter>]<servername>[:<port>].
 Setting the domain_delimiter is discussed in the \fBperdition\fP(8),
-@ is used in the example.
+@ is used in this example.
 .sp
 E.g.: 
 .sp
@@ -161,27 +161,28 @@ by perdition.
 The uname information for the system as per uname(2)
 .TP
 .B struct sockaddr_in *peername
-The sockaddr_in for the connected client.
+The sockaddr_in for address and port of the client end of the connection.
 .TP
 .B struct sockaddr_in *sockname 
-The sockaddr_in for the local interface that the client connected to.
-Note: Under Solaris 7 this is actually the sockaddr_in bound to, not the
-interface the connection was accepted to.
+The sockaddr_in for the local address and port that the client connected to.
+Note: Under Solaris 7 and above, this is actually the sockaddr_in bound to, 
+not the address and port the connection was accepted on.
 .P
 .SH DATABASE ACCESS LIBRARIES SHIPPED WITH PERDITION
 
 .SH GDBM
 This is the default library used by perdition.
 .P
-The gdbm library reads a users server and port information from a GDBM
-database. The database is opened each time perdition needs to find the
-server and port for a user.  The information for each user is stored in a
+The gdbm library reads server and port information from a GDBM
+database. The database is opened each time perdition looks up a
+server and port pair.  The information for each lookup key is stored in a
 flat file, popmap with the format:
 .P
-<username>:[<username><domain_delimiter>]<hostname|ip address>[:<port number|service name>]
+<key>:[<username><domain_delimiter>]<hostname|ip address>[:<port number|service name>]
 .P
 A domain_delimiter of @ is used in this example. Setting the
-domain_delimiter is discussed in the \fBperdition\fP(8).
+A username is used as the key. For more information on keys
+and the domain delimiter, see \fBperdition\fP(8).
 .P
 E.g.
 .P
@@ -297,7 +298,7 @@ bonis@solution\-service.de
 .br
 would return
 .br
-bonis_solution\-service_de@localhost
+bonis_solution\-service.de@localhost
 .P
 Note that there is no implcit ^ or $
 around the regular expressions. The popmap entry "flim: localhost" will
@@ -400,16 +401,18 @@ E.g.
 .P
 perdition \-m some.host.com:3306:aDb:bTable:cUser:dPassword:eSrvCol:fUserCol:gPortCol
 .P
-Arguments may be omitted from the end of the option string with no consequence other than
-that the default value for any omitted argument will be used. Arguments may not be omitted if
-any argument to its right is defined. Someone seeking to set only the server and password
-to something other than the default might attempt the following:
+Arguments may be omitted from the end of the option string with no
+consequence other than that the default value for any omitted argument will
+be used. Arguments may not be omitted if any argument to its right is
+defined. Someone seeking to set only the server and password to something
+other than the default might attempt the following:
 .P
 perdition \-m some.host.com:::::OddPassword
 .P
-This will not work. It will set the server and password to the values shown, but all arguments
-in between will be set as NULL rather than the default. In the author's opinion it is always best
-to specify \fBall\fP of the arguments, whether default or not, to avoid confusion or ambiguity.
+This will not work. It will set the server and password to the values
+shown, but all arguments in between will be set as NULL rather than the
+default. In the author's opinion it is always best to specify \fBall\fP of
+the arguments, whether default or not, to avoid confusion.
 .P
 .B MULTIPLE DATABASE SERVERS
 .P
@@ -473,10 +476,12 @@ In the RPM distrubution this can be found installed in
 .P
 The default URL is:
 .P
-ldap://localhost/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%25s)
+ldap://localhost/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%s)
 .P
-The URL should contain excactly one %s (%25s), which will be filled by the
-name of the user when a query is made.
+Perdition will replace any instance of %s with the key being used
+for the lookup. Optionally, there may be an integer between the % and the
+s , in which case the key will be white-space padded to this width, with
+the key right justified.
 .P
 A script, perditiondb_ldap_makedb is provided to initialise LDAP.
 .P
@@ -486,9 +491,9 @@ Perdition can be configured to use use an alternate bind name, and the
 non\-standard "x\-bindpw". In fact perdition can use any extensions
 that are supported by openldap.
 .P
-ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%25s)?!bindname=uid=perdition%2co=domain.com
+ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%s)?!bindname=uid=perdition%2co=domain.com
 .P
-ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%25s)?!BINDNAME=uid=perdition%2co=domain.com,X\-BINDPW=secret
+ldap://ldap.mydomain.com/o=domain.com?uid,mailhost,port?sub?(uid=%s)?!BINDNAME=uid=perdition%2co=domain.com,X\-BINDPW=secret
 .P
 The first example does the usual LDAP lookup, but tries to bind to the
 server with "uid=perdition,o=domain.com" rather than the usual anonymous
@@ -511,7 +516,7 @@ them, space delimited, in the LDAP UDL.
 .P 
 For example:
 .P
-ldap://host1\ host2\ host3/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%25s)
+ldap://host1\ host2\ host3/ou=mailbox,dc=my\-domain,dc=com?username,mailhost,port?one?(uid=%s)
 .P
 .B perdition.schema
 .P
@@ -561,3 +566,4 @@ Willi Langenberger <wlang@wu\-wien.ac.at>
 Matt Prigge <mprigge@pobox.com>
 .br
 Wolfgang Breyha <wolfgang.breyha@uta.at>
+

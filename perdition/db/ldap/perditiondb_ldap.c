@@ -36,46 +36,13 @@
 
 #include "perditiondb_ldap.h"
 
-#ifdef HAVE_PARSE_PRINTF_FORMAT
-#include <printf.h>
-#endif 
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
 
 static LDAPURLDesc *ludp;
-
-/**********************************************************************
- * perditiondb_ldap_vanessa_socket_str_is_digit
- * Test if a null terminated string is composed entirely of digits (0-9)
- *
- * Code borrowed from ../../str.c
- *
- * pre: str
- * return: 1 if string contains only digits and null teminator
- *         0 otherwise
- *
- * Not 8 bit clean
- **********************************************************************/
-
-static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
-  size_t offset;
-  size_t top;
-
-  top=strlen(str);
-  for(offset=0;offset<strlen(str);offset++){
-    /*Is digit on solaris appears to be broken and expect an int as
-      the argument, a typecast should aviod a compiler warning */
-    if(!isdigit((int)*(str+offset))){
-      break;
-    }
-  }
-
-  return((offset<top)?0:1);
-}
-
+static int ldap_version=PERDITIONDB_LDAP_VERSION;
 
 /**********************************************************************
  * dbserver_init
@@ -91,46 +58,26 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
  *         -3 on other error
  **********************************************************************/
 
-int dbserver_init(char *options_str) {
-#ifdef HAVE_PARSE_PRINTF_FORMAT
-  int arg_type;
-#endif
+int dbserver_init(char *options_str)
+{
 
-  if (options_str == NULL) {
-    options_str=PERDITIONDB_LDAP_DEFAULT_URL;
-  }
+	if (options_str == NULL) {
+		options_str = PERDITIONDB_LDAP_DEFAULT_URL;
+	}
 
-  /*
-   * Some checks to see if the URL is sane in LDAP terms
-   */
-  if (ldap_is_ldap_url(options_str) == 0) {
-    VANESSA_LOGGER_DEBUG("not an LDAP URL");
-    return(-1);
-  }
-  if (ldap_url_parse(options_str, &ludp) != 0) {
-    VANESSA_LOGGER_DEBUG("ldap_url_parse");
-    return(-1);
-  }
+	/*
+	 * Some checks to see if the URL is sane in LDAP terms
+	 */
+	if (ldap_is_ldap_url(options_str) == 0) {
+		VANESSA_LOGGER_DEBUG("not an LDAP URL");
+		return (-1);
+	}
+	if (ldap_url_parse(options_str, &ludp) != 0) {
+		VANESSA_LOGGER_DEBUG("ldap_url_parse");
+		return (-1);
+	}
 
-#ifdef HAVE_PARSE_PRINTF_FORMAT
-  /*
-   * Some checks to protect against format problems
-   */
-  if(parse_printf_format(ludp->lud_filter, 1, &arg_type) != 1){
-    VANESSA_LOGGER_DEBUG("LDAP URL has more than one format flag");
-    return(-1);
-  }
-  if((arg_type & ~PA_FLAG_MASK) != PA_STRING){
-    VANESSA_LOGGER_DEBUG("LDAP URL has a non-string format flag");
-    return(-1);
-  }
-  if((arg_type & PA_FLAG_MASK)){
-    VANESSA_LOGGER_DEBUG("LDAP URL has a modifier on format flag");
-    return(-1);
-  }
-#endif /* HAVE_PARSE_PRINTF_FORMAT */
-
-  return(0);
+	return (0);
 }
 
 /**********************************************************************
@@ -146,9 +93,162 @@ int dbserver_init(char *options_str) {
  *         -3 on other error
  **********************************************************************/
 
-int dbserver_fini(void) {
-  ldap_free_urldesc(ludp);
-  return(0);
+int dbserver_fini(void)
+{
+	ldap_free_urldesc(ludp);
+	return (0);
+}
+
+
+/**********************************************************************
+ * pldap_get_filter
+ * returns filter array suitable for ldap search.  Be sure to free
+ * returned string.
+ * pre: filter_str contains LDAP search filter with '$' designating what
+ *      needs to be replaced with key_str
+ * post: returns filter
+ * return:     NULL if error
+ *             LDAP filter  on succes
+ **********************************************************************/
+
+static char *pldap_get_filter(const char *key_str, const char *filter_str)
+{
+	int i;
+	int key_len;
+	int filter_len;
+	char c;
+	char *return_filter;
+
+	int format_percent = 0;
+	const char *format_int = NULL;
+	int format_width;
+
+	key_len = strlen(key_str);
+	filter_len = strlen(filter_str);
+
+	/* allocate space for filter */
+	return_filter = strdup(filter_str);
+	if (!return_filter) {
+		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
+		return NULL;
+	}
+
+	/* find number of subs to make */
+	for (i = 0; i < filter_len; i++) {
+		c = filter_str[i];
+		if (c == '%') {
+			if(format_percent) {
+				goto invalid;
+			}
+			format_percent++;
+			continue;
+		}
+		if(format_percent && !format_int && isdigit((int)c)) {
+			format_int = filter_str + i;
+			continue;
+		}
+		if(format_percent && c == 's') {
+			format_width = atoi(format_int);
+			if(format_width < key_len) {
+				format_width = key_len;
+			}
+			realloc(return_filter, filter_len + format_width);
+			memmove(return_filter + i + format_width,
+					return_filter + i, 
+					filter_len - i);
+			memset(return_filter + i, ' ', format_width);
+			memcpy(return_filter + format_width - key_len,
+					key_str, key_len);
+			filter_len += format_width;
+
+			format_percent = 0;
+			format_int = NULL;
+			continue;
+		}
+		if(format_percent) {
+			goto invalid;
+		}
+	}
+
+	return(return_filter);
+
+invalid:
+	VANESSA_LOGGER_DEBUG("invalid format");
+	free(return_filter);
+	return(NULL);
+
+}
+
+
+
+/**********************************************************************
+ * pldap_scan_exts
+ * Scan an array of ldap extensions returned from an ldap
+ * query. 
+ *
+ * pre: exts: array of ldap extensions
+ *      bindname: pointer to stor BINDNAME, if found
+ *      xbindpw: pointer to stor X-BINDPW, if found
+ * post: bindname is filled in if it was found, NULL otherwise
+ *       xbindwp is filled in if it was found, NULL otherwise
+ * return: 1 if an extension other than BINDNAME or X-BINDPW
+ *         was specified and marked as critical.
+ *         0 otherwise
+ **********************************************************************/
+
+static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
+{
+#ifdef WITH_LDAP_LUD_EXTS
+	size_t count;
+	int critical;
+	char *pstr;
+
+	/* Scan through the extension list for anything interesting */
+	count = 0;
+
+	if (exts == NULL) {
+		return(0);
+	}
+
+	*bindname = NULL;
+	*xbindpw = NULL;
+
+	while ((pstr = exts[count]) != '\0') {
+		count++;
+
+		/* Check critical status */
+		if (*pstr == '!') {
+			critical = 1;
+			pstr++;
+		} 
+		else {
+			critical = 0;
+		}
+
+		/* Check for extensions */
+		if (strncasecmp(pstr, "BINDNAME", 8) == 0) {
+			*bindname = pstr + 9;
+			continue;
+		} 
+		else if (strncasecmp(pstr, "X-BINDPW", 8) == 0) {
+			*xbindpw = pstr + 9;
+			continue;
+		} 
+
+		/* Unknown extension */
+		if (critical) {
+			/* If critical RFC2255 says we have to abort */
+			VANESSA_LOGGER_INFO_UNSAFE(
+					"Critical extension, %s unsupported", 
+					pstr);
+			return(1);
+		} 
+	}
+
+	return(0);
+#else				/* WITH_LDAP_LUD_EXTS */
+	return(0);
+#endif				/* WITH_LDAP_LUD_EXTS */
 }
 
 
@@ -169,218 +269,196 @@ int dbserver_fini(void) {
  *         -3 on other error
  **********************************************************************/
 
-int dbserver_get(
-  const char *key_str, 
-  const char *options_str,
-  char **str_return, 
-  int  *len_return
-){
-  LDAP *connection = NULL;
-  LDAPMessage *res = NULL;
-  LDAPMessage *mptr = NULL;
-  BerElement *ber = NULL;
-  int count;
-  int attrcount = 0;
-  int status = -1;
-  char *pstr;
-  char **bv_val = NULL;
-  char *filter = NULL;
-  char **ldap_returns = NULL;
-  char critical;
-  char *binddn=NULL;
-  char *bindpw=NULL;
+int dbserver_get(const char *key_str,
+		 const char *options_str,
+		 char **str_return, int *len_return)
+{
+	LDAP *connection = NULL;
+	LDAPMessage *res = NULL;
+	LDAPMessage *mptr = NULL;
+	BerElement *ber = NULL;
+	int count;
+	int attrcount = 0;
+	int status = -1;
+	char *pstr;
+	char **bv_val = NULL;
+	char *filter = NULL;
+	char **ldap_returns = NULL;
+	char *binddn = NULL;
+	char *bindpw = NULL;
 
-  extern options_t opt;
+	extern options_t opt;
 
-  *len_return = 0;
+	*len_return = 0;
 
-#ifdef WITH_LDAP_LUD_EXTS
-  /* Scan through the extension list for anything interesting */
-  count = 0;
 
-  if (ludp->lud_exts != NULL) {
-    while ((pstr = ludp->lud_exts[count]) != '\0')
-    {
-      /* Check critical status */
-      if (*pstr == '!') {
-        critical = 1;
-        pstr++;
-      }
-      else {
-        critical = 0;
-      }
-
-      /* Check for extensions */
-      if (strncasecmp(pstr, "BINDNAME", 8) == 0) {
-        binddn = pstr + 9;
-      }
-      else if (strncasecmp(pstr, "X-BINDPW", 8) == 0) {
-        bindpw = pstr + 9;
-      }
-      else {
-        /* Unknown extension */
-        if (critical) {
-          /* If critical RFC2255 says we have to abort */
-          VANESSA_LOGGER_INFO_UNSAFE("Critical extension, %s unsupported", pstr);
-          goto leave;
-        }
-        else {
-          /* Not critical, we just ignore it */
-        }
-      }
-
-      count++;
-    }
-  }
-#else /* WITH_LDAP_LUD_EXTS */
-  critical = 0; /* Keep the compiler quiet */
-#endif /* WITH_LDAP_LUD_EXTS */
-
-  /* Open LDAP connection */
-  if ((connection = ldap_init(ludp->lud_host, ludp->lud_port)) == NULL){
-    VANESSA_LOGGER_DEBUG("ldap_init");
-    goto leave;
-  }
-#ifdef LDAP_OPT_NETWORK_TIMEOUT
-  {
-    struct timeval mytimeval;
-    mytimeval.tv_sec = 10;
-    mytimeval.tv_usec = 0;
-    if (ldap_set_option(connection, LDAP_OPT_NETWORK_TIMEOUT, 
-        &mytimeval) != LDAP_OPT_SUCCESS) {
-      VANESSA_LOGGER_DEBUG("ldap_network_timeout");
-      return(-1);
-    }
-  }
-#endif /*LDAP_OPT_NETWORK_TIMEOUT */
-  if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE) 
-      != LDAP_SUCCESS){
-    goto leave;
-  }
-
-  /* Build a filter string */
-  if ((filter = (char *)malloc(strlen(key_str) +
-       strlen(ludp->lud_filter))) == NULL) {
-    VANESSA_LOGGER_DEBUG_ERRNO("filter malloc");
-    status = -3;
-    goto leave;
-  }
-  sprintf(filter, ludp->lud_filter, key_str);
-
-  /* Perform the search */
-  if ((ldap_search_s(connection, ludp->lud_dn, ludp->lud_scope,
-       filter, ludp->lud_attrs, 0, &res)) != LDAP_SUCCESS) {
-    VANESSA_LOGGER_DEBUG_ERRNO("ldap_search_s");
-    goto leave;
-  }
-  free(filter);
-  filter = NULL;
-
-  /* Warn about multiple entries being returned */
-  if (ldap_count_entries(connection, res) > 1)
-    VANESSA_LOGGER_LOG_UNSAFE(LOG_WARNING,
-        "multiple entries returned by filter: base: %s; scope: %s; filter: %s",
-        ludp->lud_dn, ludp->lud_scope, filter);
-
-  /* See what we got back - we only bother with the first entry */
-  if ((mptr = ldap_first_entry(connection, res)) == NULL) {
-    VANESSA_LOGGER_DEBUG("ldap_first_entry");
-    status = -2;
-    goto leave;
-  }
-
-  /* See how many attributes we got */
-  for (attrcount = 0; ludp->lud_attrs[attrcount] != NULL; attrcount++);
-
-  /* Store the attributes somewhere */
-  if ((ldap_returns = (char **)malloc(attrcount * sizeof(char *))) == NULL) {
-    VANESSA_LOGGER_DEBUG_ERRNO("ldap_returns malloc");
-    status = -3;
-    goto leave;
-  }
-  memset(ldap_returns, 0, attrcount * sizeof(char *));
-
-  *len_return = 0;
-  for (pstr = ldap_first_attribute(connection, mptr, &ber); pstr != NULL;
-       pstr = ldap_next_attribute(connection, mptr, ber)){
-    bv_val = ldap_get_values(connection, mptr, pstr);
-
-    for (count = 0; count < attrcount; count++) {
-      if (strcasecmp(ludp->lud_attrs[count], pstr) == 0) {
-        *len_return += strlen(*bv_val);
-	if(ldap_returns[count] != NULL) {
-		free(ldap_returns[count]);
+	/* Open LDAP connection */
+	connection = ldap_init(ludp->lud_host, ludp->lud_port);
+	if (!connection) {
+		VANESSA_LOGGER_DEBUG("ldap_init");
+		goto leave;
 	}
-        if ((ldap_returns[count] = (char *)malloc(strlen(*bv_val)+1)) == NULL) {
-          ldap_value_free(bv_val);
-          ldap_memfree(pstr);
-	  status = -3;
-	  goto leave;
-        }
-        strcpy(ldap_returns[count], *bv_val);
-	break;
-      }
-    }
 
-    ldap_value_free(bv_val);
-    ldap_memfree(pstr);
-  }
+	/* Check extensions */
+	if(pldap_scan_exts(ludp->lud_exts, &binddn, &bindpw)) {
+		VANESSA_LOGGER_DEBUG("ldap_scan_exts");
+		goto leave;
+	}
 
-  ber_free(ber, 0);
-  ber = NULL;
+#ifdef LDAP_OPT_NETWORK_TIMEOUT
+	{
+		struct timeval mytimeval;
+		mytimeval.tv_sec = 10;
+		mytimeval.tv_usec = 0;
+		if (ldap_set_option(connection, LDAP_OPT_NETWORK_TIMEOUT,
+				    &mytimeval) != LDAP_OPT_SUCCESS) {
+			VANESSA_LOGGER_DEBUG("ldap_network_timeout");
+			return (-1);
+		}
+	}
+#endif /*LDAP_OPT_NETWORK_TIMEOUT */
 
-  /* Add in some extra for the separators and terminating NULL */
-  *len_return += attrcount;
+	if(ldap_set_option(connection, LDAP_OPT_PROTOCOL_VERSION, 
+				&ldap_version) != LDAP_OPT_SUCCESS ) {
+		VANESSA_LOGGER_DEBUG("ldap_protocol_version");
+		return(-1);
+	}
 
-  if ((*str_return = (char *)malloc(*len_return)) == NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("str_return malloc");
-    status = -3;
-    goto leave;
-  }
+	if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE)
+	    != LDAP_SUCCESS) {
+		goto leave;
+	}
 
-  /* Build the return string */
-  strcpy(*str_return, ldap_returns[0]);
-  free(ldap_returns[0]);
-  ldap_returns[0] = NULL;
-  for (count = 1; count < attrcount; count++) {
-    if (ldap_returns[count] != NULL) {
-      if (perditiondb_ldap_vanessa_socket_str_is_digit(ldap_returns[count])) {
-        strcat(*str_return, ":");
-      }
-      else {
-        strcat(*str_return, opt.domain_delimiter); 
-      }
-      strcat(*str_return, ldap_returns[count]);
-      free(ldap_returns[count]);
-      ldap_returns[count] = NULL;
-    }
-  }
 
-  /* If there is no opt.domain_delimiter present in *str_return,
-   * then no servername has been found and the result is useless */
-  if(strstr(*str_return, opt.domain_delimiter) == NULL) {
-    free(*str_return);
-    status = -1;
-  }
-  else {
-    status = 0;
-  }
+	/* get filter string */
+	if ((filter = pldap_get_filter(key_str, ludp->lud_filter)) == NULL) {
+		VANESSA_LOGGER_DEBUG("get filter");
+		status = -3;
+		goto leave;
+	}
 
-leave:
-  if(filter != NULL)
-    free(filter);
-  if(ldap_returns != NULL) {
-    for(count = 0; count < attrcount; count++)
-      if(ldap_returns[count] != NULL)
-        free(ldap_returns[count]);
-    free(ldap_returns);
-  }
-  if(ber != NULL)
-    ber_free(ber, 0);
-  if(res != NULL)
-    ldap_msgfree(res);
-  if(connection != NULL)
-    ldap_unbind_s(connection);
+	/* Perform the search */
+	if ((ldap_search_s(connection, ludp->lud_dn, ludp->lud_scope,
+			   filter, ludp->lud_attrs, 0,
+			   &res)) != LDAP_SUCCESS) {
+		VANESSA_LOGGER_DEBUG_ERRNO("ldap_search_s");
+		goto leave;
+	}
 
-  return(status);
+	/* Warn about multiple entries being returned */
+	if (ldap_count_entries(connection, res) > 1) {
+		VANESSA_LOGGER_LOG_UNSAFE(LOG_WARNING, 
+				"multiple entries returned by filter: "
+				"base: %s; scope: %s; filter: %s", 
+				ludp->lud_dn, ludp->lud_scope, filter);
+	}
+
+	free(filter);
+	filter = NULL;
+
+	/* See what we got back - we only bother with the first entry */
+	if ((mptr = ldap_first_entry(connection, res)) == NULL) {
+		VANESSA_LOGGER_DEBUG("ldap_first_entry");
+		status = -2;
+		goto leave;
+	}
+
+	/* See how many attributes we got */
+	for (attrcount = 0; ludp->lud_attrs[attrcount] != NULL;
+	     attrcount++);
+
+	/* Store the attributes somewhere */
+	if ((ldap_returns =
+	     (char **) malloc(attrcount * sizeof(char *))) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("ldap_returns malloc");
+		status = -3;
+		goto leave;
+	}
+	memset(ldap_returns, 0, attrcount * sizeof(char *));
+
+	*len_return = 0;
+	for (pstr = ldap_first_attribute(connection, mptr, &ber);
+	     pstr != NULL;
+	     pstr = ldap_next_attribute(connection, mptr, ber)) {
+		bv_val = ldap_get_values(connection, mptr, pstr);
+
+		for (count = 0; count < attrcount; count++) {
+			if (strcasecmp(ludp->lud_attrs[count], pstr) != 0) {
+				continue;
+			}
+			*len_return += strlen(*bv_val);
+			if (ldap_returns[count] != NULL) {
+				free(ldap_returns[count]);
+			}
+			ldap_returns[count] = (char *) malloc(strlen(*bv_val) 
+					+ 1);
+			if(!ldap_returns[count]) {
+				ldap_value_free(bv_val);
+				ldap_memfree(pstr);
+				status = -3;
+				goto leave;
+			}
+			strcpy(ldap_returns[count], *bv_val);
+			break;
+		}
+
+		ldap_value_free(bv_val);
+		ldap_memfree(pstr);
+	}
+
+	ber_free(ber, 0);
+	ber = NULL;
+
+	/* Add in some extra for the separators and terminating NULL */
+	*len_return += attrcount;
+
+	if ((*str_return = (char *) malloc(*len_return)) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("str_return malloc");
+		status = -3;
+		goto leave;
+	}
+
+	/* Build the return string */
+	strcpy(*str_return, ldap_returns[0]);
+	free(ldap_returns[0]);
+	ldap_returns[0] = NULL;
+	for (count = 1; count < attrcount; count++) {
+		if (ldap_returns[count] != NULL) {
+			if (vanessa_socket_str_is_digit(ldap_returns[count])) {
+				strcat(*str_return, ":");
+			} else {
+				strcat(*str_return, opt.domain_delimiter);
+			}
+			strcat(*str_return, ldap_returns[count]);
+			free(ldap_returns[count]);
+			ldap_returns[count] = NULL;
+		}
+	}
+
+	/* If there is no opt.domain_delimiter present in *str_return,
+	 * then no servername has been found and the result is useless */
+	if (strstr(*str_return, opt.domain_delimiter) == NULL) {
+		free(*str_return);
+		status = -1;
+	} else {
+		status = 0;
+	}
+
+      leave:
+	if (filter != NULL)
+		free(filter);
+	if (ldap_returns != NULL) {
+		for (count = 0; count < attrcount; count++)
+			if (ldap_returns[count] != NULL)
+				free(ldap_returns[count]);
+		free(ldap_returns);
+	}
+	if (ber != NULL)
+		ber_free(ber, 0);
+	if (res != NULL)
+		ldap_msgfree(res);
+	if (connection != NULL)
+		ldap_unbind_s(connection);
+
+	return (status);
 }

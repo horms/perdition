@@ -43,17 +43,16 @@ int dbserver_fini(void);
 
 int dbserver_init(char *options_str);
 
-int dbserver_get(
-  const char *key_str, 
-  const char *options_str,
-  char **str_return, 
-  int *len_return
-);
+int dbserver_get(const char *key_str,
+		 const char *options_str,
+		 char **str_return, int *len_return);
 
 
 #define PERDITIONDB_LDAP_DEFAULT_URL \
   "ldap://localhost/" \
-  "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)"
+  "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%s)"
+
+#define PERDITIONDB_LDAP_VERSION LDAP_VERSION3
 
 #define PERDITIONDB_LDAP_NETWORK_TIMEOUT 10
 
