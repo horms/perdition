@@ -17,6 +17,9 @@ XXX
  - Option to disable compilation of ldap (latex) documentation
  - Use ldap_initialize() when compiled against openssl (>=2.0.0)
    to allow arbitary ldap urls. In particular, ldaps is now supported.
+ - Support for arbitary LDAP urls
+ - Better loging connection failures relating to capabilities
+   on the real-server
 
 ----------------------------------------------------------------------
 

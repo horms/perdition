@@ -47,7 +47,7 @@ AC_CHECK_LIB(crypt, crypt, [ crypt_lib="-lcrypt" ], [ crypt_lib="" ])
 AC_CHECK_LIB(
   popt,
   poptGetContext,
-  :,
+  true,
 AC_MSG_ERROR(
 ""
 "**********************************************************************"
@@ -59,7 +59,7 @@ AC_MSG_ERROR(
 AC_CHECK_LIB(
   vanessa_logger,
   vanessa_logger_closelog,
-  :,
+  true,
 AC_MSG_ERROR(
 ""
 "**********************************************************************"
@@ -72,7 +72,7 @@ AC_MSG_ERROR(
 AC_CHECK_LIB(
   vanessa_adt,
   vanessa_queue_create,
-  :,
+  true,
 AC_MSG_ERROR(
 ""
 "**********************************************************************"
@@ -86,7 +86,7 @@ AC_MSG_ERROR(
 AC_CHECK_LIB(
   vanessa_socket,
   vanessa_socket_client_open,
-  :,
+  true,
 AC_MSG_ERROR(
 ""
 "**********************************************************************"
@@ -172,7 +172,7 @@ fi
 if test "$enable_ssl" = "yes"; then
 AC_CHECK_FILE(
   $ssl_includepath/openssl/ssl.h,
-  :,
+  true,
   [ 
 AC_MSG_WARN(
 ""
@@ -190,7 +190,7 @@ if test "$enable_ssl" = "yes"; then
 AC_CHECK_LIB(
   ssl,
   ERR_error_string,
-  :,
+  true,
   [ 
 AC_MSG_WARN(
 ""

@@ -228,22 +228,30 @@ int imap4_out_setup(
     goto leave;
   }
   if(!capability_status) {
-	  status = 0;
+	  if (!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE)) {
+	    	  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing_force is set, "
+				  "but the real-server does not have the "
+				  "STARTTLS capability, "
+	  			  "connection will not be encrypted");
+	    	  goto ok;
+	  }
+	  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing is set, but the real-server "
+	  		  "does not have the STARTTLS capability, "
+	  		  "closing connection");
+      	  status = 0;
 	  goto leave;
   }
 
-  if(capability_status) {
-    protocol_status |= PROTOCOL_S_STARTTLS;
-    if(imap4_write(io, NULL_FLAG, tag, IMAP4_CMD_STARTTLS, 0, "")<0){
-      VANESSA_LOGGER_DEBUG("imap4_write starttls");
-      goto leave;
-    }
-    if((status=imap4_out_response(io, tag, ok, &q, buf, &n))<0) {
-      VANESSA_LOGGER_DEBUG("imap4_out_response starttls");
-      goto leave;
-    }
-    imap4_tag_inc(tag);
+  protocol_status |= PROTOCOL_S_STARTTLS;
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_CMD_STARTTLS, 0, "")<0){
+    	  VANESSA_LOGGER_DEBUG("imap4_write starttls");
+	  goto leave;
   }
+  if((status=imap4_out_response(io, tag, ok, &q, buf, &n))<0) {
+     	  VANESSA_LOGGER_DEBUG("imap4_out_response starttls");
+	  goto leave;
+  }
+  imap4_tag_inc(tag);
 #endif /* WITH_SSL_SUPPORT */
 
 ok:
@@ -321,6 +329,8 @@ int imap4_out_authenticate(
 	  goto leave;
   }
   if(capability_status) {
+	  VANESSA_LOGGER_DEBUG_RAW("real-server has LOGINDISABLED, "
+			  "closing connection");
 	  status = 2;
 	  goto leave;
   }

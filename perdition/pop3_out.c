@@ -129,7 +129,18 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 	
 	/* NB: It is OK for the server not to support the CAPA command */
 	if(!tmp_status){
-		goto ok;
+		if (!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE)) {
+			VANESSA_LOGGER_DEBUG_RAW("tls_outgoing is set "
+					"but the real-server does not "
+					"have the CAPA command, "
+					"connection will not be encrypted");
+			goto ok;
+		}
+		VANESSA_LOGGER_DEBUG_RAW("tls_outgoing_force is set "
+				"but the real-server does not "
+				"have the CAPA command, "
+				"closing connection");
+		goto leave;
 	}
 	
 	capa_end=token_create();
@@ -176,6 +187,17 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 	}
 
 	if(!(protocol_status & PROTOCOL_S_STARTTLS)) {
+		if (opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE) {
+			VANESSA_LOGGER_DEBUG_RAW("tls_outgoing_force is set "
+					"but the real server does not "
+					"have the STLS capability, "
+					"closing connection");
+			goto leave;
+		}
+		VANESSA_LOGGER_DEBUG_RAW("tls_outgoing is set "
+				"but the real server does not "
+				"have the STLS capability, "
+				"connection will not be encrypted");
 		goto ok;
 	}
 
