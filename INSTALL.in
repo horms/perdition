@@ -44,12 +44,36 @@ You may need to set some envirnoment variables to aid the build process.
 The following worked for me using a bourne shell. Make apropriate
 adjustments if you are using a C shell.
 
-export CPPFLAGS="-I/usr/local/include/"
-export LDFLAGS="-L/usr/local/lib/"
+CPPFLAGS="-I/usr/local/include/"
+export CPPFLAGS
+LDFLAGS="-L/usr/local/lib/"
+export LDFLAGS
 
 cd perdition-@VERSION@
 ./configure [--prefix=/usr]
 make
 make install
+
+
+To install on FreeBSD 4.2-RELEASE
+---------------------------------
+
+You may need to set some envirnoment variables to aid the build process.
+The following worked for me using a bourne shell. Make apropriate
+adjustments if you are using a C shell.
+
+CPPFLAGS="-I/usr/local/include/"
+export CPPFLAGS
+LDFLAGS="-L/usr/local/lib/"
+export LDFLAGS
+
+The Makefiles that are generated may not work with make so use
+gmake instead.
+
+cd perdition-@VERSION@
+./configure [--prefix=/usr]
+gmake
+gmake install
+
 
 
