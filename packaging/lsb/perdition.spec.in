@@ -31,17 +31,20 @@ Packager: Horms <horms@vergenet.net>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysqL-devel mysql-shared postgresql-devel openldap2-devel popt pam libz openssl-devel
+BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam zlib openssl-devel ghostscript tetex-latex tetex-dvips unixODBC-devel
 
 %description
-Perdition is allows users to connect to a content-free POP3 or IMAP4 server
-that will redirect them to their real POP3 or IMAP4 server. This enables
-mail retrieval for a domain to be split across multiple backend servers on
-a per user basis. This can also be used to as a POP3 or IMAP4 proxy
-especially in firewall applications. Perdition supports arbitrary library
-based map access to determine the server for a user. POSIX Regular
-Expression, GDBM, MySQL, PostgreSQL and LDAP libraries ship with the
-distribution. 
+Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
+handle both SSL and non-SSL connections and redirect users to a
+real-server based on a database lookup. Perdition supports modular based
+database access. ODBC, MySQL, PostgreSQL, GDBM, POSIX Regular Expression
+and NIS modules ship with the distribution. The API for modules is open
+allowing abitary modules to be written to allow access to any data store.
+
+Perdition can be used to: Create large mail systems where a users mailbox
+may be stored on one of several hosts.  Integrate different mail systems
+together. Migrate between different email infastructure. And in firewall
+applications.
 
 %package devel
 Summary: Headers and static libraries for perditiondb library development
@@ -94,6 +97,19 @@ libraries much in the manner of NSS in glibc. This package allows a user
 database stored in a PostgreSQL database.
 
 
+%package odbc
+Summary: Library to allow perdition to access pop maps via ODBC.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel} unixODBC
+Provides: perdition-odbc-%{ver}-%{rel}
+
+%description odbc
+Perdition allows for arbitrary user database access through shared
+libraries much in the manner of NSS in glibc. This package allows a user
+access databases via ODBC.
+
+
 
 
 
@@ -126,7 +142,8 @@ fi
        --localstatedir=%{_localstatedir} \
        --sharedstatedir=%{_sharedstatedir} \
        --mandir=%{_mandir} \
-       --infodir=%{_infodir}
+       --infodir=%{_infodir} \
+       --with-schema-directory=/etc/openldap/schema
 
 make
 
@@ -166,7 +183,9 @@ true
 %doc %attr(-, root, root) ChangeLog NEWS CODING_LOCATIONS TODO
 %{_sbindir}/perdition
 %{_sbindir}/perdition.pop3
+%{_sbindir}/perdition.pop3s
 %{_sbindir}/perdition.imap4
+%{_sbindir}/perdition.imap4s
 %{_libdir}/libjain.so
 %{_libdir}/libjain.so.0
 %{_libdir}/libjain.so.0.0.0
@@ -206,6 +225,7 @@ true
 
 %files ldap
 %defattr(-,root,root)
+%doc %attr(-, root, root) perdition/db/ldap/doc/perdition_ldap.pdf
 %{_libdir}/libperditiondb_ldap.a
 %{_libdir}/libperditiondb_ldap.la
 %{_libdir}/libperditiondb_ldap.so
@@ -213,6 +233,7 @@ true
 %{_libdir}/libperditiondb_ldap.so.0.0.0
 %{_bindir}/perditiondb_ldap_makedb
 %{_mandir}/man8/perditiondb_ldap_makedb.*
+/etc/openldap/schema/perdition.schema
 
 %files mysql
 %defattr(-,root,root)
@@ -234,6 +255,16 @@ true
 %{_bindir}/perditiondb_postgresql_makedb
 %{_mandir}/man8/perditiondb_postgresql_makedb.*
 
+%files odbc
+%defattr(-,root,root)
+%{_libdir}/libperditiondb_odbc.a
+%{_libdir}/libperditiondb_odbc.la
+%{_libdir}/libperditiondb_odbc.so
+%{_libdir}/libperditiondb_odbc.so.0
+%{_libdir}/libperditiondb_odbc.so.0.0.0
+%{_bindir}/perditiondb_odbc_makedb
+%{_mandir}/man8/perditiondb_odbc_makedb.*
+
 %files devel
 %defattr(-,root,root)
 %{_includedir}/jain.h
@@ -242,6 +273,9 @@ true
 
 
 %changelog
+* Tue Mar 26 2002 Horms <horms@vergenet.net>
+- added ODBC
+
 * Sat Dec 29 2001 Horms <horms@vergenet.net>
 - Forked SuSE (lsb) spec file
 

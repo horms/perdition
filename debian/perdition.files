@@ -10,8 +10,14 @@ usr/lib/libjain.so.0
 usr/lib/libjain.so.0.0.0
 usr/sbin/perdition
 usr/sbin/perdition.imap4
+usr/sbin/perdition.imap4s
 usr/sbin/perdition.pop3
+usr/sbin/perdition.pop3s
 /usr/share/man/man8/perdition.8
+/usr/share/man/man8/perdition.pop3.8
+/usr/share/man/man8/perdition.pop3s.8
+/usr/share/man/man8/perdition.imap4.8
+/usr/share/man/man8/perdition.imap4s.8
 /usr/share/man/man5/perditiondb.5
 etc/perdition/Makefile
 etc/perdition/popmap

@@ -23,6 +23,4 @@
 #
 ######################################################################
 
-EXTRA_DIST = \
-perdition.spec.in \
-perdition.spec
+EXTRA_DIST = perdition.spec.in #perdition.spec
