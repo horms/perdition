@@ -32,6 +32,8 @@ perdition-ldap.files \
 perdition-ldap.postinst \
 perdition-mysql.files \
 perdition-mysql.postinst \
+perdition-odbc.files \
+perdition-odbc.postinst \
 perdition-postgresql.files \
 perdition-postgresql.postinst \
 perdition.conffiles \

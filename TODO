@@ -6,40 +6,27 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 From Horms
-*  Support for a backup MySQL server
-*  tdb module
-*  Fix perditiondb_ldap_makedb so it is more robust and informative
-*  Port column specification code for MySQL module to PostgreSQL module
+o  Support for a backup MySQL server
 *  Add TLS IMAP and POP support
 
 From Rob Wyn Jones
-* Allow multiple servers for a user (or default) are connect to in series
+o Allow multiple servers for a user (or default) are connect to in series
   (rather than randomly)
 
 From Krzysztof Sierota
 * Method of evaluating if mailboxes are empty to avoid have to
   authenticate with the backend server. Method is yet to be determined :)
 
-From Mikolaj J. Habryn
-* Support for non-blocking connects to multiple back end servers
-  and using the first to respond
-
-
-
 From Stephen Lombard
-* Oracle or ODBC db library
+o Oracle or ODBC db library
 
 From Erik R. Leo
-BSD/OS login.conf support
-
-From Matt Prigge
-* Modify the necessary Makefiles (etc/perdition/Makefile?) to keep 'make
-  install' from overwriting the current configuration.
+o BSD/OS login.conf support
 
 Jack Snodgrass
-* Identify user based on source ip
+o Identify user based on source ip
 Zipworld
-* Identify user based on local ip (patch has been provided)
+o Identify user based on local ip (patch has been provided)
 
 Richard Holbert
 * Lie and say there are 0 messages if a real-server can't be contacted.

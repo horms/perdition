@@ -1,11 +1,10 @@
 ######################################################################
-# Makefile.am                                            February 2000
+# Makefile.am                                               March 2002
 # Horms                                             horms@vergenet.net
-# Verge Systems International                     http://vergenet.net/
 #
 # perdition
-# Mail retrieval proxy server
-# Copyright (C) 1999-2002  Horms
+# Mail retrieval proxy server, ODBC support
+# Copyright (C) 1999-2002 Horms and Frederic Delchambre
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -24,11 +23,18 @@
 #
 ######################################################################
 
-SUBDIRS = \
-  @gdbm_build_dir@ \
-  @ldap_build_dir@ \
-  @odbc_build_dir@ \
-  @mysql_build_dir@ \
-  nis \
-  @pg_build_dir@ \
-  posix_regex 
+lib_LTLIBRARIES = libperditiondb_odbc.la
+
+libperditiondb_odbc_la_SOURCES = \
+perditiondb_odbc.c \
+perditiondb_odbc.h
+
+libperditiondb_odbc_la_LDFLAGS = -version-info 0:0:0
+
+libperditiondb_odbc_la_LIBADD =  @ssl_lib@ @odbc_lib@ 
+
+INCLUDES=\
+-I$(top_srcdir)/ \
+-I$(top_srcdir)/perdition \
+-I$(top_srcdir)/libjain \
+@ssl_includes@

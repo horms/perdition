@@ -220,7 +220,7 @@ AC_ARG_WITH(
     AC_MSG_CHECKING(MySQL include path)
     for mysql_includepath in /usr/mysql/include /usr/local/mysql/include \
         /usr/include/mysql /usr/local/include/mysql \
-	/usr/local/mysql/include/mysql /usr/include /usr/local/includel; do
+	/usr/local/mysql/include/mysql /usr/include /usr/local/include; do
       if test -f "${mysql_includepath}/mysql.h"; then
         break
       fi
@@ -283,6 +283,84 @@ AC_MSG_WARN(
     sleep 5
   ],
   $mysql_libs
+)
+fi
+
+
+######################################################################
+# ODBC
+
+AC_ARG_WITH(
+  mysql-includes,
+  [  --with-odbc-includes=DIR  
+                          ODBC include files are in DIR.  ],
+  [ mysql_includepath="$withval" ],
+  [ 
+    AC_MSG_CHECKING(ODBC include path)
+    for odbc_includepath in /usr/odbc/include /usr/local/odbc/include \
+        /usr/include/odbc /usr/local/include/odbc \
+	/usr/local/odbc/include/odbc /usr/include /usr/local/include; do
+      if test -f "${odbc_includepath}/sql.h"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($odbc_includepath)
+  ]
+)
+
+odbc_includes="-I$odbc_includepath"
+
+AC_ARG_WITH(
+  odbc-libraries,
+  [  --with-odbc-libraries=DIR 
+                          ODBC library files are in DIR.  ],
+  [  odbc_libpath="$withval" ],
+  [ 
+    AC_MSG_CHECKING(ODBC include path)
+    for odbc_libpath in /usr/odbc/lib /usr/local/odbc/lib \
+        /usr/lib/odbc /usr/local/lib/odbc \
+    	/usr/local/odbc/lib/odbc /usr/lib /usr/local/lib; do
+      if test -f "${odbc_libpath}/odbc.a"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($odbc_libpath)
+  ]
+)
+
+odbc_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$odbc_libpath -lodbc"
+
+AC_CHECK_FILES(
+  $odbc_includepath/sql.h $odbc_includepath/sqlext.h $odbc_includepath/sqltypes.h,
+  [ odbc_build_dir="odbc" ],
+  [ 
+    odbc_build_dir="" 
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_odbc will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+
+if [ test -n "$odbc_build_dir" ]; then
+AC_CHECK_LIB(
+  odbc,
+  SQLSetEnvAttr,
+  [ odbc_build_dir="odbc" ],
+  [ 
+    odbc_build_dir="" 
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_odbc will not be built: $odbc_libraries"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ],
+  $odbc_libs
 )
 fi
 
@@ -766,6 +844,9 @@ AC_SUBST(makegdbm_build_dir)
 AC_SUBST(pg_build_dir)
 AC_SUBST(pg_libs)
 AC_SUBST(pg_includes)
+AC_SUBST(odbc_build_dir)
+AC_SUBST(odbc_libs)
+AC_SUBST(odbc_includes)
 AC_SUBST(mysql_build_dir)
 AC_SUBST(mysql_libs)
 AC_SUBST(mysql_includes)
@@ -804,6 +885,7 @@ perdition/db/nis/Makefile
 perdition/db/postgresql/Makefile 
 perdition/db/ldap/Makefile 
 perdition/db/ldap/doc/Makefile 
+perdition/db/odbc/Makefile 
 makegdbm/Makefile 
 etc/Makefile 
 etc/pam.d/Makefile 
