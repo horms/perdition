@@ -263,7 +263,7 @@ true
 %{_libdir}/libperditiondb_ldap.so
 %{_libdir}/libperditiondb_ldap.so.0
 %{_libdir}/libperditiondb_ldap.so.0.0.0
-%{_bindir}/perditiondb_ldap_makedb
+%{_sbindir}/perditiondb_ldap_makedb
 %{_mandir}/man8/perditiondb_ldap_makedb.*
 /etc/openldap/schema/perdition.schema
 
@@ -274,7 +274,7 @@ true
 %{_libdir}/libperditiondb_mysql.so
 %{_libdir}/libperditiondb_mysql.so.0
 %{_libdir}/libperditiondb_mysql.so.0.0.0
-%{_bindir}/perditiondb_mysql_makedb
+%{_sbindir}/perditiondb_mysql_makedb
 %{_mandir}/man8/perditiondb_mysql_makedb.*
 
 %files postgresql
@@ -284,7 +284,7 @@ true
 %{_libdir}/libperditiondb_postgresql.so
 %{_libdir}/libperditiondb_postgresql.so.0
 %{_libdir}/libperditiondb_postgresql.so.0.0.0
-%{_bindir}/perditiondb_postgresql_makedb
+%{_sbindir}/perditiondb_postgresql_makedb
 %{_mandir}/man8/perditiondb_postgresql_makedb.*
 
 %files odbc
@@ -294,7 +294,7 @@ true
 %{_libdir}/libperditiondb_odbc.so
 %{_libdir}/libperditiondb_odbc.so.0
 %{_libdir}/libperditiondb_odbc.so.0.0.0
-%{_bindir}/perditiondb_odbc_makedb
+%{_sbindir}/perditiondb_odbc_makedb
 %{_mandir}/man8/perditiondb_odbc_makedb.*
 
 %files devel

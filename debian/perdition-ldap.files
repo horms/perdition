@@ -1,8 +1,8 @@
-usr/bin/perditiondb_ldap_makedb
+usr/sbin/perditiondb_ldap_makedb
 usr/lib/libperditiondb_ldap.a
 usr/lib/libperditiondb_ldap.la
 usr/lib/libperditiondb_ldap.so.0
 usr/lib/libperditiondb_ldap.so.0.0.0
-/usr/share/man/man8/perditiondb_ldap_makedb.8
+usr/share/man/man8/perditiondb_ldap_makedb.8
 usr/share/doc/perdition-ldap/perdition_ldp.pdf
 etc/ldap/schema/perdition.schema

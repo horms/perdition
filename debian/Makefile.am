@@ -25,10 +25,10 @@
 
 EXTRA_DIST = \
 changelog \
+compat \
 control \
 copyright \
 perdition-dev.files \
-perdition-ldap.conffiles \
 perdition-ldap.files \
 perdition-ldap.postinst \
 perdition-ldap.prerm \
@@ -41,7 +41,6 @@ perdition-odbc.prerm \
 perdition-postgresql.files \
 perdition-postgresql.postinst \
 perdition-postgresql.prerm \
-perdition.conffiles \
 perdition.dirs \
 perdition.files \
 perdition.postinst \

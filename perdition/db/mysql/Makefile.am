@@ -27,7 +27,7 @@ man_MANS = perditiondb_mysql_makedb.8
 
 EXTRA_DIST = perditiondb_mysql_makedb perditiondb_mysql_makedb.8
 
-bin_SCRIPTS = perditiondb_mysql_makedb
+sbin_SCRIPTS = perditiondb_mysql_makedb
 
 lib_LTLIBRARIES = libperditiondb_mysql.la
 

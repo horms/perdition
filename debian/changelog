@@ -1,9 +1,11 @@
-perdition (1.15beta1-1) unstable; urgency=low
+perdition (1.15-1) unstable; urgency=low
 
   * Fixed a bug in the forming of the return string from an
     LDAP lookup. (closes: Bug#243898)
+  * Use compat 4
+  * Removed half-broken depends
 
- -- Simon Horman <horms@debian.org>  Tue, 27 Apr 2004 13:24:34 +0900
+ -- Simon Horman <horms@debian.org>  Thu, 27 May 2004 16:23:12 +0900
 
 perdition (1.14release-1) unstable; urgency=low
 

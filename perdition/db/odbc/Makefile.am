@@ -27,7 +27,7 @@ man_MANS = perditiondb_odbc_makedb.8
 
 EXTRA_DIST = perditiondb_odbc_makedb perditiondb_odbc_makedb.8
 
-bin_SCRIPTS = perditiondb_odbc_makedb
+sbin_SCRIPTS = perditiondb_odbc_makedb
 
 lib_LTLIBRARIES = libperditiondb_odbc.la
 

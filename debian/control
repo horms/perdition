@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev (>= 0.0.6), libvanessa-adt-dev (>= 0.0.6), libvanessa-socket-dev (>= 0.0.7), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbm-dev | libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb-dev
+Build-Depends: libvanessa-logger-dev (>= 0.0.6), libvanessa-adt-dev (>= 0.0.6), libvanessa-socket-dev (>= 0.0.7), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbm-dev, libldap2-dev, debhelper (>= 4.0.0), zlib1g-dev, libssl-dev, libtool, automake, tetex-extra, gv, unixodbc-dev, libdb-dev
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@debian.org>

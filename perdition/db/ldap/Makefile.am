@@ -46,7 +46,7 @@ install-data-hook: $(schema_sources)
 	fi
 
 
-bin_SCRIPTS = perditiondb_ldap_makedb
+sbin_SCRIPTS = perditiondb_ldap_makedb
 
 lib_LTLIBRARIES = libperditiondb_ldap.la
 

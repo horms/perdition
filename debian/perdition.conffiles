@@ -1,7 +1,0 @@
-/etc/init.d/perdition
-/etc/default/perdition
-/etc/perdition/perdition.conf
-/etc/pam.d/perdition
-/etc/perdition/popmap
-/etc/perdition/popmap.re
-/etc/perdition/Makefile.popmap

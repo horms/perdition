@@ -5,11 +5,15 @@ Mail retrieval proxy server
 Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+27th May 2004
 (Horms)
- * XXX
+ * 1.15
  - I would like to thank Fastmail.FM for sponsoring work
    on the daemon map code. Horms
+ - Debian packaging updates
+ - Updated TODO
+ - Moved *_makedb into $prefix/sbin from $prefix/bin
+ - No other changes over 1.15beta1
 
 ----------------------------------------------------------------------
 
