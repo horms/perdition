@@ -212,14 +212,14 @@ int dbserver_get(
    char sqlstr[PERDITIONDB_MYSQL_QUERY_LENGTH];
    size_t servername_len;
 
-   (MYSQL*)rc = mysql_init(&db);
+   rc = mysql_init(&db);
    if(!rc){  
      perditiondb_mysql_log("mysql_init", &db);
      vanessa_dynamic_array_destroy(a);
      return(-1);
    }
 
-   (MYSQL*)rc=mysql_real_connect(&db,dbhost,dbuser,dbpwd,dbname,dbport,NULL,0);
+   rc = mysql_real_connect(&db,dbhost,dbuser,dbpwd,dbname,dbport,NULL,0);
    if(!rc){  
      perditiondb_mysql_log("mysql_connect", &db);
      mysql_close(&db);

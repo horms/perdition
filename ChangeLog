@@ -24,6 +24,7 @@ XXX
    authentication back to the end-user
  - When add_domain is used, allow the depth to which the domain
    name has leading levels stripped.
+ - Fix gcc-4.0 compile problem. Andreas Jochens
 
 ----------------------------------------------------------------------
 
