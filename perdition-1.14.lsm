@@ -1,7 +1,7 @@
 Begin4
 Title:          perdition
-Version:        1.13
-Entered-date:   19DEC03
+Version:        1.14
+Entered-date:   2APR04
 Description: Perdition is a fully featured POP3 and IMAP4 proxy server. It
 is able to handle both SSL and non-SSL connections and redirect users to a
 real-server based on a database lookup.  Perdition supports modular based

@@ -1,3 +1,12 @@
+perdition (1.14release-1) unstable; urgency=low
+
+  * Ldap filter parsing code has been completely rewritten
+    and should now allow substitutions in any part of the URL.
+    (Actually this was fixed in 1.10, but I missed closing the bug report.)
+    (closes: Bug#203734) 
+
+ -- Simon Horman <horms@debian.org>  Fri,  2 Apr 2004 12:29:18 +0900
+
 perdition (1.14beta1-1) unstable; urgency=low
 
   * New Upstream

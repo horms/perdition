@@ -1158,7 +1158,7 @@ void usage(int exit_status){
     stream, 
     "perdition version %s Copyright Horms\n"
     "\n"
-    "perdition is an mail retrieval proxy daemon\n"
+    "perdition is a mail retrieval proxy daemon\n"
     "\n"
     "Usage: perdition [options]\n"
     "\n"
