@@ -419,7 +419,7 @@ int imap4_out_response(io_t *io, const token_t *tag,
     }
 
     if(tag) {
-      if (token_len(t) == IMAP4_UNTAGGED &&
+      if (token_len(t) == IMAP4_UNTAGGED_LEN &&
 		      ! strncmp(token_buf(t), IMAP4_UNTAGGED, token_len(t))) {
         vanessa_queue_destroy(*q);
         continue;
@@ -430,7 +430,7 @@ int imap4_out_response(io_t *io, const token_t *tag,
       }
     }
     else {
-      if (token_len(t) != IMAP4_UNTAGGED ||
+      if (token_len(t) != IMAP4_UNTAGGED_LEN ||
 		      strncmp(token_buf(t), IMAP4_UNTAGGED, token_len(t))) {
 	VANESSA_LOGGER_DEBUG("invalid tag from server 2");
         goto leave;
