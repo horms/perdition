@@ -67,13 +67,13 @@ io_t *perdition_ssl_connection(
   int ret;
   
   if((ssl=SSL_new(ssl_ctx))==NULL){
-    PERDITION_DEBUG_SSL_ERR("SSL_new");
+    VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_new");
     goto bail;
   }
 
   /* Set up io object that will use SSL */
   if((new_io=io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io)))==NULL){
-    PERDITION_DEBUG("io_create_ssl");
+    VANESSA_LOGGER_DEBUG("io_create_ssl");
     goto bail;
   }
 
@@ -84,7 +84,7 @@ io_t *perdition_ssl_connection(
     SSL_set_connect_state(ssl);
     ret = SSL_connect(ssl);
     if(ret <= 0){
-      PERDITION_DEBUG_SSL_IO_ERR("SSL_connect", io_get_ssl(io), ret);
+      VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_connect", io_get_ssl(io), ret);
       goto bail;
     }
   }
@@ -92,12 +92,12 @@ io_t *perdition_ssl_connection(
     SSL_set_accept_state(ssl);
     ret = SSL_accept(ssl);
     if(ret <= 0){
-      PERDITION_DEBUG_SSL_IO_ERR("SSL_accept", io_get_ssl(io), ret);
+      VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_accept", io_get_ssl(io), ret);
       goto bail;
     }
   }
 
-  PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
+  VANESSA_LOGGER_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
 
   return(new_io);
 
@@ -140,12 +140,12 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
    */
 
   if(cert==NULL && privkey!=NULL){
-    PERDITION_DEBUG("Certificate is NULL but private key is non-NULL");
+    VANESSA_LOGGER_DEBUG("Certificate is NULL but private key is non-NULL");
     return(NULL);
   }
 
   if(privkey==NULL && cert!=NULL){
-    PERDITION_DEBUG("Private key is NULL but certificate is non-NULL");
+    VANESSA_LOGGER_DEBUG("Private key is NULL but certificate is non-NULL");
     return(NULL);
   }
 
@@ -158,7 +158,7 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
   SSL_load_error_strings();
 
   if((ssl_ctx=SSL_CTX_new(ssl_method))==NULL){
-    PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
+    VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_CTX_new");
     return(NULL);
   }
 
@@ -176,23 +176,23 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
    */
 
   if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM)<=0){
-    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_certificate_file: \"%s\"", 
+    VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_certificate_file: \"%s\"", 
       cert);
-    PERDITION_ERR_UNSAFE("Error loading certificate file \"%s\"", cert);
+    VANESSA_LOGGER_ERR_UNSAFE("Error loading certificate file \"%s\"", cert);
     SSL_CTX_free(ssl_ctx);
     return(NULL);
   }
  
   if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, SSL_FILETYPE_PEM)<= 0){
-    PERDITION_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_PrivateKey_file: \"%s\"", 
+    VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE("SSL_CTX_use_PrivateKey_file: \"%s\"", 
       privkey);
-    PERDITION_ERR_UNSAFE("Error loading pricvate key file \"%s\"", privkey);
+    VANESSA_LOGGER_ERR_UNSAFE("Error loading pricvate key file \"%s\"", privkey);
     SSL_CTX_free(ssl_ctx);
     return(NULL);
   }
   
   if(!SSL_CTX_check_private_key(ssl_ctx)){
-    PERDITION_DEBUG("Private key does not match the certificate public key.");
+    VANESSA_LOGGER_DEBUG("Private key does not match the certificate public key.");
     SSL_CTX_free(ssl_ctx);
     return(NULL);
   }

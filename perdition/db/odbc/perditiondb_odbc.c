@@ -62,7 +62,7 @@ static char *db_port_col = PERDITIONDB_ODBC_DEFAULT_DBPORTCOL;
  * Show an error message with odbc errors
  * pre: msg_str: message to prepent to message
  *      db: odbc database that error is for
- * post: msg_str is logged to PERDITION_DEBUG with odbc error appended
+ * post: msg_str is logged to VANESSA_LOGGER_DEBUG with odbc error appended
  * return: none
  **********************************************************************/
 
@@ -74,7 +74,7 @@ void perditiondb_odbc_log(const char *msg_str, SQLHDBC hdbc)
 	SQLSMALLINT len;
 
 	SQLGetDiagRec(SQL_HANDLE_DBC, hdbc, 1, stat, &err, msg, 100, &len);
-	PERDITION_LOG_UNSAFE(LOG_DEBUG, "%s: %s (%d)", msg_str, msg, err);
+	VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s: %s (%d)", msg_str, msg, err);
 }
 
 
@@ -128,14 +128,14 @@ int dbserver_init(char *options_str)
 
 	tmp_str = strdup(options_str);
 	if (tmp_str == NULL) {
-		PERDITION_DEBUG_ERRNO("strdup");
+		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
 		return (-1);
 	}
 
 	a = vanessa_dynamic_array_split_str(tmp_str,
 				 PERDITIONDB_ODBC_FIELD_DELIMITER);
 	if (a == NULL) {
-		PERDITION_DEBUG("vanessa_dynamic_array_split_str");
+		VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_split_str");
 		a = NULL;
 		free(tmp_str);
 		return (-1);
@@ -228,7 +228,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 	/* Allocate environment handle */
 	rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
-		PERDITION_DEBUG("QLAllocHandle: environment handle");
+		VANESSA_LOGGER_DEBUG("QLAllocHandle: environment handle");
 		return (-1);
 	}
 
@@ -236,14 +236,14 @@ int dbserver_get(const char *key_str, const char *options_str,
 	rc = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION,
 			   (void *) SQL_OV_ODBC3, 0);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
-		PERDITION_DEBUG("SQLSetEnvATTR");
+		VANESSA_LOGGER_DEBUG("SQLSetEnvATTR");
 		goto err_env;
 	}
 
 	/* Allocate connection handle */
 	rc = SQLAllocHandle(SQL_HANDLE_DBC, env, &hdbc);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
-		PERDITION_DEBUG("SQLAllocHandle: connection handle");
+		VANESSA_LOGGER_DEBUG("SQLAllocHandle: connection handle");
 		goto err_env;
 	}
 
@@ -281,7 +281,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 				key_str)<0;
 	}
 	if (rc < 0) {
-		PERDITION_DEBUG(" query truncated, aborting ");
+		VANESSA_LOGGER_DEBUG(" query truncated, aborting ");
 		goto err_hdbc;
 	}
 
@@ -308,7 +308,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 	/* Make Query */
 	rc = SQLExecDirect(hstmt, sqlstr, SQL_NTS);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
-		PERDITION_DEBUG("SQLExecDirect");
+		VANESSA_LOGGER_DEBUG("SQLExecDirect");
 		goto err_hstmt;
 	}
 
@@ -321,7 +321,7 @@ int dbserver_get(const char *key_str, const char *options_str,
 
 	status = -3;
    	if(*server_res=='\0'){  
-		PERDITION_DEBUG("server_res is empty ");
+		VANESSA_LOGGER_DEBUG("server_res is empty ");
 		goto err_hstmt;
 	}
    	servername_len=*len_return=1+strlen(server_res);
@@ -331,7 +331,7 @@ int dbserver_get(const char *key_str, const char *options_str,
    	}
 
    	if((*str_return=(char *)malloc(*len_return))==NULL){  
-     		PERDITION_DEBUG_ERRNO("malloc");
+     		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 		goto err_hstmt;
 	}
 

@@ -80,7 +80,7 @@ static vanessa_queue_t *__read_line(
   }
 
   if((q=vanessa_queue_create(TOKEN_DESTROY))==NULL){
-    PERDITION_DEBUG("create_queue");
+    VANESSA_LOGGER_DEBUG("create_queue");
     return(NULL);
   }
  
@@ -96,7 +96,7 @@ static vanessa_queue_t *__read_line(
       flag,
       m
     ))==NULL){
-      PERDITION_DEBUG("token_read");
+      VANESSA_LOGGER_DEBUG("token_read");
       vanessa_queue_destroy(q);
       return(NULL);
     }
@@ -107,7 +107,7 @@ static vanessa_queue_t *__read_line(
     }
 
     if((q=vanessa_queue_push(q, (void *)t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_push");
+      VANESSA_LOGGER_DEBUG("vanessa_queue_push");
       return(NULL);
     }
   }while(
@@ -145,7 +145,7 @@ vanessa_queue_t *read_line(
 
     if(!do_literal){
       if((local_buf=(char *)malloc(MAX_LINE_LENGTH*sizeof(char)))==NULL){
-        PERDITION_DEBUG_ERRNO("malloc");
+        VANESSA_LOGGER_DEBUG_ERRNO("malloc");
         return(NULL);
       }
       local_n=MAX_LINE_LENGTH-1;
@@ -156,7 +156,7 @@ vanessa_queue_t *read_line(
     }
 
     if((local_q=__read_line(io, local_buf, &local_n, flag, m))==NULL){
-      PERDITION_DEBUG("__read_line");
+      VANESSA_LOGGER_DEBUG("__read_line");
       if(!do_literal){
         free(local_buf);
       }
@@ -200,7 +200,7 @@ char *queue_to_string(vanessa_queue_t *q){
   char *pos;
 
   if((stack=vanessa_queue_create(TOKEN_DESTROY))==NULL){
-    PERDITION_DEBUG("create_queue");
+    VANESSA_LOGGER_DEBUG("create_queue");
     return(NULL);
   }
 
@@ -208,7 +208,7 @@ char *queue_to_string(vanessa_queue_t *q){
     length+=1+t->n;
 
     if((stack=vanessa_queue_push(stack, (void *)t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_push");
+      VANESSA_LOGGER_DEBUG("vanessa_queue_push");
       return(NULL);
     }
   }
@@ -216,7 +216,7 @@ char *queue_to_string(vanessa_queue_t *q){
   vanessa_queue_destroy(q);
 
   if((string=(char*)malloc(sizeof(char)*length))==NULL){
-    PERDITION_DEBUG("malloc");
+    VANESSA_LOGGER_DEBUG("malloc");
     vanessa_queue_destroy(stack);
     return(NULL);
   }

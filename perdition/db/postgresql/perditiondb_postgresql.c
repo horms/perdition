@@ -58,12 +58,12 @@ static char *db_port_col     = PERDITIONDB_PGSQL_DEFAULT_DBPORTCOL;
  * Show an error message with postgresql errors
  * pre: msg_str: message to prepent to message
  *      conn: postgresql database connection that error is for
- * post: msg_str is logged to PERDITION_DEBUG with postgresql error appended
+ * post: msg_str is logged to VANESSA_LOGGER_DEBUG with postgresql error appended
  * return: none
  **********************************************************************/
 
 #define perditiondb_postgresql_log(msg_str, conn) \
-   PERDITION_DEBUG_UNSAFE("%s: %s",msg_str,PQerrorMessage(conn))
+   VANESSA_LOGGER_DEBUG_UNSAFE("%s: %s",msg_str,PQerrorMessage(conn))
 
 
 /**********************************************************************
@@ -114,7 +114,7 @@ int dbserver_init(char *options_str){
    }
 
    if((tmp_str=strdup(options_str))==NULL){
-     PERDITION_DEBUG_ERRNO("strdup");
+     VANESSA_LOGGER_DEBUG_ERRNO("strdup");
      a=NULL;
      return(-1);
    }
@@ -123,7 +123,7 @@ int dbserver_init(char *options_str){
      tmp_str, 
      PERDITIONDB_PGSQL_FIELD_DELIMITER
    ))==NULL){
-     PERDITION_DEBUG("vanessa_dynamic_array_split_str");
+     VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_split_str");
      a=NULL;
      free(tmp_str);
      return(-1);
@@ -253,7 +253,7 @@ int dbserver_get(
        db_user_col,   
        key_str
      )<0){
-       PERDITION_DEBUG("query truncated, aborting");
+       VANESSA_LOGGER_DEBUG("query truncated, aborting");
        PQfinish(conn);
        return(-3);
      }
@@ -268,7 +268,7 @@ int dbserver_get(
        db_user_col,
        key_str
      )<0){
-       PERDITION_DEBUG("query truncated, aborting");
+       VANESSA_LOGGER_DEBUG("query truncated, aborting");
        PQfinish(conn);
        return(-3);
      } 
@@ -317,7 +317,7 @@ int dbserver_get(
 
 
    if((*str_return=(char *)malloc(*len_return))==NULL){  
-     PERDITION_DEBUG_ERRNO("str_return malloc");
+     VANESSA_LOGGER_DEBUG_ERRNO("str_return malloc");
      PQclear(res);
      PQfinish(conn);
      return(-3);

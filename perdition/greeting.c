@@ -53,7 +53,7 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
   char *message=NULL;
 
   if((message=greeting_str(message, protocol, flag))==NULL){
-    PERDITION_DEBUG("greeting_str");
+    VANESSA_LOGGER_DEBUG("greeting_str");
     return(-1);
   }
   if(protocol->write(
@@ -63,7 +63,7 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
     protocol->type[PROTOCOL_OK], 
     message
   )<0){
-    PERDITION_DEBUG("protocol->write");
+    VANESSA_LOGGER_DEBUG("protocol->write");
     return(-1);
   }
   free(message);
@@ -94,14 +94,14 @@ char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
   if(flag&GREETING_ADD_NODENAME){
     if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
       if((hp=gethostbyname(opt.bind_address))==NULL){
-        PERDITION_DEBUG_ERRNO("gethostbyname");
+        VANESSA_LOGGER_DEBUG_ERRNO("gethostbyname");
         host=opt.bind_address;
       }
       else {
 	bcopy(hp->h_addr, &in, hp->h_length);
 	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
 	if(hp==NULL){
-          PERDITION_DEBUG_ERRNO("gethostbyaddr");
+          VANESSA_LOGGER_DEBUG_ERRNO("gethostbyaddr");
           host=opt.bind_address;
 	}
 	else {
@@ -114,13 +114,13 @@ char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
       host=system_uname->nodename;
     }
     if((message=str_cat(3, protocol->greeting_string, " ", host))==NULL){
-      PERDITION_DEBUG("str_cat");
+      VANESSA_LOGGER_DEBUG("str_cat");
       return(NULL);
     }
   }
   else{
     if((message=strdup(protocol->greeting_string))==NULL){
-      PERDITION_DEBUG("strdup");
+      VANESSA_LOGGER_DEBUG("strdup");
       return(NULL);
     }
   }

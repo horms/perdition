@@ -74,14 +74,14 @@ int dbserver_get(
   key.size = strlen(key_str) + 1;
 
   if ((ret = dbp->get(dbp, NULL, &key, &value, 0)) != 0) {
-    PERDITION_INFO_UNSAFE("No match for %s", key_str);
+    VANESSA_LOGGER_INFO_UNSAFE("No match for %s", key_str);
     dbp->close(dbp, 0);
     return(-2);
   }
 
   /* Store the return string somewhere */
   if ((*str_return = (char *)malloc(value.size)) == NULL){
-    PERDITION_DEBUG_ERRNO("servername malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("servername malloc");
     dbp->close(dbp, 0);
     return(-3);
   }

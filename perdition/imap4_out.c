@@ -66,13 +66,13 @@ int imap4_out_authenticate(
   int status=-1;
 
   if((ok=token_create())==NULL){
-    PERDITION_DEBUG("token_create");
+    VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
   token_assign(ok,(PERDITION_USTRING)IMAP4_OK,strlen(IMAP4_OK),TOKEN_DONT_CARE);
 
   if((status=imap4_out_response(io, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
-    PERDITION_DEBUG("imap4_out_response");
+    VANESSA_LOGGER_DEBUG("imap4_out_response");
     goto leave;
   }
   else if(!status){
@@ -81,7 +81,7 @@ int imap4_out_authenticate(
   }
 
   if((read_string=queue_to_string(q))==NULL){
-    PERDITION_DEBUG("queue_to_string");
+    VANESSA_LOGGER_DEBUG("queue_to_string");
     status=-1;
     goto leave;
   }
@@ -91,17 +91,17 @@ int imap4_out_authenticate(
     protocol,
     GREETING_ADD_NODENAME
   ))==NULL){
-    PERDITION_DEBUG("greeting_str");
+    VANESSA_LOGGER_DEBUG("greeting_str");
     goto leave;
   }
 
   if((status=strcmp(read_string, greeting_string))==0){
-    PERDITION_DEBUG("Loop detected, abandoning connection");
+    VANESSA_LOGGER_DEBUG("Loop detected, abandoning connection");
     goto leave;
   }
 
   if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-    PERDITION_DEBUG("token_to_string");
+    VANESSA_LOGGER_DEBUG("token_to_string");
     return(-1);
   }
 
@@ -114,14 +114,14 @@ int imap4_out_authenticate(
     pw->pw_name,
     pw->pw_passwd
   )<0){
-    PERDITION_DEBUG("imap4_write");
+    VANESSA_LOGGER_DEBUG("imap4_write");
     status=-1;
     goto leave;
   }
 
 
   if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
-    PERDITION_DEBUG("imap4_out_response 2");
+    VANESSA_LOGGER_DEBUG("imap4_out_response 2");
   }
   vanessa_queue_destroy(q);
 
@@ -175,17 +175,17 @@ int imap4_out_response(
   /*Check tag*/
   while(1){
     if((*q=read_line(io, buf, n, TOKEN_IMAP4, 0))==NULL){
-      PERDITION_DEBUG("read_line");
+      VANESSA_LOGGER_DEBUG("read_line");
       return(-1);
     }
   
     if((*q=vanessa_queue_pop(*q, (void **)&t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_pop");
+      VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
       return(-1);
     }
 
     if((server_tag_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      PERDITION_DEBUG("token_to_string");
+      VANESSA_LOGGER_DEBUG("token_to_string");
       goto leave;
     }
     token_destroy(&t);
@@ -196,7 +196,7 @@ int imap4_out_response(
     }
   
     if(strcmp(server_tag_string, tag_string)){
-      PERDITION_DEBUG("invalid tag from server");
+      VANESSA_LOGGER_DEBUG("invalid tag from server");
       goto leave;
     }
   
@@ -204,7 +204,7 @@ int imap4_out_response(
   }
 
   if((*q=vanessa_queue_pop(*q, (void **)&t))==NULL){
-    PERDITION_DEBUG("vanessa_queue_pop");
+    VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
     return(-1);
   }
   

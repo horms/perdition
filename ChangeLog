@@ -13,6 +13,9 @@ XXX
    - Added the beginings of TLS support. Thanks to Wolfgang Breyha
    - Fixed error in help and invocation in .spec file of
      the with-ldap-schema-directory configure option
+   - Use loging convenicence macros provided by libvanessa_logger
+     rather than providing our own.
+
 
 ----------------------------------------------------------------------
 

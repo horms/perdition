@@ -38,7 +38,7 @@ typedef uint32 flag_t;
 #define NULL_FLAG (flag_t) 0
 
 #define AUTH_RETRY 3
-#define PERDITION_ERR_SLEEP 3
+#define VANESSA_LOGGER_ERR_SLEEP 3
 #define PERDITION_PROTOCOL_DEPENDANT "protocol dependent"
 #define PERDITION_AUTH_FAIL_SLEEP 3
 #define PERDITION_CONNECT_RETRY 3

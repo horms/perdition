@@ -58,7 +58,7 @@ char *protocol_known[] = {"2", "POP3", "IMAP4"};
 
 protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
   if((protocol=(protocol_t *)malloc(sizeof(protocol_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
 
@@ -66,30 +66,30 @@ protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
   switch (protocol_type){
     case PROTOCOL_POP3:
       if((protocol=pop3_initialise_protocol(protocol))==NULL){
-        PERDITION_DEBUG("pop3_initialise_protocol");
+        VANESSA_LOGGER_DEBUG("pop3_initialise_protocol");
 	return(NULL);
       }
       break;
     case PROTOCOL_POP3S:
       if((protocol=pop3s_initialise_protocol(protocol))==NULL){
-        PERDITION_DEBUG("pop3s_initialise_protocol");
+        VANESSA_LOGGER_DEBUG("pop3s_initialise_protocol");
 	return(NULL);
       }
       break;
     case PROTOCOL_IMAP4:
       if((protocol=imap4_initialise_protocol(protocol))==NULL){
-        PERDITION_DEBUG("imap4_initialise_protocol");
+        VANESSA_LOGGER_DEBUG("imap4_initialise_protocol");
 	return(NULL);
       }
       break;
     case PROTOCOL_IMAP4S:
       if((protocol=imap4s_initialise_protocol(protocol))==NULL){
-        PERDITION_DEBUG("imap4s_initialise_protocol");
+        VANESSA_LOGGER_DEBUG("imap4s_initialise_protocol");
 	return(NULL);
       }
       break;
     default:
-      PERDITION_DEBUG("Unknown protocol");
+      VANESSA_LOGGER_DEBUG("Unknown protocol");
       return(NULL);
   }
 
@@ -168,7 +168,7 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   noknown=atoi(protocol_known[0]);
   
   if((request<1 || request>noknown) && request!=PROTOCOL_ALL){
-    PERDITION_DEBUG_UNSAFE("protocol \"%d\" out of range", request);
+    VANESSA_LOGGER_DEBUG_UNSAFE("protocol \"%d\" out of range", request);
     return(NULL);
   }
 
@@ -184,7 +184,7 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   }
 
   if((string=(char *)malloc(length))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
 
@@ -212,7 +212,7 @@ char *protocol_capability(char *capability, flag_t ssl_flags,
   if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, capability)){
     tmp_str = strdup(default_capability);
     if(tmp_str == NULL) {
-      PERDITION_DEBUG_ERRNO("strdup");
+      VANESSA_LOGGER_DEBUG_ERRNO("strdup");
       return(NULL);
     }
   }
@@ -224,7 +224,7 @@ char *protocol_capability(char *capability, flag_t ssl_flags,
     capability = str_append_substring_if_missing(tmp_str, tls_capability, 
 		    capability_delimiter);
     if(capability == NULL) {
-      PERDITION_DEBUG("str_delete_substring");
+      VANESSA_LOGGER_DEBUG("str_delete_substring");
       free(tmp_str);
       return(NULL);
     }
@@ -233,7 +233,7 @@ char *protocol_capability(char *capability, flag_t ssl_flags,
     capability = str_delete_substring(tmp_str, tls_capability, 
 		    capability_delimiter);
     if(capability == NULL) {
-      PERDITION_DEBUG("str_delete_substring");
+      VANESSA_LOGGER_DEBUG("str_delete_substring");
       free(tmp_str);
       return(NULL);
     }

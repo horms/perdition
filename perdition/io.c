@@ -84,7 +84,7 @@ io_t *io_create_fd(int read_fd, int write_fd){
   io_t *io;
 
   if((io_fd=(__io_fd_t *)malloc(sizeof(__io_fd_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 1");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
     return(NULL);
   }
 
@@ -92,7 +92,7 @@ io_t *io_create_fd(int read_fd, int write_fd){
   io_fd->write=write_fd;
 
   if((io=(io_t *)malloc(sizeof(io_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 2");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
     free(io_fd);
     return(NULL);
   }
@@ -121,7 +121,7 @@ io_t *io_create_ssl(SSL *ssl, int read_fd, int write_fd){
   io_t *io;
 
   if((io_ssl=(__io_ssl_t *)malloc(sizeof(__io_ssl_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 1");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
     return(NULL);
   }
 
@@ -133,7 +133,7 @@ io_t *io_create_ssl(SSL *ssl, int read_fd, int write_fd){
   io_ssl->write=write_fd;
 
   if((io=(io_t *)malloc(sizeof(io_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 2");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
     free(io_ssl);
     return(NULL);
   }
@@ -198,9 +198,9 @@ void io_destroy(io_t *io){
 { \
   int error; \
   error = SSL_get_error(io->data.d_ssl->ssl, bytes); \
-  PERDITION_DEBUG_SSL_IO_ERR(_name, _ssl, _bytes); \
+  VANESSA_LOGGER_DEBUG_SSL_IO_ERR(_name, _ssl, _bytes); \
   if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
-    PERDITION_DEBUG(_name ": Warning: wants read or write"); \
+    VANESSA_LOGGER_DEBUG(_name ": Warning: wants read or write"); \
     return(0); \
   } \
   return(-1); \
@@ -211,14 +211,14 @@ ssize_t io_write(io_t *io, const void *buf, size_t count){
   ssize_t bytes=0;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(-1);
   }
 
   switch(io->type){
     case io_type_fd:
       if((bytes=write(io->data.d_fd->write, buf, count))<0){
-	PERDITION_DEBUG_ERRNO("write");
+	VANESSA_LOGGER_DEBUG_ERRNO("write");
 	return(-1);
       }
       break;
@@ -235,7 +235,7 @@ ssize_t io_write(io_t *io, const void *buf, size_t count){
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
-      PERDITION_DEBUG("unknown io type");
+      VANESSA_LOGGER_DEBUG("unknown io type");
       bytes=-1;
       break;
    }
@@ -258,14 +258,14 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
   ssize_t bytes=0;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(-1);
   }
 
   switch(io->type){
     case io_type_fd:
       if((bytes=read(io->data.d_fd->read, buf, count))<0){
-	PERDITION_DEBUG_ERRNO("read");
+	VANESSA_LOGGER_DEBUG_ERRNO("read");
 	return(-1);
       }
       break;
@@ -282,7 +282,7 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
-      PERDITION_DEBUG("unknown io type");
+      VANESSA_LOGGER_DEBUG("unknown io type");
       bytes=-1;
       break;
    }
@@ -303,7 +303,7 @@ int io_get_rfd(io_t *io){
   int fd;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(-1);
   }
 
@@ -317,7 +317,7 @@ int io_get_rfd(io_t *io){
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
-      PERDITION_DEBUG("unknown io type");
+      VANESSA_LOGGER_DEBUG("unknown io type");
       fd=-1;
       break;
    }
@@ -338,7 +338,7 @@ int io_get_wfd(io_t *io){
   int fd;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(-1);
   }
 
@@ -352,7 +352,7 @@ int io_get_wfd(io_t *io){
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
-      PERDITION_DEBUG("unknown io type");
+      VANESSA_LOGGER_DEBUG("unknown io type");
       fd=-1;
       break;
    }
@@ -371,7 +371,7 @@ int io_get_wfd(io_t *io){
 
 io_type_t io_get_type(io_t *io){
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(io_type_none);
   }
 
@@ -392,7 +392,7 @@ SSL *io_get_ssl(io_t *io){
   SSL *ssl;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(NULL);
   }
 
@@ -401,7 +401,7 @@ SSL *io_get_ssl(io_t *io){
       ssl=io->data.d_ssl->ssl;
       break;
     default:
-      PERDITION_DEBUG("No SSL object for io");
+      VANESSA_LOGGER_DEBUG("No SSL object for io");
       ssl=NULL;
       break;
    }
@@ -425,7 +425,7 @@ int io_close(io_t *io){
   int write_fd;
 
   if(io==NULL){
-    PERDITION_DEBUG("NULL io");
+    VANESSA_LOGGER_DEBUG("NULL io");
     return(-1);
   }
 
@@ -436,11 +436,11 @@ int io_close(io_t *io){
     write_fd=io_get_wfd(io);
   
     if(close(read_fd)){ \
-      PERDITION_DEBUG_ERRNO("close 1"); \
+      VANESSA_LOGGER_DEBUG_ERRNO("close 1"); \
       return(-1); \
     } \
     if(read_fd!=write_fd && close(write_fd)){ \
-      PERDITION_DEBUG_ERRNO("close 2 %d %d"); \
+      VANESSA_LOGGER_DEBUG_ERRNO("close 2 %d %d"); \
       return(-1); \
     }
 
@@ -451,7 +451,7 @@ int io_close(io_t *io){
        * This seems to return errors for no reason, so let's ignore them
        *
        * if(SSL_shutdown(io->data.d_ssl->ssl)<=0){
-       *   PERDITION_DEBUG_SSL_ERR("SSL_shutdown");
+       *   VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_shutdown");
        *   return(-1);
        * }
        */
@@ -459,7 +459,7 @@ int io_close(io_t *io){
       break;
 #endif /* WITH_SSL_SUPPORT */
     default:
-      PERDITION_DEBUG("Unknown io type");
+      VANESSA_LOGGER_DEBUG("Unknown io type");
       return(-1);
   }
 
@@ -495,7 +495,7 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
 
   io=io_select_get(s, fd);
   if(io == NULL) {
-	  PERDITION_DEBUG("io_select_get");
+	  VANESSA_LOGGER_DEBUG("io_select_get");
 	  return(-1);
   }
 
@@ -511,7 +511,7 @@ static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
 
   io=io_select_get(s, fd);
   if(io == NULL) {
-	  PERDITION_DEBUG("io_select_get");
+	  VANESSA_LOGGER_DEBUG("io_select_get");
 	  return(-1);
   }
 
@@ -533,12 +533,12 @@ ssize_t io_pipe(
 
   s = io_select_create();
   if(s == NULL) {
-	  PERDITION_DEBUG("io_select_create");
+	  VANESSA_LOGGER_DEBUG("io_select_create");
 	  return(-1);
   }
 
   if(io_select_add(s, io_a) == NULL || io_select_add(s, io_b) == NULL) {
-	  PERDITION_DEBUG("io_select_add");
+	  VANESSA_LOGGER_DEBUG("io_select_add");
 	  io_select_destroy(s);
 	  return(-1);
   }
@@ -556,7 +556,7 @@ ssize_t io_pipe(
     				     __io_pipe_write,
     				     io_select,
     				     (void *)s))<0){
-	PERDITION_DEBUG("vanessa_socket_pipe_func");
+	VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
   }
 
   io_select_destroy(s);

@@ -65,13 +65,13 @@ int pop3_out_authenticate(
   int status=-1;
 
   if((ok=token_create())==NULL){
-    PERDITION_DEBUG("token_create");
+    VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
   token_assign(ok,(PERDITION_USTRING)POP3_OK,strlen(POP3_OK),TOKEN_DONT_CARE);
 
   if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
-    PERDITION_DEBUG("pop3_out_response 1");
+    VANESSA_LOGGER_DEBUG("pop3_out_response 1");
     goto leave;
   }
   else if(!status){
@@ -80,7 +80,7 @@ int pop3_out_authenticate(
   }
 
   if((read_string=queue_to_string(q))==NULL){
-    PERDITION_DEBUG("queueo_string");
+    VANESSA_LOGGER_DEBUG("queueo_string");
     status=-1;
     goto leave;
   }
@@ -90,23 +90,23 @@ int pop3_out_authenticate(
     protocol, 
     GREETING_ADD_NODENAME
   ))==NULL){
-    PERDITION_DEBUG("greeting_str");
+    VANESSA_LOGGER_DEBUG("greeting_str");
     status=-1;
     goto leave;
   }
 
   if((status=strcmp(read_string, greeting_string))==0){
-    PERDITION_LOG(LOG_DEBUG, "Loop detected, abandoning connection");
+    VANESSA_LOGGER_LOG(LOG_DEBUG, "Loop detected, abandoning connection");
     goto leave;
   }
 
   if(pop3_write(io, NULL_FLAG, NULL, "USER", pw->pw_name)<0){
-    PERDITION_DEBUG("pop3_write");
+    VANESSA_LOGGER_DEBUG("pop3_write");
     goto leave;
   }
 
   if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
-    PERDITION_DEBUG("pop3_out_response 2");
+    VANESSA_LOGGER_DEBUG("pop3_out_response 2");
     goto leave;
   }
   else if(!status){
@@ -117,12 +117,12 @@ int pop3_out_authenticate(
   vanessa_queue_destroy(q);
 
   if(pop3_write(io, NULL_FLAG, NULL, "PASS", pw->pw_passwd)<0){
-    PERDITION_DEBUG("pop3_write");
+    VANESSA_LOGGER_DEBUG("pop3_write");
     return(-1);
   }
 
   if((status=pop3_out_response(io, NULL, ok, &q, buf, n))<0){
-    PERDITION_DEBUG("pop3_out_response 3");
+    VANESSA_LOGGER_DEBUG("pop3_out_response 3");
   }
   vanessa_queue_destroy(q);
 
@@ -160,11 +160,11 @@ int pop3_out_response(
   token_t *t;
 
   if((*q=read_line(io, buf, n, TOKEN_POP3, 0))==NULL){
-    PERDITION_DEBUG("read_line");
+    VANESSA_LOGGER_DEBUG("read_line");
     return(-1);
   }
   if((*q=vanessa_queue_pop(*q, (void *)&t))==NULL){
-    PERDITION_DEBUG("vanessa_queue_pop");
+    VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
     return(-1);
   }
 

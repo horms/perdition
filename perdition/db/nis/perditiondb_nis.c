@@ -78,7 +78,7 @@ int dbserver_get(
 
   res = yp_get_default_domain(&domain);
   if ( res ) {
-    PERDITION_DEBUG_UNSAFE("yp_get_default_domain: %s (%d)", 
+    VANESSA_LOGGER_DEBUG_UNSAFE("yp_get_default_domain: %s (%d)", 
       yperr_string(res), res);
     return(-1);
   }
@@ -93,10 +93,10 @@ int dbserver_get(
 	len_return);
 
   if ( res == YPERR_KEY ) {
-    PERDITION_DEBUG_UNSAFE("yp_match: %s (%d)", yperr_string(res), res);
+    VANESSA_LOGGER_DEBUG_UNSAFE("yp_match: %s (%d)", yperr_string(res), res);
     return(-2);
   } else if ( res ) {
-    PERDITION_DEBUG_UNSAFE("yp_match: %s (%d)", yperr_string(res), res);
+    VANESSA_LOGGER_DEBUG_UNSAFE("yp_match: %s (%d)", yperr_string(res), res);
     return(-2);
   };
   

@@ -58,13 +58,13 @@ int pop3_write(
 ){
   if(type==NULL){
     if(str_write(io, flag, 1, "%s", string)<0){
-      PERDITION_DEBUG("str_write");
+      VANESSA_LOGGER_DEBUG("str_write");
       return(-1);
     }   
   }
   else {
     if(str_write(io, flag, 2, "%s %s", type, string)<0){
-      PERDITION_DEBUG("str_write");
+      VANESSA_LOGGER_DEBUG("str_write");
       return(-1);
     }   
   }

@@ -123,25 +123,25 @@ static void perdition_reread_handler(int sig);
 #ifdef WITH_PAM_SUPPORT 
 #define PERDITION_SET_UID_AND_GID \
   if(opt.debug && geteuid() && opt.authenticate_in){ \
-    PERDITION_INFO( \
+    VANESSA_LOGGER_INFO( \
       "Warning: not invoked as root, local authentication may fail" \
     ); \
   } \
   if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
-    PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
+    VANESSA_LOGGER_ERR("Fatal error setting group and userid. Exiting.");\
     vanessa_socket_daemon_exit_cleanly(-1); \
   }
 #else
 #define PERDITION_SET_UID_AND_GID \
   if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
-    PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
+    VANESSA_LOGGER_ERR("Fatal error setting group and userid. Exiting.");\
     vanessa_socket_daemon_exit_cleanly(-1); \
   }
 #endif
 
 /* Macro to log session just after Authentication */
-#define PERDITION_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
-  PERDITION_LOG_UNSAFE( \
+#define VANESSA_LOGGER_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
+  VANESSA_LOGGER_LOG_UNSAFE( \
     LOG_NOTICE, \
     "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
     from_to_str, \
@@ -237,7 +237,7 @@ int main (int argc, char **argv, char **envp){
       &handle,&dbserver_get
     )<0
   ){
-    PERDITION_ERR_UNSAFE("dlopen of \"%s\" failed", 
+    VANESSA_LOGGER_ERR_UNSAFE("dlopen of \"%s\" failed", 
       str_null_safe(opt.map_library));
     usage(-1);
     vanessa_socket_daemon_exit_cleanly(-1);
@@ -324,32 +324,32 @@ int main (int argc, char **argv, char **envp){
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc system_uname");
-    PERDITION_ERR("Fatal error allocating memory. Exiting.");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc system_uname");
+    VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
   if(uname(system_uname)<0){
-    PERDITION_DEBUG("uname");
-    PERDITION_ERR("Fatal error finding uname for system. Exiting");
+    VANESSA_LOGGER_DEBUG("uname");
+    VANESSA_LOGGER_ERR("Fatal error finding uname for system. Exiting");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Set up protocol structure*/
   if((protocol=protocol_initialise(opt.protocol, protocol))==NULL){
-    PERDITION_DEBUG("protocol_initialise");
-    PERDITION_ERR("Fatal error intialising protocol. Exiting.");
+    VANESSA_LOGGER_DEBUG("protocol_initialise");
+    VANESSA_LOGGER_ERR("Fatal error intialising protocol. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Set listen and outgoing port now the protocol structure is accessable*/
   if((opt.listen_port=protocol->port(opt.listen_port))==NULL){
-    PERDITION_DEBUG("protocol->port 1");
-    PERDITION_ERR("Fatal error finding port to listen on. Exiting.");
+    VANESSA_LOGGER_DEBUG("protocol->port 1");
+    VANESSA_LOGGER_ERR("Fatal error finding port to listen on. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
   if((opt.outgoing_port=protocol->port(opt.outgoing_port))==NULL){
-    PERDITION_DEBUG("protocol->port 2");
-    PERDITION_ERR("Fatal error finding port to connect to. Exiting.");
+    VANESSA_LOGGER_DEBUG("protocol->port 2");
+    VANESSA_LOGGER_ERR("Fatal error finding port to connect to. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
@@ -361,7 +361,7 @@ int main (int argc, char **argv, char **envp){
 
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
       (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
-    PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
+    VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 #else
@@ -377,8 +377,8 @@ int main (int argc, char **argv, char **envp){
    */
   if((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug){
     if(log_options()){
-      PERDITION_DEBUG("log_options");
-      PERDITION_ERR("Fatal error loging options. Exiting.");
+      VANESSA_LOGGER_DEBUG("log_options");
+      VANESSA_LOGGER_ERR("Fatal error loging options. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
@@ -396,8 +396,8 @@ int main (int argc, char **argv, char **envp){
     if((server_ok_buf=(unsigned char *)malloc(
       sizeof(unsigned char)*MAX_LINE_LENGTH
     ))==NULL){
-      PERDITION_DEBUG_ERRNO("malloc server_ok_buf");
-      PERDITION_ERR("Fatal error allocating memory. Exiting.");
+      VANESSA_LOGGER_DEBUG_ERRNO("malloc server_ok_buf");
+      VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
@@ -406,13 +406,13 @@ int main (int argc, char **argv, char **envp){
    * Allocate the peername and sockanme structures
    */
   if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc sockname");
-    PERDITION_ERR("Fatal error allocating memory. Exiting.");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc sockname");
+    VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
   if((peername=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc peername");
-    PERDITION_ERR("Fatal error allocating memory. Exiting.");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc peername");
+    VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
   
@@ -422,8 +422,8 @@ int main (int argc, char **argv, char **envp){
     g = vanessa_socket_server_bind(opt.listen_port, opt.bind_address, 
  		    		   opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);
     if(g < 0) {
-      PERDITION_DEBUG("vanessa_socket_server_bind");
-      PERDITION_ERR("Fatal error listening for connections. Exiting.");
+      VANESSA_LOGGER_DEBUG("vanessa_socket_server_bind");
+      VANESSA_LOGGER_ERR("Fatal error listening for connections. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
@@ -442,8 +442,8 @@ int main (int argc, char **argv, char **envp){
     int namelen;
 
     if((client_io=io_create_fd(0, 1))==NULL){
-      PERDITION_DEBUG("io_create_fd 1");
-      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      VANESSA_LOGGER_DEBUG("io_create_fd 1");
+      VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 
@@ -461,14 +461,14 @@ int main (int argc, char **argv, char **envp){
     s=vanessa_socket_server_accept(g, opt.connection_limit, peername, sockname,
       				   0);
     if(s < 0){
-      PERDITION_DEBUG("vanessa_socket_server_accept");
-      PERDITION_ERR("Fatal error accepting child connecion. Exiting.");
+      VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
+      VANESSA_LOGGER_ERR("Fatal error accepting child connecion. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 
     if((client_io=io_create_fd(s, s))==NULL){
-      PERDITION_DEBUG("io_create_fd 2");
-      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      VANESSA_LOGGER_DEBUG("io_create_fd 2");
+      VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
@@ -506,25 +506,25 @@ int main (int argc, char **argv, char **envp){
 
   /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
-    PERDITION_INFO_UNSAFE("Connect: %sinetd_pid=%d", from_to_str, getppid());
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %sinetd_pid=%d", from_to_str, getppid());
   }
   else {
-    PERDITION_INFO_UNSAFE("Connect: %s", from_to_str);
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_str);
   }
   set_proc_title("perdition: connect");
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
       client_io, ssl_ctx, PERDITION_SERVER))==NULL){
-    PERDITION_DEBUG("perdition_ssl_connection 1");
+    VANESSA_LOGGER_DEBUG("perdition_ssl_connection 1");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 #endif /* WITH_SSL_SUPPORT */
 
   /*Speak to our client*/
   if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
-    PERDITION_DEBUG("greeting");
-    PERDITION_ERR_UNSAFE(
+    VANESSA_LOGGER_DEBUG("greeting");
+    VANESSA_LOGGER_ERR_UNSAFE(
       "Fatal error writing to client. %sExiting child.",
       from_to_str
     );
@@ -538,8 +538,8 @@ int main (int argc, char **argv, char **envp){
     /*Read the USER and PASS lines from the client */
     token_flush();
     if((status=(*(protocol->in_get_pw))(client_io, &pw, &tag))<0){
-      PERDITION_DEBUG("protocol->in_get_pw");
-      PERDITION_ERR_UNSAFE(
+      VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
+      VANESSA_LOGGER_ERR_UNSAFE(
 	"Fatal Error reading authentication information from client \"%s\": "
 	"Exiting child", 
 	from_to_str
@@ -547,7 +547,7 @@ int main (int argc, char **argv, char **envp){
       vanessa_socket_daemon_exit_cleanly(-1);
     }
     else if(status == 1){
-      PERDITION_ERR_UNSAFE(
+      VANESSA_LOGGER_ERR_UNSAFE(
         "Closing NULL session: %susername=%s", 
         from_to_str,
         str_null_safe(pw.pw_name)
@@ -557,21 +557,21 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
     else if(status == 2){
 
-      PERDITION_DEBUG("STLS make connection");
+      VANESSA_LOGGER_DEBUG("STLS make connection");
       /*Set up the ssl mode*/
       opt.ssl_mode=SSL_MODE_SSL_LISTEN;
 
-      PERDITION_DEBUG("STLS read config");
+      VANESSA_LOGGER_DEBUG("STLS read config");
       if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
         (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
-           PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
+           VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
 
-      PERDITION_DEBUG("STLS handshake");
+      VANESSA_LOGGER_DEBUG("STLS handshake");
       if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
           client_io, ssl_ctx, PERDITION_SERVER))==NULL){
-        PERDITION_DEBUG("perdition_ssl_connection 1");
+        VANESSA_LOGGER_DEBUG("perdition_ssl_connection 1");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
       continue;
@@ -579,8 +579,8 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_SSL_SUPPORT */
 
     if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
-      PERDITION_DEBUG("username_mangle STATE_GET_SERVER");
-      PERDITION_ERR_UNSAFE(
+      VANESSA_LOGGER_DEBUG("username_mangle STATE_GET_SERVER");
+      VANESSA_LOGGER_ERR_UNSAFE(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -605,8 +605,8 @@ int main (int argc, char **argv, char **envp){
           free(pw.pw_name);
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
-	    PERDITION_DEBUG_ERRNO("strdup");
-            PERDITION_ERR_UNSAFE(
+	    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
+            VANESSA_LOGGER_ERR_UNSAFE(
 	      "Fatal error manipulating username for client \"%s\": "
 	      "Exiting child",
 	      from_str
@@ -643,11 +643,11 @@ int main (int argc, char **argv, char **envp){
 	protocol->type[PROTOCOL_ERR], 
 	"Could not determine server"
       )<0){
-        PERDITION_DEBUG("protocol->write");
-        PERDITION_ERR("Fatal error writing to client. Exiting child.");
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
 		      "failed: could not determine server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -657,8 +657,8 @@ int main (int argc, char **argv, char **envp){
     if(opt.authenticate_in){
       if((pw2.pw_name=username_mangle(pw.pw_name, 
             to_addr, STATE_LOCAL_AUTH))==NULL){
-        PERDITION_DEBUG("username_mangle STATE_LOCAL_AUTH");
-        PERDITION_ERR_UNSAFE(
+        VANESSA_LOGGER_DEBUG("username_mangle STATE_LOCAL_AUTH");
+        VANESSA_LOGGER_ERR_UNSAFE(
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
         );
@@ -667,18 +667,18 @@ int main (int argc, char **argv, char **envp){
       pw2.pw_passwd=pw.pw_passwd;
 
       if((status=protocol->in_authenticate(&pw2, client_io, tag))==0){
-        PERDITION_DEBUG("protocol->in_authenticate");
-        PERDITION_INFO(
+        VANESSA_LOGGER_DEBUG("protocol->in_authenticate");
+        VANESSA_LOGGER_INFO(
 	  "Local authentication failure for client: Allowing retry."
         );
-  	PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+  	VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
 			"failed: local authentication failure");
         PERDITION_CLEAN_UP_MAIN;
         continue;
       }
       else if(status<0){
-        PERDITION_DEBUG("pop3_in_authenticate");
-        PERDITION_ERR(
+        VANESSA_LOGGER_DEBUG("pop3_in_authenticate");
+        VANESSA_LOGGER_ERR(
 	  "Fatal error authenticating to client locally. Exiting child."
         );
         vanessa_socket_daemon_exit_cleanly(-1);
@@ -700,9 +700,9 @@ int main (int argc, char **argv, char **envp){
       port, 
       (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0)
     ))<0){
-      PERDITION_DEBUG("vanessa_socket_client_open");
-      PERDITION_INFO("Could not connect to server");
-      sleep(PERDITION_ERR_SLEEP);
+      VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
+      VANESSA_LOGGER_INFO("Could not connect to server");
+      sleep(VANESSA_LOGGER_ERR_SLEEP);
       if((*(protocol->write))(
         client_io,
         NULL_FLAG,
@@ -710,26 +710,26 @@ int main (int argc, char **argv, char **envp){
 	protocol->type[PROTOCOL_ERR], 
 	"Could not connect to server"
       )<0){
-        PERDITION_DEBUG("protocol->write");
-        PERDITION_ERR("Fatal error writing to client. Exiting child.");
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
 		      "failed: could not connect to server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
 
     if((server_io=io_create_fd(s, s))==NULL){
-      PERDITION_DEBUG("io_create_fd 3");
-      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      VANESSA_LOGGER_DEBUG("io_create_fd 3");
+      VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode&SSL_MODE_SSL_OUTGOING){
       if((ssl_ctx=perdition_ssl_ctx(NULL, NULL))==NULL){
-        PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 2");
+        VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx 2");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
 
@@ -738,44 +738,44 @@ int main (int argc, char **argv, char **envp){
         ssl_ctx,
         PERDITION_CLIENT
       ))==NULL){
-        PERDITION_DEBUG("perdition_ssl_connection 2");
+        VANESSA_LOGGER_DEBUG("perdition_ssl_connection 2");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
   
       if((ssl=io_get_ssl(server_io))==NULL){
-        PERDITION_DEBUG("vanessa_socket_get_ssl");
+        VANESSA_LOGGER_DEBUG("vanessa_socket_get_ssl");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
 
-      PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
+      VANESSA_LOGGER_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
 
       if((server_cert=SSL_get_peer_certificate(ssl))==NULL){
-        PERDITION_DEBUG_SSL_ERR("SSL_get_peer_certificate");
-        PERDITION_ERR("No Server certificate");
+        VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_get_peer_certificate");
+        VANESSA_LOGGER_ERR("No Server certificate");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
 
       {
         char *str;
 
-        PERDITION_DEBUG("Server certificate:");
+        VANESSA_LOGGER_DEBUG("Server certificate:");
   
         str=X509_NAME_oneline(X509_get_subject_name(server_cert), 0, 0);
         if(str==NULL){
-          PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
-          PERDITION_ERR("Error reading certificate subject name");
+          VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+          VANESSA_LOGGER_ERR("Error reading certificate subject name");
           vanessa_socket_daemon_exit_cleanly(-1);
         }
-        PERDITION_DEBUG_UNSAFE("subject: %s", str);
+        VANESSA_LOGGER_DEBUG_UNSAFE("subject: %s", str);
         free(str);
   
         str=X509_NAME_oneline(X509_get_issuer_name(server_cert), 0, 0);
         if(str==NULL){
-          PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
-          PERDITION_ERR("Error reading certificate issuer name");
+          VANESSA_LOGGER_DEBUG_SSL_ERR("X509_NAME_oneline");
+          VANESSA_LOGGER_ERR("Error reading certificate issuer name");
           vanessa_socket_daemon_exit_cleanly(-1);
         }
-        PERDITION_DEBUG_UNSAFE("issuer: %s", str);
+        VANESSA_LOGGER_DEBUG_UNSAFE("issuer: %s", str);
         free(str);
   
         /* We could do all sorts of certificate verification stuff here before
@@ -789,8 +789,8 @@ int main (int argc, char **argv, char **envp){
     /* Authenticate the user with the pop server */
     if((pw2.pw_name=username_mangle(pw.pw_name, 
           to_addr, STATE_REMOTE_LOGIN))==NULL){
-      PERDITION_DEBUG("username_mangle STATE_REMOTE_LOGIN");
-      PERDITION_ERR_UNSAFE(
+      VANESSA_LOGGER_DEBUG("username_mangle STATE_REMOTE_LOGIN");
+      VANESSA_LOGGER_ERR_UNSAFE(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -812,11 +812,11 @@ int main (int argc, char **argv, char **envp){
     );
 
     if(status==0){
-      sleep(PERDITION_ERR_SLEEP);
+      sleep(VANESSA_LOGGER_ERR_SLEEP);
       quit(server_io, protocol);
       if(io_close(server_io)){
-        PERDITION_DEBUG("io_close 2");
-        PERDITION_ERR(
+        VANESSA_LOGGER_DEBUG("io_close 2");
+        VANESSA_LOGGER_ERR(
 	  "Fatal error closing connection to client. Exiting child."
 	);
 	vanessa_socket_daemon_exit_cleanly(-1);
@@ -828,18 +828,18 @@ int main (int argc, char **argv, char **envp){
         protocol->type[PROTOCOL_NO], 
         "Re-Authentication Failure"
       )<0){
-        PERDITION_DEBUG("protocol->write");
-        PERDITION_ERR("Fatal error writing to client. Exiting child.");
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
 		      "failed: authentication of client with real-server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
     else if(status<0){
-      PERDITION_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
-      PERDITION_ERR("Fatal error authenticating user. Exiting child.");
+      VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
+      VANESSA_LOGGER_ERR("Fatal error authenticating user. Exiting child.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 
@@ -853,8 +853,8 @@ int main (int argc, char **argv, char **envp){
         NULL,
         server_ok_buf
       )<0){
-        PERDITION_DEBUG("protocol->write");
-        PERDITION_ERR("Fatal error writing to client. Exiting child.");
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
     }
@@ -866,8 +866,8 @@ int main (int argc, char **argv, char **envp){
         protocol->type[PROTOCOL_OK],
         "You are so in"
       )<0){
-        PERDITION_DEBUG("protocol->write");
-        PERDITION_ERR("Fatal error writing to client. Exiting child.");
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
     }
@@ -875,7 +875,7 @@ int main (int argc, char **argv, char **envp){
     break;
   }
 
-  PERDITION_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "ok");
+  VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "ok");
 
   if(opt.server_ok_line){
      free(server_ok_buf);
@@ -883,8 +883,8 @@ int main (int argc, char **argv, char **envp){
 
   /*We need a buffer for reads and writes to the server*/
   if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
-    PERDITION_ERR("Fatal error allocating memory. Exiting child.");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting child.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
@@ -898,13 +898,13 @@ int main (int argc, char **argv, char **envp){
     &bytes_written,
     &bytes_read
   )<0){
-    PERDITION_DEBUG("vanessa_socket_pipe");
-    PERDITION_ERR("Fatal error piping data. Exiting child.");
+    VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
+    VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Time to leave*/
-  PERDITION_INFO_UNSAFE(
+  VANESSA_LOGGER_INFO_UNSAFE(
     "Close: %suser=\"%s\" received=%d sent=%d", 
     str_null_safe(from_to_str),
     str_null_safe(pw.pw_name),
@@ -936,7 +936,7 @@ int main (int argc, char **argv, char **envp){
 static void perdition_reread_handler(int sig){
   extern options_t opt;
 
-  PERDITION_INFO_UNSAFE("Reloading map library \"%s\" with options \"%s\"",
+  VANESSA_LOGGER_INFO_UNSAFE("Reloading map library \"%s\" with options \"%s\"",
     opt.map_library, opt.map_library_opt);
   getserver_closelib(handle);
   if(
@@ -948,8 +948,8 @@ static void perdition_reread_handler(int sig){
       &dbserver_get
     )<0
   ){
-    PERDITION_DEBUG("getserver_openlib");
-    PERDITION_ERR_UNSAFE("Fatal error reopening: %s. Exiting child.", 
+    VANESSA_LOGGER_DEBUG("getserver_openlib");
+    VANESSA_LOGGER_ERR_UNSAFE("Fatal error reopening: %s. Exiting child.", 
       opt.map_library);
     vanessa_socket_daemon_exit_cleanly(-1);
   }

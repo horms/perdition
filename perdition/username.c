@@ -75,21 +75,21 @@ char *username_add_domain(char *username, struct in_addr *to_addr, int state){
 
   /* If we have no reverse IP address, stop now */
   if((hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET))==NULL){
-    PERDITION_DEBUG("no reverse IP lookup, domain not added");
+    VANESSA_LOGGER_DEBUG("no reverse IP lookup, domain not added");
     return(username);
   }
 
   /* Make some space for the domain part */
   domainpart=strchr(hp->h_name, '.');
   if (domainpart == NULL || *(++domainpart)=='\0'){
-    PERDITION_DEBUG("No domain in reverse lookup, domain not added");
+    VANESSA_LOGGER_DEBUG("No domain in reverse lookup, domain not added");
     return(username);
   }
 
   if ((new_str=(char *)malloc(
         strlen(username)+strlen(opt.domain_delimiter)+strlen(domainpart)+1
   ))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
 
@@ -138,7 +138,7 @@ char *username_strip(char *username, int state){
 
   len=end-username;
   if((new_str=(char *)malloc(len+1))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   strncpy(new_str, username, len);
@@ -172,7 +172,7 @@ char *username_lower_case(char *username, int state){
     return(username);
 
   if((new_str=strdup(username))==NULL){
-    PERDITION_DEBUG_ERRNO("strdup");
+    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
     return(NULL);
   }
 
@@ -201,13 +201,13 @@ char *username_mangle(char *username,
   char *old_result;
 
   if((result=username_strip(username, state))==NULL){
-    PERDITION_DEBUG("username_strip");
+    VANESSA_LOGGER_DEBUG("username_strip");
     return(NULL);
   }
 
   old_result = result;
   if((result=username_add_domain(result, to_addr, state))==NULL){
-    PERDITION_DEBUG("username_add_domain");
+    VANESSA_LOGGER_DEBUG("username_add_domain");
     return(NULL);
   }
   if(old_result != result) {
@@ -216,7 +216,7 @@ char *username_mangle(char *username,
 
   old_result = result;
   if((result=username_lower_case(old_result, state))==NULL){
-    PERDITION_DEBUG("username_lower_case");
+    VANESSA_LOGGER_DEBUG("username_lower_case");
     return(NULL);
   }
   if(old_result != result) {

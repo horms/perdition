@@ -76,7 +76,7 @@ io_select_t *io_select_create()
 	s = vanessa_list_create(1, NULL, NULL, NULL, NULL,
 			        IO_SELECT_MATCH_IO, NULL);
 	if(s == NULL) {
-		PERDITION_DEBUG("vanessa_hash_create");
+		VANESSA_LOGGER_DEBUG("vanessa_hash_create");
 		return(NULL);
 	}
 
@@ -112,7 +112,7 @@ io_select_t *io_select_add(io_select_t *s, io_t *io)
 {
 	s = vanessa_list_add_element(s, io);
 	if(s == NULL) {
-		PERDITION_DEBUG("vanessa_list_add_element");
+		VANESSA_LOGGER_DEBUG("vanessa_list_add_element");
 		return(NULL);
 	}
 
@@ -153,7 +153,7 @@ io_t *io_select_get(io_select_t *s, int fd)
 
 	io = vanessa_list_get_element(s, &fd);
 	if(io == NULL) {
-		PERDITION_DEBUG("vanessa_list_get_element");
+		VANESSA_LOGGER_DEBUG("vanessa_list_get_element");
 		return(NULL);
 	}
 

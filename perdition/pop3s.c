@@ -130,7 +130,7 @@ char *pop3s_capability(char *capability, flag_t ssl_flags) {
 		  POP3_DEFAULT_CAPABILITY, POP3_TLS_CAPABILITY,
 		  POP3_CAPABILITY_DELIMITER);
   if(capability == NULL) {
-	  PERDITION_DEBUG("protocol_capability");
+	  VANESSA_LOGGER_DEBUG("protocol_capability");
 	  return(NULL);
   }
 

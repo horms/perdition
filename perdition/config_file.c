@@ -87,7 +87,7 @@ void config_file_to_opt(const char *filename){
 
 #define ADD_TOKEN(_a, _t) \
   if((_a=vanessa_dynamic_array_add_element(_a, _t))==NULL){ \
-    PERDITION_DEBUG("config_file_read: vanessa_dynamic_array_add_element"); \
+    VANESSA_LOGGER_DEBUG("config_file_read: vanessa_dynamic_array_add_element"); \
     close(fd); \
     return(NULL); \
   }
@@ -163,7 +163,7 @@ vanessa_dynamic_array_t *config_file_read (const char *filename){
 
   if(filename==NULL) return(NULL);
   if((fd=open(filename, O_RDONLY))<0){
-    PERDITION_DEBUG_UNSAFE("open(%s): %s", filename, strerror(errno));
+    VANESSA_LOGGER_DEBUG_UNSAFE("open(%s): %s", filename, strerror(errno));
     return(NULL);
   }
 
@@ -174,7 +174,7 @@ vanessa_dynamic_array_t *config_file_read (const char *filename){
 	VANESSA_DISPLAY_STR,
 	VANESSA_LENGTH_STR
   ))==NULL){
-    PERDITION_DEBUG("vanessa_dynamic_array_create");
+    VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_create");
     return(NULL);
   }
 
@@ -190,7 +190,7 @@ vanessa_dynamic_array_t *config_file_read (const char *filename){
       if(errno==EINTR){
 	continue;
       }
-      PERDITION_DEBUG("read");
+      VANESSA_LOGGER_DEBUG("read");
       vanessa_dynamic_array_destroy(a);
       close(fd);
       return(NULL);
@@ -298,7 +298,7 @@ void config_file_reread_handler(int sig){
   extern options_t opt;
 
   config_file_to_opt(opt.config_file);
-  PERDITION_INFO_UNSAFE("Config file reread on signal (%d)\n", sig);
+  VANESSA_LOGGER_INFO_UNSAFE("Config file reread on signal (%d)\n", sig);
   log_options();
   signal(sig, (void(*)(int))config_file_reread_handler);
   return;

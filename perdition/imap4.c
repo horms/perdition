@@ -127,7 +127,7 @@ char *imap4_capability(char *capability, char **mangled_capability,
 		  IMAP4_DEFAULT_CAPABILITY, IMAP4_TLS_CAPABILITY,
 		  IMAP4_CAPABILITY_DELIMITER);
   if(capability == NULL) {
-	  PERDITION_DEBUG("protocol_capability");
+	  VANESSA_LOGGER_DEBUG("protocol_capability");
 	  return(NULL);
   }
 

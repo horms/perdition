@@ -72,7 +72,7 @@ int dbserver_init(char *options_str){
   if((stream=fopen(
     (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str, "r")
   )==NULL){
-    PERDITION_DEBUG_UNSAFE(
+    VANESSA_LOGGER_DEBUG_UNSAFE(
       "Could not open %s: %s\n",
       (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str,
       strerror(errno)
@@ -81,7 +81,7 @@ int dbserver_init(char *options_str){
   }
 
   if((line=(char *)malloc(PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 1");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
     goto leave_3;
   }
   if((regex_a=vanessa_dynamic_array_create(
@@ -128,7 +128,7 @@ int dbserver_init(char *options_str){
       continue;
     }
     if((preg=(regex_t *)malloc(sizeof(regex_t)))==NULL){ 
-      PERDITION_DEBUG_ERRNO("malloc 2");
+      VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
       goto leave_3; 
     }
     if(regcomp(preg, regex, REG_EXTENDED|REG_NEWLINE)){
@@ -228,7 +228,7 @@ int dbserver_get(
      */
     buf_len = 2 * string_len + 1;
     if((buf=malloc(buf_len*sizeof(char)))==NULL){
-      PERDITION_DEBUG_ERRNO("malloc 1");
+      VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
       return(-3);
     }
 
@@ -273,7 +273,7 @@ int dbserver_get(
       if (new_l + 1 > buf_len) {
   	buf_len = 1 + buf_len + 2 * new_l;
 	if((nbuf=malloc(buf_len))==NULL){
-  	  PERDITION_DEBUG_ERRNO("malloc 2");
+  	  VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
 	  free(buf);
 	  return(-3);
 	}
@@ -316,7 +316,7 @@ int dbserver_get(
 	  buf_len = 1 + buf_len + 2 * new_l;
 	  nbuf = malloc(buf_len * sizeof(char));
 	  if((nbuf=malloc(buf_len))==NULL){
-  	    PERDITION_DEBUG_ERRNO("malloc 3");
+  	    VANESSA_LOGGER_DEBUG_ERRNO("malloc 3");
 	    free(buf);
 	    return(-3);
 	  }

@@ -114,7 +114,7 @@
 		key_str_space += _GKS_CHUNK_SIZE; \
 		key_str = (char *)realloc(key_str, key_str_size); \
 		if(key_str == NULL) { \
-			PERDITION_DEBUG_ERRNO("realloc"); \
+			VANESSA_LOGGER_DEBUG_ERRNO("realloc"); \
 			return(NULL); \
 		} \
 		key_str_p = key_str + key_str_size - key_str_space; \
@@ -219,7 +219,7 @@ static char *getserver_key_str(const char *query_fmt,
 				_GSK_STR_ADD_C('\\');
 				break;
 			default:
-				PERDITION_DEBUG_UNSAFE("Unknown escape "
+				VANESSA_LOGGER_DEBUG_UNSAFE("Unknown escape "
 						"sequence: \\%c", *c);
 				return(NULL);
 		}
@@ -228,7 +228,7 @@ static char *getserver_key_str(const char *query_fmt,
         }       
 
 	_GSK_STR_ADD_C('\0');
-	PERDITION_DEBUG_UNSAFE("\"%s\"->\"%s\"", query_fmt, key_str);
+	VANESSA_LOGGER_DEBUG_UNSAFE("\"%s\"->\"%s\"", query_fmt, key_str);
 	return(key_str);
 }       
 
@@ -267,7 +267,7 @@ server_port_t *getserver(
   ){
     *popserver='\0';
     if((server_port=server_port_create())==NULL){
-      PERDITION_DEBUG("server_port_create");
+      VANESSA_LOGGER_DEBUG("server_port_create");
       return(NULL);
     }
     server_port_strn_assign(
@@ -296,13 +296,13 @@ server_port_t *getserver(
 				  opt.query_key, i);
 		if(query_fmt == NULL) {
 			status = -3;
-			PERDITION_DEBUG("vanessa_dynamic_array_get_element");
+			VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_get_element");
 			return(NULL);
 		}
 		key_str = getserver_key_str(query_fmt, user_str, from_str,
 				to_str, port);
 		if(key_str == NULL) {
-			PERDITION_DEBUG("getserver_key_str");
+			VANESSA_LOGGER_DEBUG("getserver_key_str");
 			return(NULL);
 		}
 		status=dbserver_get(key_str, opt.map_library_opt,
@@ -317,7 +317,7 @@ server_port_t *getserver(
   /* Catch errors from any of the dbserver_get calls */
   if(status<0){
     if(status == -2) {
-      PERDITION_DEBUG("dbserver_get");
+      VANESSA_LOGGER_DEBUG("dbserver_get");
     }
     return(NULL);
   }
@@ -325,14 +325,14 @@ server_port_t *getserver(
   /* Check for an empty result */
   if(*content_str=='\0' || content_len==0) {
     free(content_str);
-    PERDITION_DEBUG("dbserver_get returned empty string");
+    VANESSA_LOGGER_DEBUG("dbserver_get returned empty string");
     return(NULL);
   }
 
   /* Parse the result */
   if(status == 0) {
     if((server_port=server_port_create())==NULL){
-      PERDITION_DEBUG("server_port_create");
+      VANESSA_LOGGER_DEBUG("server_port_create");
       return(NULL);
     }
     server_port=server_port_strn_assign(server_port, content_str, content_len);
@@ -375,13 +375,13 @@ int getserver_openlib(
   *handle_return=dlopen(libname, RTLD_LAZY);
   if(!*handle_return) {
     error=dlerror();
-    PERDITION_DEBUG_UNSAFE("dlopen falied: %s", str_null_safe(error));
+    VANESSA_LOGGER_DEBUG_UNSAFE("dlopen falied: %s", str_null_safe(error));
     return(-1);
   }
 
   *dbserver_get_return=dlsym(*handle_return, "dbserver_get");
   if((error=dlerror())!=NULL){
-    PERDITION_DEBUG_UNSAFE("Could not find symbol dbserver_get: dlsym: %s", 
+    VANESSA_LOGGER_DEBUG_UNSAFE("Could not find symbol dbserver_get: dlsym: %s", 
       error);
     dlclose(*handle_return);
     return(-1);
@@ -389,7 +389,7 @@ int getserver_openlib(
   dbserver_init=dlsym(*handle_return, "dbserver_init");
   if((error=dlerror())==NULL){
     if(dbserver_init(options_str)){
-      PERDITION_DEBUG("dbserver_init");
+      VANESSA_LOGGER_DEBUG("dbserver_init");
       dlclose(*handle_return);
       return(-1);
     }
@@ -421,7 +421,7 @@ int getserver_closelib(void *handle){
   dbserver_fini=dlsym(handle, "dbserver_fini");
   if((error=dlerror())==NULL){
     if(dbserver_fini()){
-      PERDITION_DEBUG("dbserver_fini");
+      VANESSA_LOGGER_DEBUG("dbserver_fini");
       status=-1;
     }
   }

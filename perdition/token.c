@@ -62,7 +62,7 @@ token_t *token_create(void){
   token_t *t;
 
   if((t=(token_t *)malloc(sizeof(token_t)))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   t->n=0;
@@ -163,7 +163,7 @@ void token_destroy(token_t **t){
 
 int token_write(io_t *io, const token_t *t){
   if(io_write(io, t->buf, t->n)){
-    PERDITION_DEBUG("vanessa_socket_pipe_write_bytes");
+    VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_write_bytes");
     return(-1);
   }
   
@@ -202,7 +202,7 @@ void token_flush(void) {
 static int token_fill_buffer(io_t *io, const options_t *opt) {
   if(token_read_bytes>token_read_offset) {
     if(token_read_bytes==0){
-      PERDITION_DEBUG("returning without read");
+      VANESSA_LOGGER_DEBUG("returning without read");
     }  
     return(token_read_bytes);
   }
@@ -219,18 +219,18 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
   int fd;
 
   if((fd=io_get_rfd(io))<0){
-    PERDITION_DEBUG_UNSAFE("io_get_rfd %d", fd);
+    VANESSA_LOGGER_DEBUG_UNSAFE("io_get_rfd %d", fd);
     return(-1);
   }
 
   s = io_select_create();
   if(s == NULL) {
-	  PERDITION_DEBUG("io_select_create");
+	  VANESSA_LOGGER_DEBUG("io_select_create");
 	  return(-1);
   }
   
   if(io_select_add(s, io) == NULL) {
-	  PERDITION_DEBUG("io_select_add");
+	  VANESSA_LOGGER_DEBUG("io_select_add");
 	  io_select_destroy(s);
 	  return(-1);
   }
@@ -254,17 +254,17 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
     io_select_destroy(s);
     if(status<0){
       if(errno!=EINTR){
-        PERDITION_DEBUG_ERRNO("select");
+        VANESSA_LOGGER_DEBUG_ERRNO("select");
         return(-1);
       }
       continue;  /* Ignore EINTR */
     }
     else if(FD_ISSET(fd, &except_template)){
-      PERDITION_DEBUG("error on file descriptor");
+      VANESSA_LOGGER_DEBUG("error on file descriptor");
       return(-1);
     }
     else if(status==0){
-      PERDITION_DEBUG("idle timeout");
+      VANESSA_LOGGER_DEBUG("idle timeout");
       return(0);
     }
 
@@ -274,12 +274,12 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
       token_read_buffer, 
       MAX_LINE_LENGTH-1
     ))<0){
-      PERDITION_DEBUG_ERRNO("error reading input");
+      VANESSA_LOGGER_DEBUG_ERRNO("error reading input");
       return(-1);
     }
 
     if(bytes_read==0){
-      PERDITION_DEBUG_ERRNO("zero bytes read");
+      VANESSA_LOGGER_DEBUG_ERRNO("zero bytes read");
     }
 
     token_read_offset=0;
@@ -287,7 +287,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
     return(bytes_read);
   }
 
-  PERDITION_DEBUG("fall-through return");
+  VANESSA_LOGGER_DEBUG("fall-through return");
   return(0); /* Here to stop compiler complaining */
 }
 
@@ -350,7 +350,7 @@ token_t *token_read(
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n)){
     if((bytes_read=token_fill_buffer(io, &opt))<=0){
-      PERDITION_DEBUG("token_fill_buffer");
+      VANESSA_LOGGER_DEBUG("token_fill_buffer");
       return(NULL);
     }
 
@@ -398,12 +398,12 @@ end_while:
 
   /*Create token to return*/
   if((t=token_create())==NULL){
-    PERDITION_DEBUG("token_create");
+    VANESSA_LOGGER_DEBUG("token_create");
     return(NULL);
   }
   if((assign_buffer=(unsigned char*)malloc(len))==NULL){
     token_destroy(&t);
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   memcpy(assign_buffer, buffer, len);
@@ -472,7 +472,7 @@ char *token_to_string(const token_t *t, const unsigned char strip){
   }
 
   if((string=strn_to_str((char *)buf, n))==NULL){
-    PERDITION_DEBUG("strn_to_str");
+    VANESSA_LOGGER_DEBUG("strn_to_str");
     return(NULL);
   }
   return(string);

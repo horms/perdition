@@ -58,7 +58,7 @@ int quit(io_t *io, const protocol_t *protocol){
       protocol->one_time_tag==NULL?"":" ", 
       protocol->quit_string
     )<0){
-    PERDITION_DEBUG("str_write");
+    VANESSA_LOGGER_DEBUG("str_write");
     return(-1);
   }
  
@@ -69,7 +69,7 @@ int quit(io_t *io, const protocol_t *protocol){
   status=-1;
 
   if((t=token_create())==NULL){
-    PERDITION_DEBUG("token_create");
+    VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
   token_assign(
@@ -80,7 +80,7 @@ int quit(io_t *io, const protocol_t *protocol){
   );
 
   if((protocol->out_response(io, protocol->one_time_tag, t, &q, NULL, NULL))<0){
-    PERDITION_DEBUG("out_response");
+    VANESSA_LOGGER_DEBUG("out_response");
     goto leave;
   }
 

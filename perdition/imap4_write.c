@@ -62,7 +62,7 @@ int imap4_write(
 
   if(type==NULL){
     if(str_write(io, flag, 1, "%s", string)<0){
-      PERDITION_DEBUG("str_write");
+      VANESSA_LOGGER_DEBUG("str_write");
       return(-1);
     }
   }
@@ -72,13 +72,13 @@ int imap4_write(
     }
     else {
       if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-        PERDITION_DEBUG("token_to_string");
+        VANESSA_LOGGER_DEBUG("token_to_string");
         return(-1);
       }
       free_tag_string=1;
     }
     if(str_write(io, flag, 3, "%s %s %s", tag_string, type, string)<0){
-      PERDITION_DEBUG("str_write");
+      VANESSA_LOGGER_DEBUG("str_write");
       return(-1);
     }
   }

@@ -68,14 +68,14 @@ int pop3_in_authenticate(
   if((
      pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
   )!=PAM_SUCCESS){
-    PERDITION_DEBUG_ERRNO("pam_start");
+    VANESSA_LOGGER_DEBUG_ERRNO("pam_start");
     do_pam_end(pamh, EX_PAM_ERROR);
     return(-1);
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
     if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "Authentication failure")<0){
-      PERDITION_DEBUG("pop3_write");
+      VANESSA_LOGGER_DEBUG("pop3_write");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
     }
@@ -120,18 +120,18 @@ int pop3_in_get_pw(
 
   while(1){
     if((q=read_line(io, NULL, NULL, TOKEN_POP3, 0))==NULL){
-      PERDITION_DEBUG("pop3_in_get_pw: read_line");
+      VANESSA_LOGGER_DEBUG("pop3_in_get_pw: read_line");
       break;
     }
 
     if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-      PERDITION_DEBUG("vanessa_queue_pop");
+      VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
       t=NULL;
       break;
     }
 
     if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      PERDITION_DEBUG("token_to_string");
+      VANESSA_LOGGER_DEBUG("token_to_string");
       break;
     }
     token_unassign(t);
@@ -153,9 +153,9 @@ int pop3_in_get_pw(
       }
       else
       {
-        sleep(PERDITION_ERR_SLEEP);
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "SSL already active")<0){
-          PERDITION_DEBUG("pop3_write");
+          VANESSA_LOGGER_DEBUG("pop3_write");
           break;
         }
         goto loop;
@@ -165,72 +165,72 @@ int pop3_in_get_pw(
 
     if(strcasecmp(command_string, "USER")==0){
       if(return_pw->pw_name!=NULL){
-        sleep(PERDITION_ERR_SLEEP);
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "USER is already set")<0){
-          PERDITION_DEBUG("pop3_write 1");
+          VANESSA_LOGGER_DEBUG("pop3_write 1");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)!=1){
-	PERDITION_DEBUG_UNSAFE(
+	VANESSA_LOGGER_DEBUG_UNSAFE(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);
-        sleep(PERDITION_ERR_SLEEP);
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG,NULL,POP3_ERR,"Try USER <username>")<0){
-          PERDITION_DEBUG("pop3_write 2");
+          VANESSA_LOGGER_DEBUG("pop3_write 2");
           break;
         }
         goto loop;
       }
 
       if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-        PERDITION_DEBUG("vanessa_queue_pop");
+        VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
         t=NULL;
         break;
       }
       if((return_pw->pw_name=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-        PERDITION_DEBUG("token_to_string");
+        VANESSA_LOGGER_DEBUG("token_to_string");
         break;
       }
       token_destroy(&t);
       
       if((message=str_cat(3, "USER ", return_pw->pw_name, " set"))<0){
-        PERDITION_DEBUG("str_cat");
+        VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
       if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, message)<0){
-        PERDITION_DEBUG("pop3_write");
+        VANESSA_LOGGER_DEBUG("pop3_write");
         goto loop;
       }
     }
     else if(strcasecmp(command_string, "PASS")==0){
       str_free(command_string);
       if(return_pw->pw_name==NULL){
-        sleep(PERDITION_ERR_SLEEP);
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "USER not yet set")<0){
-          PERDITION_DEBUG("pop3_write");
+          VANESSA_LOGGER_DEBUG("pop3_write");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)>1){
-        sleep(PERDITION_ERR_SLEEP);
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
         if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "Try PASS <password>")<0){
-          PERDITION_DEBUG("pop3_write");
+          VANESSA_LOGGER_DEBUG("pop3_write");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-          PERDITION_DEBUG("vanessq_queue_pop");
+          VANESSA_LOGGER_DEBUG("vanessq_queue_pop");
           free(return_pw->pw_name);
           break;
         }
         if((return_pw->pw_passwd=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-          PERDITION_DEBUG("token_to_string");
+          VANESSA_LOGGER_DEBUG("token_to_string");
           free(return_pw->pw_name);
           break;
         }
@@ -244,14 +244,14 @@ int pop3_in_get_pw(
     }
     else if(strcasecmp(command_string, "QUIT")==0){
       if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, "QUIT")<0){
-        PERDITION_DEBUG("pop3_write");
+        VANESSA_LOGGER_DEBUG("pop3_write");
         break;
       }
       vanessa_queue_destroy(q);
       return(1);
     }
     else{
-      sleep(PERDITION_ERR_SLEEP);
+      sleep(VANESSA_LOGGER_ERR_SLEEP);
       if(pop3_write(
         io, 
 	NULL_FLAG,
@@ -263,7 +263,7 @@ int pop3_in_get_pw(
         "Command must be one of USER, PASS or QUIT"
 #endif /* WITH_SSL_SUPPORT */
       )<0){
-        PERDITION_DEBUG("pop3_write");
+        VANESSA_LOGGER_DEBUG("pop3_write");
         break;
       }
     }

@@ -67,7 +67,7 @@ char *strn_to_str(const char *string, const size_t n){
   char *dest;
 
   if((dest=(char *)malloc(n+1))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   strncpy(dest, string, n);
@@ -121,7 +121,7 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
 #else /* HAVE_PARSE_PRINT_FORMAT */
   if((fmt_args=parse_printf_format(fmt, 0, NULL)) != nargs){
 #endif /* HAVE_PARSE_PRINT_FORMAT */
-    PERDITION_DEBUG_UNSAFE(
+    VANESSA_LOGGER_DEBUG_UNSAFE(
       "nargs and fmt missmatch: %d args requested, %d args in format", nargs,
       fmt_args);
     return(-1);
@@ -129,7 +129,7 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
 
   va_start(ap, fmt);
   if((bytes=vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN-2, fmt, ap))<0){
-    PERDITION_DEBUG_ERRNO("vsnprintf");
+    VANESSA_LOGGER_DEBUG_ERRNO("vsnprintf");
     return(-1);
   }
   va_end(ap);
@@ -142,13 +142,13 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
   }
 
   if(opt.connection_logging){
-    PERDITION_LOG(LOG_DEBUG, __str_write_buf);
+    VANESSA_LOGGER_LOG(LOG_DEBUG, __str_write_buf);
   }
     
   /* Attempt one write system call and return an error if it
      doesn't write all the bytes. */
   if(io_write(io, __str_write_buf, bytes) != bytes){
-    PERDITION_DEBUG_ERRNO("io_write");
+    VANESSA_LOGGER_DEBUG_ERRNO("io_write");
     return(-1);
   }
 
@@ -181,7 +181,7 @@ char *str_cat(const int nostring, ...){
   }
 
   if((string=(char **)malloc(sizeof(char *)*nostring))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 1");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
     return(NULL);
   }
 
@@ -192,7 +192,7 @@ char *str_cat(const int nostring, ...){
   for(i=0;i<nostring;i++){
     *current_string=va_arg(ap, char*);
     if(*current_string==NULL){
-      PERDITION_DEBUG("null string");
+      VANESSA_LOGGER_DEBUG("null string");
       free(string);
       return(NULL);
     }
@@ -202,7 +202,7 @@ char *str_cat(const int nostring, ...){
   va_end(ap);
 
   if((dest=(char *)malloc(sizeof(char)*length))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc 2");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
     free(string);
     return(NULL);
   }
@@ -353,7 +353,7 @@ char *str_delete_substring(const char *haystack, const char *needle,
 
 	new_haystack = strdup(haystack);
 	if(new_haystack == NULL) {
-		PERDITION_DEBUG_ERRNO("strdup");
+		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
 		return(NULL);
 	}
 
@@ -451,7 +451,7 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 	if(found) {
 		new_haystack = strdup(haystack);
 		if(new_haystack == NULL) {
-			PERDITION_DEBUG_ERRNO("strdup");
+			VANESSA_LOGGER_DEBUG_ERRNO("strdup");
 			return(NULL);
 		}
 		return(new_haystack);
@@ -459,7 +459,7 @@ char *str_append_substring_if_missing(const char *haystack, const char *needle,
 
 	new_haystack = str_cat(3, haystack, delimiter, needle);
 	if(new_haystack == NULL) {
-		PERDITION_DEBUG("str_cat");
+		VANESSA_LOGGER_DEBUG("str_cat");
 		return(NULL);
 	}
 

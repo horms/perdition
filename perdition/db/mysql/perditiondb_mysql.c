@@ -58,12 +58,12 @@ static char *db_port_col     = PERDITIONDB_MYSQL_DEFAULT_DBPORTCOL;
  * Show an error message with mysql errors
  * pre: msg_str: message to prepent to message
  *      db: mysql database that error is for
- * post: msg_str is logged to PERDITION_DEBUG with mysql error appended
+ * post: msg_str is logged to VANESSA_LOGGER_DEBUG with mysql error appended
  * return: none
  **********************************************************************/
 
 #define perditiondb_mysql_log(msg_str, db) \
-   PERDITION_DEBUG_UNSAFE("%s: %s", msg_str, mysql_error(db))
+   VANESSA_LOGGER_DEBUG_UNSAFE("%s: %s", msg_str, mysql_error(db))
 
 
 /**********************************************************************
@@ -114,7 +114,7 @@ int dbserver_init(char *options_str){
    }
 
    if((tmp_str=strdup(options_str))==NULL) {
-     PERDITION_DEBUG_ERRNO("strdup");
+     VANESSA_LOGGER_DEBUG_ERRNO("strdup");
      a=NULL;
      return(-1);
    }
@@ -123,7 +123,7 @@ int dbserver_init(char *options_str){
      tmp_str, 
      PERDITIONDB_MYSQL_FIELD_DELIMITER
    ))==NULL){
-     PERDITION_DEBUG("vanessa_dynamic_array_split_str");
+     VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_split_str");
      a=NULL;
      free(tmp_str);
      return(-1);
@@ -238,7 +238,7 @@ int dbserver_get(
        db_user_col,
        key_str
      )<0){
-       PERDITION_DEBUG("query truncated, aborting");
+       VANESSA_LOGGER_DEBUG("query truncated, aborting");
        return(-3);
      }
    }
@@ -251,7 +251,7 @@ int dbserver_get(
        dbtable, db_user_col,
        key_str
      )<0){
-       PERDITION_DEBUG("query truncated, aborting");
+       VANESSA_LOGGER_DEBUG("query truncated, aborting");
        return(-3);
      }
    }
@@ -276,7 +276,7 @@ int dbserver_get(
    }
 
    if(row[1]==NULL || row[1][0]=='\0'){  
-     PERDITION_DEBUG("row[1] is empty");
+     VANESSA_LOGGER_DEBUG("row[1] is empty");
      mysql_free_result(res);
      mysql_close(&db);
      return(-3);
@@ -290,7 +290,7 @@ int dbserver_get(
    }
 
    if((*str_return=(char *)malloc(*len_return))==NULL){  
-     PERDITION_DEBUG_ERRNO("malloc");
+     VANESSA_LOGGER_DEBUG_ERRNO("malloc");
      mysql_free_result(res);
      mysql_close(&db);
      return(-3);

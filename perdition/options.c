@@ -129,7 +129,7 @@ options_t opt;
     opt_i_or(opt, STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
   } \
   else { \
-    PERDITION_ERR_UNSAFE("unknown state for %s: %s", id_str, optarg_copy); \
+    VANESSA_LOGGER_ERR_UNSAFE("unknown state for %s: %s", id_str, optarg_copy); \
     if(f&OPT_ERR) { \
       usage(-1); \
     } \
@@ -149,11 +149,11 @@ options_t opt;
 
 #define OPTARG_DUP \
   if(optarg==NULL){ \
-    PERDITION_DEBUG("OPTARG_DUP: optarg is NULL"); \
+    VANESSA_LOGGER_DEBUG("OPTARG_DUP: optarg is NULL"); \
     if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
   } \
   if((optarg_copy=strdup(optarg)) == NULL){ \
-    PERDITION_DEBUG_ERRNO("strdup"); \
+    VANESSA_LOGGER_DEBUG_ERRNO("strdup"); \
     if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
   }
 
@@ -186,7 +186,7 @@ options_t opt;
        new=SSL_MODE_TLS_ALL; \
     } \
     else { \
-     PERDITION_ERR_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
+     VANESSA_LOGGER_ERR_UNSAFE("unknown ssl_mode: %s", optarg_copy); \
       if(f&OPT_ERR) { \
         usage(-1); \
       } \
@@ -198,7 +198,7 @@ options_t opt;
         ( new!=SSL_MODE_NONE || \
           (opt.ssl_mode!=SSL_MODE_NONE && opt.ssl_mode!=SSL_MODE_EMPTY) ) \
      ){ \
-      PERDITION_DEBUG("invalid ssl_mode combination"); \
+      VANESSA_LOGGER_DEBUG("invalid ssl_mode combination"); \
       if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
     opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
@@ -367,7 +367,7 @@ int options(int argc, char **argv, flag_t f){
         opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
         break;
 #else
-      PERDITION_DEBUG(
+      VANESSA_LOGGER_DEBUG(
 	"-a|--authenticate is only supported when compiled against libpam");
       if(f&OPT_ERR){
         usage(-1);
@@ -424,7 +424,7 @@ int options(int argc, char **argv, flag_t f){
         opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
         break;
       case 'j':
-	PERDITION_DEBUG( "Jain, Oath\n"); 
+	VANESSA_LOGGER_DEBUG( "Jain, Oath\n"); 
         break;
       case 'L':
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
@@ -455,7 +455,7 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'P':
         if((index=protocol_index(optarg))<0){
-		PERDITION_ERR_UNSAFE("Unknown protocol: \"%s\"", optarg);
+		VANESSA_LOGGER_ERR_UNSAFE("Unknown protocol: \"%s\"", optarg);
 		usage(-1);
         }
         else {
@@ -536,7 +536,7 @@ int options(int argc, char **argv, flag_t f){
 	}
 	OPT_SSL_MODE;
 #else /* WITH_SSL_SUPPORT */
-        PERDITION_DEBUG(
+        VANESSA_LOGGER_DEBUG(
 	  "--ssl_mode is only supported when ssl support is compiled in");
         if(f&OPT_ERR){
           usage(-1);
@@ -551,7 +551,7 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_CERT_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      PERDITION_DEBUG(
+      VANESSA_LOGGER_DEBUG(
 	"--ssl_cert_file is only supported when ssl support is compiled in");
       if(f&OPT_ERR){
         usage(-1);
@@ -566,7 +566,7 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_SSL_SUPPORT
         opt_p(opt.ssl_key_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
 #else /* WITH_SSL_SUPPORT */
-      PERDITION_DEBUG(
+      VANESSA_LOGGER_DEBUG(
 	"--ssl_key_file is only supported when ssl support is compiled in");
       if(f&OPT_ERR){
         usage(-1);
@@ -578,13 +578,13 @@ int options(int argc, char **argv, flag_t f){
 #endif /* WITH_SSL_SUPPORT */
         break; 
       default:
-        PERDITION_DEBUG("Unknown Option");
+        VANESSA_LOGGER_DEBUG("Unknown Option");
         exit;
     }
   }
 
   if (c < -1) {
-    PERDITION_DEBUG_UNSAFE(
+    VANESSA_LOGGER_DEBUG_UNSAFE(
       "options: %s: %s",
       poptBadOption(context, POPT_BADOPTION_NOALIAS),
       poptStrerror(c)
@@ -682,7 +682,7 @@ int log_options(void){
   extern vanessa_logger_t *perdition_vl;
 
   if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL){
-    PERDITION_DEBUG("protocol_list");
+    VANESSA_LOGGER_DEBUG("protocol_list");
     return(-1);
   }
 
@@ -691,7 +691,7 @@ int log_options(void){
       opt.outgoing_server,
       OPT_SERVER_DELIMITER
     ))==NULL){
-      PERDITION_DEBUG("vanessa_dynamic_array_display");
+      VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_display");
       free(protocol);
       return(-1);
     }
@@ -702,7 +702,7 @@ int log_options(void){
       opt.query_key,
       OPT_SERVER_DELIMITER
     ))==NULL){
-      PERDITION_DEBUG("vanessa_dynamic_array_display");
+      VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_display");
       free(outgoing_server);
       free(protocol);
       return(-1);
@@ -863,7 +863,7 @@ void usage(int exit_status){
     ", ", 
     PROTOCOL_ALL
   ))==NULL){
-    PERDITION_DEBUG("protocol_list 1");
+    VANESSA_LOGGER_DEBUG("protocol_list 1");
     available_protocols="*error*";
   }
 
@@ -872,7 +872,7 @@ void usage(int exit_status){
     NULL,
     PROTOCOL_DEFAULT
   ))==NULL){
-    PERDITION_DEBUG("protocol_list 2");
+    VANESSA_LOGGER_DEBUG("protocol_list 2");
     default_protocol_str="*error*";
   }
 

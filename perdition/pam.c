@@ -57,7 +57,7 @@ int perdition_conv(
   if((
     *response=(struct pam_response *)malloc(sizeof(struct pam_response))
   )==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     return(PAM_CONV_ERR);
   }
 
@@ -67,7 +67,7 @@ int perdition_conv(
     pass=NULL;
   }
   else if((pass=strdup((char *)appdata_ptr))==NULL){
-    PERDITION_DEBUG_ERRNO("strdup");
+    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
     return(PAM_CONV_ERR);
   }
 
@@ -83,7 +83,7 @@ int do_pam_authentication(
   conv_struct.appdata_ptr=(void *)pass;
   pam_retval = pam_set_item(pamh, PAM_CONV, (void *) &conv_struct);
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_DEBUG_UNSAFE(
+    VANESSA_LOGGER_DEBUG_UNSAFE(
       "pam_set_item: PAM_CONV: %s", 
       pam_strerror(pamh, pam_retval)
     );
@@ -92,20 +92,20 @@ int do_pam_authentication(
 
   pam_retval = pam_set_item(pamh, PAM_USER, user);
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_DEBUG_UNSAFE("pam_set_item: %s", pam_strerror(pamh, pam_retval));
+    VANESSA_LOGGER_DEBUG_UNSAFE("pam_set_item: %s", pam_strerror(pamh, pam_retval));
     return(-1);
   }
 
   pam_retval = pam_authenticate(pamh, 0);  /* is user really user? */
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_DEBUG_UNSAFE("pam_authenticate: %s", 
+    VANESSA_LOGGER_DEBUG_UNSAFE("pam_authenticate: %s", 
       pam_strerror(pamh, pam_retval));
     return(-1);
   }
 
   pam_retval = pam_acct_mgmt(pamh, 0);     /* permitted access? */
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_DEBUG_UNSAFE(
+    VANESSA_LOGGER_DEBUG_UNSAFE(
       "do_pam_authentication: pam_acct_mgmt: %s", 
       pam_strerror(pamh, pam_retval)
     );
@@ -118,7 +118,7 @@ int do_pam_authentication(
 int do_pam_end(pam_handle_t *pamh, int default_return){
   pam_retval=pam_end(pamh,pam_retval);  /* close Linux-PAM */
   if (pam_retval != PAM_SUCCESS) {   /* close Linux-PAM */
-    PERDITION_DEBUG_UNSAFE("do_pam_end: pam_end: %s", 
+    VANESSA_LOGGER_DEBUG_UNSAFE("do_pam_end: pam_end: %s", 
       pam_strerror(pamh, pam_retval));
     pamh = NULL;
     return(EX_PAM_ERROR);

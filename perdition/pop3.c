@@ -141,7 +141,7 @@ char *pop3_capability(char *capability, char **mangled_capability,
 		  POP3_DEFAULT_CAPABILITY, POP3_TLS_CAPABILITY,
 		  POP3_CAPABILITY_DELIMITER);
   if(capability == NULL) {
-	  PERDITION_DEBUG("protocol_capability");
+	  VANESSA_LOGGER_DEBUG("protocol_capability");
 	  return(NULL);
   }
 
@@ -175,7 +175,7 @@ char *pop3_capability(char *capability, char **mangled_capability,
   n_len += 7; /* Space for trailing "S: .\r\n\0" */
   *mangled_capability = (char *)malloc(n_len + 1);
   if(*mangled_capability == NULL) {
-    PERDITION_DEBUG_ERRNO("malloc");
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     free(capability);
     return(NULL);
   }

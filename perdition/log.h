@@ -44,10 +44,6 @@
 
 #define LOG_IDENT "perdition"
 
-extern vanessa_logger_t *perdition_vl;
-extern int errno;
-
-
 /*
  * Hooray for format string problems!
  *
@@ -59,91 +55,63 @@ extern int errno;
  * should be safe to use with user derived input.
  */
 
-#define PERDITION_LOG_UNSAFE(priority, fmt, args...) \
-  vanessa_logger_log(perdition_vl, priority, fmt, ## args)
-
-#define PERDITION_LOG(priority, str) \
-  vanessa_logger_log(perdition_vl, priority, "%s", str)
-
-#define PERDITION_INFO_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_INFO, fmt, ## args)
-
-#define PERDITION_INFO(str) \
-  vanessa_logger_log(perdition_vl, LOG_INFO, "%s", str)
-
-#define PERDITION_ERR_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_ERR, fmt, ## args)
-
-#define PERDITION_ERR(str) \
-  vanessa_logger_log(perdition_vl, LOG_ERR, "%s", str)
-
-#define PERDITION_DEBUG_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": " fmt, ## args)
-
-#define PERDITION_DEBUG(str) \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str)
-
-#define PERDITION_DEBUG_ERRNO(s) \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s: %s: %s", \
-    __FUNCTION__, s, strerror(errno))
-
 #ifdef WITH_SSL_SUPPORT
-#define PERDITION_DEBUG_SSL_ERROR_STRING \
+#define VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
   { \
     unsigned long e; \
     SSL_load_error_strings(); \
     while((e=ERR_get_error())) { \
-      vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s", \
+      vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, "%s", \
         ERR_error_string(e, NULL)); \
     } \
     ERR_free_strings(); \
   }
 
-#define PERDITION_DEBUG_SSL_IO_ERR(str, ssl, ret) \
+#define VANESSA_LOGGER_DEBUG_SSL_IO_ERR(str, ssl, ret) \
 { \
   int error; \
   error = SSL_get_error(ssl, ret); \
   if(error == SSL_ERROR_SYSCALL && ERR_peek_error() == 0) { \
     if(ret == 0) { \
-      PERDITION_DEBUG(str ": An EOF that violates the protocol " \
+      VANESSA_LOGGER_DEBUG(str ": An EOF that violates the protocol " \
                       "has occured"); \
     } \
     else if(ret == -1) { \
-      PERDITION_DEBUG_ERRNO(str ": I/O Error"); \
+      VANESSA_LOGGER_DEBUG_ERRNO(str ": I/O Error"); \
     } \
     else { \
-      PERDITION_DEBUG(str ": Unknown Syscall Error"); \
+      VANESSA_LOGGER_DEBUG(str ": Unknown Syscall Error"); \
     } \
   } \
   else if(error == SSL_ERROR_ZERO_RETURN) { \
-    PERDITION_DEBUG(str ": Connection has closed"); \
+    VANESSA_LOGGER_DEBUG(str ": Connection has closed"); \
   } \
   else if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
-    PERDITION_DEBUG(str ": Warning: wants read or write"); \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants read or write"); \
   } \
   /* SSL_ERROR_WANT_ACCEPT does not appear to be defined for some reason \
   else if(error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) { \
-    PERDITION_DEBUG(str ": Warning: wants connect or accept"); \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect or accept"); \
   } \
   */ \
   else if(error == SSL_ERROR_WANT_CONNECT) { \
-    PERDITION_DEBUG(str ": Warning: wants connect"); \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants connect"); \
   } \
   else if(error == SSL_ERROR_WANT_X509_LOOKUP) { \
-    PERDITION_DEBUG(str ": Warning: wants x509 lookup"); \
+    VANESSA_LOGGER_DEBUG(str ": Warning: wants x509 lookup"); \
   } \
   else { \
-    PERDITION_DEBUG_SSL_ERR(str); \
+    VANESSA_LOGGER_DEBUG_SSL_ERR(str); \
   } \
 }
 
-#define PERDITION_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
-  PERDITION_DEBUG_SSL_ERROR_STRING \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, fmt, ## args)
+#define VANESSA_LOGGER_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
+  VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
+  vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, fmt, ## args)
 
-#define PERDITION_DEBUG_SSL_ERR(str) \
-  PERDITION_DEBUG_SSL_ERROR_STRING \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str)
+#define VANESSA_LOGGER_DEBUG_SSL_ERR(str) \
+  VANESSA_LOGGER_DEBUG_SSL_ERROR_STRING \
+  vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, __FUNCTION__ ": %s", str)
 #endif /* WITH_SSL_SUPPORT */
 
 #endif
