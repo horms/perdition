@@ -2,6 +2,12 @@ perdition (0.1.10-beta3-1) unstable; urgency=low
 
   * CVS release
 
+  * The following are here as these bugs do not seem to have been
+     closed for some reason.
+
+  *  Minor spelling errors.
+     (closes: Bug#125226)
+
  -- Simon Horman <horms@vergenet.net>  Tue, 30 Apr 2002 16:06:23 +1000
 
 perdition (0.1.9-5) unstable; urgency=low
@@ -9,13 +15,6 @@ perdition (0.1.9-5) unstable; urgency=low
   *  Really compile against libpgsql2 instead of libpgsql2.1.
      (closes: Bug#141710)
 
-  * The following are here as these bugs do not seem to have been
-     closed for some reason.
-
-  *  Minor spelling errors.
-     (closes: Bug#125229)
-     (closes: Bug#125228)
-     (closes: Bug#125227)
   *  Compile against openldap2.
      (closes: Bug#129843)
 
