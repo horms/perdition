@@ -3,7 +3,7 @@
 # test_tymm                                             September 2000
 # Horms                                           <horms@verge.net.au>
 #
-# Parallel test of tymm loging into a perdition server running
+# Parallel test of tymm logging into a perdition server running
 # on port 11000 on the local host
 #
 # perdition

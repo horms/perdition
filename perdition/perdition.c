@@ -389,7 +389,7 @@ int main (int argc, char **argv, char **envp){
   if((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug){
     if(log_options()){
       VANESSA_LOGGER_DEBUG("log_options");
-      VANESSA_LOGGER_ERR("Fatal error loging options. Exiting.");
+      VANESSA_LOGGER_ERR("Fatal error logging options. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
   }

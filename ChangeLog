@@ -13,7 +13,7 @@ XXX
       to be edited to enable perdition)
    - Updated init information in man page
    - Fixed configure.in so --disable-ssl should actually work
-   - Tidied up naming of loging macros
+   - Tidied up naming of logging macros
    - Fixed output of makebdb -u
    - makebdb recreated database rather than adding to it
    - bdb module no longer appends a spurious "\0" to keys
@@ -140,7 +140,7 @@ XXX
    - Added TLS support. Thanks to Wolfgang Breyha
    - Fixed error in help and invocation in .spec file of
      the with-ldap-schema-directory configure option
-   - Use loging convenicence macros provided by libvanessa_logger
+   - Use logging convenicence macros provided by libvanessa_logger
      rather than providing our own.
    - Fixed bug in username mangling code, whereby the original username
      could be freed and subsequently become corupted. Effects
@@ -272,7 +272,7 @@ XXX
 (Horms)
 
   * 0.1.10beta2
-  - Better loging of problems when connecting to real-servers
+  - Better logging of problems when connecting to real-servers
   - Debian init scripts and packaging updated.
   - Added LDAP schema, perdition.schema
     This uses the Private Enteprise Number 12856, which belongs
@@ -379,7 +379,7 @@ XXX
   - Added -U|--username_from_database option to control the use of
     servernames of the form user<delimiter>domain.
   - Added SSL Support
-  - Added loging of successful Authentication
+  - Added logging of successful Authentication
   - Added logging of reread or map library
 
 ----------------------------------------------------------------------
@@ -399,7 +399,7 @@ XXX
      Geoff Mitchell
    - Running perdition.pop3 and perdition.imap4 now automatically
      runs perdition in POP3 or IMAP4 mode respectively
-   - Added connection loging to interaction between perdition
+   - Added connection logging to interaction between perdition
      and clients may be logged for debugging purposes
    - UID in LDAP URL now specified using %s instead of %25s
      (Chris Stratford)

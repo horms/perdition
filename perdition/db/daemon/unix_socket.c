@@ -76,10 +76,11 @@ perdition_un_send_recv(perdition_un_t *sock, perdition_un_t *peer,
 	fd_set readfd;
 	struct timeval to;
 	int attempt;
-	int pause = timeout;
+	int pause;
 
 	attempt = 0;
 resend:
+	pause = timeout;
 	for(; attempt < retry ; attempt++) {
 		socklen = sizeof(struct sockaddr_un);
 		memset(&unaddr, 0, socklen);
@@ -116,6 +117,7 @@ resend:
 		return(-1);
 	}
 
+	pause = timeout;
 	for(;;) {
 		FD_ZERO(&readfd);
 		FD_SET(sock->fd, &readfd);

@@ -542,7 +542,7 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag){
 
 int imap4_in_logout_cmd(io_t *io, const token_t *tag){
   if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
-			  "IMAP4 server loging out, mate")<0){
+			  "IMAP4 server logging out, mate")<0){
     VANESSA_LOGGER_DEBUG("imap4_write untagged");
     return(-1);
   }
