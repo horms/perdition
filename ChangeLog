@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
-(XXX)
-   * XXX
+26th March 2003
+(Horms)
+   * 1.11beta7
    - Cleaned up imap4_write to not used returned local variables.
    - Show version when logging options
    - format string corretly handles username and domain when
