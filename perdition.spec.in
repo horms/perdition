@@ -194,6 +194,8 @@ true
 %{prefix}/lib/libperditiondb_gdbm.a
 %{prefix}/lib/libperditiondb_gdbm.la
 %{prefix}/lib/libperditiondb_gdbm.so
+%{prefix}/lib/libperditiondb_gdbm.so.0
+%{prefix}/lib/libperditiondb_gdbm.so.0.0.0
 %{prefix}/bin/makegdbm
 /etc/perdition/Makefile
 /etc/perdition/Makefile.popmap
@@ -205,6 +207,8 @@ true
 %{prefix}/lib/libperditiondb_ldap.a
 %{prefix}/lib/libperditiondb_ldap.la
 %{prefix}/lib/libperditiondb_ldap.so
+%{prefix}/lib/libperditiondb_ldap.so.0
+%{prefix}/lib/libperditiondb_ldap.so.0.0.0
 %{prefix}/bin/perditiondb_ldap_makedb
 %{prefix}/man/man8/perditiondb_ldap_makedb.*
 
@@ -213,6 +217,8 @@ true
 %{prefix}/lib/libperditiondb_mysql.a
 %{prefix}/lib/libperditiondb_mysql.la
 %{prefix}/lib/libperditiondb_mysql.so
+%{prefix}/lib/libperditiondb_mysql.so.0
+%{prefix}/lib/libperditiondb_mysql.so.0.0.0
 %{prefix}/bin/perditiondb_mysql_makedb
 %{prefix}/man/man8/perditiondb_mysql_makedb.*
 
@@ -221,12 +227,16 @@ true
 %{prefix}/lib/libperditiondb_nis.a
 %{prefix}/lib/libperditiondb_nis.la
 %{prefix}/lib/libperditiondb_nis.so
+%{prefix}/lib/libperditiondb_nis.so.0
+%{prefix}/lib/libperditiondb_nis.so.0.0.0
 
 %files posix_regex
 %defattr(-,root,root)
 %{prefix}/lib/libperditiondb_posix_regex.a
 %{prefix}/lib/libperditiondb_posix_regex.la
 %{prefix}/lib/libperditiondb_posix_regex.so
+%{prefix}/lib/libperditiondb_posix_regex.so.0
+%{prefix}/lib/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
 %files postgresql
@@ -234,6 +244,8 @@ true
 %{prefix}/lib/libperditiondb_postgresql.a
 %{prefix}/lib/libperditiondb_postgresql.la
 %{prefix}/lib/libperditiondb_postgresql.so
+%{prefix}/lib/libperditiondb_postgresql.so.0
+%{prefix}/lib/libperditiondb_postgresql.so.0.0.0
 %{prefix}/bin/perditiondb_postgresql_makedb
 %{prefix}/man/man8/perditiondb_postgresql_makedb.*
 
