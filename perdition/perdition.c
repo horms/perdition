@@ -326,8 +326,6 @@ int main (int argc, char **argv, char **envp){
    * Re-create logger now process is detached (unless in inetd mode)
    * and configuration file has been read.
    */
-  vanessa_logger_unset();
-  vanessa_logger_closelog(vl);
   if(fh != NULL) {
     vl=vanessa_logger_openlog_filehandle(fh, LOG_IDENT,
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
@@ -343,14 +341,14 @@ int main (int argc, char **argv, char **envp){
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), LOG_CONS);
   }
   if(vl == NULL) {
-    fprintf(stderr, "main: vanessa_logger_openlog\n"
-                    "Fatal error opening logger. Exiting.\n");
-    perdition_exit_cleanly(-1);
+	  VANESSA_LOGGER_DEBUG("vanessa_logger_openlog");
+	  VANESSA_LOGGER_ERR("Fatal error opening logger. Exiting.");
+	  perdition_exit_cleanly(-1);
   }
+  vanessa_logger_close(vanessa_logger_get());
   vanessa_logger_set(vl);
  
   /* Create a PID file */
-
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
