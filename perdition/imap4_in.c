@@ -271,7 +271,7 @@ int imap4_in_authenticate(
 #define __IMAP4_IN_CHECK_NO_ARG(_cmd)                                       \
 	if(vanessa_queue_length(q)) {                                       \
 		sleep(VANESSA_LOGGER_ERR_SLEEP);                            \
-		if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO,                \
+		if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,               \
 					0, "Argument given to " _cmd        \
 					" but there shouldn't be one")<0){  \
 			VANESSA_LOGGER_DEBUG("imap4_write syntax error");   \
@@ -363,7 +363,16 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
     else if(strncasecmp(token_buf(t), IMAP4_CMD_AUTHENTICATE,
 			    token_len(t))==0){
-      __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_AUTHENTICATE);
+      if(vanessa_queue_length(q) != 1) {
+        sleep(VANESSA_LOGGER_ERR_SLEEP);
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,
+			       	0, "Try " IMAP4_CMD_AUTHENTICATE
+				" <mechanism>")<0){
+          VANESSA_LOGGER_DEBUG("imap4_write authenticate");
+          break;
+        }
+        goto loop;
+      }
       if(imap4_in_authenticate_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_noop 2");
         break;
@@ -579,7 +588,7 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag){
 int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
 	if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0, 
 				IMAP4_CMD_AUTHENTICATE 
-				"mechchanism not supported")<0){
+				" mechchanism not supported")<0){
 		VANESSA_LOGGER_DEBUG("imap4_write");
 		return(-1);
 	}
