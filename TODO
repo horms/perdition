@@ -13,6 +13,7 @@ o  Better logging of host lookup failures when no-lookup is specified
 o  Better logging of SSL Junk
 o  Handle unseeded entries in LDAP and possibly other database modules
 o  Handle {} notation
+o  Do something clever when tls is requested as it isn't supported
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
