@@ -885,6 +885,12 @@ int main (int argc, char **argv, char **envp){
 static void perdition_reread_handler(int sig){
   extern options_t opt;
 
+  if(vanessa_logger_reopen(vanessa_logger_get()) < 0) {
+    fprintf(stderr, "Fatal error reopening logger. Exiting.");
+    vanessa_socket_daemon_exit_cleanly(-1);
+  }
+  VANESSA_LOGGER_INFO("Reopened logger");
+
   VANESSA_LOGGER_INFO_UNSAFE("Reloading map library \"%s\" with options \"%s\"",
     opt.map_library, opt.map_library_opt);
   getserver_closelib(handle);
