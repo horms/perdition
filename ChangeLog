@@ -18,6 +18,7 @@ XXX
     if it is supplied. Roland Rosenfel
   - Added missing documentation. paricularly for pid_file
     and ssl_ca_* options
+  - Changed ssl_chain_file option to ssl_ca_chain_file
 
 ----------------------------------------------------------------------
 

@@ -122,8 +122,10 @@ __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
  * Create an SSL context
  * pre: ca_file: certificate authorities to use. May be NULL
  *               See SSL_CTX_load_verify_locations(3)
+ *               Used before ca_path.
  *      ca_path: certificate authorities to use. May be NULL
  *               See SSL_CTX_load_verify_locations(3)
+ *               Used after ca_path.
  *      cert: certificate to use. May be NULL if privkey is NULL. 
  *            Should the path to a PEM file if non-NULL and the
  *            first item in the PEM file will be used as the 
@@ -132,7 +134,7 @@ __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
  *               Should the path to a PEM file if non-NULL and the
  *               first item in the PEM file will be used as the 
  *               private key.
- *      chain_file : Sets the optional all-in-one file where you 
+ *      ca_chain_file: Sets the optional all-in-one file where you 
  *               can assemble the certificates of Certification Authorities 
  *               (CA) which form the certificate chain of the server 
  *               certificate. This starts with the issuing CA certificate 
@@ -140,6 +142,7 @@ __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
  *               the root CA certificate. Such a file is simply the
  *               concatenation of the various PEM-encoded CA Certificate 
  *               files, usually in certificate chain order.  
+ *               Overrides ca_pat and ca_file
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  * post: If SSL is initiated and a context is created
@@ -402,7 +405,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
 		const char *cert, const char *privkey, 
-		const char *chain_file, const char *ciphers)
+		const char *ca_chain_file, const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx;
@@ -504,13 +507,14 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	/* NB: We do not need to call SSL_CTX_check_private_key()
 	 * because SSL_CTX_set_verify_depth has been called */
 
-/* try to load the certificate chain file if it is not null*/
-	if (chain_file) {
-		if (!SSL_CTX_load_verify_locations(ssl_ctx, chain_file, NULL)) {
+	/* try to load the certificate chain file if it is not null*/
+	if (ca_chain_file) {
+		if (!SSL_CTX_load_verify_locations(ssl_ctx, ca_chain_file, 
+					NULL)) {
 			PERDITION_DEBUG_SSL_ERR_UNSAFE(
 					"SSL_CTX_load_verify_locations: "
 					"could not load CA file %s", 
-					chain_file);
+					ca_chain_file);
 			SSL_CTX_free(ssl_ctx);
 			return NULL;
 		}

@@ -53,7 +53,7 @@
  *               Should the path to a PEM file if non-NULL and the
  *               first item in the PEM file will be used as the 
  *               private key.
- *      chain_file : Sets the optional all-in-one file where you 
+ *      ca_chain_file: Sets the optional all-in-one file where you 
  *               can assemble the certificates of Certification Authorities 
  *               (CA) which form the certificate chain of the server 
  *               certificate. This starts with the issuing CA certificate 
@@ -77,7 +77,7 @@
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		const char *cert, const char *privkey, 
-		const char * chain_file, const char *ciphers);
+		const char *ca_chain_file, const char *ciphers);
 
 
 /**********************************************************************
