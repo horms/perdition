@@ -69,10 +69,7 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
  * Parse options string.
  * pre: options_str: Options string. Sting is the LDAP url to use
  *      see the default, PERDITIONDB_LDAP_DEFAULT_URL, for an example
- * post: Options string is parsed if not null into 
- *       static vanessa_dynamic_array_t a and 
- *       static char *dbhost, *dbname, *dbtable, *dbuser, *dbpwd are
- *       set to pointers insiside a or defaults as neccesary.
+ * post: Options string is parsed if not null into ludp
  * return:  0 on sucess
  *         -1 on db access error
  *            This inclides file, connection and other data access
