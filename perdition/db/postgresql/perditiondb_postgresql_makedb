@@ -34,6 +34,7 @@
 DEFAULT_DBNAME=dbPerdition
 DEFAULT_DBUSER=perdition
 DEFAULT_DBTABLE=tblPerdition
+DEFAULT_DBSERVER=localhost
 DEFAULT_DBUID=$(id -u)
 
 quit () {
@@ -113,12 +114,37 @@ while [ 1 ]; do
   break
 done
 
+if [ -z "$(type -path destroyuser)" ]; then
+  oldcmds="n"
+else
+  oldcmds="y"
+fi
+
+if [ "$oldcmds" != "y" ]; then
+  echo
+  echo "PostgreSQL should already be running on a host. The"
+  echo "default host is $DEFAULT_DBSERVER. To use this host"
+  echo "hit return. Otherwise enter a host to connect to."
+  echo -n "Enter host name [$DEFAULT_DBSERVER]: "
+  read dbserver
+  if [ -z "$dbserver" ]; then
+    dbserver="$DEFAULT_DBSERVER"
+  fi
+fi
+
+
 echo
-echo "Database name:            $dbname"
-echo "Database user id:         $dbuid"
-echo "Database table:           $dbtable"
-echo "Database user:            $dbuser"
-echo -n "Procede (May destroy existing data in database) [y/n]? " >&2
+echo   "Database name:            $dbname"
+echo   "Database user id:         $dbuid"
+echo   "Database table:           $dbtable"
+echo   "Database user:            $dbuser"
+if [ "$oldcmds" != "n" ]; then
+  echo "Postgress Version:        < 7.0"
+else
+  echo "Database server:          $dbserver"
+  echo "Postgress Version:        >= 7.0"
+fi
+echo -n "Proceed (May destroy existing data in database) [y/n]? " >&2
 read answer
 if [ "$answer" != "y" -a "$answer" != "Y" ]; then
   exit 0
@@ -126,33 +152,65 @@ fi
 
 
 echo
-echo "Creating user $dbuser:"
-echo "Enter Password for user postgres" >& 2
-su - postgres -c "\
-  createuser -i $dbuid -U -d $dbuser > /dev/null ; \
-  psql -q template1 -c \" \
-  	update pg_shadow set passwd='$dbpw',\
-	valuntil='Fri Jan 30 22:00:00 2037 PST' \
-	where usename='$dbuser';\""
-if [ $? != 0 ]; then
-  echo "Error creating user $dbuser. Bailing"
-  exit 1
+echo "The system user postgres password should already be set."
+echo "It is needed to add a PosgreSQL perdition user that will"
+echo "own the perdition database. Please enter the postgres user's"
+echo "password at the prompt"
+
+
+if [ "$oldcmds" != "n" ]; then
+  echo
+  su - postgres -c "\
+    echo y | createuser -i $dbuid -U -d $dbuser > /dev/null ; \
+    psql -q template1 -c \" \
+  	  update pg_shadow set passwd='$dbpw',\
+	  valuntil='Fri Jan 30 22:00:00 2037 PST' \
+	  where usename='$dbuser';\""
+  if [ $? != 0 ]; then
+    echo "Error creating user $dbuser. Bailing"
+    exit 1
+  fi
+else
+  echo -n "Password: " >&2
+  stty -echo
+  read rootpw
+  stty echo
+  echo
+  echo
+  echo -n "Dropping user $dbuser... "
+  echo $rootpw | dropuser --username="postgres" --password --quiet "$dbuser" \
+    --host="$dbserver" >& /dev/null
+  echo "Done"
+  
+  echo -n "Adding user $dbuser... "
+  echo -e "$dbpw\n$dbpw\n$dbpw\n$rootpw" | \
+    createuser --no-createdb --no-adduser --sysid="$dbuid" --pwprompt \
+      --username=postgres --password "$dbuser" --host="$dbserver" > /dev/null
+  if [ $? != 0 ]; then
+    echo "Error creating user $dbuser. Bailing"
+    exit 1
+  fi
+  echo "Done"
 fi
 
-
 echo -n "Droping database $dbname... "
-destroydb -u $dbname &> /dev/null << _EOF_
-$dbuser
-$dbpw
-_EOF_
+if [ "$oldcmds" != "n" ]; then
+  echo -e "$dbuser\n$dbpw" | destroydb -u $dbname &> /dev/null
+else
+  echo -e "$rootpw" | \
+    dropdb --username="postgres" --quiet --password "$dbname" \
+      --host="$dbserver" >& /dev/null
+fi
 echo " Done"
 
 
 echo -n "Creating database $dbname..."
-createdb -u $dbname > /dev/null << _EOF_
-$dbuser
-$dbpw
-_EOF_
+if [ "$oldcmds" != "n" ]; then
+  echo -e "$dbuser\n$dbpw" | createdb -u $dbname > /dev/null
+else
+  echo $dbpw | createdb --host="$dbserver" --username=postgres $dbname \
+    > /dev/null
+fi
 if [ $? != 0 ]; then
   echo
   echo "Error, Bailing" >&2
@@ -161,17 +219,26 @@ fi
 echo " Done"
 
 
-echo -n "Droppint table $dbtable in database $dbname..."
-psql -q -u  -d $dbname >& /dev/null  << _EOF_
+echo -n "Dropping table $dbtable in database $dbname..."
+if [ "$oldcmds" != "n" ]; then
+  psql -q -u  -d $dbname >& /dev/null  << _EOF_
 $dbuser
 $dbpw
 drop table $dbtable;
 _EOF_
+else 
+  psql -h "$dbserver" -q -u  -d $dbname >& /dev/null  << _EOF_
+$dbuser
+$dbpw
+drop table $dbtable;
+_EOF_
+fi
 echo " Done"
 
 
 echo -n "Creating table $dbtable in database $dbname..."
-psql -q -u  -d $dbname >& /dev/null  << _EOF_
+if [ "$oldcmds" != "n" ]; then
+  psql -q -u  -d $dbname > /dev/null << _EOF_
 $dbuser
 $dbpw
 create table $dbtable (
@@ -180,6 +247,17 @@ create table $dbtable (
   "port" char(8) default null
 );
 _EOF_
+else
+  psql -h "$dbserver" -q -u  -d $dbname > /dev/null << _EOF_
+$dbuser
+$dbpw
+create table $dbtable (
+  "user" char(16) not null primary key, 
+  "servername" char(255) not null, 
+  "port" char(8) default null
+);
+_EOF_
+fi
 if [ $? != 0 ]; then
   echo "Error creating $dbtable in $dbname. Bailing"
   exit 1

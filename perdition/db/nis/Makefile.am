@@ -3,7 +3,7 @@
 # Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retreival proxy server, NIS support
+# Mail retrieval proxy server, NIS support
 # Copyright (C) 2000 Nathan Neulinge and Horms
 # 
 # This program is free software; you can redistribute it and/or

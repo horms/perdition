@@ -3,7 +3,7 @@
 # ChrisS                                              chriss@uk.uu.net
 #
 # perdition
-# Mail retreival proxy server, LDAP support
+# Mail retrieval proxy server, LDAP support
 # Copyright (C) 1999  ChrisS and Horms
 # 
 # This program is free software; you can redistribute it and/or

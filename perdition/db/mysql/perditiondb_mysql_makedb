@@ -47,7 +47,7 @@ trap quit STOP
 
 
 echo
-echo "The MySQL should already be running on a host. The"
+echo "MySQL should already be running on a host. The"
 echo "default host is $DEFAULT_DBSERVER. To use this host"
 echo "hit return. Otherwise enter a host to connect to."
 echo -n "Enter host name [$DEFAULT_DBSERVER]: "
@@ -150,7 +150,7 @@ echo "Database name:            $dbname"
 echo "Database table:           $dbtable"
 echo "Database user:            $dbuser"
 echo "Connections allowed from: $dbhost"
-echo -n "Procede (May destroy existing data in database) [y/n]? " >&2
+echo -n "Proceed (May destroy existing data in database) [y/n]? " >&2
 read answer
 if [ "$answer" != "y" -a "$answer" != "Y" ]; then
   exit 0
