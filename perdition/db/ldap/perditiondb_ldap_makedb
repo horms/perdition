@@ -34,13 +34,33 @@ if [ -z "$(type -path ldapadd)" ]; then
   exit 1
 fi
 
+cat << __EOF__
+
+This script expects perdition.schema to be installed and included
+in your slapd.conf file. Typically this is done by adding the
+following line to /etc/ldap/slapd.conf after any other include
+lines and before any database definitions
+
+include         /etc/ldap/schema/perdition.schema
+
+__EOF__
+
+echo -n "Has perdition.schema been added to /etc/ldap/slapd.conf? [Y/n]: "
+read flim
+if ! [ -z "$flim" -o "$flim" = "y" -o "$flim" = "Y" ]; then
+  echo Bailing...
+  exit 0
+fi
 
 
-echo
-echo "openldap requires a binddn to bind to the LDAP directory"
-echo "The default is \"$DEFAULT_DC\". To use this"
-echo "hit return, otherwise enter a host to connect to, it should be a"
-echo "string-represented DN as defined in RFC 1779."
+cat << __EOF__
+
+openldap requires a binddn to bind to the LDAP directory
+The default is \"$DEFAULT_DC\". To use this
+hit return, otherwise enter a host to connect to, it should be a
+string-represented DN as defined in RFC 1779.
+__EOF__
+
 echo -n "Enter binddn [$DEFAULT_DC]: " >&2
 read dc
 if [ -z "$dc" ]; then
@@ -48,11 +68,14 @@ if [ -z "$dc" ]; then
 fi
 
 
-echo
-echo "You will need to enter the sevrer for the"
-echo "binddn: \"$dc\"."
-echo "The default mau be \"secret\", you should change"
-echo "your ldap configuration if this is the case."
+cat << __EOF__
+
+You will need to enter the sevrer for the
+binddn: \"$dc\".
+The default mau be \"secret\", you should change
+your ldap configuration if this is the case.
+__EOF__
+
 echo -n "Enter the password for \"$dc\": " >&2
 stty -echo
 read rootpw
@@ -89,4 +112,20 @@ if [ $? != 0 ]; then
   echo "Error initialising LDAP popmap. Bailing" >&2
   exit 1
 fi
-echo Done
+cat << __EOF__
+Done
+
+You may add more entries of the form: 
+
+dn: uid=horms, ou=mailbox,  dc=my-domain, dc=com
+objectClass: top
+objectClass: uidObject
+objectClass: perditionPopmap
+uid: horms
+username: horms
+mailhost: localhost
+port: 110
+
+__EOF__
+
+
