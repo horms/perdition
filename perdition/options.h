@@ -97,6 +97,7 @@
   PERDITION_SYSCONFDIR "/perdition.conf"
 #define DEFAULT_CONNECTION_LIMIT             0
 #define DEFAULT_CONNECTION_LOGGING           0
+#define DEFAULT_CONNECT_RELOG                300
 #define DEFAULT_DEBUG                        0
 #define DEFAULT_DOMAIN_DELIMITER             "@"
 #ifdef WITH_GROUP
@@ -149,6 +150,7 @@ typedef struct {
   char            *config_file;
   int             connection_limit;
   int             connection_logging;
+  int             connect_relog;
   int             debug;
   char            *domain_delimiter;
   int             domain_delimiter_length;
@@ -193,30 +195,31 @@ typedef struct {
 #define MASK_CAPABILITY                  (flag_t) 0x00000008
 #define MASK_CONNECTION_LIMIT            (flag_t) 0x00000010
 #define MASK_CONNECTION_LOGGING          (flag_t) 0x00000020
-#define MASK_DEBUG                       (flag_t) 0x00000040
-#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000080
-#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000100
-#define MASK_CONFIG_FILE                 (flag_t) 0x00000200
-#define MASK_GROUP                       (flag_t) 0x00000400
-#define MASK_INETD_MODE                  (flag_t) 0x00000800
-#define MASK_LOG_FACILITY                (flag_t) 0x00001000
-#define MASK_LISTEN_PORT                 (flag_t) 0x00002000
-#define MASK_LOWER_CASE                  (flag_t) 0x00004000
-#define MASK_MAP_LIB                     (flag_t) 0x00008000
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00010000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00020000
-#define MASK_NO_DAEMON                   (flag_t) 0x00040000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00080000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00100000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00200000
-#define MASK_PROTOCOL                    (flag_t) 0x00400000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00800000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x01000000
-#define MASK_TIMEOUT                     (flag_t) 0x02000000
-#define MASK_USERNAME                    (flag_t) 0x04000000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x08000000
-#define MASK_QUERY_KEY                   (flag_t) 0x10001000
-#define MASK_QUIET                       (flag_t) 0x20000000
+#define MASK_CONNECT_RELOG               (flag_t) 0x00000040
+#define MASK_DEBUG                       (flag_t) 0x00000080
+#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000100
+#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000200
+#define MASK_CONFIG_FILE                 (flag_t) 0x00000400
+#define MASK_GROUP                       (flag_t) 0x00000800
+#define MASK_INETD_MODE                  (flag_t) 0x00001000
+#define MASK_LOG_FACILITY                (flag_t) 0x00002000
+#define MASK_LISTEN_PORT                 (flag_t) 0x00004000
+#define MASK_LOWER_CASE                  (flag_t) 0x00008000
+#define MASK_MAP_LIB                     (flag_t) 0x00010000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00020000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00040000
+#define MASK_NO_DAEMON                   (flag_t) 0x00080000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00100000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00200000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00400000
+#define MASK_PROTOCOL                    (flag_t) 0x00800000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x01000000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x02000000
+#define MASK_TIMEOUT                     (flag_t) 0x04000000
+#define MASK_USERNAME                    (flag_t) 0x08000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x10000000
+#define MASK_QUERY_KEY                   (flag_t) 0x20001000
+#define MASK_QUIET                       (flag_t) 0x40000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -233,14 +236,15 @@ typedef struct {
  * only. So as we still have a key, use integer values outside
  * of the values we might use for a short value
  */
-#define TAG_LOWER_CASE                 (int) 128
-#define TAG_QUERY_KEY                  (int) 129
+#define TAG_CONNECT_RELOG              (int) 128
+#define TAG_LOWER_CASE                 (int) 129
 #define TAG_NO_DAEMON                  (int) 130
-#define TAG_SSL_CERT_FILE              (int) 131
-#define TAG_SSL_KEY_FILE               (int) 132
-#define TAG_SSL_MODE                   (int) 133
-#define TAG_SSL_LISTEN_CIPHERS         (int) 134
-#define TAG_SSL_OUTGOING_CIPHERS       (int) 135
+#define TAG_QUERY_KEY                  (int) 131
+#define TAG_SSL_CERT_FILE              (int) 132
+#define TAG_SSL_KEY_FILE               (int) 133
+#define TAG_SSL_MODE                   (int) 134
+#define TAG_SSL_LISTEN_CIPHERS         (int) 135
+#define TAG_SSL_OUTGOING_CIPHERS       (int) 136
 
 
 /*Flag values for options()*/

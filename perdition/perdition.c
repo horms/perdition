@@ -133,16 +133,15 @@ static void perdition_reread_handler(int sig);
 #endif
 
 /* Macro to log session just after Authentication */
-#define VANESSA_LOGGER_LOG_AUTH(_from_to_str, _user, _servername, _port, _status) \
-  VANESSA_LOGGER_LOG_UNSAFE( \
-    LOG_NOTICE, \
+#define VANESSA_LOGGER_LOG_AUTH(_auth_log, _from_to_str, \
+      _user, _servername, _port, _status) \
+  memset(_auth_log.log_str, 0, sizeof(_auth_log.log_str)); \
+  snprintf(_auth_log.log_str, sizeof(_auth_log.log_str)-1, \
     "Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" status=\"%s\"",  \
-    from_to_str, \
-    str_null_safe(_user), \
-    str_null_safe(_servername), \
-    str_null_safe(_port), \
-    str_null_safe(_status) \
-  ); \
+    from_to_str, str_null_safe(_user), str_null_safe(_servername), \
+    str_null_safe(_port), str_null_safe(_status)); \
+  VANESSA_LOGGER_LOG(LOG_NOTICE, _auth_log.log_str); \
+  _auth_log.log_time=time(NULL) + opt.connect_relog; \
   set_proc_title("perdition: auth %s", str_null_safe(_status));
 
 
@@ -161,6 +160,7 @@ int main (int argc, char **argv, char **envp){
   protocol_t *protocol=NULL;
   token_t *tag=NULL;
   size_t server_ok_buf_size=0;
+  timed_log_t auth_log;
   char from_to_str[36];
   char from_str[17];
   char to_str[17];
@@ -616,8 +616,8 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
-		      "failed: could not determine server");
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
+		      port, "failed: could not determine server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
@@ -640,7 +640,8 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_INFO(
 	  "Local authentication failure for client: Allowing retry."
         );
-  	VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+  	VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
+			servername, port, 
 			"failed: local authentication failure");
         PERDITION_CLEAN_UP_MAIN;
         continue;
@@ -683,7 +684,8 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
+		      servername, port, 
 		      "failed: could not connect to server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -729,7 +731,8 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
+		      servername, port, 
 		      "failed: authentication of client with real-server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -767,7 +770,8 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, 
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
+		      servername, port, 
 		      "failed: authentication of client with real-server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -810,7 +814,8 @@ int main (int argc, char **argv, char **envp){
     break;
   }
 
-  VANESSA_LOGGER_LOG_AUTH(from_to_str, pw.pw_name, servername, port, "ok");
+  VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
+		  servername, port, "ok");
 
   if(opt.server_ok_line){
      free(server_ok_buf);
@@ -824,15 +829,8 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Let the client talk to the real server*/
-  if(io_pipe(
-    server_io,
-    client_io,
-    buffer,
-    BUFFER_SIZE,
-    opt.timeout,
-    &bytes_written,
-    &bytes_read
-  )<0){
+  if(io_pipe(server_io, client_io, buffer, BUFFER_SIZE, opt.timeout,
+        &bytes_written, &bytes_read, &auth_log)<0){
     VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
     VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
     vanessa_socket_daemon_exit_cleanly(-1);

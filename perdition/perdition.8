@@ -127,6 +127,13 @@ authentication phase.
 .sp
 \fBNote:\fP \-d|\-\-debug must be specified for this option to take effect.
 .TP
+.B \-\-connect_relog SECONDS:
+How often to relog the connection.
+For use in conjunction with POP and IMAP before SMTP.
+If zero, then the connection will not be reloged.
+.br
+(default 300)
+.TP
 .B \-c, \-\-client_server_specification:
 Allow USER of the form user<delimiter>server[:port] to specify the
 server and port for a user.

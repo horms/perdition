@@ -233,6 +233,8 @@ int options(int argc, char **argv, flag_t f){
     {"no_bind_banner",              'B',  POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b',  POPT_ARG_STRING, NULL, 'b'},
     {"connection_logging",          'C',  POPT_ARG_NONE,   NULL, 'C'},
+    {"connect_relog",               '\0', POPT_ARG_STRING, NULL,
+      TAG_CONNECT_RELOG},
     {"client_server_specification", 'c',  POPT_ARG_NONE,   NULL, 'c'},
     {"domain_delimiter",            'D',  POPT_ARG_STRING, NULL, 'D'},
     {"debug",                       'd',  POPT_ARG_NONE,   NULL, 'd'},
@@ -325,6 +327,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
+    opt_i(opt.connect_relog,   DEFAULT_CONNECT_RELOG,       i, 0, OPT_NOT_SET);
     opt_p(opt.capability,      PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
@@ -391,6 +394,12 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'b':
         opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f);
+        break;
+      case TAG_CONNECT_RELOG:
+        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
+	  usage(-1); 
+	}
+        opt_i(opt.connect_relog,atoi(optarg),opt.mask,MASK_CONNECT_RELOG,f);
         break;
       case 'C':
         opt_i(opt.connection_logging,1,opt.mask,MASK_DEBUG,f);
@@ -810,6 +819,7 @@ int log_options(void){
     "config_file=\"%s\", "
     "connection_limit=%d, "
     "connection_logging=%s, "
+    "connect_relog=%d, "
     "debug=%s, "
     "domain_delimiter=\"%s\", "
     "group=\"%s\", "
@@ -852,6 +862,7 @@ int log_options(void){
     str_null_safe(opt.config_file),
     opt.connection_limit,
     BIN_OPT_STR(opt.connection_logging),
+    opt.connect_relog,
     BIN_OPT_STR(opt.debug),
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
@@ -968,6 +979,11 @@ void usage(int exit_status){
     " -C|--connection_logging:\n"
     "    Log interaction during authentication phase\n"
     "    Note: -d|--debug must be specified for this option to take effect.\n"
+    " --connect_relog SECONDS:\n"
+    "    How often to relog the connection.\n"
+    "    For use in conjunction with POP and IMAP before SMTP.\n"
+    "    If zero, then the connection will not be reloged.\n"
+    "    (default %d)\n"
     " -c|--client_server_specification:\n"
     "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
     "    server and port for a user.\n"
@@ -1084,6 +1100,7 @@ void usage(int exit_status){
     " Note: default value for binary flags is off\n",
     VERSION,
     str_null_safe(DEFAULT_BIND_ADDRESS),
+    DEFAULT_CONNECT_RELOG,
     str_null_safe(DEFAULT_DOMAIN_DELIMITER),
     str_null_safe(DEFAULT_LOG_FACILITY),
     str_null_safe(DEFAULT_CONFIG_FILE),

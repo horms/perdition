@@ -32,11 +32,17 @@
 #include "config.h"
 #endif
 
+#include <time.h>
 #include <vanessa_adt.h>
 
 #include "io.h"
+#include "perdition_types.h"
 
-typedef vanessa_list_t io_select_t;
+
+typedef struct {
+	vanessa_list_t *fd;
+	timed_log_t *log;
+} io_select_t;
 
 
 /**********************************************************************

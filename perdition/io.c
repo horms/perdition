@@ -37,6 +37,7 @@
 #include "io_select.h"
 #include "log.h"
 #include "options.h"
+#include "perdition_types.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -537,7 +538,7 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
     char *dump_str;
     dump_str = VANESSA_LOGGER_DUMP(buf, bytes, 0);
     if(!dump_str) {
-      VANESSA_LOGGER_DEBUG("iVANESSA_LOGGER_DUMP");
+      VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
       return(-1);
     }
     VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", 
@@ -565,15 +566,9 @@ static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
 }
 
          
-ssize_t io_pipe(
-  io_t *io_a,
-  io_t *io_b,
-  unsigned char *buffer,
-  int buffer_length,
-  int idle_timeout,
-  int *return_a_read_bytes,
-  int *return_b_read_bytes
-){
+ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
+      int buffer_length, int idle_timeout, int *return_a_read_bytes,
+      int *return_b_read_bytes, timed_log_t *log){
   int bytes;
   io_select_t *s;
 
@@ -583,25 +578,18 @@ ssize_t io_pipe(
 	  return(-1);
   }
 
+  s->log = log;
+
   if(io_select_add(s, io_a) == NULL || io_select_add(s, io_b) == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_add");
 	  io_select_destroy(s);
 	  return(-1);
   }
 
-  if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a),
-    				     io_get_wfd(io_a),
-    				     io_get_rfd(io_b),
-    				     io_get_wfd(io_b),
-    				     buffer,
-    				     buffer_length,
-    				     idle_timeout,
-    				     return_a_read_bytes,
-    				     return_b_read_bytes,
-    				     __io_pipe_read,
-    				     __io_pipe_write,
-    				     io_select,
-    				     (void *)s))<0){
+  if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a), io_get_wfd(io_a),
+      io_get_rfd(io_b), io_get_wfd(io_b), buffer, buffer_length,
+      idle_timeout, return_a_read_bytes, return_b_read_bytes,
+      __io_pipe_read, __io_pipe_write, io_select, (void *)s))<0){
 	VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
   }
 

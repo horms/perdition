@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef SYSLOG_BERT
-#define SYSLOG_BERT
+#ifndef _PERDITION_LOG_H
+#define _PERDITION_LOG_H
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -114,4 +114,4 @@
   vanessa_logger_log(vanessa_logger_get(), LOG_DEBUG, __FUNCTION__ ": %s", str)
 #endif /* WITH_SSL_SUPPORT */
 
-#endif
+#endif /* _PERDITION_LOG_H */

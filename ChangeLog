@@ -59,6 +59,7 @@ XXX
      Russell Corker
    - Allow cipher suite list to be set
    - Added source port to available escape sequences for query_key
+   - Relog AUTH line periodically
 
 ----------------------------------------------------------------------
 

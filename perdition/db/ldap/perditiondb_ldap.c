@@ -174,7 +174,7 @@ static char *pldap_get_filter_str(const char *key_str, const char *filter_str)
 			return_filter = realloc(return_filter, filter_len + 
 					format_width - dead_width + 1);
 			if(!return_filter) {
-				VANESSA_DEBUG_ERRNO("realloc");
+				VANESSA_LOGGER_DEBUG_ERRNO("realloc");
 				return(NULL);
 			}
 

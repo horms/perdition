@@ -333,7 +333,8 @@ int io_select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 		}
 		status = __io_select(n, readfds, writefds, 
 				exceptfds, &internal_timeout, s);
-		if(status || (!timeout->tv_sec && !timeout->tv_usec)) {
+		if(status || (timeout && !timeout->tv_sec 
+					&& !timeout->tv_usec)) {
 			break;
 		}
 	}

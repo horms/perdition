@@ -35,6 +35,8 @@
 
 #include <unistd.h>
 
+#include "perdition_types.h"
+
 typedef struct io_t_struct io_t;
 
 typedef enum {
@@ -213,14 +215,8 @@ int io_close(io_t *io);
  *
  **********************************************************************/
 
-ssize_t io_pipe(
-  io_t *io_a,
-  io_t *io_b,
-  unsigned char *buffer,
-  int buffer_length,
-  int idle_timeout,
-  int *return_a_read_bytes,
-  int *return_b_read_bytes
-);
+ssize_t io_pipe( io_t *io_a, io_t *io_b, unsigned char *buffer,
+  int buffer_length, int idle_timeout, int *return_a_read_bytes,
+  int *return_b_read_bytes, timed_log_t *log);
 
 #endif /* _PERDITION_IO_H */

@@ -24,14 +24,16 @@
  *
  **********************************************************************/
 
-#ifndef PERDITION_TYPES_BLUM
-#define PERDITION_TYPES_BLUM
+#ifndef _PERDITION_TYPES_H
+#define _PERDITION_TYPES_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "int.h"
+
+#include <time.h>
 
 typedef uint32 flag_t;
 
@@ -51,4 +53,9 @@ typedef uint32 flag_t;
 #define PERDITION_LOG_STR_CLIENT "CLIENT:"
 #define PERDITION_LOG_STR_REAL   "REAL:  "
 
-#endif
+typedef struct {
+	char log_str[MAX_LINE_LENGTH];
+	time_t log_time;
+} timed_log_t;
+
+#endif /* _PERDITION_TYPES_H */
