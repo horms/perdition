@@ -165,8 +165,8 @@ char *queue_to_string(vanessa_queue_t *q){
     if (t->n>0 && t->buf!=NULL){
       strncpy(pos, t->buf, t->n);
       pos+=t->n;
-      *pos++=' ';
     }
+    *pos++=' ';
   }
   
   vanessa_queue_destroy(stack);

@@ -27,6 +27,8 @@ XXX
    - Removed line from man page stating that TLS isn't supported - it is.
    - Handle excaped characters in IMAP quoted strings correctly.
      Rob Mueller, Jeremy Howard and Horms
+   - Handle spaces in POP passwords.
+     Rob Mueller, Kurian Aerthail, Jeremy Howard and Horms
 
 ----------------------------------------------------------------------
 

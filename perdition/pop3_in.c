@@ -214,24 +214,14 @@ int pop3_in_get_pw(
       if(return_pw->pw_name==NULL){
 	      __POP3_IN_ERR(POP3_CMD_USER " not yet set, mate");
       }
-      if(vanessa_queue_length(q)!=1){
+      if(!vanessa_queue_length(q)){
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_PASS " <password>");
       }
-      if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-        VANESSA_LOGGER_DEBUG("vanessq_queue_pop");
-        free(return_pw->pw_name);
-        break;
-      }
-      if(token_is_null(t)) {
-	      __POP3_IN_ERR("Mate, try: " POP3_CMD_PASS " <username>");
-      } 
-      if((return_pw->pw_passwd=token_to_string(t, TOKEN_NO_STRIP))==NULL){
+      if((return_pw->pw_passwd=queue_to_string(q))==NULL){
         VANESSA_LOGGER_DEBUG("token_to_string");
         free(return_pw->pw_name);
         break;
       }
-      token_destroy(&t);
-      vanessa_queue_destroy(q);
       return(0);
     }
     else if(strncasecmp(token_buf(t), POP3_CMD_QUIT, token_len(t))==0){
