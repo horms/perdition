@@ -48,8 +48,9 @@
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
- * post: 2: If TLS has been requested and all is succesful
- *       1: If TLS has not been requested, but all is successful
+ * return: Logical or of PROTOCOL_S_OK and
+ *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
+ *         and the STARTTLS capability was reported by the server
  *       0: on failure
  *       -1 on error
  **********************************************************************/
@@ -79,7 +80,7 @@ int pop3_out_setup(
 int pop3_out_authenticate(
   io_t *io,
   const struct passwd *pw,
-  const token_t *tag,
+  token_t *tag,
   const protocol_t *protocol,
   unsigned char *buf,
   size_t *n

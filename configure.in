@@ -409,6 +409,7 @@ AC_ARG_WITH(
     for pg_libpath in /usr/pgsql/lib /usr/local/pgsql/lib \
         /usr/lib/pgsql /usr/local/lib/pgsql \
         /usr/postgresql/lib /usr/local/postgresql/lib \
+        /usr/lib/postgresql/lib /usr/local/lib/postgresql/lib \
         /usr/lib/postgresql /usr/local/lib/postgresql \
     	/usr/lib /usr/local/lib; do
       if test -f "${pg_libpath}/libpq.a" -o -f "${pg_libpath}/libpq.so"; then

@@ -58,7 +58,7 @@ struct protocol_t_struct {
 				 token_t *tag,
 				 const struct protocol_t_struct *protocol);
 	int (*out_authenticate) (io_t *io, const struct passwd *pw,
-				 const token_t *tag,
+				 token_t *tag,
 				 const struct protocol_t_struct *protocol,
 				 unsigned char *buf, size_t *n);
 	int (*in_authenticate) (const struct passwd *pw, io_t *io,

@@ -76,6 +76,7 @@ XXX
    - Log initial errors / logs to stderr not stdout.
    - Fixed handling of a client not supplying a password to
      the IMAP4 LOGIN Command
+   - Honour IMAP4 LOGINDISABLED capability
 
 ----------------------------------------------------------------------
 

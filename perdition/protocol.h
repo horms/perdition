@@ -53,6 +53,10 @@
 #define PROTOCOL_DEFAULT PROTOCOL_POP3
 #define PROTOCOL_ALL 0
 
+#define PROTOCOL_S_OK            0x1 
+#define PROTOCOL_S_STARTTLS      0x2
+#define PROTOCOL_S_LOGINDISABLED 0x4
+
 /*End of nastiness*/
 
 protocol_t *protocol_initialise(int protocol_type, protocol_t *protocol);

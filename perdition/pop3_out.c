@@ -45,8 +45,9 @@
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
- * post: 2: If TLS has been requested and all is succesful
- *       1: If TLS has not been requested, but all is successful
+ * return: Logical or of PROTOCOL_S_OK and
+ *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
+ *         and the STARTTLS capability was reported by the server
  *       0: on failure
  *       -1 on error
  **********************************************************************/
@@ -66,7 +67,7 @@ int pop3_out_setup(
   char *read_string = NULL;
   char *greeting_string = NULL;
   int status = -1;
-  int have_stls = 0;
+  int protocol_status = PROTOCOL_S_OK;
   int have_capa = 0;
 
   extern options_t opt;
@@ -164,8 +165,8 @@ int pop3_out_setup(
         VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
         return(-1);
       }
-      if(!have_stls) {
-        have_stls=token_cmp(stls, tmp_token);
+      if(!(protocol_status & PROTOCOL_S_STARTTLS)) {
+	protocol_status |= PROTOCOL_S_STARTTLS;
       }
       status=token_cmp(capa_end, tmp_token);
       token_destroy(&tmp_token);
@@ -179,7 +180,8 @@ int pop3_out_setup(
   }
 
   status = 1;
-  if(have_stls && opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
+  if(protocol_status & PROTOCOL_S_STARTTLS && 
+        opt.ssl_mode & SSL_MODE_TLS_OUTGOING) {
     if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, NULL)<0){
       VANESSA_LOGGER_DEBUG("pop3_write");
       goto leave;
@@ -219,8 +221,8 @@ int pop3_out_setup(
     vanessa_queue_destroy(q);
   }
 
-  if(status == 1 && have_stls) {
-    status = 2;
+  if(status == 1) {
+    status = protocol_status;
   }
   return(status);
 }
@@ -243,7 +245,7 @@ int pop3_out_setup(
 int pop3_out_authenticate(
   io_t *io,
   const struct passwd *pw,
-  const token_t *tag,
+  token_t *tag,
   const protocol_t *protocol,
   unsigned char *buf,
   size_t *n

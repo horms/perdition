@@ -742,6 +742,7 @@ int main (int argc, char **argv, char **envp){
     pw2.pw_passwd=pw.pw_passwd;
 
     status = (*(protocol->out_setup))(server_io, &pw2, our_tag, protocol);
+    VANESSA_LOGGER_DEBUG_UNSAFE("out_setup=%d", status);
     if(status==0){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
       quit(server_io, protocol, our_tag);
@@ -752,8 +753,8 @@ int main (int argc, char **argv, char **envp){
         vanessa_socket_daemon_exit_cleanly(-1);
       }
       VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-		      servername, port, 
-		      "failed: authentication of client with real-server");
+            servername, port, 
+	    "failed: authentication of client with real-server");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
@@ -763,9 +764,9 @@ int main (int argc, char **argv, char **envp){
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 #ifdef WITH_SSL_SUPPORT
-    else if(status==2 && opt.ssl_mode & SSL_MODE_TLS_OUTGOING){
+    else if(status & PROTOCOL_S_STARTTLS) {
       server_io=perdition_ssl_client_connection(server_io,
-		      opt.ssl_ca_file, opt.ssl_listen_ciphers, servername);
+            opt.ssl_ca_file, opt.ssl_listen_ciphers, servername);
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
@@ -780,8 +781,7 @@ int main (int argc, char **argv, char **envp){
     token_flush();
     status = (*(protocol->out_authenticate))(server_io, &pw2, our_tag, protocol,
       server_ok_buf, &server_ok_buf_size);
-
-    if(status==0){
+    if(status==0) {
       sleep(VANESSA_LOGGER_ERR_SLEEP);
       quit(server_io, protocol, our_tag);
       if(protocol->write(client_io, NULL_FLAG, client_tag, 
@@ -790,9 +790,22 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
       }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-		      servername, port, 
-		      "failed: authentication of client with real-server");
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
+            port, "failed: authentication of client with real-server");
+      PERDITION_CLEAN_UP_MAIN;
+      continue;
+    }
+    if(status==2){
+      sleep(VANESSA_LOGGER_ERR_SLEEP);
+      quit(server_io, protocol, our_tag);
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
+          protocol->type[PROTOCOL_NO], "Login Disabled")<0){
+        VANESSA_LOGGER_DEBUG("protocol->write");
+        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
+        vanessa_socket_daemon_exit_cleanly(-1);
+      }
+      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
+            port, "failed: server set LOGINDISABLED");
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }

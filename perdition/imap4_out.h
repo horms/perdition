@@ -49,7 +49,9 @@
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structiure for imap4
- * post: 1: on success
+ * return: Logical or of PROTOCOL_S_OK and
+ *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
+ *         and the STARTTLS capability was reported by the server
  *       0: on failure
  *       -1 on error
  **********************************************************************/
@@ -72,7 +74,8 @@ int imap4_out_setup(
  *      protocol: protocol structiure for imap4
  *      buf:    buffer to return response from server in
  *      n:      size of buf in bytes
- * post: 1: on success
+ * post: 2: if the server has the LOGINDISABLED capability set
+ *       1: on success
  *       0: on failure
  *       -1 on error
  **********************************************************************/
@@ -80,7 +83,7 @@ int imap4_out_setup(
 int imap4_out_authenticate(
   io_t *io,
   const struct passwd *pw,
-  const token_t *tag,
+  token_t *tag,
   const protocol_t *protocol,
   unsigned char *buf,
   size_t *n
