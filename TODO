@@ -54,3 +54,6 @@ Jack Snodgrass
 * Identify user based on source ip
 Zipworld
 * Identify user based on local ip (patch has been provided)
+
+Birger Toedtmann
+* Altrernate ldap servers
