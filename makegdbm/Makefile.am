@@ -34,6 +34,6 @@ makegdbm_SOURCES = \
         options.c \
         options.h
 
-makegdbm_LDADD = ../libjain/.libs/libjain.a -lgdbm -lpopt
+makegdbm_LDADD = -L../libjain -L../libjain/.libs/ -ljain -lgdbm -lpopt
 
 INCLUDES=-I$(top_srcdir)/libjain
