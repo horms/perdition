@@ -183,7 +183,7 @@ echo " Done"
 echo -n "Granting access to $dbname for user $dbuser..."
 #Create user perdition in database
 mysql --user=root --password="$rootpw" --host="$dbserver" mysql <<__EOF__
-  GRANT ALL PRIVILEGES ON dbPerdition.* TO $dbuser@$dbhost
+  GRANT ALL PRIVILEGES ON $dbname.* TO $dbuser@$dbhost
            IDENTIFIED BY '$dbpw' WITH GRANT OPTION;
 __EOF__
 if [ $? != 0 ]; then
