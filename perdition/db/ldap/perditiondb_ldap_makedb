@@ -93,7 +93,7 @@ dc: my-domain
 o: mailbox
 
 dn: ou=mailbox, dc=my-domain, dc=com
-ou: mauilbox
+ou: mailbox
 objectClass: top
 objectClass: organizationalUnit
 description: Popmap for perdition

@@ -10,7 +10,6 @@ From Horms
 o  Fix .spec file
 o  Fix redhat init script
 o  Better logging of SSL Junk
-o  Handle unseeded entries in LDAP and possibly other database modules
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

@@ -306,6 +306,7 @@ int dbserver_get(
 	  goto leave;
         }
         strcpy(ldap_returns[count], *bv_val);
+	break;
       }
     }
 
@@ -343,7 +344,15 @@ int dbserver_get(
     }
   }
 
-  status = 0;
+  /* If there is no opt.domain_delimiter present in *str_return,
+   * then no servername has been found and the result is useless */
+  if(strstr(*str_return, opt.domain_delimiter) == NULL) {
+    free(*str_return);
+    status = -1;
+  }
+  else {
+    status = 0;
+  }
 
 leave:
   if(filter != NULL)

@@ -22,6 +22,9 @@ XXX
   - Fixed handling of empty tags
   - Log an error and exit if TLS support is requested, as it isn't
     supported yet.
+  - ldap module: If nothing resembling a servername is returned then
+    the search has failed. Previously a useless entry with
+    no servername was returned.
 
 
 ----------------------------------------------------------------------
