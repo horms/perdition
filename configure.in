@@ -44,7 +44,7 @@ AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
 AC_CHECK_LIB(resolv, inet_aton, [ resolv_lib="-lresolv" ], [ resolv_lib="" ])
-AC_CHECK_LIB(crypt, crypt, [ crypt_lib="-lresolv" ], [ crypt_lib="" ])
+AC_CHECK_LIB(crypt, crypt, [ crypt_lib="-lcrypt" ], [ crypt_lib="" ])
 AC_CHECK_LIB(
   popt,
   poptGetContext,
@@ -352,7 +352,7 @@ AC_ARG_WITH(
   ]
 )
 
-ldap_libs="$socket_lib $nsl_lib -L$ldap_libpath -lldap -llber"
+ldap_libs="$socket_lib $nsl_lib $resolv_lib -L$ldap_libpath -lldap -llber"
 
 AC_CHECK_FILE(
   $ldap_includepath/ldap.h,
