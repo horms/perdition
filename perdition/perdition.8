@@ -53,6 +53,29 @@ IMAP4 mode is IMAP4 and no authentication schemes, other than
 the LOGIN command are accepted.
 .SH OPTIONS
 .TP
+.B -A|--add_domain:
+Appends a domain to the USER based on the IP address connected to
+in given state(s). State may be one of servername_lookup,
+local_authentication, remote_login and all.
+.br
+(default "(null)")
+.sp
+.B servername_lookup:
+strip domain of username for lookup of username in
+Popmap. Will not take effect if \-c|\-\-client_server_specification
+is specified.
+.sp
+.B local_authentication:
+Strip fomain of username for use in local
+authentication. Only has effect if \-a|\-\-authenticate_in is specified.
+.sp
+.B remote_login:
+Send a stripped version of the username to the back-end
+server for authentication.
+.sp
+.B all:
+Shorthand for all of above states.
+.TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end
 server is made. Only available if perdition is compiled with pam
@@ -170,25 +193,8 @@ multiple servers are specified then they are used in a round robin.
 .B \-S, \-\-strip_domain state[,state]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain
 will be striped off in given state(s). State may be one of servername_lookup,
-local_authentication, remote_login and all.
-.br
-(default "(null)")
-.sp
-.B servername_lookup:
-strip domain of username for lookup of username in
-Popmap. Will not take effect if \-c|\-\-client_server_specification
-is specified.
-.sp
-.B local_authentication:
-Strip fomain of username for use in local
-authentication. Only has effect if \-a|\-\-authenticate_in is specified.
-.sp
-.B remote_login:
-Send a stripped version of the username to the back-end
-server for authentication.
-.sp
-.B all:
-Shorthand for all of above states.
+local_authentication, remote_login and all. See \-A|\-\-add_domain for a
+description of the states.
 .TP
 .B \-t, \-\-timeout:
 Idle timeout in seconds. Value of zero sets infinite timeout.

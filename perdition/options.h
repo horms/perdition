@@ -89,6 +89,7 @@
 #endif /* WITH_SSL_SUPPORT */
 
 
+#define DEFAULT_ADD_DOMAIN                   0
 #ifdef WITH_PAM_SUPPORT
 #define DEFAULT_AUTHENTICATE_IN              0
 #endif /* WITH_PAM_SUPPORT */
@@ -134,6 +135,7 @@
 
 
 typedef struct {
+  int             add_domain;
 #ifdef WITH_PAM_SUPPORT
   int             authenticate_in;
 #endif /* WITH_PAM_SUPPORT */
@@ -199,6 +201,7 @@ typedef struct {
 #define MASK_USERNAME                    (flag_t) 0x00400000
 #define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x00800000
 #define MASK_QUIET                       (flag_t) 0x01000000
+#define MASK_ADD_DOMAIN                  (flag_t) 0x02000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */

@@ -98,33 +98,50 @@ options_t opt;
 #define opt_i_or(opt, value, mask, mask_entry, flag) \
   opt_i(opt, opt|value, mask, mask_entry, flag)
 
-#define OPT_STRIP_DOMAIN \
+#define OPT_STRIP_OR_ADD_DOMAIN(opt, mask, mask_entry, flag) \
   if(strcasecmp(optarg_copy, "all")==0){ \
-    opt_i_or(opt.strip_domain, STRIP_STATE_ALL, opt.mask, \
-      MASK_STRIP_DOMAIN, f); \
+    opt_i_or(opt, STRIP_STATE_ALL, mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "servername_lookup")==0 || \
     strcasecmp(optarg_copy, "server_lookup")==0 \
   ){ \
-    opt_i_or(opt.strip_domain, STRIP_STATE_GET_SERVER, opt.mask,\
-      MASK_STRIP_DOMAIN, f); \
+    opt_i_or(opt, STRIP_STATE_GET_SERVER, mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "local_authentication")==0 || \
     strcasecmp(optarg_copy, "local_auth")==0 \
   ){ \
-    opt_i_or(opt.strip_domain, STRIP_STATE_LOCAL_AUTH, \
-      opt.mask, MASK_STRIP_DOMAIN, f); \
+    opt_i_or(opt, STRIP_STATE_LOCAL_AUTH, mask, mask_entry, flag); \
   } \
   else if(strcasecmp(optarg_copy, "remote_login")==0){ \
-    opt_i_or(opt.strip_domain, STRIP_STATE_REMOTE_LOGIN, \
-      opt.mask, MASK_STRIP_DOMAIN,f);\
+    opt_i_or(opt, STRIP_STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
   } \
   else { \
-   PERDITION_DEBUG("unknown state: %s", optarg_copy); \
-   if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+    PERDITION_DEBUG("unknown state: %s", optarg_copy); \
+    if(f&OPT_ERR) { \
+      sleep(1); \
+      usage(-1); \
+    } \
   }
+
+#define OPT_STRIP_DOMAIN \
+  OPT_STRIP_OR_ADD_DOMAIN(opt.strip_domain, opt.mask, MASK_STRIP_DOMAIN, f);
+
+#define OPT_ADD_DOMAIN \
+  OPT_STRIP_OR_ADD_DOMAIN(opt.add_domain, opt.mask, MASK_ADD_DOMAIN, f);
+
+#define OPTARG_DUP \
+  if(optarg==NULL){ \
+    PERDITION_DEBUG("OPTARG_DUP: optarg is NULL"); \
+    if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+  } \
+  if((optarg_copy=strdup(optarg)) == NULL){ \
+    PERDITION_DEBUG_ERRNO("strdup"); \
+    if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+  }
+
+
 
 #ifdef WITH_SSL_SUPPORT
 #define OPT_SSL_MODE \
@@ -154,7 +171,10 @@ options_t opt;
     } \
     else { \
      PERDITION_ERR("unknown ssl_mode: %s", optarg_copy); \
-     if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+      if(f&OPT_ERR) { \
+        sleep(1); \
+        usage(-1); \
+      } \
     } \
     \
     all=new|opt.ssl_mode; \
@@ -197,6 +217,7 @@ int options(int argc, char **argv, flag_t f){
 
   static struct poptOption options[] =
   {
+    {"add_domain",                  'A',  POPT_ARG_STRING, NULL,  'A'},
     {"authenticate_in",             'a',  POPT_ARG_NONE,   NULL, 'a'},
     {"no_bind_banner",              'B',  POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b',  POPT_ARG_STRING, NULL, 'b'},
@@ -241,6 +262,7 @@ int options(int argc, char **argv, flag_t f){
 
   /* i is used as a dummy variable */
   if(f&OPT_SET_DEFAULT){
+    opt_i(opt.add_domain,      DEFAULT_ADD_DOMAIN,          i, 0, OPT_NOT_SET);
 #ifdef WITH_PAM_SUPPORT
     opt_i(opt.authenticate_in, DEFAULT_AUTHENTICATE_IN,     i, 0, OPT_NOT_SET);
 #endif /* WITH_PAM_SUPPORT */
@@ -285,13 +307,25 @@ int options(int argc, char **argv, flag_t f){
 #endif /* WITH_SSL_SUPPORT */
   }
 
-  if(f&OPT_CLEAR_MASK) opt.mask=(flag_t)0;
+  if(f&OPT_CLEAR_MASK){
+    opt.mask=(flag_t)0;
+    opt.ssl_mask=(flag_t)0;
+  }
 
   context= poptGetContext("perdition", argc, (const char **)argv, options, 0);
 
   while ((c=poptGetNextOpt(context)) >= 0){
     optarg=poptGetOptArg(context);
     switch (c){
+      case 'A':
+        OPTARG_DUP;
+	while((end=strchr(optarg_copy, ','))!=NULL){
+	  *end='\0';
+	  OPT_ADD_DOMAIN;
+	  optarg_copy=end+1;
+	}
+	OPT_ADD_DOMAIN;
+        break;
       case 'a':
 #ifdef WITH_PAM_SUPPORT
         opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
@@ -392,10 +426,7 @@ int options(int argc, char **argv, flag_t f){
         opt_p(opt.outgoing_port,optarg,opt.mask,MASK_OUTGOING_PORT,f);
         break;
       case 'S':
-	if((optarg_copy=strdup(optarg)) == NULL){
-          PERDITION_DEBUG_ERRNO("strdup 1");
-          if(f&OPT_ERR) daemon_exit_cleanly(-1);
-	}
+        OPTARG_DUP;
 	while((end=strchr(optarg_copy, ','))!=NULL){
 	  *end='\0';
 	  OPT_STRIP_DOMAIN;
@@ -408,10 +439,7 @@ int options(int argc, char **argv, flag_t f){
           if(!(f&OPT_NOT_SET) && opt.outgoing_server!=NULL) {
             vanessa_dynamic_array_destroy(opt.outgoing_server);
           }
-	  if((optarg_copy=strdup(optarg)) == NULL){
-            PERDITION_DEBUG_ERRNO("strdup 2");
-            if(f&OPT_ERR) daemon_exit_cleanly(-1);
-	  }
+          OPTARG_DUP;
           opt.outgoing_server=split_str_server_port(
             optarg_copy,
             OPT_SERVER_DELIMITER
@@ -436,10 +464,7 @@ int options(int argc, char **argv, flag_t f){
         break;
       case TAG_SSL_MODE:
 #ifdef WITH_SSL_SUPPORT
-	if((optarg_copy=strdup(optarg)) == NULL){
-          PERDITION_DEBUG_ERRNO("strdup 1");
-          if(f&OPT_ERR) daemon_exit_cleanly(-1);
-	}
+        OPTARG_DUP;
 	while((end=strchr(optarg_copy, ','))!=NULL){
 	  *end='\0';
 	  OPT_SSL_MODE;
@@ -559,6 +584,8 @@ int log_options(void){
   char *outgoing_server=NULL;
   char strip_domain[40];
   char *strip_domain_p;
+  char add_domain[40];
+  char *add_domain_p;
 #ifdef WITH_SSL_SUPPORT
   char ssl_mode[26];
   char *ssl_mode_p;
@@ -601,6 +628,23 @@ int log_options(void){
       *strip_domain_p='\0';
   }
   
+  add_domain_p=add_domain;
+  if(opt.add_domain&STRIP_STATE_GET_SERVER &&
+      opt.add_domain&STRIP_STATE_LOCAL_AUTH &&
+      opt.add_domain&STRIP_STATE_REMOTE_LOGIN) {
+    LOG_OPTIONS_ADD_STR("all", add_domain_p, add_domain)
+  }
+  else {
+    if(opt.add_domain&STRIP_STATE_GET_SERVER)
+      LOG_OPTIONS_ADD_STR("servername_lookup", add_domain_p, add_domain)
+    if(opt.add_domain&STRIP_STATE_LOCAL_AUTH)
+      LOG_OPTIONS_ADD_STR("local_authentication", add_domain_p, add_domain)
+    if(opt.add_domain&STRIP_STATE_REMOTE_LOGIN)
+      LOG_OPTIONS_ADD_STR("remote_login", add_domain_p, add_domain)
+    if(add_domain_p==add_domain)
+      *add_domain_p='\0';
+  }
+  
 #ifdef WITH_SSL_SUPPORT
   switch(opt.ssl_mode){
     case SSL_MODE_EMPTY: 
@@ -636,6 +680,7 @@ int log_options(void){
   vanessa_logger_log(
     perdition_vl,
     LOG_INFO, 
+    "add_domain=\"%s\", "
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
 #endif /* WITH_PAM_SUPPORT */
@@ -671,6 +716,7 @@ int log_options(void){
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
     "(mask=0x%x)\n",
+    str_null_safe(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
@@ -754,6 +800,12 @@ void usage(int exit_status){
     "Usage: perdition [options]\n"
     "\n"
     "Options:\n"
+    " -A|--add_domain:\n"
+    "    Appends a domain to the USER based on the IP address connected to\n"
+    "    in given state(s). State may be one of servername_lookup,\n"
+    "    local_authentication, remote_login and all. See manpage for details\n"
+    "    of states.\n"
+    "    (default \"(null)\")\n"
 #ifdef WITH_PAM_SUPPORT
     " -a|--authenticate_in:\n"
     "    User is authenticated by perdition before connection to backend\n"
