@@ -21,3 +21,6 @@ From Krzysztof Sierota
 From Mikolaj J. Habryn
 * Support for non-blocking connects to multiple back end servers
   and using the first to respond
+
+From Nathan Neulinger
+* Add SSL IMAP and POP support
