@@ -150,6 +150,21 @@ static void perdition_reread_handler(int sig);
   _auth_log.log_time=time(NULL) + opt.connect_relog; \
   set_proc_title("perdition: auth %s", str_null_safe(_status));
 
+#define LOGIN_FAILED(_type, _reason)                                      \
+{                                                                         \
+	sleep(PERDITION_AUTH_FAIL_SLEEP);                                 \
+	if(protocol->write(client_io, NULL_FLAG, client_tag,              \
+				protocol->type[(_type)],                  \
+				(_reason))<0){                            \
+		VANESSA_LOGGER_DEBUG("protocol->write");                  \
+		VANESSA_LOGGER_ERR("Fatal error writing to client. "      \
+				"Exiting child.");                        \
+		vanessa_socket_daemon_exit_cleanly(-1);                   \
+	}                                                                 \
+	VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name,        \
+			servername, port,                                 \
+			"failed: " _reason);                              \
+}
 
 /**********************************************************************
  * Muriel the main function
@@ -577,16 +592,9 @@ int main (int argc, char **argv, char **envp){
     else if((status == 0) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN) &&
 		    (opt.ssl_mode & SSL_MODE_TLS_LISTEN_FORCE) &&
 		    !(tls_state & SSL_MODE_TLS_LISTEN)) {
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-          protocol->type[PROTOCOL_NO], "Login Disabled")<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
-            port, "failed: server set LOGINDISABLED");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    LOGIN_FAILED(PROTOCOL_NO, "Login Disabled");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
 #endif /* WITH_SSL_SUPPORT */
 
@@ -651,22 +659,9 @@ int main (int argc, char **argv, char **envp){
 
     /*Try again if we didn't get anything useful*/
     if(servername==NULL){
-      sleep(PERDITION_AUTH_FAIL_SLEEP);
-      if((*(protocol->write))(
-        client_io, 
-        NULL_FLAG,
-	client_tag,
-	protocol->type[PROTOCOL_ERR], 
-	"Could not determine server"
-      )<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
-		      port, "failed: could not determine server");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    LOGIN_FAILED(PROTOCOL_ERR, "Could not determine server");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
 
 #ifdef WITH_PAM_SUPPORT
@@ -710,32 +705,14 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    if((s=vanessa_socket_client_src_open(
-      opt.bind_address,
-      NULL,
-      servername, 
-      port, 
-      (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0)
-    ))<0){
-      VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
-      VANESSA_LOGGER_INFO("Could not connect to server");
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-      if((*(protocol->write))(
-        client_io,
-        NULL_FLAG,
-	client_tag,
-	protocol->type[PROTOCOL_ERR], 
-	"Could not connect to server"
-      )<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-		      servername, port, 
-		      "failed: could not connect to server");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+    s = vanessa_socket_client_src_open(opt.bind_address, NULL, servername, 
+				    port, 
+				    (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0));
+    if(s < 0) {
+	    VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
+	    LOGIN_FAILED(PROTOCOL_ERR, "Could not connect to server");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
 
     if((server_io=io_create_fd(s, s, PERDITION_LOG_STR_REAL))==NULL){
@@ -770,19 +747,10 @@ int main (int argc, char **argv, char **envp){
 
     status = (*(protocol->out_setup))(server_io, &pw2, our_tag, protocol);
     if(status==0){
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-      quit(server_io, protocol, our_tag);
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-          protocol->type[PROTOCOL_NO], "Connection Negotiation Failure")<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-            servername, port, 
-	    "failed: authentication of client with real-server");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    quit(server_io, protocol, our_tag);
+	    LOGIN_FAILED(PROTOCOL_NO, "Connection Negotiation Failure");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_setup %d", status);
@@ -804,17 +772,10 @@ int main (int argc, char **argv, char **envp){
     else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
 		    (opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE) &&
 		    !(status & PROTOCOL_S_STARTTLS)) {
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-          protocol->type[PROTOCOL_NO], "TLS not present")<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
-            port, "failed: TLS not present");
-      quit(server_io, protocol, our_tag);
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    quit(server_io, protocol, our_tag);
+	    LOGIN_FAILED(PROTOCOL_NO, "TLS not present");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
 #endif /* WITH_SSL_SUPPORT */
 
@@ -825,32 +786,16 @@ int main (int argc, char **argv, char **envp){
     status = (*(protocol->out_authenticate))(server_io, &pw2, our_tag, protocol,
       server_ok_buf, &server_ok_buf_size);
     if(status==0) {
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-      quit(server_io, protocol, our_tag);
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-          protocol->type[PROTOCOL_NO], "Re-Authentication Failure")<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
-            port, "failed: authentication of client with real-server");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    quit(server_io, protocol, our_tag);
+	    LOGIN_FAILED(PROTOCOL_NO, "Re-Authentication Failure");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
     if(status==2){
-      sleep(VANESSA_LOGGER_ERR_SLEEP);
-      quit(server_io, protocol, our_tag);
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-          protocol->type[PROTOCOL_NO], "Login Disabled")<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
-        VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
-      }
-      VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, servername, 
-            port, "failed: server set LOGINDISABLED");
-      PERDITION_CLEAN_UP_MAIN;
-      continue;
+	    sleep(VANESSA_LOGGER_ERR_SLEEP);
+	    LOGIN_FAILED(PROTOCOL_NO, "Login Disabled");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
     }
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
