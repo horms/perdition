@@ -60,6 +60,5 @@ int dbserver_get(
 #define DESTROY_REGEX (void (*)(void *s))destroy_regex
 #define DUPLICATE_REGEX (void *(*)(void *s))dummy_dup_regex
 
-static regex_t *dummy_dup_regex(regex_t *preg);
 static void destroy_regex(regex_t *preg);
 

@@ -361,20 +361,6 @@ int dbserver_fini(void){
 
 
 /**********************************************************************
- * dummy_dup_regex
- * Dummy function to duplicate a regex.
- * Does nothing, returns preg, not a copy
- * pre: preg: regex to copy
- * post: nothing
- * return: preg
- **********************************************************************/
-
-static regex_t *dummy_dup_regex(regex_t *preg){
-  return(preg);
-}
-
-
-/**********************************************************************
  * destroy_regex
  * Free up the memory associated with a regex
  * pre: preg: regex to free
