@@ -18,6 +18,8 @@ xxx
     always granted to dbPerdition regarless of the requested
     name of the database.
   - Free internally allocated memory if something goes wrong in token_read()
+  - Setting ssl-mode to none now actually works
+  
 
 
 ----------------------------------------------------------------------
