@@ -241,7 +241,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
      
     if(strcasecmp(command_string, "NOOP")==0){
       if(imap4_in_noop_cmd(io, tag)){
-        PERDITION_DEBUG("imap4_in_noop");
+        PERDITION_DEBUG("imap4_in_noop 1");
         break;
       }
     }
@@ -253,13 +253,13 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
     }
     else if(strcasecmp(command_string, "AUTHENTICATE")==0){
       if(imap4_in_authenticate_cmd(io, tag)){
-        PERDITION_DEBUG("imap4_in_noop");
+        PERDITION_DEBUG("imap4_in_noop 2");
         break;
       }
     }
     else if(strcasecmp(command_string, "LOGOUT")==0){
       if(imap4_in_logout_cmd(io, tag)){
-        PERDITION_DEBUG("imap4_in_noop");
+        PERDITION_DEBUG("imap4_in_noop 3");
         break;
       }
       vanessa_queue_destroy(q);
@@ -342,7 +342,6 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
 	return_pw->pw_passwd=NULL;
       }
 
-      printf("name=\"%s\" pass=\"%s\"\n", return_pw->pw_name, return_pw->pw_passwd);
       token_destroy(&t);
       vanessa_queue_destroy(q);
       *return_tag=tag;
