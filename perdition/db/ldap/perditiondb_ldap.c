@@ -500,7 +500,9 @@ int dbserver_get(const char *key_str,
 	 * then no servername has been found and the result is useless */
 	if (strstr(*str_return, opt.domain_delimiter) == NULL) {
 		free(*str_return);
-		status = -1;
+		*str_return = NULL;
+		*len_return = 0;
+		status = -2;
 	} else {
 		status = 0;
 	}

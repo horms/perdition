@@ -104,6 +104,8 @@ static void perdition_reread_handler(int sig);
   if (!round_robin_server){ \
     server_port_destroy(server_port); \
   } \
+  round_robin_server=0; \
+  servername=NULL; \
   if(server_io!=NULL) { \
     io_close(server_io); \
     io_destroy(server_io); \
@@ -777,7 +779,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
 		      servername, port, 
 		      "failed: authentication of client with real-server");
-     PERDITION_CLEAN_UP_MAIN;
+      PERDITION_CLEAN_UP_MAIN;
       continue;
     }
     else if(status<0){
