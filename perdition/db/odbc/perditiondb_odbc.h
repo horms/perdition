@@ -39,10 +39,16 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <vanessa_adt.h>
+
+#ifdef WITH_UNIX_ODBC
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
-#include <vanessa_adt.h>
+#elsif WITH_INTERSOLV_ODBC
+#include <qeodbc.h>
+#endif
+
 
 #define PERDITIONDB_ODBC_FIELD_DELIMITER   ':'
 #define PERDITIONDB_ODBC_MAX_SLEEP         1800

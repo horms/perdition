@@ -13,6 +13,12 @@
 /* Should we use DMALLOC */
 /* #define WITH_DMALLOC 1 */
 
+/* Use uniodbc ODBC Manager */
+/* #define WITH_UNIX_ODBC 1 */
+
+/* Use Intersolve ODBC Manager */
+/* #define WITH_INTERSOLV_ODBC 1 */
+
 /* Borrowed from Proftpd
  * Proftpd is Licenced under the terms of the GNU General Public Licence
  * and is available from http://www.proftpd.org/
@@ -37,4 +43,5 @@
 #undef HAVE_SETPROCTITLE
 
 /* End of code borrowed from proftpd */
+
 
