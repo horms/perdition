@@ -1,9 +1,9 @@
 perdition (0.1.9pre1-1) unstable; urgency=low
 
-  * Fixed gramatical error in control file. Closes #99764.
+  * Fixed gramatical error in control file. closes: Bug#99764.
 
   * Moved from main/mail to non-US/main/mail becase PostgreSQL
-    is in non-US. Closes #97121
+    is in non-US. closes: Bug#97121
 
  -- Simon Horman <horms@vergenet.net>  Sun, 20 May 2001 11:08:56 +1000
 
