@@ -92,7 +92,7 @@ typedef struct {
 
 typedef struct {
 	uint16_t length;
-	unsigned char *data;
+	const unsigned char *data;
 } perdition_packet_str_t;
 
 #define PERDITION_PACKET_STR_PACK(p_str, str) \
