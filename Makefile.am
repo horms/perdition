@@ -1,0 +1,53 @@
+######################################################################
+# Makefile.am                                            February 2000
+# Horms                                             horms@vergenet.net
+#
+# perdition
+# Mail retreival proxy server
+# Copyright (C) 1999  Horms
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+SUBDIRS = libjain @makegdbm_build_dir@ perdition
+
+EXTRA_DIST = \
+configure \
+configure.in \
+README.in \
+README \
+TODO \
+INSTALL.in \
+CODING_LOCATIONS.in\
+CODING_LOCATIONS \
+perdition.spec.in \
+perdition.spec \
+etc/perdition/perdition.conf \
+etc/perdition/Makefile.in \
+etc/perdition/popmap \
+etc/perdition/popmap.re \
+etc/perdition/mysql/makedb \
+etc/perdition/mysql/perdition.sql \
+etc/perdition/ldap/makedb \
+etc/perdition/ldap/popmap.ldif \
+etc/perdition/postgresql/makedb \
+etc/rc.d/init.d/perdition \
+etc/sysconfig/perdition \
+etc/pam.d/perdition \
+acconfig.h
+
+m4datadir = $(datadir)/aclocal

@@ -1,0 +1,208 @@
+######################################################################
+# configure.in                                          September 2000
+# Horms                                           <horms@vergenet.net>
+#
+# perdition
+# Mail retreival proxy server
+# Copyright (C) 1999  Horms
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+AC_INIT(makegdbm/makegdbm.c)
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(perdition, 0.1.6pre4)
+
+AM_PROG_LIBTOOL
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+dnl Checks for libraries.
+dnl Replace `main' with a function in -ldl:
+AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
+dnl Replace `main' with a function in -lgdbm:
+AC_CHECK_LIB(gdbm, gdbm_open, true, true)
+AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
+AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
+AC_CHECK_LIB(
+  popt,
+  poptGetContext,
+  :,
+  AC_MSG_ERROR(
+    ""
+    "**********************************************************************"
+    "* perdition requires the popt options parsing library available from"
+    "* ftp://ftp.redhat.com/pub/redhat/code/popt/ and mirrors."
+    "**********************************************************************"
+  ) ;\
+)
+AC_CHECK_LIB(
+  vanessa_logger,
+  vanessa_logger_closelog,
+  :,
+  AC_MSG_ERROR(
+    ""
+    "**********************************************************************"
+    "* perdition requires the vanessa_logger generic logging library"
+    "* available from"
+    "* ftp://ftp.vergenet.net/pub/vanessa_logger/ and mirrors."
+    "**********************************************************************"
+  ) ;\
+)
+AC_CHECK_LIB(
+  vanessa_adt,
+  vanessa_queue_create,
+  :,
+  AC_MSG_ERROR(
+    ""
+    "**********************************************************************"
+    "* perdition requires the vanessa_adt abstract data type library"
+    "* available from"
+    "* ftp://ftp.vergenet.net/pub/vanessa_adt/ and mirrors."
+    "**********************************************************************"
+  ) ;\
+)
+AC_CHECK_LIB(
+  vanessa_socket,
+  vanessa_socket_client_open,
+  :,
+  AC_MSG_ERROR(
+    ""
+    "**********************************************************************"
+    "* perdition requires the vanessa_socket TCP socket interface library"
+    "* available from"
+    "* ftp://ftp.vergenet.net/pub/vanessa_socket/ and mirrors."
+    "**********************************************************************"
+  ) ;\
+)
+
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(
+  mysql/mysql.h, 
+  [ mysql_build_dir="mysql" ],
+  [ 
+    mysql_build_dir="" 
+    AC_MSG_WARN([*** perditiondb_mysql will not be built ***])
+  ]
+)
+AC_CHECK_HEADERS(
+  pgsql/libpq-fe.h,
+  [ postgresql_build_dir="postgresql" ],
+  [ 
+    postgresql_build_dir="" 
+    AC_MSG_WARN([*** perditiondb_postgresql will not be built ***])
+  ]
+)
+AC_CHECK_HEADERS(
+  gdbm.h,
+  [ 
+    gdbm_build_dir="gdbm" 
+    makegdbm_build_dir="makegdbm" 
+  ],
+  [ 
+    gdbm_build_dir="" 
+    makegdbm_build_dir="" 
+    AC_MSG_WARN([*** perditiondb_gdbm and makegdbm will not be built ***])
+  ]
+)
+AC_CHECK_HEADERS(
+  ldap.h,
+  [
+    ldap_build_dir="ldap"
+    ldap_lib="-lldap -llber"
+  ],
+  [
+    ldap_build_dir=""
+    ldap_lib=""
+    AC_MSG_WARN([*** perditiondb_ldap will not be built ***])
+  ]
+)
+pam=yes
+AC_CHECK_HEADERS(
+  security/pam_appl.h, 
+  true,
+  [
+    pam=no
+    AC_MSG_WARN([*** pam support will not be built ***])
+  ]
+)
+if test $pam = yes; then
+  AC_CHECK_HEADERS(
+    security/pam_misc.h, 
+    true,
+    [
+      pam=no
+      AC_MSG_WARN([*** pam support will not be built ***])
+    ]
+  )
+fi
+if test $pam = yes; then
+  pam_lib="-lpam"
+  pam_source="pam.c pam.h"
+  AC_DEFINE(WITH_PAM_SUPPORT, 1, Compile with PAM support)
+else
+  pam_lib=""
+  pam_source=""
+fi
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_UID_T
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_TYPE_SIGNAL
+AC_FUNC_WAIT3
+AC_CHECK_FUNCS(select socket strdup strerror flim)
+
+AC_SUBST(gdbm_build_dir)
+AC_SUBST(makegdbm_build_dir)
+AC_SUBST(postgresql_build_dir)
+AC_SUBST(mysql_build_dir)
+AC_SUBST(ldap_build_dir)
+AC_SUBST(socket_lib)
+AC_SUBST(dl_lib)
+AC_SUBST(nsl_lib)
+AC_SUBST(ldap_lib)
+AC_SUBST(pam_lib)
+AC_SUBST(pam_source)
+
+AC_OUTPUT(
+perdition.spec
+libjain/Makefile 
+perdition/Makefile 
+perdition/perdition_config.h 
+perdition/db/Makefile 
+perdition/db/gdbm/Makefile 
+perdition/db/posix_regex/Makefile 
+perdition/db/mysql/Makefile 
+perdition/db/postgresql/Makefile 
+perdition/db/ldap/Makefile 
+makegdbm/Makefile 
+etc/perdition/Makefile 
+Makefile
+INSTALL
+README
+README.perditiondb
+CODING_LOCATIONS
+)

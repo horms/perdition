@@ -1,0 +1,10 @@
+.depend
+libjain
+*.swp
+.deps
+Makefile.in
+Makefile
+.libs
+jain.lo
+libjain.la
+

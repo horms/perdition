@@ -1,0 +1,7 @@
+makegdbm
+.depend
+*.swp
+.deps
+Makefile.in
+Makefile
+.libs

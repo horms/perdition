@@ -1,0 +1,16 @@
+INSTALL
+
+perdition
+Mail retreival proxy server
+Copyright (C) 1999  Horms <horms@vergenet.net>
+----------------------------------------------------------------------
+
+To install perdition 
+tar zxf perdition-@VERSION@.tar.gz
+cd perdition-@VERSION@
+./configure
+make
+make install
+
+You will need to create a popmap and decide on your invocation method.
+For details on this please see the README

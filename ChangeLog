@@ -1,0 +1,152 @@
+Change Log
+
+perdition
+Mail retreival proxy server
+Copyright (C) 1999  Horms <horms@vergenet.net>
+----------------------------------------------------------------------
+
+xxx
+(Horms)
+
+   * Version xxx
+   - Fixed Bux in specifying port of PostgreSQL server.
+     Thanks to Michael J. Maravillo.
+   - Fixed Bug in reporting of reauthenication failures in IMAP4 mode
+     Thanks to Mike Shirobokov
+   - Added logging to libtcp_pipe that is activated by running
+     perdition in debug mode
+   - LDAP popmap access support added courtesy of ChrisS
+   - Fixed compile time dependancies on PAM
+   - Added sysconfig file to control init script
+   - Split mysql, posgresql and ldap libaries into separage rpm packages
+     so perdition can be installed without the dependancies that
+     these bring.
+   - Added IMAP4REV1 to IMAP4_CAPABILITIES in imap4_write.h to fix
+     incompatibility with Outlook 5. Thanks to Valtteri Vuorikoski
+   - LDAP popmax fix for values with only one attribute
+     courtesy of Jeremy Nelson 
+
+----------------------------------------------------------------------
+
+2nd May 2000
+(Horms)
+
+   * Version 0.1.5
+   - Removed bug that caused 0.1.4 not to background when in stand
+     alone mode.
+   - Fixed potential buffer overun problems in perditiondb_mysql
+   - Added dbhost configuration parameter to perditiondb_mysql
+   - Ported perditiondb_mysql to perditiondb_postgresql
+   - POP3 now quits cleanly
+   - Will now build on systems without gdbm headers.
+
+----------------------------------------------------------------------
+
+15th April 2000
+(Horms)
+
+   * Version 0.1.4
+   - Updated perditiondb_mysql so it no longer used the depreciated
+     myslq_real_connect. Thanks to Krzysztof Sierota for the patch.
+   - Removed missing define that prevented copilation without pam
+   - Logs local address connected to as well as client address
+     when in stand alone mode. (Logs address bound to on Solaris)
+     system_uname global documented for perditiondb use
+     peername and sockname global added and documented for perditiondb use
+   - Tidied up a few minor build problems under FreeBSD 3.4
+
+
+----------------------------------------------------------------------
+
+20th March 2000
+(Wim Bonis <bonis@solution-service.de>)
+
+    - A map can give a answer including a new username
+      The map can return [username@]servername[:port],
+      The backend server is the contacted via this username
+    - The Regex Map can now expand Variable in the for $n
+      eg. a map "([^.]*)@([^.]*)\.(.*):       $1_$2_$3@realserver"
+      will expand a username
+      "bonis@solution-service.de" to "bonis_solution-service_de@realserver"
+
+----------------------------------------------------------------------
+
+8th February 2000
+(Horms)
+
+    * Version 0.1.3
+    - Options structure is now global
+    - Configuration file support added
+    - Logs Client IP address when not in inetd mode
+    - Logs bytes read and written by client
+    - Added option to limit the number of simultaneous connections.
+    - Added an option to enable binding only to interfaces with a 
+      specific address
+    - Made db (popmap) access library based so arbitrary methods can be 
+      supported.
+    - Added posix_regex map library
+    - Added support for round robin selection of default servers
+    - Aded mysql map library
+    - Removed some memory leaks that occured when mutilple failed
+      login attemts occured
+    - Requires libtool >=1.3 to build (grumble)
+    - An option to return real servers "+OK"
+    - Should now run on Solaris 7, thanks to Sun for some hardware to test this
+    - Added debug option, defualt debuging is now much less verbose
+    - Fixed bug in vanessa_socket_str_is_digigt so it actuall works and as a result
+      changing uid and gid also now works
+    
+
+----------------------------------------------------------------------
+
+14th November 1999
+(Horms)
+
+    * Version 0.1.2
+    - \" is ignored duting authenticatin phase. Netscape
+      seems to put these in during imap authentication.
+
+----------------------------------------------------------------------
+
+10th November 1999
+(Horms)
+
+     * Version 0.1.1
+     *** NB: Several options have changed meaning between 0.1.0 and 0.1.1 ***
+     - Added default server option
+     - Added option to strip domain
+     - Added option to set user, domain delimiter
+     - Added multicharacter user, domain delimiter support
+     - Passwd is no longer logged (Argh this was supposed to be for testing
+     - Doesn't exit after accept as the error may be transient
+     - Set SO_REUSEADDR to avoid bind problems when restarting
+     - Use writev to write when multiple strings are written at once
+     - Cleaned up uninitialised variables
+     - Cleaned up definaition of golbal variable for pam authentication
+     - Zero timeout sets no timeout (will wait ifinitely for input)
+     - Doesn't log Exiting on Signal for non-signal driven exits
+     *** NB: Several options have changed meaning between 0.1.0 and 0.1.1 ***
+
+----------------------------------------------------------------------
+
+12th October 1999
+(Horms)
+
+      * Version 0.1.0
+      - IMAP4 protocol support
+      - Fixed bug were port wasn't closed cleanly on exit on failure
+      - Fixed bug where perdition would loop if client died unexpectedly
+      - Idle timeout, default 1800 seconds
+      - Support for user host and port specification using user@host[:port]
+        patch courtesy of  Daniel Rosen
+      - Detects if connection is from itself and closes connection
+      - Beginings of test suite written
+      - Fixed bug that caused init script to report failure under RH6.0
+ 
+----------------------------------------------------------------------
+
+29th May 1999
+(Horms)
+
+      * Initial release (0.0.0)
+

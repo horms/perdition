@@ -1,0 +1,15 @@
+0 NULL
+2 flim jim
+0 flim capability
+1 flim authenticate
+1 flim authenticate 7
+2 flim login
+2 flim login jim
+1 flim login jim jam
+1 flim login tymm flymm
+1 flim login tymm flym
+0 flim login tymm@localhost:143 flym
+2
+
+0 flim noop
+0 flim logout

@@ -1,0 +1,9 @@
+.depend
+perdition
+*.db
+*.swp
+.deps
+Makefile.in
+Makefile
+.libs
+config.h

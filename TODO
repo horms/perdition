@@ -1,0 +1,35 @@
+TODO
+
+perdition
+Mail retreival proxy server
+Copyright (C) 1999  Horms <horms@vergenet.net>
+----------------------------------------------------------------------
+
+*  Make man page (from infromation in README)
+*  Option to force lowercase before map lookup
+*  Support for empty passwords
+*  Support for a backup MySQL server
+*  Make logger for perdition itself
+*  tdb module
+
+From Daniel Rosen
+* make installs into /usr/local work for all files
+* /etc/rc.d/init.d/perdition should run /usr/sbin/perdition.[01]
+  wherever it is installed.
+* Specity a # as an option in a config file, currently it will
+  be seen as a commnet.
+* Greet with reverse DNS of bind_address if given.
+* Option to turn off logging of successful connections.
+* Enable specification of syslog facility and non-sylog logging.
+* Make sure binds to bind_interface if given
+* Fix documentation to indicate that bind_address can be a hostname.
+* Document how to set rpms with the "right" prefix
+* Document that gdbm maps can be missing for a pure proxy
+
+From Rob Wyn Jones
+* Allow multiple servers for a user (or default) are connect to in series
+  (rather than randomly)
+
+From Krzysztof Sierota
+* Method of evaluating if mailboxes are empty to avoid have to
+  authenticate with the backend server. Method is yet to be determined :)

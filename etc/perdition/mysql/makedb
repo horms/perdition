@@ -1,0 +1,49 @@
+#!/bin/bash
+######################################################################
+# makedb                                                  January 2000
+# Horms                                             horms@vergenet.net
+#
+# Frederic Delchambre                                     October 1999
+# N.T.S. / Freegates                                dedel@freegates.be
+#                                             http://www.freegates.be/
+#                                                   http://www.nts.be/
+#
+# Sample programme to create a MySql database using sample
+# table data in perdition.sql
+#
+# perdition
+# Mail retreival proxy server MySQL support
+# Copyright (C) 1999  Horms, Frederic Delchambre
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+
+#Create uer perdition in database
+mysql --user=root --password=timtam mysql <<__EOF__
+  GRANT ALL PRIVILEGES ON *.* TO perdition@localhost
+           IDENTIFIED BY 'perdition' WITH GRANT OPTION;
+__EOF__
+
+#Drop table as user perdition
+echo y|mysqladmin --user=perdition --password=perdition drop dbPerdition
+
+#Create table as user perdition
+mysqladmin --user=perdition --password=perdition create dbPerdition
+
+#Seed table with data as user perdition
+mysql --user=perdition --password=perdition dbPerdition < perdition.sql

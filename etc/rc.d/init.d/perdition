@@ -1,0 +1,92 @@
+#!/bin/sh
+######################################################################
+# Version:                                              September 1999
+# Author:                                   Horms <horms@vergenet.net>
+#
+# Adapted from: Tomasz K³oczko, <kloczek@rudy.mif.pg.gda.pl>
+#               Michele Marziani <marziani@fe.infn.it>
+#
+# perdition:
+# chkconfig: 2345 81 29
+# description: Perdition is a POP3 and IMAP4 proxy designed to \
+# enable users to contact a content free pop server that \
+# will direct them to a real pop server on a per user basis\
+# processname: perdition
+#
+# perdition
+# Mail retreival proxy server
+# Copyright (C) 1999  Horms
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307  USA
+#
+######################################################################
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+POP3=yes
+IMAP4=yes
+
+if [ -f /etc/sysconfig/perdition ]; then
+  . /etc/sysconfig/perdition
+fi
+
+# See how we were called.
+case "$1" in
+  start)
+	if [ "$POP3" = "yes" ]; then
+        	echo -n "Starting perdition services (POP3): "
+		daemon /usr/sbin/perdition.0 -P POP3 $FLAGS
+		touch /var/lock/subsys/perdition.0
+        	echo
+	fi
+
+	if [ "$IMAP4" = "yes" ]; then
+        	echo -n "Starting perdition services (IMAP4): "
+		daemon /usr/sbin/perdition.1 -P IMAP4 $FLAGS
+		touch /var/lock/subsys/perdition.1
+		echo
+	fi
+	;;
+  status)
+        status perdition
+	;;
+  restart|reload)
+        $0 stop
+	$0 start
+        ;;
+  stop)
+	if [ "$POP3" = "yes" ]; then
+        	echo -n "Shutting down perdition services (POP3): "
+		killproc perdition.0
+		rm -f /var/lock/subsys/perdition.0
+        	echo
+	fi
+
+	if [ "$IMAP4" = "yes" ]; then
+        	echo -n "Shutting down perdition services (IMAP4): "
+		killproc perdition.1
+		rm -f /var/lock/subsys/perdition.1
+		echo
+	fi
+	;;
+  *)
+	echo "Usage: perdition {start|stop|status|restart|reload}"
+	exit 1
+esac
+
+exit 0
+

@@ -1,0 +1,232 @@
+%define ver      @VERSION@
+%define rel      1
+%define prefix   @prefix@
+
+Summary: Mail Retrieval Proxy
+Name: perdition
+Version: %ver
+Release: %rel
+Copyright: GPL
+Group: Applications/Internet
+Source: ftp://ftp.vergenet.net/pub/perdition/perdition-%{ver}.tar.gz
+BuildRoot: /var/tmp/perdition-%{PACKAGE_VERSION}-root
+Packager: Horms <horms@vergenet.net>
+URL: http://vergenet.net/linux/perdition/
+Docdir: %{prefix}/doc
+Provides: perdition-%{ver}-%{rel}
+BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel MySQL-devel postgresql-devel openldap-devel popt pam
+
+%description
+Perdition is allows users to connect to a content-free POP3 or IMAP4 server
+that will redirect them to their real POP3 or IMAP4 server. This enables
+mail retrieval for a domain to be split across multiple backend servers on
+a per user basis. This can also be used to as a POP3 or IMAP4 proxy
+especially in firewall applications. Perdition supports arbitrary library
+based map access to determine the server for a user. POSIX Regular
+Expression, GDBM, MySQL, PostgreSQL and LDAP libraries ship with the
+distribution. 
+
+%package devel
+Summary: Headers and static libraries for perditiondb library development
+Group: Development/Libraries
+Requires: perdition-%{ver}-%{rel}
+
+%description devel
+Perdition allows for arbitrary user database access through
+shared libraries much in the maner of NSS in glibc. This package
+provides headers and libraries that may be useful in the development
+of perditiondb librarys.
+
+
+%package mysql
+Summary: Access to MySQL maps for Perdition
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-mysql-%{ver}-%{rel}
+
+%description mysql
+Library to allow perdition to access MySQL based pop maps.
+
+
+%package postgresql
+Summary: Access to PosgreSQL maps for Perdition
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-postgresql-%{ver}-%{rel}
+
+%description postgresql
+Library to allow perdition to access PosgreSQL based pop maps.
+
+
+%package ldap
+Summary: Access to LDAP regular expression maps for Perdition
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-ldap-%{ver}-%{rel}
+
+%description ldap
+Library to allow perdition to access LDAP regular expression based pop maps.
+
+
+%prep
+%setup
+
+%build
+CFLAGS="${RPM_OPT_FLAGS}" ./configure --prefix=%prefix
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p ${RPM_BUILD_ROOT}/{,etc/{,rc.d/init.d,perdition/{mysql,postgresql,ldap},pam.d,sysconfig},@prefix/sbin}
+
+make prefix=$RPM_BUILD_ROOT%{prefix} install-strip
+
+install -m755 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition \
+  ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
+install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
+  ${RPM_BUILD_ROOT}/etc/sysconfig/perdition
+install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/pam.d/perdition \
+  ${RPM_BUILD_ROOT}/etc/pam.d/perdition
+  
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/mysql/makedb \
+  ${RPM_BUILD_ROOT}/etc/perdition/mysql/makedb
+install -m600 \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/mysql/perdition.sql \
+  ${RPM_BUILD_ROOT}/etc/perdition/mysql/perdition.sql
+
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/ldap/makedb \
+  ${RPM_BUILD_ROOT}/etc/perdition/ldap/makedb
+install -m600 \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/ldap/popmap.ldif \
+  ${RPM_BUILD_ROOT}/etc/perdition/ldap/popmap.ldif
+
+install -m600 \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/postgresql/makedb \
+  ${RPM_BUILD_ROOT}/etc/perdition/postgresql/makedb
+
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/popmap \
+  ${RPM_BUILD_ROOT}/etc/perdition/popmap
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/popmap.re \
+  ${RPM_BUILD_ROOT}/etc/perdition/popmap.re
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/Makefile \
+  ${RPM_BUILD_ROOT}/etc/perdition/Makefile
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/perdition.conf \
+  ${RPM_BUILD_ROOT}/etc/perdition/perdition.conf
+install -m600 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/perdition/Makefile \
+  ${RPM_BUILD_ROOT}/etc/perdition/Makefile
+
+cd ${RPM_BUILD_ROOT}@prefix@/sbin
+ln -s perdition perdition.0
+ln -s perdition perdition.1
+
+%clean
+rm -rf $RPM_BUILD_DIR/perdition-%{ver}
+rm -rf $RPM_BUILD_ROOT
+
+%post
+make -q	-C /etc/perdition/
+/sbin/chkconfig --add perdition
+
+%postun
+
+%preun
+/sbin/chkconfig --del perdition
+
+%files
+%defattr(-,root,root)
+%doc README README.perditiondb queue ChangeLog NEWS CODING_LOCATIONS TODO
+%{prefix}/bin/makegdbm
+%{prefix}/sbin/perdition
+%{prefix}/sbin/perdition.0
+%{prefix}/sbin/perdition.1
+%{prefix}/lib/libjain.so
+%{prefix}/lib/libjain.so.0
+%{prefix}/lib/libjain.so.0.0.0
+%{prefix}/lib/libperditiondb_gdbm.so
+%{prefix}/lib/libperditiondb_gdbm.so.0
+%{prefix}/lib/libperditiondb_gdbm.so.0.0.0
+%{prefix}/lib/libperditiondb_posix_regex.so
+%{prefix}/lib/libperditiondb_posix_regex.so.0
+%{prefix}/lib/libperditiondb_posix_regex.so.0.0.0
+/etc/pam.d/perdition
+/etc/rc.d/init.d/perdition
+/etc/perdition/Makefile
+%config /etc/sysconfig/perdition
+%config /etc/perdition/popmap
+%config /etc/perdition/popmap.re
+%config /etc/perdition/perdition.conf
+
+%files devel
+%defattr(-,root,root)
+%{prefix}/include/jain.h
+%{prefix}/lib/libjain.a
+%{prefix}/lib/libjain.la
+%{prefix}/lib/libperditiondb_gdbm.a
+%{prefix}/lib/libperditiondb_gdbm.la
+%{prefix}/lib/libperditiondb_posix_regex.a
+%{prefix}/lib/libperditiondb_posix_regex.la
+
+%files mysql
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_mysql.a
+%{prefix}/lib/libperditiondb_mysql.la
+%{prefix}/lib/libperditiondb_mysql.so
+%{prefix}/lib/libperditiondb_mysql.so.0
+%{prefix}/lib/libperditiondb_mysql.so.0.0.0
+%config /etc/perdition/mysql/makedb
+%config /etc/perdition/mysql/perdition.sql
+
+%files postgresql
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_postgresql.a
+%{prefix}/lib/libperditiondb_postgresql.la
+%{prefix}/lib/libperditiondb_postgresql.so
+%{prefix}/lib/libperditiondb_postgresql.so.0
+%{prefix}/lib/libperditiondb_postgresql.so.0.0.0
+%config /etc/perdition/postgresql/makedb
+
+%files ldap
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_ldap.a
+%{prefix}/lib/libperditiondb_ldap.la
+%{prefix}/lib/libperditiondb_ldap.so
+%{prefix}/lib/libperditiondb_ldap.so.0
+%{prefix}/lib/libperditiondb_ldap.so.0.0.0
+%config /etc/perdition/ldap/makedb
+%config /etc/perdition/ldap/popmap.ldif
+
+
+%changelog
+* Mon May 15 2000 Horms <horms@vergenet.net>
+- added sysconfig file
+- split libraries into separate packages so that packages such
+  as postgress and mysql don't have to be installed for perdition
+  to install cleanly.
+- added sample ldap server configuration
+
+* Thu May  4 2000 Horms <horms@vergenet.net>
+- added perditiondb_ldap files
+- added missing perditiondb_postgresql devel files
+
+* Thu Apr 20 2000 Horms <horms@vergenet.net>
+- added perditiondb_postgresql files
+
+* Tue Jan  4 2000 Horms <horms@vergenet.net>
+- added libraries
+- added headers
+- made devel package
+- made libtcp_socket and libtcp_socket-devel package
+- Included mysql and posix_regex stuff in /etc
+
+* Mon Nov 29 1999 Horms <horms@vergenet.net>
+- Added perdition.conf
+
+* Sat Sep 18 1999 Horms <horms@vergenet.net>
+- updated for 0.1.0
+
+* Sat May 29 1999 Horms <horms@vergenet.net>
+- inital release
+
