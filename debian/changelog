@@ -1,8 +1,8 @@
-perdition (0.1.10-beta2-1) unstable; urgency=low
+perdition (0.1.10-beta3-1) unstable; urgency=low
 
   * CVS release
 
- -- Simon Horman <horms@vergenet.net>  Sun, 24 Mar 2002 10:23:01 +1100
+ -- Simon Horman <horms@vergenet.net>  Tue, 30 Apr 2002 16:06:23 +1000
 
 perdition (0.1.9-5) unstable; urgency=low
 
@@ -18,6 +18,8 @@ perdition (0.1.9-5) unstable; urgency=low
      (closes: Bug#125227)
   *  Compile against openldap2.
      (closes: Bug#129843)
+
+ -- Simon Horman <horms@vergenet.net>  Tue, 30 Apr 2002 15:06:23 +1000
 
 perdition (0.1.9-3) unstable; urgency=low
 
