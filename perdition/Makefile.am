@@ -38,7 +38,6 @@ install-exec-hook:
 
 perdition_SOURCES = \
         config_file.c       config_file.h \
-        daemon.c            daemon.h \
         getserver.c         getserver.h \
         greeting.c          greeting.h \
         imap4.c             imap4.h \

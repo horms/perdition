@@ -40,7 +40,6 @@
 #include "log.h"
 #include "str.h"
 #include "perdition_types.h"
-#include "daemon.h"
 #include "token.h"
 
 

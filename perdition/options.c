@@ -140,11 +140,11 @@ options_t opt;
 #define OPTARG_DUP \
   if(optarg==NULL){ \
     PERDITION_DEBUG("OPTARG_DUP: optarg is NULL"); \
-    if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+    if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
   } \
   if((optarg_copy=strdup(optarg)) == NULL){ \
     PERDITION_DEBUG_ERRNO("strdup"); \
-    if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+    if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
   }
 
 
@@ -190,12 +190,12 @@ options_t opt;
           (opt.ssl_mode!=SSL_MODE_NONE && opt.ssl_mode!=SSL_MODE_EMPTY) ) \
      ){ \
       PERDITION_DEBUG("invalid ssl_mode combination"); \
-      if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+      if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
     /* TLS support hasn't been implemented yet */ \
     /* if(new!=SSL_MODE_NONE && new&SSL_TLS_MASK){ */ \
     /*  PERDITION_DEBUG("TLS not implemented"); */ \
-    /*  if(f&OPT_ERR) daemon_exit_cleanly(-1); */ \
+    /*  if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); */ \
     /*} */ \
     opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
   }
@@ -970,7 +970,7 @@ void usage(int exit_status){
   );
 
   fflush(stream);
-  daemon_exit_cleanly(exit_status);
+  vanessa_socket_daemon_exit_cleanly(exit_status);
 }
 
 

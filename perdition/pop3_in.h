@@ -41,7 +41,6 @@
 #include "pop3_write.h"
 #include "log.h"
 #include "perdition_types.h"
-#include "daemon.h"
 #include "str.h"
 #include "queue_func.h"
 

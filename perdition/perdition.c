@@ -39,7 +39,6 @@
 #include <vanessa_socket.h>
 
 #include "protocol.h"
-#include "daemon.h"
 #include "log.h"
 #include "options.h"
 #include "getserver.h"
@@ -119,15 +118,15 @@ static void perdition_reread_handler(int sig);
       "Warning: not invoked as root, local authentication may fail" \
     ); \
   } \
-  if(!geteuid() && daemon_setid(opt.username, opt.group)){ \
+  if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
     PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
-    daemon_exit_cleanly(-1); \
+    vanessa_socket_daemon_exit_cleanly(-1); \
   }
 #else
 #define PERDITION_SET_UID_AND_GID \
-  if(!geteuid() && daemon_setid(opt.username, opt.group)){ \
+  if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
     PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
-    daemon_exit_cleanly(-1); \
+    vanessa_socket_daemon_exit_cleanly(-1); \
   }
 #endif
 
@@ -204,7 +203,7 @@ int main (int argc, char **argv){
   ))==NULL){
     fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
                     "Fatal error opening logger. Exiting.\n");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Parse options*/
@@ -223,7 +222,7 @@ int main (int argc, char **argv){
     ))==NULL){
       fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
                       "Fatal error opening logger. Exiting.\n");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
 
@@ -245,46 +244,46 @@ int main (int argc, char **argv){
     PERDITION_ERR_UNSAFE("dlopen of \"%s\" failed", 
       str_null_safe(opt.map_library));
     usage(-1);
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
       (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
     PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 #endif /* WITH_SSL_SUPPORT */
 
   /*Set signal handlers*/
   signal(SIGHUP,    (void(*)(int))perdition_reread_handler);
-  signal(SIGINT,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGQUIT,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGILL,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGTRAP,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGIOT,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGBUS,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGFPE,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGUSR1,   (void(*)(int))daemon_noop_handler);
-  signal(SIGSEGV,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGUSR2,   (void(*)(int))daemon_noop_handler);
-  signal(SIGPIPE,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGALRM,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGTERM,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGURG,    (void(*)(int))daemon_exit_cleanly);
-  signal(SIGXCPU,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGXFSZ,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGVTALRM, (void(*)(int))daemon_exit_cleanly);
-  signal(SIGPROF,   (void(*)(int))daemon_exit_cleanly);
-  signal(SIGWINCH,  (void(*)(int))daemon_exit_cleanly);
-  signal(SIGIO,     (void(*)(int))daemon_exit_cleanly);
+  signal(SIGINT,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGQUIT,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGILL,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGTRAP,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGIOT,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGBUS,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGFPE,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGUSR1,   (void(*)(int))vanessa_socket_daemon_noop_handler);
+  signal(SIGSEGV,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGUSR2,   (void(*)(int))vanessa_socket_daemon_noop_handler);
+  signal(SIGPIPE,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGALRM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGTERM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGURG,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGXCPU,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGXFSZ,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGVTALRM, (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGPROF,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGWINCH,  (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGIO,     (void(*)(int))vanessa_socket_daemon_exit_cleanly);
 
   /*Close file descriptors and detactch process from shell as necessary*/
   if(opt.inetd_mode){
-    daemon_inetd_process();
+    vanessa_socket_daemon_inetd_process();
   }
   else{
-    daemon_process();
+    vanessa_socket_daemon_process();
   }
 
   /*
@@ -301,7 +300,7 @@ int main (int argc, char **argv){
     ))==NULL){
       fprintf(stderr, "main: vanessa_logger_openlog_filename\n"
                       "Fatal error opening logger. Exiting.\n");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
   else {
@@ -313,7 +312,7 @@ int main (int argc, char **argv){
     ))==NULL){
       fprintf(stderr, "main: vanessa_logger_openlog_syslog 2\n"
                       "Fatal error opening logger. Exiting.\n");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
 
@@ -321,31 +320,31 @@ int main (int argc, char **argv){
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc system_uname");
     PERDITION_ERR("Fatal error allocating memory. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
   if(uname(system_uname)<0){
     PERDITION_DEBUG("uname");
     PERDITION_ERR("Fatal error finding uname for system. Exiting");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Set up protocol structure*/
   if((protocol=protocol_initialise(opt.protocol, protocol))==NULL){
     PERDITION_DEBUG("protocol_initialise");
     PERDITION_ERR("Fatal error intialising protocol. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Set listen and outgoing port now the protocol structure is accessable*/
   if((opt.listen_port=(*(protocol->port))(opt.listen_port))==NULL){
     PERDITION_DEBUG("protocol->port 1");
     PERDITION_ERR("Fatal error finding port to listen on. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
   if((opt.outgoing_port=(*(protocol->port))(opt.outgoing_port))==NULL){
     PERDITION_DEBUG("protocol->port 2");
     PERDITION_ERR("Fatal error finding port to connect to. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*
@@ -357,7 +356,7 @@ int main (int argc, char **argv){
     if(log_options()){
       PERDITION_DEBUG("log_options");
       PERDITION_ERR("Fatal error loging options. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
 
@@ -376,7 +375,7 @@ int main (int argc, char **argv){
     ))==NULL){
       PERDITION_DEBUG_ERRNO("malloc server_ok_buf");
       PERDITION_ERR("Fatal error allocating memory. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
 
@@ -386,12 +385,12 @@ int main (int argc, char **argv){
   if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc sockname");
     PERDITION_ERR("Fatal error allocating memory. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
   if((peername=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc peername");
     PERDITION_ERR("Fatal error allocating memory. Exiting.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
   
 
@@ -402,7 +401,7 @@ int main (int argc, char **argv){
     if((client_io=io_create_fd(0, 1))==NULL){
       PERDITION_DEBUG("io_create_fd 1");
       PERDITION_ERR("Fatal error setting IO. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
 
     namelen = sizeof(*peername);
@@ -426,13 +425,13 @@ int main (int argc, char **argv){
     ))<0){
       PERDITION_DEBUG("vanessa_socket_server_connect");
       PERDITION_ERR("Fatal error accepting child connecion. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
 
     if((client_io=io_create_fd(s, s))==NULL){
       PERDITION_DEBUG("io_create_fd 2");
       PERDITION_ERR("Fatal error setting IO. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
   }
 
@@ -480,7 +479,7 @@ int main (int argc, char **argv){
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
       client_io, ssl_ctx, PERDITION_SERVER))==NULL){
     PERDITION_DEBUG("perdition_ssl_connection 1");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 #endif /* WITH_SSL_SUPPORT */
 
@@ -491,7 +490,7 @@ int main (int argc, char **argv){
       "Fatal error writing to client. %sExiting child.",
       from_to_str
     );
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   pw.pw_name=NULL;
@@ -506,7 +505,7 @@ int main (int argc, char **argv){
 	"Exiting child", 
 	from_to_str
       );
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
     else if(status>0){
       PERDITION_ERR_UNSAFE(
@@ -514,7 +513,7 @@ int main (int argc, char **argv){
         from_to_str,
         str_null_safe(pw.pw_name)
       );
-      daemon_exit_cleanly(0);
+      vanessa_socket_daemon_exit_cleanly(0);
     }
 
     if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
@@ -523,7 +522,7 @@ int main (int argc, char **argv){
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
 
     /*Read the server from the map, if we have a map*/
@@ -583,7 +582,7 @@ int main (int argc, char **argv){
       )<0){
         PERDITION_DEBUG("protocol->write");
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -598,7 +597,7 @@ int main (int argc, char **argv){
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
         );
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
       pw2.pw_passwd=pw.pw_passwd;
 
@@ -615,7 +614,7 @@ int main (int argc, char **argv){
         PERDITION_ERR(
 	  "Fatal error authenticating to client locally. Exiting child."
         );
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
 
       /*
@@ -646,7 +645,7 @@ int main (int argc, char **argv){
       )<0){
         PERDITION_DEBUG("protocol->write");
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -655,14 +654,14 @@ int main (int argc, char **argv){
     if((server_io=io_create_fd(s, s))==NULL){
       PERDITION_DEBUG("io_create_fd 3");
       PERDITION_ERR("Fatal error setting IO. Exiting.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode&SSL_MODE_SSL_OUTGOING){
       if((ssl_ctx=perdition_ssl_ctx(NULL, NULL))==NULL){
         PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 2");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
 
       if((server_io=perdition_ssl_connection(
@@ -671,12 +670,12 @@ int main (int argc, char **argv){
         PERDITION_CLIENT
       ))==NULL){
         PERDITION_DEBUG("perdition_ssl_connection 2");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
   
       if((ssl=io_get_ssl(server_io))==NULL){
         PERDITION_DEBUG("vanessa_socket_get_ssl");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
 
       PERDITION_DEBUG_UNSAFE("SSL connection using %s", SSL_get_cipher(ssl));
@@ -684,7 +683,7 @@ int main (int argc, char **argv){
       if((server_cert=SSL_get_peer_certificate(ssl))==NULL){
         PERDITION_DEBUG_SSL_ERR("SSL_get_peer_certificate");
         PERDITION_ERR("No Server certificate");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
 
       {
@@ -696,7 +695,7 @@ int main (int argc, char **argv){
         if(str==NULL){
           PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
           PERDITION_ERR("Error reading certificate subject name");
-          daemon_exit_cleanly(-1);
+          vanessa_socket_daemon_exit_cleanly(-1);
         }
         PERDITION_DEBUG_UNSAFE("subject: %s", str);
         free(str);
@@ -705,7 +704,7 @@ int main (int argc, char **argv){
         if(str==NULL){
           PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
           PERDITION_ERR("Error reading certificate issuer name");
-          daemon_exit_cleanly(-1);
+          vanessa_socket_daemon_exit_cleanly(-1);
         }
         PERDITION_DEBUG_UNSAFE("issuer: %s", str);
         free(str);
@@ -726,7 +725,7 @@ int main (int argc, char **argv){
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
     pw2.pw_passwd=pw.pw_passwd;
 
@@ -751,7 +750,7 @@ int main (int argc, char **argv){
         PERDITION_ERR(
 	  "Fatal error closing connection to client. Exiting child."
 	);
-	daemon_exit_cleanly(-1);
+	vanessa_socket_daemon_exit_cleanly(-1);
       }
       if(protocol->write(
         client_io, 
@@ -762,7 +761,7 @@ int main (int argc, char **argv){
       )<0){
         PERDITION_DEBUG("protocol->write");
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
       continue;
@@ -770,7 +769,7 @@ int main (int argc, char **argv){
     else if(status<0){
       PERDITION_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
       PERDITION_ERR("Fatal error authenticating user. Exiting child.");
-      daemon_exit_cleanly(-1);
+      vanessa_socket_daemon_exit_cleanly(-1);
     }
 
     if(opt.server_ok_line){
@@ -785,7 +784,7 @@ int main (int argc, char **argv){
       )<0){
         PERDITION_DEBUG("protocol->write");
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
     }
     else{
@@ -798,7 +797,7 @@ int main (int argc, char **argv){
       )<0){
         PERDITION_DEBUG("protocol->write");
         PERDITION_ERR("Fatal error writing to client. Exiting child.");
-        daemon_exit_cleanly(-1);
+        vanessa_socket_daemon_exit_cleanly(-1);
       }
     }
 
@@ -815,7 +814,7 @@ int main (int argc, char **argv){
   if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
     PERDITION_DEBUG_ERRNO("malloc");
     PERDITION_ERR("Fatal error allocating memory. Exiting child.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Let the client talk to the real server*/
@@ -830,7 +829,7 @@ int main (int argc, char **argv){
   )<0){
     PERDITION_DEBUG("vanessa_socket_pipe");
     PERDITION_ERR("Fatal error piping data. Exiting child.");
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   /*Time to leave*/
@@ -842,7 +841,7 @@ int main (int argc, char **argv){
     bytes_written
   );
   getserver_closelib(handle);
-  daemon_exit_cleanly(0);
+  vanessa_socket_daemon_exit_cleanly(0);
 
   /*Here so compilers won't barf*/
   return(0);
@@ -879,7 +878,7 @@ static void perdition_reread_handler(int sig){
     PERDITION_DEBUG("getserver_openlib");
     PERDITION_ERR_UNSAFE("Fatal error reopening: %s. Exiting child.", 
       opt.map_library);
-    daemon_exit_cleanly(-1);
+    vanessa_socket_daemon_exit_cleanly(-1);
   }
 
   signal(sig, (void(*)(int))perdition_reread_handler);

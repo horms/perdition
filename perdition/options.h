@@ -47,7 +47,6 @@
 
 #include "log.h"
 #include "protocol.h"
-#include "daemon.h"
 #include "str.h"
 #include "server_port.h"
 

@@ -40,7 +40,6 @@
 #include "token.h"
 #include "imap4_write.h"
 #include "log.h"
-#include "daemon.h"
 #include "queue_func.h"
 
 #ifdef WITH_PAM_SUPPORT
