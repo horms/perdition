@@ -277,7 +277,7 @@ int main (int argc, char **argv, char **envp){
   signal(SIGIO,     vanessa_socket_daemon_exit_cleanly);
 
   /*Close file descriptors and detactch process from shell as necessary*/
-  if(opt.inetd_mode){
+  if(opt.inetd_mode || opt.no_daemon){
     vanessa_socket_daemon_inetd_process();
   }
   else{

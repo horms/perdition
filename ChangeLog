@@ -14,6 +14,8 @@ XXX
     This resolves a problem with IMAP literal strings not working.
   - Support non-syncronising IMAP string litereals as per RFC 2088
   - Correct logging of timeout
+  - Add no_daemon option to perdition
+  - Vixed version information in makegdbm
 
 
 ----------------------------------------------------------------------

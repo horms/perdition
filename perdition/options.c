@@ -267,6 +267,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_QUERY_KEY},
     {"lower_case",                  '\0', POPT_ARG_STRING, NULL,
       TAG_LOWER_CASE},
+    {"no_daemon",                   '\0', POPT_ARG_NONE,   NULL,
+      TAG_NO_DAEMON},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_MODE },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
@@ -312,6 +314,7 @@ int options(int argc, char **argv, flag_t f){
       opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
     }
     opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
+    opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
@@ -499,6 +502,9 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'q':
         opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
+        break;
+      case TAG_NO_DAEMON:
+	opt_i(opt.no_daemon,1,opt.mask,MASK_NO_DAEMON,f);
         break;
       case TAG_LOWER_CASE:
         OPTARG_DUP;
@@ -763,6 +769,7 @@ int log_options(void){
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
     "no_bind_banner=%s, "
+    "no_daemon=%s, "
     "no_lookup=%s, "
     "nodename=\"%s\", "
     "outgoing_port=\"%s\", "
@@ -802,6 +809,7 @@ int log_options(void){
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
     BIN_OPT_STR(opt.no_bind_banner),
+    BIN_OPT_STR(opt.no_daemon),
     BIN_OPT_STR(opt.no_lookup),
     str_null_safe(system_uname->nodename),
     str_null_safe(opt.outgoing_port),
@@ -938,6 +946,12 @@ void usage(int exit_status){
     "    (default %d)\n"
     " -l|--listen_port:\n"
     "    Port to listen on. (default \"%s\")\n"
+    " --lower_case state[,state...]:\n"
+    "    Convert usernames to lower case according the the locale in given\n"
+    "    state(s). State may be one of servername_lookup, \n"
+    "    local_authentication, remote_login and all See manpage for details\n"
+    "    of states.\n"
+    "    (default \"(null)\")\n"
     " -M|--map_library filename:\n"
     "    Library to open that provides functions to look up the server for a\n"
     "    user. A null library mean no library will be accessed and hence, no\n"
@@ -948,6 +962,9 @@ void usage(int exit_status){
     "    library specified by the -M|--map_library option. The treatment of\n"
     "    this string is up to the library, in the case of perditiondb_gdbm\n"
     "    the gdbm map to access is set. (default \"%s\")\n"
+    " --no_daemon:\n"
+    "    Do not detach from terminal. Makes no sense if -i|--inetd_mode\n"
+    "    is in opperation.\n"
     " -n|--no_lookup:\n"
     "    Disable host and port lookup Implies -B|--no_bind_banner\n"
     " -o|--server_ok_line:\n"
@@ -984,12 +1001,6 @@ void usage(int exit_status){
     "    -U|--username_from_database option is specified or not.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"
-    " --lower_case state[,state...]:\n"
-    "    Convert usernames to lower case according the the locale in given\n"
-    "    state(s). State may be one of servername_lookup, \n"
-    "    local_authentication, remote_login and all See manpage for details\n"
-    "    of states.\n"
-    "    (default \"(null)\")\n"
     " --query_str format[,format...]:\n"
     "    Speficy a list of query strings to search for in the popmap,\n"
     "    in order. See man page for details.\n"

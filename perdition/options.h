@@ -112,6 +112,7 @@
 #define DEFAULT_LOWER_CASE                   STATE_NONE
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
+#define DEFAULT_NO_DAEMON                    0
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
@@ -157,6 +158,7 @@ typedef struct {
   char            *map_library;
   char            *map_library_opt;
   int             no_bind_banner;
+  int             no_daemon;
   int             no_lookup;
   char            *outgoing_port;
   vanessa_dynamic_array_t *outgoing_server;
@@ -198,17 +200,18 @@ typedef struct {
 #define MASK_MAP_LIB                     (flag_t) 0x00008000
 #define MASK_MAP_LIB_OPT                 (flag_t) 0x00010000
 #define MASK_NO_BIND_BANNER              (flag_t) 0x00020000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00040000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00080000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00100000
-#define MASK_PROTOCOL                    (flag_t) 0x00200000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00400000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x00800000
-#define MASK_TIMEOUT                     (flag_t) 0x01000000
-#define MASK_USERNAME                    (flag_t) 0x02000000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x04000000
-#define MASK_QUERY_KEY                   (flag_t) 0x08001000
-#define MASK_QUIET                       (flag_t) 0x10000000
+#define MASK_NO_DAEMON                   (flag_t) 0x00040000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00080000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00100000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00200000
+#define MASK_PROTOCOL                    (flag_t) 0x00400000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x00800000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x01000000
+#define MASK_TIMEOUT                     (flag_t) 0x02000000
+#define MASK_USERNAME                    (flag_t) 0x04000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x08000000
+#define MASK_QUERY_KEY                   (flag_t) 0x10001000
+#define MASK_QUIET                       (flag_t) 0x20000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -225,9 +228,10 @@ typedef struct {
  */
 #define TAG_LOWER_CASE                 (int) 128
 #define TAG_QUERY_KEY                  (int) 129
-#define TAG_SSL_CERT_FILE              (int) 130
-#define TAG_SSL_KEY_FILE               (int) 131
-#define TAG_SSL_MODE                   (int) 132
+#define TAG_NO_DAEMON                  (int) 130
+#define TAG_SSL_CERT_FILE              (int) 131
+#define TAG_SSL_KEY_FILE               (int) 132
+#define TAG_SSL_MODE                   (int) 133
 
 
 /*Flag values for options()*/

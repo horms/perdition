@@ -169,6 +169,13 @@ zero sets no limit on the number of simultaneous connections.
 .TP
 .B \-l, \-\-listen_port port:
 Port to listen on.
+.TP
+.B \-\-lookup_domain:
+If the username is not found on a popmap lookup, and the domain-delimiter
+is part of the username, then lookup up the domain portion of the username,
+prefixed by the domain_delimiter in the database. Allows different default
+servers to be defined for different domains. Overriden by
+\-c|\-\-client_server_specification.
 .br
 (default "protocol dependent")
 .TP
@@ -186,6 +193,10 @@ this string is up to the library, in the case of perditiondb_gdbm
 the gdbm map to access is set.
 .br
 (default "(null)")
+.TP
+.B \-\-no_daemon:
+Do not detach from terminal. Makes no sense if \-i|\-\-inetd_mode
+is in opperation.
 .TP
 .B \-n, \-\-no_lookup:
 Disable host and port lookup Implies \-B|\-\-no_bind_banner.
@@ -241,13 +252,6 @@ specified or not.
 .TP
 .B \-q, \-\-quiet:
 Only log errors. Overridden by \-d|\-\-debug
-.TP
-.B \-\-lookup_domain:
-If the username is not found on a popmap lookup, and the domain-delimiter
-is part of the username, then lookup up the domain portion of the username,
-prefixed by the domain_delimiter in the database. Allows different default
-servers to be defined for different domains. Overriden by
-\-c|\-\-client_server_specification.
 .TP
 .B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
