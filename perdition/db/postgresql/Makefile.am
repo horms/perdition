@@ -23,7 +23,7 @@
 #
 ######################################################################
 
-man_MANS = perditiondb_postgresql_makedb.1
+man_MANS = perditiondb_postgresql_makedb.8
 
 EXTRA_DIST = perditiondb_postgresql_makedb perditiondb_postgresql_makedb.8
 
