@@ -144,10 +144,7 @@ static char *pldap_get_filter_str(const char *key_str, const char *filter_str)
 	for (i = 0; i < filter_len; i++) {
 		c = return_filter[i];
 		if (c == '%') {
-			if(format_percent) {
-				goto invalid;
-			}
-			format_percent++;
+			format_percent ^= 1;
 			continue;
 		}
 		if(format_percent && isdigit((int)c)) {
@@ -179,31 +176,20 @@ static char *pldap_get_filter_str(const char *key_str, const char *filter_str)
 			}
 
 			memmove(return_filter + i + format_width,
-					return_filter + i + dead_width, 
+					return_filter + i + dead_width,
 					filter_len - i - dead_width);
-			memset(return_filter + i, ' ', format_width);
+			memset(return_filter + i, ' ', format_width);  
 			memcpy(return_filter + i + format_width - key_len,
 					key_str, key_len);
 			filter_len += format_width - dead_width;
-			*(return_filter + filter_len) = '\0';
+			*(return_filter + filter_len) = '\0'; 
 			i += format_width - 1;
-
-			format_percent = 0;
-			format_int = 0;
-			continue;
 		}
-		if(format_percent) {
-			goto invalid;
-		}
+		format_percent = 0;
+		format_int = 0;
 	}
 
 	return(return_filter);
-
-invalid:
-	VANESSA_LOGGER_DEBUG("invalid format");
-	free(return_filter);
-	return(NULL);
-
 }
 
 

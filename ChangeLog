@@ -14,6 +14,8 @@ XXX
      Kilian Cavalott
    - Fixed segmentation fault when using the query_key option
      with end-users whose usernames are more than 32 characters long.
+   - Fixed parsing of LDAP URLs so that non %s format elements are
+     ignored. Perviously they caused the URL to be treated as invalid.
 
 ----------------------------------------------------------------------
 
