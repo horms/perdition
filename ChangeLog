@@ -22,6 +22,8 @@ XXX
     fixed. Rayed Alrashed
   - Changed ordering of table names in documentation to match the code
     for the MySQL, PostgreSQL and ODBC modules. Rayed Alrashed
+  - Use uint types instead of u_int types, this should be more portable.
+    Andrew McNamara
 
 ----------------------------------------------------------------------
 

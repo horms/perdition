@@ -29,6 +29,7 @@
 #define PERDITION_PACKET_H
 
 #include <sys/types.h>
+#include <inttypes.h>
 #include <string.h>
 
 #define PERDITION_SOCKET 
@@ -45,29 +46,29 @@
 #define PERDITION_PACKET_CS_NONE 0x00000000
 
 typedef struct {
-	u_int32_t magic;
-	u_int16_t version;
-	u_int16_t flags;
-	u_int16_t length;
-	u_int16_t cs_type;
-	u_int32_t saddr;
-	u_int32_t daddr;
-	u_int16_t sport;
-	u_int16_t dport;
+	uint32_t magic;
+	uint16_t version;
+	uint16_t flags;
+	uint16_t length;
+	uint16_t cs_type;
+	uint32_t saddr;
+	uint32_t daddr;
+	uint16_t sport;
+	uint16_t dport;
 } perdition_packet_head_t;
 
 typedef struct {
-	u_int32_t time;
+	uint32_t time;
 	char   cs[20]; /* 192 bit checksum */
 } perdition_packet_tail_sha1_t;
 
 typedef struct {
-	u_int32_t time;
+	uint32_t time;
 	char   cs[16]; /* 128 bit checksum */
 } perdition_packet_tail_md5_t;
 
 typedef struct {
-	u_int32_t cs; /* 32 bit checksum */
+	uint32_t cs; /* 32 bit checksum */
 } perdition_packet_tail_roll_t;
 
 typedef void perdition_packet_tail_none_t;
@@ -90,7 +91,7 @@ typedef struct {
 } perdition_packet_t;
 
 typedef struct {
-	u_int16_t length;
+	uint16_t length;
 	unsigned char *data;
 } perdition_packet_str_t;
 
@@ -107,15 +108,15 @@ perdition_packet_destroy(perdition_packet_t *packet);
 
 int
 perdition_packet_init_v1_req(perdition_packet_t **packet,
-		u_int16_t cs_type,
-		u_int32_t saddr, u_int16_t sport,
-		u_int32_t daddr, u_int16_t dport, 
+		uint16_t cs_type,
+		uint32_t saddr, uint16_t sport,
+		uint32_t daddr, uint16_t dport, 
 		perdition_packet_str_t *key,
 		perdition_packet_str_t *domain_delimiter);
 
 int
 perdition_packet_init_v1_rsp(perdition_packet_t **packet,
-		u_int16_t cs_type,
+		uint16_t cs_type,
 		perdition_packet_str_t *user,
 		perdition_packet_str_t *server,
 		perdition_packet_str_t *port);

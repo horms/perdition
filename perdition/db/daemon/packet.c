@@ -29,15 +29,16 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <netinet/in.h>
 #include <vanessa_logger.h>
 
 
 static int
 perdition_packet_init_v1_head(perdition_packet_t **packet,
-		u_int16_t cs_type, u_int16_t flags,
-		u_int32_t saddr, u_int16_t sport,
-		u_int32_t daddr, u_int16_t dport, size_t body_len);
+		uint16_t cs_type, uint16_t flags,
+		uint32_t saddr, uint16_t sport,
+		uint32_t daddr, uint16_t dport, size_t body_len);
 
 static int
 perdition_packet_verify_v1_head(perdition_packet_t *packet, size_t len);
@@ -86,9 +87,9 @@ perdition_packet_destroy(perdition_packet_t *packet)
 
 int
 perdition_packet_init_v1_req(perdition_packet_t **packet,
-		u_int16_t cs_type, 
-		u_int32_t saddr, u_int16_t sport,
-		u_int32_t daddr, u_int16_t dport, 
+		uint16_t cs_type, 
+		uint32_t saddr, uint16_t sport,
+		uint32_t daddr, uint16_t dport, 
 		perdition_packet_str_t *key, 
 		perdition_packet_str_t *domain_delimiter) 
 {
@@ -118,7 +119,7 @@ perdition_packet_init_v1_req(perdition_packet_t **packet,
 
 int
 perdition_packet_init_v1_rsp(perdition_packet_t **packet,
-		u_int16_t cs_type, perdition_packet_str_t *user,
+		uint16_t cs_type, perdition_packet_str_t *user,
 		perdition_packet_str_t *server,
 		perdition_packet_str_t *port)
 {
@@ -149,9 +150,9 @@ perdition_packet_init_v1_rsp(perdition_packet_t **packet,
 
 static int
 perdition_packet_init_v1_head(perdition_packet_t **packet,
-		u_int16_t cs_type, u_int16_t flags,
-		u_int32_t saddr, u_int16_t sport,
-		u_int32_t daddr, u_int16_t dport, size_t body_len)
+		uint16_t cs_type, uint16_t flags,
+		uint32_t saddr, uint16_t sport,
+		uint32_t daddr, uint16_t dport, size_t body_len)
 {
 	if (cs_type != PERDITION_PACKET_CS_NONE) {
 		VANESSA_LOGGER_DEBUG("Only checksum type none is implemented");
