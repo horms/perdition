@@ -291,7 +291,7 @@ int dbserver_get(
    if(PQntuples(res)<1 || PQgetisnull(res, 0, 0)){
      PQclear(res);
      PQfinish(conn);
-     return(-1);
+     return(-2);
    }
 
 
