@@ -1,11 +1,10 @@
 ######################################################################
 # Makefile.am                                            February 2000
 # Horms                                             horms@verge.net.au
-# Verge Systems International                     http://vergenet.net/
 #
 # perdition
 # Mail retrieval proxy server
-# Copyright (C) 1999-2003  Horms
+# Copyright (C) 1999-2001  Horms
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -24,13 +23,29 @@
 #
 ######################################################################
 
-SUBDIRS = \
-  @gdbm_build_dir@ \
-  @bdb_build_dir@ \
-  @ldap_build_dir@ \
-  @odbc_build_dir@ \
-  @mysql_build_dir@ \
-  @nis_build_dir@ \
-  @pg_build_dir@ \
-  @posix_regex_build_dir@ \
-  @daemon_map_build_dir@
+lib_LTLIBRARIES = libperditiondb_daemon.la
+
+libperditiondb_daemon_la_SOURCES = \
+perditiondb_daemon.c perditiondb_daemon.h unix_socket.c unix_socket.h \
+packet.c packet.h
+
+libperditiondb_daemon_la_LDFLAGS    = -version-info 0:0:0
+
+libperditiondb_daemon_la_LIBADD = -ldb
+
+noinst_PROGRAMS = client server
+
+client_SOURCES = client.c packet.c packet.h unix_socket.c unix_socket.h
+
+client_LDADD = -lvanessa_logger
+
+server_SOURCES = server.c packet.c packet.h unix_socket.c unix_socket.h
+
+server_LDADD = -lvanessa_logger
+
+INCLUDES=\
+-I$(top_srcdir)/ \
+-I$(top_srcdir)/perdition \
+-I$(top_srcdir)/libjain \
+-DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"
+

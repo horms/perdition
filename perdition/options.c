@@ -279,6 +279,7 @@ int options(int argc, char **argv, flag_t f){
     {"map_library",                 'M',  POPT_ARG_STRING, NULL, 'M'},
     {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
+    {"ok_line",                     'O',  POPT_ARG_STRING, NULL, 'O'},
     {"server_ok_line",              'o',  POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P',  POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p',  POPT_ARG_STRING, NULL, 'p'},
@@ -391,6 +392,8 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.map_library,     DEFAULT_MAP_LIB,             i, 0, OPT_NOT_SET);
     opt_p(opt.map_library_opt, DEFAULT_MAP_LIB_OPT,         i, 0, OPT_NOT_SET);
     opt_p(opt.outgoing_port,   PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
+    opt_p(opt.ok_line,         DEFAULT_OK_LINE             ,i, 0, OPT_NOT_SET);
+
     opt_p(opt.username,        DEFAULT_USERNAME,            i, 0, OPT_NOT_SET);
     opt_da(opt.outgoing_server,DEFAULT_OUTGOING_SERVER,     i, 0, OPT_NOT_SET);
     opt_da(opt.query_key,      DEFAULT_QUERY_KEY,           i, 0, OPT_NOT_SET);
@@ -537,6 +540,9 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'n':
         opt_i(opt.no_lookup,1,opt.mask,MASK_NO_LOOKUP,f);
+        break;
+      case 'O':
+        opt_p(opt.ok_line,optarg,opt.mask2,MASK2_OK_LINE,f);
         break;
       case 'o':
         opt_i(opt.server_ok_line,1,opt.mask,MASK_SERVER_OK_LINE,f);
@@ -963,6 +969,7 @@ int log_options_str(char *str, size_t n){
     "no_daemon=%s, "
     "no_lookup=%s, "
     "nodename=\"%s\", "
+    "ok_line=\"%s\", "
     "outgoing_port=\"%s\", "
     "outgoing_server=\"%s\", "
     "prototol=\"%s\", "
@@ -1016,6 +1023,7 @@ int log_options_str(char *str, size_t n){
     BIN_OPT_STR(opt.no_daemon),
     BIN_OPT_STR(opt.no_lookup),
     OPT_STR(system_uname->nodename),
+    OPT_STR(opt.ok_line),
     OPT_STR(opt.outgoing_port),
     OPT_STR(outgoing_server),
     protocol,
@@ -1187,6 +1195,10 @@ void usage(int exit_status){
     "    Do not detach from terminal.\n"
     " -n|--no_lookup:\n"
     "    Disable host and port lookup.\n"
+    " -O|--ok_line STRING:\n"
+    "    Use STRING as the OK line to send to the client.\n"
+    "    Overriden by server_ok_line.\n"
+    "    (default \"%s\")\n"
     " -o|--server_ok_line:\n"
     "    If authentication with the back-end server is successful then send\n"
     "    the servers OK line to the client, instead of generating one.\n"
@@ -1278,6 +1290,7 @@ void usage(int exit_status){
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     OPT_STR(DEFAULT_MAP_LIB),
     OPT_STR(DEFAULT_MAP_LIB_OPT),
+    OPT_STR(DEFAULT_OK_LINE),
     OPT_STR(default_protocol_str),
     OPT_STR(available_protocols),
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
@@ -1305,15 +1318,14 @@ void usage(int exit_status){
 }
 
 
-#define _add_to_server_port \
-  if((sp=server_port_create())==NULL){ \
-    vanessa_dynamic_array_destroy(a); \
-    return(NULL); \
-  } \
-  sp=server_port_strn_assign(sp, string, strlen(string)); \
-  if(vanessa_dynamic_array_add_element(a, sp)==NULL){ \
-    return(NULL); \
-  }
+#define ADD_TO_SERVER_PORT \
+do {                                                                        \
+	usp = NULL;                                                         \
+	user_server_port_strn_assign(&usp, string);                         \
+	if(!vanessa_dynamic_array_add_element(a, usp)){                     \
+		return(NULL);                                               \
+	}                                                                   \
+} while(0)
 
 
 /**********************************************************************
@@ -1335,7 +1347,7 @@ vanessa_dynamic_array_t *split_str_server_port(
 ){
   vanessa_dynamic_array_t *a;
   char *sub_string;
-  server_port_t *sp;
+  user_server_port_t *usp;
 
   if(string==NULL){ return(NULL); }
   if((a=vanessa_dynamic_array_create(
@@ -1349,11 +1361,11 @@ vanessa_dynamic_array_t *split_str_server_port(
   }
   while((sub_string=strchr(string, delimiter))!=NULL){
     *sub_string='\0';
-    _add_to_server_port
+    ADD_TO_SERVER_PORT;
     string=sub_string+1;
   }
   if(*string!='\0'){
-    _add_to_server_port
+    ADD_TO_SERVER_PORT;
   }
   return(a);
 }

@@ -254,20 +254,90 @@ static char *getserver_key_str(const char *query_fmt,
  *         NULL on error
  **********************************************************************/
 
-server_port_t *getserver(
+static int 
+do_getserver(
+  const char *key_str, 
+  int (*dbserver_get)(const char *, const char *, char **, size_t *),
+  int (*dbserver_get2)(const char *, const char *, char **, char **, char **),
+  user_server_port_t **usp_ret 
+
+){
+	char *user_str = NULL;
+	char *server_str = NULL;
+	size_t  server_len = 0;
+	char *port_str = NULL;
+	int status = 0;
+
+	extern options_t opt;
+
+	*usp_ret = NULL;
+
+	if(dbserver_get) {
+		status = dbserver_get(key_str, opt.map_library_opt,
+				&server_str, &server_len);
+	}
+	else if (dbserver_get2){
+		status = dbserver_get2(key_str, opt.map_library_opt,
+				&user_str, &server_str, &port_str);
+	}
+	else {
+		VANESSA_LOGGER_DEBUG("Neither dbserver_get nor "
+				"dbserver_get2 supplied");
+		goto fail;
+	}
+
+	if(status < 0) {
+		goto fail;
+	}
+
+	/* Check for an empty result */
+	if(!server_str || *server_str=='\0') {
+		VANESSA_LOGGER_DEBUG("dbserver_get returned empty string");
+		goto fail;
+	}
+
+	if(dbserver_get) {
+		if(user_server_port_strn_assign(usp_ret, server_str) < 0) {
+			VANESSA_LOGGER_DEBUG("user_server_port_strn_assign");
+			goto fail;
+		}
+	}
+	else {
+		if(user_server_port_assign(usp_ret, user_str, server_str, 
+				port_str) < 0) {
+			VANESSA_LOGGER_DEBUG("user_server_port_str_assign");
+			goto fail;
+		}
+	}
+
+	return(status);
+
+fail:
+	str_free(user_str);
+	str_free(server_str);
+	str_free(port_str);
+	if(*usp_ret) {
+		free(*usp_ret);
+		*usp_ret = NULL;
+	}
+	return(status);
+}
+			
+
+user_server_port_t 
+	*getserver(
   const char *user_str, const char *from_str, const char *to_str, 
   const uint16 from_port, const uint16 to_port, 
-  int (*dbserver_get)(const char *, const char *, char **, size_t *)
-){
-  server_port_t *server_port=NULL;
-  char *content_str;
-  int  content_len;
+  int (*dbserver_get)(const char *, const char *, char **, size_t *),
+  int (*dbserver_get2)(const char *, const char *, char **, char **, char **))
+{
+  user_server_port_t *usp=NULL;
   char *popserver;
   int status = -1;
  
   extern options_t opt;
 
-  if(dbserver_get == NULL) {
+  if(!dbserver_get && !dbserver_get2) {
     return(NULL);
   }
 
@@ -277,22 +347,16 @@ server_port_t *getserver(
     (popserver=strrstr(user_str, opt.domain_delimiter)) != NULL 
   ){
     *popserver='\0';
-    if((server_port=server_port_create())==NULL){
-      VANESSA_LOGGER_DEBUG("server_port_create");
+    if(user_server_port_strn_assign(&usp, 
+        popserver+opt.domain_delimiter_length) < 0) {
+      VANESSA_LOGGER_DEBUG("server_port_strn_assign");
+      user_server_port_destroy(usp);
       return(NULL);
     }
-    server_port_strn_assign(
-      server_port,
-      popserver+opt.domain_delimiter_length,
-      strlen(popserver+opt.domain_delimiter_length)
-    );
-
-    return(server_port);
   }
 
   if(opt.query_key == NULL) {
-  	status=dbserver_get(user_str, opt.map_library_opt,
-			&content_str, &content_len);
+  	status=do_getserver(user_str, dbserver_get, dbserver_get2, &usp);
   }
   else {
 	  char *query_fmt;
@@ -317,8 +381,8 @@ server_port_t *getserver(
 			VANESSA_LOGGER_DEBUG("getserver_key_str");
 			return(NULL);
 		}
-		status=dbserver_get(key_str, opt.map_library_opt,
-			&content_str, &content_len);
+  		status=do_getserver(user_str, dbserver_get, 
+				dbserver_get2, &usp);
 		free(key_str);
 		if(status != -2) {
 			break;
@@ -329,29 +393,12 @@ server_port_t *getserver(
   /* Catch errors from any of the dbserver_get calls */
   if(status<0){
     if(status != -2) {
-      VANESSA_LOGGER_DEBUG("dbserver_get");
+      VANESSA_LOGGER_DEBUG("do_dbserver_get");
     }
     return(NULL);
   }
 
-  /* Check for an empty result */
-  if(*content_str=='\0' || content_len==0) {
-    free(content_str);
-    VANESSA_LOGGER_DEBUG("dbserver_get returned empty string");
-    return(NULL);
-  }
-
-  /* Parse the result */
-  if(status == 0) {
-    if((server_port=server_port_create())==NULL){
-      VANESSA_LOGGER_DEBUG("server_port_create");
-      return(NULL);
-    }
-    server_port=server_port_strn_assign(server_port, content_str, content_len);
-    free(content_str);
-  }
-
-  return(server_port);
+  return(usp);
 } 
 
 
@@ -373,10 +420,16 @@ int getserver_openlib(
   char *libname,
   char *options_str,
   void **handle_return,
-  int (**dbserver_get_return)(const char *, const char *, char **, size_t *)
-){
+  int (**dbserver_get_return)(const char *, const char *, char **, size_t *),
+  int (**dbserver_get2_return)(const char *, const char *, char **, 
+	  char **, char **)
+)
+{
   char *error;
   int *(*dbserver_init)(char *);
+
+  *dbserver_get_return = NULL;
+  *dbserver_get2_return = NULL;
 
   if(libname == NULL || *libname == '\0') {
     *handle_return = NULL;
@@ -391,13 +444,17 @@ int getserver_openlib(
     return(-1);
   }
 
-  *dbserver_get_return=dlsym(*handle_return, "dbserver_get");
+  *dbserver_get_return = dlsym(*handle_return, "dbserver_get");
   if((error=dlerror())!=NULL){
-    VANESSA_LOGGER_DEBUG_UNSAFE("Could not find symbol dbserver_get: dlsym: %s", 
-      error);
-    dlclose(*handle_return);
-    return(-1);
+    *dbserver_get2_return = dlsym(*handle_return, "dbserver_get2");
+    if((error=dlerror())!=NULL){
+      VANESSA_LOGGER_DEBUG_UNSAFE("Could not find symbol "
+		    "dbserver_get or dbserver_get2: dlsym: %s", error);
+      dlclose(*handle_return);
+      return(-1);
+    }
   }
+
   dbserver_init=dlsym(*handle_return, "dbserver_init");
   if((error=dlerror())==NULL){
     if(dbserver_init(options_str)){

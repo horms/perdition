@@ -30,6 +30,7 @@
 #endif
 
 #include "server_port.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -38,216 +39,291 @@
 
 
 /**********************************************************************
- * server_port_create
- * Create an empty server_port structure
+ * user_server_port_create
+ * Create an empty user_server_port structure
  **********************************************************************/
 
-server_port_t *server_port_create (void){
-  server_port_t *server_port;
+user_server_port_t *user_server_port_create (void){
+       	user_server_port_t *usp;
+	
+	usp= (user_server_port_t *)calloc(1, sizeof(user_server_port_t));
+	if(!usp) {
+		VANESSA_LOGGER_DEBUG_ERRNO("calloc");
+		return(NULL);
+	}
 
-  if((server_port=(server_port_t *)malloc(sizeof(server_port_t)))==NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
-    return(NULL);
-  }
-  server_port->servername=NULL;
-  server_port->port=NULL;
-  return(server_port);
+	return(usp);
 }
 
 
 /**********************************************************************
- * server_port_assign
- * Assign values to a server_port_structure
+ * user_server_port_assign
+ * Assign values to a user_server_port_structure
  **********************************************************************/
 
-void server_port_assign(
-  server_port_t *server_port, 
-  char *servername, 
-  char *port
-){
-  server_port->servername=servername;
-  server_port->port=port;
+int
+user_server_port_assign(user_server_port_t **usp, char *user, 
+		char *server, char *port)
+{
+	if(!*usp) {
+		*usp = user_server_port_create();
+		if(!*usp) {
+			VANESSA_LOGGER_DEBUG("user_server_port_create");
+			return(-1);
+		}
+	}
+
+	(*usp)->user = user;
+	(*usp)->server = server;
+	(*usp)->port = port;
+
+	return(0);
 }
 
 
 /**********************************************************************
- * server_port_strn_assign
+ * user_server_port_strn_assign
  * Assign the data in a sting, to a port structure
  * pre: str should be of the form 
- *        <servername>:<port>   or
- *        <servername>:         or
- *        <servername>
- *      len: length of str
- * post: <servername> is assigned to server_port.servername
- *       <port> is assigned to server_port.port
- *
- * In the case of the last two formats for str, 
- * server_port_t.port will be set to NULL
- *
- * Altenatively if len==0 both servername and port in
- * the resulting server_port_t will be NULL
+ *        [<user><domain_delimiter>]<servername>[:<port>]
+ * post: <server> is assigned to usp.server
+ *       <port> is assigned to usp.port if present, otherwise null
+ *       <user> is assigned to usp.user if present, otherwise null
+ * return: 0 on success
+ *         -1 on error
  **********************************************************************/
 
-server_port_t *server_port_strn_assign(
-  server_port_t *server_port, 
-  const char *str,
-  const int len
-){
-  int delimiter;
+int
+user_server_port_strn_assign(user_server_port_t **usp, const char *str)
+{
+	int alloced = 0;
+	extern options_t opt;
 
-  server_port_unassign(server_port);
+	if(!*usp) {
+		*usp = user_server_port_create();
+		if(!*usp) {
+			VANESSA_LOGGER_DEBUG("user_server_port_create");
+			return(-1);
+		}
+		alloced = 1;
+	}
+	else {
+		user_server_port_unassign(*usp);
+	}
 
-  if(len==0){
-    return(server_port);
-  }
+	(*usp)->server = strdup(str);
+	if(!(*usp)->server) {
+		goto strdup_fail;
+	}
 
-  for(delimiter=0;delimiter<len;delimiter++){
-    if(*(str+delimiter)==SERVER_PORT_DELIMITER){
-      break;
-    }
-  }
+	(*usp)->port = strrchr((*usp)->server, SERVER_PORT_DELIMITER);
+	if((*usp)->port) {
+		*(*usp)->port = '\0';
+		(*usp)->port++;
+		(*usp)->port = strdup((*usp)->port);
+		if(!(*usp)->port) {
+			goto strdup_fail;
+		}
+	}
 
-  if(delimiter!=len){
-    if((server_port->port=strn_to_str(str+delimiter+1,len-delimiter-1))==NULL){
-      VANESSA_LOGGER_DEBUG("strn_to_str port");
-      free(server_port);
-      return(NULL);
-    }
-  }
+	(*usp)->user = (*usp)->server;
+	(*usp)->server = strrstr((*usp)->user, opt.domain_delimiter);
+	if((*usp)->server) {
+		*(*usp)->server = '\0';
+		(*usp)->server += strlen(opt.domain_delimiter);
+		(*usp)->server = strdup((*usp)->server);
+		if(!(*usp)->server) {
+			goto strdup_fail;
+		}
+	}
+	else {
+		(*usp)->server = (*usp)->user;
+		(*usp)->user = NULL;
+	}
 
-  if((server_port->servername=strn_to_str(str, delimiter))==NULL){
-    VANESSA_LOGGER_DEBUG("strn_to_str servername");
-    free(server_port->port);
-    free(server_port);
-    return(NULL);
-  }
+	return(0);
 
-  return(server_port);
+strdup_fail:
+	VANESSA_LOGGER_DEBUG_ERRNO("strdup");
+	str_free((*usp)->user);
+	str_free((*usp)->server);
+	str_free((*usp)->port);
+	if(alloced) {
+		free(*usp);
+		*usp = NULL;
+	}
+	return(-1);
 }
 
 
 /**********************************************************************
- * server_port_unassign
+ * user_server_port_unassign
  * Unassign any values but do not free their memory.
  **********************************************************************/
 
-void server_port_unassign(server_port_t *server_port){
-  server_port_assign(server_port, (char *)NULL, (char *)NULL);
+void 
+user_server_port_unassign(user_server_port_t *usp)
+{
+	memset(usp, 0, sizeof(user_server_port_t));
 }
 
 
 /**********************************************************************
- * server_port_unassign
- * Free a server_port structure and free any non NULL elements.
+ * user_server_port_destroy
+ * Free a user_server_port structure and free any non NULL elements.
  *
  * If you don't want to free the memory  of elements you should
- * use server_port_unassign(server_port);
+ * use user_server_port_unassign(user_server_port);
  * first.
  **********************************************************************/
 
-void server_port_destroy(server_port_t *server_port){
-  if(server_port==NULL){
-    return;
-  }
+void 
+user_server_port_destroy(user_server_port_t *usp)
+{
+      	if(!usp){
+		return;
+	}
 
-  if(server_port->servername!=NULL){
-    free(server_port->servername);
-  }
-  if(server_port->port!=NULL){
-    free(server_port->port);
-  }
+	if(usp->user){
+		free(usp->user);
+	}
+	if(usp->server){
+		free(usp->server);
+	}
+	if(usp->port){
+		free(usp->port);
+	}
 
-  free(server_port);
+	free(usp);
 }
 
 
 /**********************************************************************
- * server_port_get_port
- * Get the port from a server_port structure
+ * user_server_port_get_port
+ * Get the port from a user_server_port structure
  **********************************************************************/
 
-char * server_port_get_port(const server_port_t *server_port){
-  return(server_port->port);
+char * 
+user_server_port_get_port(const user_server_port_t *usp)
+{
+  	return(usp->port);
 }
 
 
 /**********************************************************************
- * server_port_get_servername
- * Get the servername from a server_port_structure
+ * user_server_port_get_server
+ * Get the servername from a user_server_port_structure
  **********************************************************************/
 
-char * server_port_get_servername(const server_port_t *server_port){
-  return(server_port->servername);
+char * 
+user_server_port_get_server(const user_server_port_t *usp){
+	return(usp->server);
+}
+
+/**********************************************************************
+ * user_server_port_get_user
+ * Get the user from a user_server_port_structure
+ **********************************************************************/
+
+char * 
+user_server_port_get_user(const user_server_port_t *usp){
+	return(usp->user);
 }
 
 
 /**********************************************************************
- * server_port_display
+ * user_server_port_display
  * Render a server port structure to a string with the 
  * server and port separated by SERVER_PORT_DELIMITER
  * Analogous to strcpy for strings
- * pre: dest: allocated string to render server_port to
- *      server_port: server_port_t to render
- * post: server_port is rendered to dest with a terminateing '\0'
- *       nothing if server_port is NULL
+ * pre: dest: allocated string to render user_server_port to
+ *      user_server_port: user_server_port_t to render
+ * post: user_server_port is rendered to dest with a terminateing '\0'
+ *       nothing if user_server_port is NULL
  **********************************************************************/
 
-void server_port_display(char *dest, const server_port_t *server_port){
-  size_t len=0;
+char *
+user_server_port_display(const user_server_port_t *usp)
+{
+	size_t len;
+	char *dest;
+
+	extern options_t opt;
+
+	len = user_server_port_length(usp);
+	dest = (char *)calloc(1, len + 1);
+	if(!dest) {
+		VANESSA_LOGGER_DEBUG_ERRNO("calloc");
+		return(NULL);
+	}
  
-  if(server_port==NULL){
-    return;
-  }
-  if(server_port->servername!=NULL){
-    strcpy(dest, server_port->servername);
-    len=strlen(server_port->servername);
-  }
-  if(server_port->port!=NULL){
-    *(dest+len++)=SERVER_PORT_DELIMITER;
-    strcpy(dest+len, server_port->port);
-  }
+	if(!usp){
+		return(dest);
+	}
+
+	snprintf(dest, len, "%s%s%s%c%s",
+			usp->user ? usp->user : "",
+			usp->user ? opt.domain_delimiter : "",
+			usp->server ? opt.domain_delimiter : "",
+			usp->port ? SERVER_PORT_DELIMITER : '\0',
+			usp->port ? usp->port : "");
+
+	return(dest);
 }
 
 
 /**********************************************************************
- * server_port_length
- * Report the rendered length of a server_port not including
+ * user_server_port_length
+ * Report the rendered length of a user_server_port not including
  * the trailing '\0'
  * Analogous to strlen for strings
  * pre: src: the server port to find the rendered length of
- * return: rendered length of the server_port
- *         0 if server_port is NULL
+ * return: rendered length of the user_server_port
+ *         0 if user_server_port is NULL
  **********************************************************************/
 
-size_t server_port_length(server_port_t *src){
-  if(src==NULL){
-    return(0);
-  }
-  else{
-    return(
-      ((src->servername==NULL)?0:strlen(src->servername)) + 
-      ((src->port==NULL)?0:(strlen(src->port)+1))
-    );
-  }
+size_t user_server_port_length(const user_server_port_t *src){
+	size_t len = 0;
+
+	extern options_t opt;
+
+	if(!src){
+		return(0);
+	}
+
+	len += src->user ? strlen(src->user) + strlen(opt.domain_delimiter) : 0;
+	len += src->server ? strlen(src->server) : 0;
+	len += src->port ? strlen(src->port) + 1: 0;
+
+    	return(len);
 }
 
 
 /**********************************************************************
- * server_port_dup
- * Duplicate a server_port
- * pre: src: server_port to duplicate
+ * user_server_port_dup
+ * Duplicate a user_server_port
+ * pre: src: user_server_port to duplicate
  * post: src is duplicted
- * return: copy of server_port
+ * return: copy of user_server_port
  *         NULL on error or of src is NULL
  **********************************************************************/
 
-server_port_t *server_port_dup(server_port_t *src){
-  server_port_t *dest;
+user_server_port_t *
+user_server_port_dup(user_server_port_t *src){
+      	user_server_port_t *dest;
 
-  if(src==NULL || (dest=server_port_create())==NULL){
-    return(NULL);
-  }
-  dest->servername=(src->servername==NULL)?NULL:strdup(src->servername);
-  dest->port=(src->port==NULL)?NULL:strdup(src->port);
-  return(dest);
+	if(!src) {
+		return(NULL);
+	}
+	
+	dest=user_server_port_create();
+	if(!dest) {
+		return(NULL);
+	}
+
+	dest->user=(src->user)?strdup(src->user):NULL;
+	dest->server=(src->server)?strdup(src->server):NULL;
+	dest->port=(src->port)?strdup(src->port):NULL;
+
+	return(dest);
 }

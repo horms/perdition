@@ -898,6 +898,33 @@ fi
 
 
 ######################################################################
+# Daemon Map
+
+AC_MSG_CHECKING([if deamon map has been disabled]);
+AC_ARG_ENABLE(
+  daemon_map,
+  [  --disable-daemon-map    DO not compile with daemon map.  ],
+  [ 
+    if test "$enable_daemon_map" = "no"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [ 
+    enable_daemon_map="yes";
+    AC_MSG_RESULT("no") 
+  ]
+)
+
+if test "$enable_daemon_map" = "yes"; then
+    daemon_map_build_dir="daemon" 
+else
+    daemon_map_build_dir="" 
+fi
+
+
+######################################################################
 # PAM
 
 pam=yes
@@ -1119,6 +1146,7 @@ AC_SUBST(ldap_build_dir)
 AC_SUBST(ldap_libs)
 AC_SUBST(ldap_includes)
 AC_SUBST(ldap_schemadir)
+AC_SUBST(daemon_map_build_dir)
 AC_SUBST(posix_regex_libs)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
@@ -1148,6 +1176,7 @@ perdition/db/postgresql/Makefile
 perdition/db/ldap/Makefile 
 perdition/db/ldap/doc/Makefile 
 perdition/db/odbc/Makefile 
+perdition/db/daemon/Makefile 
 makegdbm/Makefile 
 makebdb/Makefile 
 etc/Makefile 

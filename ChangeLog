@@ -35,6 +35,8 @@ XXX
    - SSL Certificate Chain file may be used - Frederic Garzon
    - Fixed minor install problem relating to man page paths
      not existing when certain modules were disabled. Edward Rudd
+   - Added Daemon Map.
+   - Added option to configure OK response.
 
 ----------------------------------------------------------------------
 

@@ -74,6 +74,8 @@ struct sockaddr_in *sockname;
  * Kept global so they can be used in signal handlers
  */
 static int (*dbserver_get)(const char *, const char *, char **, size_t *);
+static int (*dbserver_get2)(const char *, const char *, char **, 
+		char **, char**);
 static void *handle;
 
 static void perdition_reread_handler(int sig);
@@ -103,7 +105,7 @@ static void perdition_reread_handler(int sig);
   } \
   pw2.pw_passwd=NULL; \
   if (!round_robin_server){ \
-    server_port_destroy(server_port); \
+    user_server_port_destroy(usp); \
   } \
   round_robin_server=0; \
   servername=NULL; \
@@ -112,7 +114,7 @@ static void perdition_reread_handler(int sig);
     io_destroy(server_io); \
   } \
   server_io=NULL; \
-  server_port=NULL; \
+  usp=NULL; \
   token_destroy(&client_tag); \
   tls_state=0; \
   opt.capability = protocol->capability(opt.capability, \
@@ -166,7 +168,7 @@ int main (int argc, char **argv, char **envp){
   struct in_addr *to_addr;
   unsigned char *server_ok_buf=NULL;
   unsigned char *buffer;
-  server_port_t *server_port=NULL;
+  user_server_port_t *usp=NULL;
   protocol_t *protocol=NULL;
   token_t *our_tag=NULL;
   token_t *client_tag=NULL;
@@ -230,15 +232,10 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Open the dbserver_get library, if we have a library*/
-  if(
-    getserver_openlib(
-      opt.map_library,
-      opt.map_library_opt,
-      &handle,&dbserver_get
-    )<0
-  ){
+  if(getserver_openlib(opt.map_library, opt.map_library_opt,
+        &handle, &dbserver_get, &dbserver_get2)<0){
     VANESSA_LOGGER_ERR_UNSAFE("dlopen of \"%s\" failed", 
-      str_null_safe(opt.map_library));
+    str_null_safe(opt.map_library));
     usage(-1);
     vanessa_socket_daemon_exit_cleanly(-1);
   }
@@ -607,57 +604,49 @@ int main (int argc, char **argv, char **envp){
     }
 
     /*Read the server from the map, if we have a map*/
-    if(
-      dbserver_get != NULL &&
-      (server_port = getserver(username, from_str, to_str, 
+    if(dbserver_get || dbserver_get2) {
+    	usp = getserver(username, from_str, to_str, 
 			       peername==NULL?0:ntohs(peername->sin_port), 
 			       sockname==NULL?0:ntohs(sockname->sin_port), 
-			       dbserver_get)) != NULL
-    ){
-      char *host;
-
-      port=server_port_get_port(server_port);
-      servername=server_port_get_servername(server_port);
+			       dbserver_get, dbserver_get2);
+    }
+    if(usp){
+      port = usp->port;
+      servername = usp->server;
     
-      if((host=strrstr(servername, opt.domain_delimiter))!=NULL){
-        /* The Username */
-        if(opt.username_from_database){
-          if (pw.pw_name != username && pw.pw_name != NULL) {
-            free(pw.pw_name);
-            pw.pw_name = NULL;
-          }
-	  *host='\0';
-          if((pw.pw_name=strdup(servername))==NULL){
+      if(opt.username_from_database && usp->user){
+        if (pw.pw_name != username && pw.pw_name != NULL) {
+          free(pw.pw_name);
+          pw.pw_name = NULL;
+        }
+        if((pw.pw_name=strdup(usp->user))==NULL){
 	    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
             VANESSA_LOGGER_ERR_UNSAFE(
 	      "Fatal error manipulating username for client \"%s\": "
 	      "Exiting child",
 	      from_str
             );
-	  }
         }
-
-        /* The Host */
-        servername = ++host;
       }
     }
 
     /*Use the default server if we have one and the servername is not set*/
-    if((servername==NULL || round_robin_server) && opt.outgoing_server!=NULL){
+    if((!servername || !*servername || round_robin_server) && 
+		    opt.outgoing_server!=NULL){
       round_robin_server=1;
       rnd=(rnd+1)%vanessa_dynamic_array_get_count(opt.outgoing_server);
-      server_port=vanessa_dynamic_array_get_element(opt.outgoing_server,rnd);
-      servername=server_port_get_servername(server_port);
-      port=server_port_get_port(server_port);
+      usp=vanessa_dynamic_array_get_element(opt.outgoing_server,rnd);
+      servername=user_server_port_get_server(usp);
+      port=user_server_port_get_port(usp);
     }
 
     /*Use the default port if the port is not set*/
-    if(port==NULL){
+    if(!port || !*port) {
       port=opt.outgoing_port;
     }
 
     /*Try again if we didn't get anything useful*/
-    if(servername==NULL){
+    if(!servername || !*servername) {
 	    LOGIN_FAILED(PROTOCOL_ERR, "Could not determine server");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
@@ -814,7 +803,7 @@ int main (int argc, char **argv, char **envp){
     }
     else{
       if(protocol->write(client_io, NULL_FLAG, client_tag, 
-            protocol->type[PROTOCOL_OK], 0, "You are so in")<0){
+            protocol->type[PROTOCOL_OK], 0, opt.ok_line)<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         vanessa_socket_daemon_exit_cleanly(-1);
@@ -894,7 +883,8 @@ static void perdition_reread_handler(int sig){
       opt.map_library, 
       opt.map_library_opt, 
       &handle, 
-      &dbserver_get
+      &dbserver_get,
+      &dbserver_get2
     )<0
   ){
     VANESSA_LOGGER_DEBUG("getserver_openlib");

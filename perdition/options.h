@@ -120,6 +120,7 @@
 #define DEFAULT_NO_DAEMON                    0
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
+#define DEFAULT_OK_LINE                      "You are so in"
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
 #define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_OK_LINE               0
@@ -186,6 +187,7 @@ typedef struct {
   int             no_lookup;
   char            *outgoing_port;
   vanessa_dynamic_array_t *outgoing_server;
+  char            *ok_line;
   int             protocol;
   int             quiet;
   int             server_ok_line;
@@ -195,6 +197,7 @@ typedef struct {
   int             username_from_database;
   vanessa_dynamic_array_t *query_key;
   flag_t          mask;
+  flag_t          mask2;
   char            *ssl_ca_file;
   char            *ssl_ca_path;
   int             ssl_ca_accept_self_signed;
@@ -248,6 +251,8 @@ typedef struct {
 #define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x20000000
 #define MASK_QUERY_KEY                   (flag_t) 0x40000000
 #define MASK_QUIET                       (flag_t) 0x80000000
+
+#define MASK2_OK_LINE                    (flag_t) 0x00000001
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */

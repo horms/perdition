@@ -35,40 +35,140 @@
 #define SERVER_PORT_DELIMITER ':'
 
 /* #defines to destroy and dupilcate strings */
-#define DESTROY_SP (void (*)(void *s))server_port_destroy
-#define DUPLICATE_SP (void *(*)(void *s))server_port_dup
-#define DISPLAY_SP (void (*)(char *d, void *s))server_port_display
-#define LENGTH_SP (size_t (*)(void *s))server_port_length
+#define DESTROY_SP   (void (*)(void *s))user_server_port_destroy
+#define DUPLICATE_SP (void *(*)(void *s))user_server_port_dup
+#define DISPLAY_SP   (void (*)(char *d, void *s))user_server_port_display
+#define LENGTH_SP    (size_t (*)(void *s))user_server_port_length
 
 
 typedef struct {
-  char *servername;
+  char *user;
+  char *server;
   char *port;
-} server_port_t;
+} user_server_port_t;
 
-server_port_t *server_port_create (void);
-void server_port_assign(
-  server_port_t *server_port, 
-  char *servername, 
-  char *port
-);
-void server_port_unassign(server_port_t *server_port);
-void server_port_destroy(server_port_t *server_port);
-char * server_port_get_port(const server_port_t *server_port);
-char * server_port_get_servername(const server_port_t *server_port);
-server_port_t *server_port_strn_assign(
-  server_port_t *server_port,
-  const char *str,
-  const int len
-);
-void server_port_display(char *dest, const server_port_t *server_port);
-size_t server_port_length(server_port_t *src);
-server_port_t *server_port_dup(server_port_t *src);
+/**********************************************************************
+ * user_server_port_create
+ * Create an empty user_server_port structure
+ **********************************************************************/
+
+user_server_port_t *user_server_port_create (void);
 
 
-#endif
+/**********************************************************************
+ * user_server_port_assign
+ * Assign values to a user_server_port_structure
+ **********************************************************************/
+
+int
+user_server_port_assign(user_server_port_t **usp, char *user, 
+		char *server, char *port);
 
 
+/**********************************************************************
+ * user_server_port_strn_assign
+ * Assign the data in a sting, to a port structure
+ * pre: str should be of the form 
+ *        [<user><domain_delimiter>]<servername>[:<port>]
+ * post: <server> is assigned to usp.server
+ *       <port> is assigned to usp.port if present, otherwise null
+ *       <user> is assigned to usp.user if present, otherwise null
+ * return: 0 on success
+ *         -1 on error
+ **********************************************************************/
+
+int
+user_server_port_strn_assign(user_server_port_t **usp, const char *str);
 
 
+/**********************************************************************
+ * user_server_port_unassign
+ * Unassign any values but do not free their memory.
+ **********************************************************************/
 
+void 
+user_server_port_unassign(user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_destroy
+ * Free a user_server_port structure and free any non NULL elements.
+ *
+ * If you don't want to free the memory  of elements you should
+ * use user_server_port_unassign(user_server_port);
+ * first.
+ **********************************************************************/
+
+void 
+user_server_port_destroy(user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_get_port
+ * Get the port from a user_server_port structure
+ **********************************************************************/
+
+char * 
+user_server_port_get_port(const user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_get_server
+ * Get the servername from a user_server_port_structure
+ **********************************************************************/
+
+char * 
+user_server_port_get_server(const user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_get_user
+ * Get the user from a user_server_port_structure
+ **********************************************************************/
+
+char * 
+user_server_port_get_user(const user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_display
+ * Render a server port structure to a string with the 
+ * server and port separated by SERVER_PORT_DELIMITER
+ * Analogous to strcpy for strings
+ * pre: dest: allocated string to render user_server_port to
+ *      user_server_port: user_server_port_t to render
+ * post: user_server_port is rendered to dest with a terminateing '\0'
+ *       nothing if user_server_port is NULL
+ **********************************************************************/
+
+char *
+user_server_port_display(const user_server_port_t *user_server_port);
+
+
+/**********************************************************************
+ * user_server_port_length
+ * Report the rendered length of a user_server_port not including
+ * the trailing '\0'
+ * Analogous to strlen for strings
+ * pre: src: the server port to find the rendered length of
+ * return: rendered length of the user_server_port
+ *         0 if user_server_port is NULL
+ **********************************************************************/
+
+size_t user_server_port_length(const user_server_port_t *src);
+
+
+/**********************************************************************
+ * user_server_port_dup
+ * Duplicate a user_server_port
+ * pre: src: user_server_port to duplicate
+ * post: src is duplicted
+ * return: copy of user_server_port
+ *         NULL on error or of src is NULL
+ **********************************************************************/
+
+user_server_port_t *
+user_server_port_dup(user_server_port_t *src);
+
+
+#endif /* SERVER_PORT_STIX */

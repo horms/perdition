@@ -1,14 +1,8 @@
 /**********************************************************************
- * getserver.h                                            December 1999
+ * perditiondb_gdbm.h                                     December 1999
  * Horms                                             horms@verge.net.au
  *
- * Access a database
- *
- * The database is accessed using the dlopen mechanism on a library.
- * See getserver.c for API details.
- *
- * Client server specification code courtesy of Daniel Roesen,
- * <droesen@entire-systems.com>. 
+ * Access a gdbm(3) database
  *
  * perdition
  * Mail retrieval proxy server
@@ -31,36 +25,25 @@
  *
  **********************************************************************/
 
-#ifndef GETSERVER_FLIM
-#define GETSERVER_FLIM
-
-#include "options.h"
-#include "server_port.h"
-#include "log.h"
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <dlfcn.h>
+#include <gdbm.h>
 
+extern gdbm_error gdbm_errno;
+extern char *gdbm_version;
 
-user_server_port_t 
-*getserver(
-  const char *user_str, const char *from_str, const char *to_str, 
-  const uint16 from_port, const uint16 to_port, 
-  int (*dbserver_get)(const char *, const char *, char **, size_t *),
-  int (*dbserver_get2)(const char *, const char *, char **, char **, char **));
-
-int 
-getserver_openlib(
-  char *libname,
-  char *opt_string,
-  void **handle_return,
-  int (**dbgetserver_return)(const char *, const char *, char **, size_t *),
-  int (**dbgetserver2_return)(const char *, const char *, char **, 
-	  char **, char**)
-);
-
-int getserver_closelib(void *handle);
-
+#ifndef PERDITIONDB_GDBM_SYSCONFDIR
+#define PERDITIONDB_GDBM_SYSCONFDIR "/usr/local/etc/perdition"
 #endif
+
+#define PERDITIONDB_GDBM_DEFAULT_MAPNAME \
+  PERDITIONDB_GDBM_SYSCONFDIR "/popmap.gdbm.db"
+
+int dbserver_get(
+  const char *key_str, 
+  const char *options_str,
+  char **str_return, 
+  int *len_return
+);
