@@ -38,8 +38,6 @@ From Matt Prigge
 * Set the proctitle with the status of the program (whether it is
   listening, connected, what mode its in, that sort of thing) so that its
   easier to see what daemons are doing what.
-* Introduce a new protocol labels for SIMAP4 and SPOP3.
-* Make IMAP4 and POP3 act as an implicit "ssl_mode none"
 
 Jack Snodgrass
 * Identify user based on source ip
