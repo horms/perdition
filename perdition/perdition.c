@@ -49,6 +49,7 @@
 #include "config_file.h"
 #include "config_file.h"
 #include "server_port.h"
+#include "username.h"
 
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
@@ -74,12 +75,6 @@ static int (*dbserver_get)(char *, char *, char **, size_t *);
 static void *handle;
 
 static void perdition_reread_handler(int sig);
-static char *add_domain(char *username, struct in_addr *to_addr, int state);
-static void add_domain_free(void);
-static char *strip_username(char *username, int state);
-static void strip_username_free(void);
-static char *strip_username_and_add_domain(char *username, 
-    struct in_addr *to_addr, int state);
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
@@ -101,7 +96,7 @@ static char *strip_username_and_add_domain(char *username,
   server_io=NULL; \
   server_port=NULL; \
   token_destroy(&tag); \
-  strip_username_free();
+  username_mangle_free();
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -510,9 +505,9 @@ int main (int argc, char **argv){
     }
 
     /*Read the server from the map, if we have a map*/
-    if((username=strip_username_and_add_domain(pw.pw_name, 
-          to_addr, STRIP_STATE_GET_SERVER))==NULL){
-      PERDITION_DEBUG("strip_username_and_add_domain STATE_GET_SERVER");
+    if((username=username_mangle(pw.pw_name, 
+          to_addr, STATE_GET_SERVER))==NULL){
+      PERDITION_DEBUG("username_mangle STATE_GET_SERVER");
       PERDITION_ERR(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
@@ -534,6 +529,7 @@ int main (int argc, char **argv){
         /* The Username */
         if(opt.username_from_database){
           free(pw.pw_name);
+          username_mangle_free();
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
 	    PERDITION_DEBUG_ERRNO("strdup");
@@ -584,9 +580,9 @@ int main (int argc, char **argv){
 
 #ifdef WITH_PAM_SUPPORT
     if(opt.authenticate_in){
-      if((pw2.pw_name=strip_username_and_add_domain(pw.pw_name, 
-            to_addr, STRIP_STATE_LOCAL_AUTH))==NULL){
-        PERDITION_DEBUG("strip_username_and_add_domain STATE_LOCAL_AUTH");
+      if((pw2.pw_name=username_mangle(pw.pw_name, 
+            to_addr, STATE_LOCAL_AUTH))==NULL){
+        PERDITION_DEBUG("username_mangle STATE_LOCAL_AUTH");
         PERDITION_ERR(
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
@@ -712,9 +708,9 @@ int main (int argc, char **argv){
 #endif /* WITH_SSL_SUPPORT */
 
     /* Authenticate the user with the pop server */
-    if((pw2.pw_name=strip_username_and_add_domain(pw.pw_name, 
-          to_addr, STRIP_STATE_REMOTE_LOGIN))==NULL){
-      PERDITION_DEBUG("strip_username_and_add_domain STATE_REMOTE_LOGIN");
+    if((pw2.pw_name=username_mangle(pw.pw_name, 
+          to_addr, STATE_REMOTE_LOGIN))==NULL){
+      PERDITION_DEBUG("username_mangle STATE_REMOTE_LOGIN");
       PERDITION_ERR(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
@@ -876,257 +872,6 @@ static void perdition_reread_handler(int sig){
 
   signal(sig, (void(*)(int))perdition_reread_handler);
 }
-
-
-/**********************************************************************
- * add_domain
- * Append the domain part of the address connected to after
- * the domain delimiter if not already present.
- * pre: username: username to strip domain from
- *      in_addr: Source address of connection
- *      state: The current state. Should be one of STATE_GET_SERVER,
- *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
- * post: if state&opt.add_domain &&
- *           username doesn't contain the domain delimiter
- *         append the domain delimiter and the domain for the reverse
- *         lookup of to_addr
- *       else return username
- * return: domain delimiter and domain added as appropriate
- *         NULL on error
- * Note: to free any memory that may be used call add_domain_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
- **********************************************************************/
-
-static char *__added_domain=NULL;
-
-static char *__add_domain(char *username, struct in_addr *to_addr){
-  struct hostent *hp;
-  char *domainpart;
-
-  extern options_t opt;
-  extern int errno;
-
-  /* Stop now if we don't want to add any extra domain details */
-  if(!opt.add_domain || to_addr==NULL)
-    return(username);
-
-  /* If we have already added the domain, just return that value */
-  if(__added_domain!=NULL) {
-    PERDITION_DEBUG(
-      "username already contains domain delimiter, not adding domain");
-    return(__added_domain);
-  }
-
-  /* If we already have a domain delimiter, stop now */
-  if(strstr(username, opt.domain_delimiter)!=NULL)
-    return(username);
-
-  /* If we have no reverse IP address, stop now */
-  if((hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET))==NULL){
-    PERDITION_DEBUG("no reverse IP lookup, domain not added");
-    return(username);
-  }
-
-  /* Make some space for the domain part */
-  domainpart=strchr(hp->h_name, '.');
-  if (domainpart == NULL || *(++domainpart)=='\0'){
-    PERDITION_DEBUG("No domain in reverse lookup, domain not added");
-    return(username);
-  }
-
-  if ((__added_domain=(char *)malloc(
-        strlen(username)+strlen(opt.domain_delimiter)+strlen(domainpart)+1
-  ))==NULL){
-    PERDITION_DEBUG_ERRNO("malloc");
-    return(username);
-  }
-
-  /* Build the new username */
-  strcpy(__added_domain, username);
-  strcat(__added_domain, opt.domain_delimiter);
-  strcat(__added_domain, domainpart);
-
-  return(__added_domain);
-}
-
-
-static char *add_domain(char *username, struct in_addr *to_addr, int state){
-  extern options_t opt;
-
-  if(!(opt.add_domain&state))
-    return(username);
-
-  switch(state){
-    case STRIP_STATE_GET_SERVER:
-    case STRIP_STATE_LOCAL_AUTH:
-    case STRIP_STATE_REMOTE_LOGIN:
-      break;
-    default:
-      PERDITION_DEBUG("unknown state\n");
-      return(NULL);
-  }
-
-  return(__add_domain(username, to_addr));
-}
-
-
-/**********************************************************************
- * add_domain_free
- * Free any memory held by add_domain state
- * pre: none
- * post: If any memory has been allocated internally by add_domain()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-static void add_domain_free(void){
-  if(__added_domain!=NULL){
-    free(__added_domain);
-  }
-  __added_domain=NULL;
-}
-
-
-/**********************************************************************
- * strip_username
- * Strip the domain name, all characters after opt.domain_delimiter,
- * from a username if it is permitted for a given state.
- * pre: username: username to strip domain from
- *      state: The current state. Should be one of STATE_GET_SERVER,
- *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
- * post: if state&opt.strip_domain
- *         if state is STATE_GET_SERVER and opt.client_server_specification 
- *           return username
- *         else strip the domain name if it is present
- *       else return username
- * return: username, stripped as appropriate
- *         NULL on error
- * Note: to free any memory that may be used call strip_username_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
- **********************************************************************/
-
-static char *__striped_username=NULL;
-
-static char *__strip_username(char *username){
-  char *end;
-  size_t len;
-
-  extern options_t opt;
-  extern int errno;
-
-  if(!opt.strip_domain)
-    return(username);
-
-  if(__striped_username==NULL){
-    if((end=strstr(username, opt.domain_delimiter))==NULL){
-      __striped_username=username;
-    }
-    else {
-      len=end-username;
-      if((__striped_username=(char *)malloc(len+1))==NULL){
-	PERDITION_DEBUG_ERRNO("malloc");
-	return(NULL);
-      }
-      strncpy(__striped_username, username, len);
-      *(__striped_username+len)='\0';
-    }
-  }
-
-  return(__striped_username);
-}
-
-static char *strip_username(char *username, int state){
-  extern options_t opt;
-
-  if(!(opt.strip_domain&state))
-    return(username);
-
-  switch(state){
-    case STRIP_STATE_GET_SERVER:
-      if(opt.client_server_specification)
-        return(username);
-      break;
-    case STRIP_STATE_LOCAL_AUTH:
-    case STRIP_STATE_REMOTE_LOGIN:
-      break;
-    default:
-      PERDITION_DEBUG("unknown state\n");
-      return(NULL);
-  }
-
-  return(__strip_username(username));
-}
-
-
-/**********************************************************************
- * strip_username_free
- * Free any memory held by strip_username state
- * pre: none
- * post: If any memory has been allocated internally by strip_username()
- *       then it is freed
- * return: none
- **********************************************************************/
-
-static void strip_username_free(void){
-  if(__striped_username!=NULL){
-    free(__striped_username);
-  }
-  __striped_username=NULL;
-}
-
-
-/**********************************************************************
- * strip_username_and_add_domain
- * Strip the username as per strip_username() then append a domain
- * as per add_domain().
- * pre: username: username to manipulate
- *      to_addr: address to do reverse lookup of for add_domain
- *      state: The current state. Should be one of STATE_GET_SERVER,
- *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
- * post: if state&opt.strip_domain
- *         if state is STATE_GET_SERVER and opt.client_server_specification 
- *           return username
- *         else strip the domain name if it is present
- *       else return username
- * return: username modified as appropriate
- *         NULL on error
- * Note: to free any memory that may be used call
- *       strip_username_and_add_domain_free()
- *       You should call this each time username changes as the result
- *       is chached internally and is not checked for staleness.
- **********************************************************************/
-
-static char *strip_username_and_add_domain(char *username, 
-    struct in_addr *to_addr, int state){
-  char *result;
-
-  if((result=strip_username(username, state))==NULL){
-    PERDITION_DEBUG("strip_username");
-    return(NULL);
-  }
-  if((result=add_domain(result, to_addr, state))==NULL){
-    PERDITION_DEBUG("add_domain");
-    return(NULL);
-  }
-
-  return(result);
-}
-
-
-/**********************************************************************
- * strip_username_and_add_domain_free
- * Free any memory held by strip_username and add_domain states
- * pre: none
- * post: Memory is freed as per strip_username_free() and 
- *       add_domain_free()
- * return: none
- **********************************************************************/
-
-#define strip_username_and_add_domain_free \
-  strip_username_free(); \
-  add_domain();
 
 
 #ifdef WITH_SSL_SUPPORT

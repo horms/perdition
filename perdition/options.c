@@ -98,27 +98,27 @@ options_t opt;
 #define opt_i_or(opt, value, mask, mask_entry, flag) \
   opt_i(opt, opt|value, mask, mask_entry, flag)
 
-#define OPT_STRIP_OR_ADD_DOMAIN(opt, mask, mask_entry, flag) \
+#define OPT_MODIFY_USERNAME(opt, mask, mask_entry, flag, id_str) \
   if(strcasecmp(optarg_copy, "all")==0){ \
-    opt_i_or(opt, STRIP_STATE_ALL, mask, mask_entry, flag); \
+    opt_i_or(opt, STATE_ALL, mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "servername_lookup")==0 || \
     strcasecmp(optarg_copy, "server_lookup")==0 \
   ){ \
-    opt_i_or(opt, STRIP_STATE_GET_SERVER, mask, mask_entry, flag); \
+    opt_i_or(opt, STATE_GET_SERVER, mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "local_authentication")==0 || \
     strcasecmp(optarg_copy, "local_auth")==0 \
   ){ \
-    opt_i_or(opt, STRIP_STATE_LOCAL_AUTH, mask, mask_entry, flag); \
+    opt_i_or(opt, STATE_LOCAL_AUTH, mask, mask_entry, flag); \
   } \
   else if(strcasecmp(optarg_copy, "remote_login")==0){ \
-    opt_i_or(opt, STRIP_STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
+    opt_i_or(opt, STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
   } \
   else { \
-    PERDITION_DEBUG("unknown state: %s", optarg_copy); \
+    PERDITION_DEBUG("unknown state for %s: %s", id_str, optarg_copy); \
     if(f&OPT_ERR) { \
       sleep(1); \
       usage(-1); \
@@ -126,10 +126,16 @@ options_t opt;
   }
 
 #define OPT_STRIP_DOMAIN \
-  OPT_STRIP_OR_ADD_DOMAIN(opt.strip_domain, opt.mask, MASK_STRIP_DOMAIN, f);
+  OPT_MODIFY_USERNAME(opt.strip_domain, opt.mask, MASK_STRIP_DOMAIN, f, \
+    "strip_domain");
 
 #define OPT_ADD_DOMAIN \
-  OPT_STRIP_OR_ADD_DOMAIN(opt.add_domain, opt.mask, MASK_ADD_DOMAIN, f);
+  OPT_MODIFY_USERNAME(opt.add_domain, opt.mask, MASK_ADD_DOMAIN, f, \
+    "add_domain");
+
+#define OPT_LOWER_CASE \
+  OPT_MODIFY_USERNAME(opt.lower_case, opt.mask, MASK_LOWER_CASE, f, \
+    "lower_case");
 
 #define OPTARG_DUP \
   if(optarg==NULL){ \
@@ -247,6 +253,7 @@ int options(int argc, char **argv, flag_t f){
     {"username",                    'u',  POPT_ARG_STRING, NULL, 'u'},
     {"username_from_database",      'U',  POPT_ARG_NONE,   NULL, 'U'},
     {"quiet",                       'q',  POPT_ARG_NONE,   NULL, 'q'},
+    {"lower_case",                  'x',  POPT_ARG_STRING, NULL, 'X'},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_MODE },
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
@@ -283,6 +290,7 @@ int options(int argc, char **argv, flag_t f){
       opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
     }
     opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
+    opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
@@ -462,6 +470,15 @@ int options(int argc, char **argv, flag_t f){
       case 'q':
         opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
         break;
+      case 'X':
+        OPTARG_DUP;
+	while((end=strchr(optarg_copy, ','))!=NULL){
+	  *end='\0';
+	  OPT_LOWER_CASE;
+	  optarg_copy=end+1;
+	}
+	OPT_LOWER_CASE;
+        break;
       case TAG_SSL_MODE:
 #ifdef WITH_SSL_SUPPORT
         OPTARG_DUP;
@@ -579,13 +596,38 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
   dest+=strlen(dest); \
 }
 
+#define LOG_OPTIONS_BUILD_USERNAME_MODIFIER(_opt, _str) \
+{ \
+  char *current; \
+ \
+  current=_str; \
+  if(_opt&STATE_GET_SERVER && _opt&STATE_LOCAL_AUTH && \
+      _opt&STATE_REMOTE_LOGIN) { \
+    LOG_OPTIONS_ADD_STR("all", current, _str); \
+  } \
+  else { \
+    if(_opt&STATE_GET_SERVER){ \
+      LOG_OPTIONS_ADD_STR("servername_lookup", current, _str); \
+    } \
+    if(_opt&STATE_LOCAL_AUTH){ \
+      LOG_OPTIONS_ADD_STR("local_authentication", current, _str); \
+    } \
+    if(_opt&STATE_REMOTE_LOGIN){ \
+      LOG_OPTIONS_ADD_STR("remote_login", current, _str); \
+    } \
+    if(current==_str){ \
+      *current='\0'; \
+    } \
+  } \
+}
+
+
 int log_options(void){
   char *protocol=NULL;
   char *outgoing_server=NULL;
-  char strip_domain[40];
-  char *strip_domain_p;
   char add_domain[40];
-  char *add_domain_p;
+  char lower_case[40];
+  char strip_domain[40];
 #ifdef WITH_SSL_SUPPORT
   char ssl_mode[26];
   char *ssl_mode_p;
@@ -611,39 +653,9 @@ int log_options(void){
     }
   }
 
-  strip_domain_p=strip_domain;
-  if(opt.strip_domain&STRIP_STATE_GET_SERVER &&
-      opt.strip_domain&STRIP_STATE_LOCAL_AUTH &&
-      opt.strip_domain&STRIP_STATE_REMOTE_LOGIN) {
-    LOG_OPTIONS_ADD_STR("all", strip_domain_p, strip_domain)
-  }
-  else {
-    if(opt.strip_domain&STRIP_STATE_GET_SERVER)
-      LOG_OPTIONS_ADD_STR("servername_lookup", strip_domain_p, strip_domain)
-    if(opt.strip_domain&STRIP_STATE_LOCAL_AUTH)
-      LOG_OPTIONS_ADD_STR("local_authentication", strip_domain_p, strip_domain)
-    if(opt.strip_domain&STRIP_STATE_REMOTE_LOGIN)
-      LOG_OPTIONS_ADD_STR("remote_login", strip_domain_p, strip_domain)
-    if(strip_domain_p==strip_domain)
-      *strip_domain_p='\0';
-  }
-  
-  add_domain_p=add_domain;
-  if(opt.add_domain&STRIP_STATE_GET_SERVER &&
-      opt.add_domain&STRIP_STATE_LOCAL_AUTH &&
-      opt.add_domain&STRIP_STATE_REMOTE_LOGIN) {
-    LOG_OPTIONS_ADD_STR("all", add_domain_p, add_domain)
-  }
-  else {
-    if(opt.add_domain&STRIP_STATE_GET_SERVER)
-      LOG_OPTIONS_ADD_STR("servername_lookup", add_domain_p, add_domain)
-    if(opt.add_domain&STRIP_STATE_LOCAL_AUTH)
-      LOG_OPTIONS_ADD_STR("local_authentication", add_domain_p, add_domain)
-    if(opt.add_domain&STRIP_STATE_REMOTE_LOGIN)
-      LOG_OPTIONS_ADD_STR("remote_login", add_domain_p, add_domain)
-    if(add_domain_p==add_domain)
-      *add_domain_p='\0';
-  }
+  LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.add_domain, add_domain);
+  LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.lower_case, lower_case);
+  LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.strip_domain, strip_domain);
   
 #ifdef WITH_SSL_SUPPORT
   switch(opt.ssl_mode){
@@ -695,6 +707,7 @@ int log_options(void){
     "inetd_mode=%s, "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
+    "lower_case=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
     "no_bind_banner=%s, "
@@ -731,6 +744,7 @@ int log_options(void){
     BIN_OPT_STR(opt.inetd_mode),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
+    str_null_safe(lower_case),
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
     BIN_OPT_STR(opt.no_bind_banner),
@@ -903,6 +917,12 @@ void usage(int exit_status){
     "    -U|--username_from_database option is specified or not.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"
+    " -X|--lower_case state[,state...]:\n"
+    "    Convert usernames to lower case according the the locale in given\n"
+    "    state(s). State may be one of servername_lookup, \n"
+    "    local_authentication, remote_login and all See manpage for details\n"
+    "    of states.\n"
+    "    (default \"(null)\")\n"
 #ifdef WITH_SSL_SUPPORT
     " --ssl_mode:\n"
     "    Use SSL and or TLS for the listening and/or outgoing connections.\n"

@@ -48,6 +48,7 @@
 
 /**********************************************************************
  * strn_to_str
+ * Convert a non null terminated string into a null terminated string
  * pre: string:  source string
  *      n:    bytes from string to put in allocated string
  * post: a new string is allocated to hold n bytes of string and 
@@ -84,9 +85,9 @@ int str_write(io_t *io, const flag_t flag, const char *fmt, ...);
 
 /**********************************************************************
  * str_cat
- * 
+ * Concatenate strings together
  * pre: nostring: number of strings
- *      ...: strings
+ *      ...: strings to concatenate together
  * post: a string is allocated to store the concatenation of the strings
  * return: NULL on error
  *         concatenated string otherwise
@@ -130,8 +131,68 @@ char *str_cat(const int nostring, ...);
 
 
 /**********************************************************************
- * str_basename
+ * strn_tolower
  * 
+ * pre: str: String to change charaters of to lower case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to lowercase using tolower(3).
+ * return: str with characters converted to lowercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *strn_tolower(char *str, size_t count);
+
+
+/**********************************************************************
+ * strn_tolower
+ * 
+ * pre: str: String to change charaters of to lower case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to lowercase using tolower(3).
+ * return: str with characters converted to lowercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+#define str_tolower(str) strn_tolower(str, strlen(str))
+
+
+/**********************************************************************
+ * strn_toupper
+ * 
+ * pre: str: String to change charaters of to upper case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to uppercase using toupper(3).
+ * return: str with characters converted to uppercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *strn_toupper(char *str, size_t count);
+
+
+/**********************************************************************
+ * strn_toupper
+ * 
+ * pre: str: String to change charaters of to upper case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to uppercase using toupper(3).
+ * return: str with characters converted to uppercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+#define str_toupper(str) strn_toupper(str, strlen(str))
+
+
+/**********************************************************************
+ * str_basename
+ * Find the filename of a fully qualified path to a file
  * pre: filename: name of file to find basename of
  * post: basename of filename is returned
  * return: NULL if filename is NULL
@@ -142,4 +203,5 @@ char *str_cat(const int nostring, ...);
 
 const char *str_basename(const char *filename);
 
-#endif
+
+#endif /* STRBERT */

@@ -21,6 +21,10 @@ xxx
   - Fixed typo in documentation that refered to log_facility
     as logging_facility. Matt Prigge
   - Added add_domain option. Chris Stratford
+  - Documented that there is no implicit ^ or $ in regular expression
+    maps.
+  - Added -X|--lower_case option to convert usernames given by
+    end users to lowercase.
 
 
 ----------------------------------------------------------------------

@@ -216,6 +216,14 @@ specified or not.
 .B \-q, \-\-quiet:
 Only log errors. Overridden by \-d|\-\-debug
 .TP
+.B \-X|\-\-lower_case state[,state...]:
+Convert usernames to lower case according the the locale in given
+state(s). State may be one of servername_lookup,
+local_authentication, remote_login and all. See \-A|\-\-add_domain for a
+description of the states.
+.br
+(default "(null)")
+.TP
 .B \-\-ssl_mode:
 Use SSL and or TLS for the listening and/or outgoing connections.
 A comma delimited list of: none, ssl_listen, ssl_outgoing,

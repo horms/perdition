@@ -58,12 +58,12 @@
  * or of these.
  */
 
-#define STRIP_STATE_NONE         0x0
-#define STRIP_STATE_GET_SERVER   0x1
-#define STRIP_STATE_LOCAL_AUTH   0x2
-#define STRIP_STATE_REMOTE_LOGIN 0x4
-#define STRIP_STATE_ALL          \
-  (STRIP_STATE_GET_SERVER|STRIP_STATE_LOCAL_AUTH|STRIP_STATE_REMOTE_LOGIN)
+#define STATE_NONE         0x0
+#define STATE_GET_SERVER   0x1
+#define STATE_LOCAL_AUTH   0x2
+#define STATE_REMOTE_LOGIN 0x4
+#define STATE_ALL          \
+  (STATE_GET_SERVER|STATE_LOCAL_AUTH|STATE_REMOTE_LOGIN)
 
 
 #ifdef WITH_SSL_SUPPORT
@@ -89,7 +89,7 @@
 #endif /* WITH_SSL_SUPPORT */
 
 
-#define DEFAULT_ADD_DOMAIN                   0
+#define DEFAULT_ADD_DOMAIN                   STATE_NONE
 #ifdef WITH_PAM_SUPPORT
 #define DEFAULT_AUTHENTICATE_IN              0
 #endif /* WITH_PAM_SUPPORT */
@@ -110,12 +110,13 @@
 #define DEFAULT_MAP_LIB \
   PERDITION_LIBDIR "/libperditiondb_gdbm.so.0"
 #define DEFAULT_LOG_FACILITY                 "mail"
+#define DEFAULT_LOWER_CASE                   STATE_NONE
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
-#define DEFAULT_STRIP_DOMAIN                 STRIP_STATE_NONE
+#define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_OK_LINE               0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
 #ifdef WITH_USER
@@ -152,6 +153,7 @@ typedef struct {
   int             timeout;
   char            *listen_port;
   char            *log_facility;
+  int             lower_case;
   char            *map_library;
   char            *map_library_opt;
   int             no_bind_banner;
@@ -174,40 +176,41 @@ typedef struct {
 } options_t;
 
 /* options_t.mask entries */
+#define MASK_ADD_DOMAIN                  (flag_t) 0x00000001
 #ifdef WITH_PAM_SUPPORT
-#define MASK_AUTHENTICATE_IN             (flag_t) 0x00000001
+#define MASK_AUTHENTICATE_IN             (flag_t) 0x00000002
 #endif /* WITH_PAM_SUPPORT */
-#define MASK_BIND_ADDRESS                (flag_t) 0x00000002
-#define MASK_CONNECTION_LIMIT            (flag_t) 0x00000004
-#define MASK_CONNECTION_LOGGING          (flag_t) 0x00000008
-#define MASK_DEBUG                       (flag_t) 0x00000010
-#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000020
-#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000040
-#define MASK_CONFIG_FILE                 (flag_t) 0x00000080
-#define MASK_GROUP                       (flag_t) 0x00000100
-#define MASK_INETD_MODE                  (flag_t) 0x00000200
-#define MASK_LOG_FACILITY                (flag_t) 0x00000400
-#define MASK_LISTEN_PORT                 (flag_t) 0x00000800
-#define MASK_MAP_LIB                     (flag_t) 0x00001000
-#define MASK_MAP_LIB_OPT                 (flag_t) 0x00002000
-#define MASK_NO_BIND_BANNER              (flag_t) 0x00004000
-#define MASK_NO_LOOKUP                   (flag_t) 0x00008000
-#define MASK_OUTGOING_PORT               (flag_t) 0x00010000
-#define MASK_OUTGOING_SERVER             (flag_t) 0x00020000
-#define MASK_PROTOCOL                    (flag_t) 0x00040000
-#define MASK_SERVER_OK_LINE              (flag_t) 0x00080000
-#define MASK_STRIP_DOMAIN                (flag_t) 0x00100000
-#define MASK_TIMEOUT                     (flag_t) 0x00200000
-#define MASK_USERNAME                    (flag_t) 0x00400000
-#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x00800000
-#define MASK_QUIET                       (flag_t) 0x01000000
-#define MASK_ADD_DOMAIN                  (flag_t) 0x02000000
+#define MASK_BIND_ADDRESS                (flag_t) 0x00000004
+#define MASK_CONNECTION_LIMIT            (flag_t) 0x00000008
+#define MASK_CONNECTION_LOGGING          (flag_t) 0x00000010
+#define MASK_DEBUG                       (flag_t) 0x00000020
+#define MASK_DOMAIN_DELIMITER            (flag_t) 0x00000040
+#define MASK_CLIENT_SERVER_SPECIFICATION (flag_t) 0x00000080
+#define MASK_CONFIG_FILE                 (flag_t) 0x00000100
+#define MASK_GROUP                       (flag_t) 0x00000200
+#define MASK_INETD_MODE                  (flag_t) 0x00000400
+#define MASK_LOG_FACILITY                (flag_t) 0x00000800
+#define MASK_LISTEN_PORT                 (flag_t) 0x00001000
+#define MASK_LOWER_CASE                  (flag_t) 0x00002000
+#define MASK_MAP_LIB                     (flag_t) 0x00003000
+#define MASK_MAP_LIB_OPT                 (flag_t) 0x00008000
+#define MASK_NO_BIND_BANNER              (flag_t) 0x00010000
+#define MASK_NO_LOOKUP                   (flag_t) 0x00020000
+#define MASK_OUTGOING_PORT               (flag_t) 0x00040000
+#define MASK_OUTGOING_SERVER             (flag_t) 0x00080000
+#define MASK_PROTOCOL                    (flag_t) 0x00100000
+#define MASK_SERVER_OK_LINE              (flag_t) 0x00200000
+#define MASK_STRIP_DOMAIN                (flag_t) 0x00400000
+#define MASK_TIMEOUT                     (flag_t) 0x00800000
+#define MASK_USERNAME                    (flag_t) 0x01000000
+#define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x02000000
+#define MASK_QUIET                       (flag_t) 0x04000000
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
-#define MASK_SSL_CERT_FILE             (flag_t) 0x00000001
-#define MASK_SSL_KEY_FILE              (flag_t) 0x00000002
-#define MASK_SSL_MODE                  (flag_t) 0x00000004
+#define MASK_SSL_CERT_FILE               (flag_t) 0x00000001
+#define MASK_SSL_KEY_FILE                (flag_t) 0x00000002
+#define MASK_SSL_MODE                    (flag_t) 0x00000004
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -240,6 +243,7 @@ int options(int argc, char **argv, flag_t flag);
 int options_set_mask(flag_t *mask, flag_t flag, flag_t mask_entry);
 int log_options(void);
 void usage(int exit_status);
-vanessa_dynamic_array_t *split_str_server_port(char *string, const char delimiter);
+vanessa_dynamic_array_t *split_str_server_port(char *string, 
+  const char delimiter);
 
 #endif

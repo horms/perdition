@@ -41,7 +41,12 @@ perdition_SOURCES = \
         daemon.c            daemon.h \
         getserver.c         getserver.h \
         greeting.c          greeting.h \
+        imap4.c             imap4.h \
+        imap4_in.c          imap4_in.h \
+        imap4_out.c         imap4_out.h \
+        imap4_write.c       imap4_write.h \
         io.c                io.h \
+        log.h \
         options.c           options.h \
         pam.c               pam.h \
         perdition.c \
@@ -52,16 +57,12 @@ perdition_SOURCES = \
         pop3_write.c        pop3_write.h \
         protocol.c          protocol.h \
         protocol_t.h \
-        quit.c              quit.h \
-        imap4.c             imap4.h \
-        imap4_in.c          imap4_in.h \
-        imap4_out.c         imap4_out.h \
-        imap4_write.c       imap4_write.h \
-        token.c             token.h \
         queue_func.c        queue_func.h \
+        quit.c              quit.h \
+        token.c             token.h \
         server_port.c       server_port.h \
         str.c               str.h \
-        log.h
+        username.c          username.h
 
 
 INCLUDES= \

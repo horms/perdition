@@ -31,6 +31,7 @@
 
 /**********************************************************************
  * strn_to_str
+ * Convert a non null terminated string into a null terminated string
  * pre: string:  source string
  *      n:    bytes from string to put in allocated string
  * post: a new string is allocated to hold n bytes of string and 
@@ -111,9 +112,9 @@ int str_write(io_t *io, const flag_t flag, const char *fmt, ...){
 
 /**********************************************************************
  * str_cat
- * 
+ * Concatenate strings together
  * pre: nostring: number of strings
- *      ...: strings
+ *      ...: strings to concatenate together
  * post: a string is allocated to store the concatenation of the strings
  * return: NULL on error
  *         concatenated string otherwise
@@ -171,9 +172,93 @@ char *str_cat(const int nostring, ...){
   return(dest);
 }
 
+
+/**********************************************************************
+ * str_free
+ * Macro defined elsewhere
+ **********************************************************************/
+
+#define str_free(string) \
+  if(string!=NULL){ \
+    free(string); \
+    string=NULL; \
+  }
+
+
+/**********************************************************************
+ * str_null_safe
+ * Macro defined elsewhere
+ **********************************************************************/
+
+#define str_null_safe(string) \
+  (string==NULL)?STR_NULL:string
+
+
+/**********************************************************************
+ * strn_tolower
+ * 
+ * pre: str: String to change charaters of to lower case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to lowercase using tolower(3).
+ * return: str with characters converted to lowercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *strn_tolower(char *str, size_t count){
+    char *current;
+
+    for(current=str;count>0;current++,count--){
+      *current=(char)tolower((int)*current);
+    }
+
+    return(str);
+}
+
+
+/**********************************************************************
+ * strn_tolower
+ * Macro defined elsewhere
+ **********************************************************************/
+
+#define str_tolower(str) strn_tolower(str, strlen(str))
+
+
+/**********************************************************************
+ * strn_toupper
+ * 
+ * pre: str: String to change charaters of to upper case
+ *      count: Number of characters in string to change
+ * post: count characters in str, from the begining of str, 
+ *       are converted to uppercase using toupper(3).
+ * return: str with characters converted to uppercase
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *strn_toupper(char *str, size_t count){
+    char *current;
+
+    for(current=str;count>0;current++,count--){
+      *current=(char)toupper((int)*current);
+    }
+
+    return(str);
+}
+
+
+/**********************************************************************
+ * strn_toupper
+ * Macro defined elsewhere
+ **********************************************************************/
+
+#define str_toupper(str) strn_toupper(str, strlen(str))
+
+
 /**********************************************************************
  * str_basename
- * 
+ * Find the filename of a fully qualified path to a file
  * pre: filename: name of file to find basename of
  * post: basename of filename is returned
  * return: NULL if filename is NULL
