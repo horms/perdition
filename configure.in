@@ -51,7 +51,7 @@ AC_MSG_ERROR(
 ""
 "**********************************************************************"
 "* perdition requires the popt options parsing library available from"
-"* ftp://ftp.redhat.com/pub/redhat/code/popt/ and mirrors."
+"* ftp://ftp.rpm.org/pub/rpm/ and mirrors."
 "**********************************************************************"
 ) ;\
 )

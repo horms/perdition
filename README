@@ -41,7 +41,7 @@ perditiondb_odbc_makedb(8)
 LIBRARY REQUIREMENTS
 
 perdition requires the popt options parsing library available from
-ftp://ftp.redhat.com/pub/redhat/code/popt/ and mirrors.
+ftp://ftp.rpm.org/pub/rpm/ and mirrors.
 
 popt requires gettext, the GNU internationalisation library available
 ftp://ftp.gnu.org/pub/gnu/gettext/ and mirrors.
