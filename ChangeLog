@@ -71,6 +71,8 @@ XXX
      making outgoing SSL or TLS connections
    - Verify real-server certificate's common name when
      making outgoing SSL or TLS connections
+   - Fixed some problems in handling IMAP string literals if they are
+     used for both the the username and password for LOGIN
 
 ----------------------------------------------------------------------
 

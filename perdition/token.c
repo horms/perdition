@@ -44,8 +44,10 @@ static unsigned char token_read_buffer[MAX_LINE_LENGTH];
 static size_t token_read_offset=0;
 static size_t token_read_bytes=0;
 
-static int token_fill_buffer(io_t *io, const options_t *opt);
-static int __token_fill_buffer(io_t *io, const options_t *opt);
+static int token_fill_buffer(io_t *io, const options_t *opt,
+		const char *log_str);
+static int __token_fill_buffer(io_t *io, const options_t *opt,
+		const char *log_str);
 
 /**********************************************************************
  * token_create
@@ -191,6 +193,7 @@ void token_flush(void) {
  * read a token in from fd
  * pre: io: io_t to read from
  *      opt: options
+ *      log_str: logging tag for connection logging
  * post: Bytes are read from fd into a buffer, if the buffer is
  *       empty
  * return: number of bytes read, or number of uread bytes in buffer
@@ -199,17 +202,19 @@ void token_flush(void) {
  * 8 bit clean
  **********************************************************************/
 
-static int token_fill_buffer(io_t *io, const options_t *opt) {
+static int token_fill_buffer(io_t *io, const options_t *opt,
+		const char *log_str) {
   if(token_read_bytes>token_read_offset) {
     if(token_read_bytes==0){
       VANESSA_LOGGER_DEBUG("returning without read");
     }  
     return(token_read_bytes);
   }
-  return(__token_fill_buffer(io, opt));
+  return(__token_fill_buffer(io, opt, log_str));
 }
 
-static int __token_fill_buffer(io_t *io, const options_t *opt){
+static int __token_fill_buffer(io_t *io, const options_t *opt,
+		const char *log_str){
   io_select_t *s;
   struct timeval timeout;
   fd_set except_template;
@@ -280,6 +285,12 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
 
     token_read_offset=0;
     token_read_bytes=bytes_read;
+    if(opt->connection_logging){
+      char *dump_buf;
+      dump_buf = VANESSA_LOGGER_DUMP(token_read_buffer, bytes_read, 0);
+      VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s \"%s\"", log_str, dump_buf);
+      free(dump_buf);
+    }
     return(bytes_read);
   }
 
@@ -303,6 +314,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
  *            If logical or of TOKEN_IMAP4_LITERAL then m bytes 
  *            will be read as a single token.
  *      m: Bytes to read if flag is TOKEN_IMAP4_LITERAL
+ *      log_str: logging tag for connection logging
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -326,7 +338,8 @@ token_t *token_read(
   unsigned char *literal_buf, 
   size_t *n,
   flag_t flag,
-  size_t m
+  size_t m,
+  const char *log_str
 ){
   unsigned char buffer[MAX_LINE_LENGTH];
   unsigned char *assign_buffer;
@@ -345,7 +358,7 @@ token_t *token_read(
 
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n) && len < MAX_LINE_LENGTH){
-    if((bytes_read=token_fill_buffer(io, &opt))<=0){
+    if((bytes_read=token_fill_buffer(io, &opt, log_str))<=0){
       VANESSA_LOGGER_DEBUG("token_fill_buffer");
       return(NULL);
     }

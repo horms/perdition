@@ -515,8 +515,9 @@ int main (int argc, char **argv, char **envp){
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
+    status=(*(protocol->in_get_pw))(client_io, &pw, &tag);
     token_flush();
-    if((status=(*(protocol->in_get_pw))(client_io, &pw, &tag))<0){
+    if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
       VANESSA_LOGGER_ERR_UNSAFE(
 	"Fatal Error reading authentication information from client \"%s\": "

@@ -57,12 +57,8 @@
  *       return what has been read so far. (No buffer overflows today)
  **********************************************************************/
 
-static vanessa_queue_t *__read_line(
-  io_t *io,
-  unsigned char *buf, 
-  size_t *n,
-  flag_t flag,
-  size_t m
+vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n, 
+  flag_t flag, size_t m, const char *log_str
 ){
   token_t *t=NULL;
   size_t buf_offset=0;
@@ -95,7 +91,8 @@ static vanessa_queue_t *__read_line(
       (buf==NULL)?NULL:buf+buf_offset,
       &buf_remaining,
       flag,
-      m
+      m,
+      log_str
     ))==NULL){
       VANESSA_LOGGER_DEBUG("token_read");
       vanessa_queue_destroy(q);
@@ -122,65 +119,6 @@ static vanessa_queue_t *__read_line(
   }
 
   return(q);
-}
-
-vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n, 
-  flag_t flag, size_t m, const char *log_str
-){
-  int do_literal=0;
-  char *local_buf;
-  char *dump_buf;
-  size_t local_n;
-  vanessa_queue_t *local_q;
-
-  extern int errno;
-  extern options_t opt;
-
-  if(opt.connection_logging){
-    if(buf!=NULL && n!=NULL && *n!=0){
-      do_literal=1;
-    }
-
-    if(!do_literal){
-      if((local_buf=(char *)malloc(MAX_LINE_LENGTH*sizeof(char)))==NULL){
-        VANESSA_LOGGER_DEBUG_ERRNO("malloc");
-        return(NULL);
-      }
-      local_n=MAX_LINE_LENGTH-1;
-    }
-    else{
-      local_buf=buf;
-      local_n=*n;
-    }
-
-    if((local_q=__read_line(io, local_buf, &local_n, flag, m))==NULL){
-      VANESSA_LOGGER_DEBUG("__read_line");
-      goto leave;
-    }
-
-    dump_buf = VANESSA_LOGGER_DUMP(local_buf, local_n, 0);
-    if(!dump_buf) {
-      VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
-      vanessa_queue_destroy(local_q);
-      local_q = NULL;
-      goto leave;
-    }
-    VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", log_str, dump_buf);
-    free(dump_buf);
-
-leave:
-    if(!do_literal){
-      free(local_buf);
-    }
-    else{
-      *n=local_n;
-    }
-    return(local_q);
-  }
-
-  /* Fast Path :) */
-  return(__read_line(io, buf, n, flag, m));
-
 }
 
 

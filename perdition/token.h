@@ -187,6 +187,7 @@ void token_flush(void);
  *            If logical or of TOKEN_IMAP4_LITTERAL then m bytes 
  *            will be read as a single token.
  *      m: Bytes to read if flag is TOKEN_IMAP4_LITTERAL
+ *      log_str: logging tag for connection logging
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -210,7 +211,8 @@ token_t *token_read(
   unsigned char *literal_buf, 
   size_t *n,
   flag_t flag,
-  size_t m
+  size_t m,
+  const char *log_str
 );
 
 
