@@ -75,7 +75,7 @@ case "$1" in
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.imap4s.pid \
+        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
     fi
     ;;
@@ -97,7 +97,7 @@ case "$1" in
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.imap4s.pid \
+        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps
     fi
     ;;
@@ -124,7 +124,7 @@ case "$1" in
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.imap4s.pid \
+        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps
     fi
     ;;

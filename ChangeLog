@@ -35,6 +35,8 @@ XXX
     send it to stderr.
   - Replaced server_ok_line option with server_resp_line. Andrew McNamara
   - Spelling Fixes. Andrew McNamara
+  - Fixed incorrect path to pid file in debian init script that
+    caused the script to fail to restart perdition. Thomas Hager
 
 ----------------------------------------------------------------------
 
