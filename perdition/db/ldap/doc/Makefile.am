@@ -46,10 +46,10 @@ perdition_ldap.dvi: $(tex_sources) $(gzeps_sources:.eps.gz=.eps)
 	$(LATEX) $<
 
 %.ps: %.dvi
-	$(DVIPS) $< -o $@
+	( unset LANG; $(DVIPS) $< -o $@ || { rm -f $@ ; false; }; )
 
 %.pdf: %.ps
-	$(PS2PDF) $< $@
+	( unset LANG; $(PS2PDF) $< $@ || { rm -f $@ ; false; } )
 
 %.eps: %.eps.gz
-	$(GUNZIP) -c $< > $@
+	( unset LANG; $(GUNZIP) -c $< > $@ || { rm -f $@ ; false; }; )
