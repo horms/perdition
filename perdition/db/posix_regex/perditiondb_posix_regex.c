@@ -55,126 +55,106 @@ static vanessa_dynamic_array_t *regex_a;
  **********************************************************************/
 
 int dbserver_init(char *options_str){
-  vanessa_key_value_t *kv=NULL;
-  regex_t *preg=NULL;
-  FILE *stream=NULL;
-  char *line=NULL;
-  char *line_cur;
-  char *line_end;
-  char *regex;
-  char *server_port_str;
-  int blank;
-  int escape;
+	vanessa_dynamic_array_t *tmp_a=NULL;
+	vanessa_key_value_t *kv=NULL;
+	regex_t *preg=NULL;
+	char *tmp_str;
+	char *pattern;
+	char *substitution;
+	int status = -3;
+	int count;
+	int i;
 
-  extern int errno;
+	if(!options_str) {
+		options_str = PERDITIONDB_POSIX_REGEX_MAPNAME;
+	}
 
-  regex_a=NULL;
- 
-  if((stream=fopen(
-    (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str, "r")
-  )==NULL){
-    VANESSA_LOGGER_DEBUG_UNSAFE(
-      "Could not open %s: %s\n",
-      (options_str==NULL)?PERDITIONDB_POSIX_REGEX_MAPNAME:options_str,
-      strerror(errno)
-    );
-    return(-1);
-  }
+	tmp_a = vanessa_config_file_read(options_str, 
+	      		VANESSA_CONFIG_FILE_MULTI_VALUE|
+			VANESSA_CONFIG_FILE_BLANK);
+	if(!tmp_a) {
+		VANESSA_LOGGER_DEBUG("vanessa_config_file_read");
+		return(-1);
+	}
 
-  if((line=(char *)malloc(PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH))==NULL){
-    VANESSA_LOGGER_DEBUG_ERRNO("malloc 1");
-    goto leave_3;
-  }
-  if((regex_a=vanessa_dynamic_array_create(
-	0,
-	VANESSA_DESTROY_KV,
-	VANESSA_DUPLICATE_KV,
-	NULL,
-	NULL
-  ))==NULL){ 
-    goto leave_3; 
-  }
-  if((kv=vanessa_key_value_create())==NULL){ 
-    goto leave_3; 
-  }
+	regex_a = vanessa_dynamic_array_create(0, VANESSA_DESTROY_KV, 
+			VANESSA_DUPLICATE_KV, NULL, NULL);
+	if(!regex_a) {
+		VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_create");
+		goto leave;
+	}
 
-  line_end=line+PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH;
-  while(fgets(line, PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH, stream)!=NULL){
-    blank=1;
-    escape=0;
-    regex=line;
-    server_port_str=NULL;
-    *line_end='\0';
-    for(line_cur=line;line_cur<line_end;line_cur++){
-      if(*line_cur=='\\' && !escape) {
-	memmove(line_cur, line_cur+1, strlen(line_cur+1));
-	line_cur--;
-	line_end--;
-        escape = 1;
-	continue;
-      }
-      if(*line_cur=='\0'||*line_cur=='\n'||*line_cur=='\r'||
-        (*line_cur=='#'&&!escape)
-      ){
-        *line_cur='\0';
-        break;
-      }
-      if(blank && *line_cur!=' ' && *line_cur!='\t'){
-        blank=0;
-      }
-      if(blank){
-        (server_port_str==NULL)?regex++:server_port_str++;
-      }
-      if(
-        server_port_str==NULL && 
-        *line_cur==PERDITIONDB_POSIX_REGEX_MAX_FIELD_DELIMITER
-      ){
-        *line_cur='\0';
-        server_port_str=line_cur+1;
-        blank=1;
-      }
-      escape=0;
-    }
-    if(blank||(*regex=='\0'||server_port_str==NULL||*server_port_str=='\0')){
-      continue;
-    }
-    if((preg=(regex_t *)malloc(sizeof(regex_t)))==NULL){ 
-      VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
-      goto leave_3; 
-    }
-    if(regcomp(preg, regex, REG_EXTENDED|REG_NEWLINE)){
-      goto leave_3;
-    }
-    if((kv=vanessa_key_value_assign(
-      kv, 
-      (void *)preg, 
-      DESTROY_REGEX, 
-      NULL,
-      (void *)server_port_str,
-      VANESSA_DESTROY_STR,
-      VANESSA_DUPLICATE_STR
-    ))==NULL){ 
-      goto leave_3; 
-    }
-    if(vanessa_dynamic_array_add_element(regex_a,kv)==NULL){
-      goto leave_3;
-    }
-  }
+	if((kv=vanessa_key_value_create())==NULL){ 
+		VANESSA_LOGGER_DEBUG("vanessa_key_value_create");
+		goto leave; 
+	}
 
-  fclose(stream);
-  free(line);
-  return(0);
-  free(kv);
+	pattern = NULL;
+	substitution = NULL;
+	count = vanessa_dynamic_array_get_count(tmp_a);
+	for(i = 0; i < count; i++) {
+		tmp_str = vanessa_dynamic_array_get_element(tmp_a, i);
+		
+		if(!tmp_str || !*tmp_str) {
+			pattern = NULL;
+			substitution = NULL;
+			continue;
+		}
 
-  leave_3:
-  if(stream!=NULL){ fclose(stream); }
-  if(line!=NULL){ free(line); }
-  if(regex_a!=NULL){ 
-    vanessa_dynamic_array_destroy(regex_a); 
-  }
-  if(preg!=NULL){ destroy_regex(preg); }
-  if(kv!=NULL){ vanessa_key_value_destroy(kv); }
-  return(-3);
+		if(!pattern) {
+			pattern = tmp_str;
+			continue;
+		}
+
+		substitution = tmp_str;
+		if(*(pattern+strlen(pattern)-1) == ':') {
+			*(pattern+strlen(pattern)-1) = '\0';
+		}
+
+		preg = (regex_t *)malloc(sizeof(regex_t));
+		if(!preg) {
+			VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+			goto leave; 
+		}
+		if(regcomp(preg, pattern, REG_EXTENDED|REG_NEWLINE)){
+			goto leave;
+		}
+
+		kv = vanessa_key_value_assign(kv, preg, DESTROY_REGEX, 
+		      		NULL, substitution, VANESSA_DESTROY_STR, 
+				VANESSA_DUPLICATE_STR);
+		if(!kv) {
+			VANESSA_LOGGER_DEBUG("vanessa_key_value_assign");
+			goto leave; 
+		}
+		if(!vanessa_dynamic_array_add_element(regex_a, kv)){
+			VANESSA_LOGGER_DEBUG(
+					"vanessa_dynamic_array_add_element");
+			goto leave;
+		}
+
+		preg = NULL;
+		pattern = NULL;
+		substitution = NULL;
+	}
+
+	status = 0;
+leave:
+	if(preg) {
+		destroy_regex(preg);
+	}
+	if(kv) {
+		vanessa_key_value_unassign(kv);
+		vanessa_key_value_destroy(kv);
+	}
+	if(tmp_a) {
+		vanessa_dynamic_array_destroy(tmp_a);
+	}
+	if(status && regex_a) {
+		vanessa_dynamic_array_destroy(regex_a);
+		regex_a = NULL;
+	}
+	return(status);
 } 
 
 
@@ -207,12 +187,9 @@ int dbserver_init(char *options_str){
 /* Maximum number of (..) constructs */
 #define  REXEX_NOSUBMATCH  10
 
-int dbserver_get(
-  const char *key_str, 
-  const char *options_str,
-  char **str_return, 
-  int  *len_return
-){
+int dbserver_get(const char *key_str, const char *options_str,
+			char **str_return, int  *len_return)
+{
   int i;
   int pos;
   int tmp;
@@ -220,6 +197,7 @@ int dbserver_get(
   int status;
   int buf_len;
   int string_len;
+  int count;
   char *buf;        /* buf is where we build the replaced string */
   char *nbuf;       /* nbuf is used when we grow the buffer */
   char *walkbuf;    /* used to walk buf when replacing backrefs */
@@ -231,8 +209,8 @@ int dbserver_get(
 
   string_len = strlen(key_str);
 
-  for(i=vanessa_dynamic_array_get_count(regex_a)-1;i>=0;i--){
-
+  count = vanessa_dynamic_array_get_count(regex_a);
+  for(i = 0; i < count; i++) {
     /* 
      * Start with a buffer that is twice the size of the string
      * we're doing replacements in 
@@ -254,100 +232,94 @@ int dbserver_get(
       subs, 
       0
     );
-    if(!status){
-      replace=(char *)vanessa_key_value_get_value(kv);
-      /* backref replacement is done in two passes:
-       * 1) find out how long the string will be, and allocate buf
-       * 2) copy the part before match, replacement and backrefs to buf
-       *
-       * Jaakko Hyvätti <Jaakko.Hyvatti@iki.fi>
-       */
+    if(status) {
+      continue;
+    }
+    
+    replace=(char *)vanessa_key_value_get_value(kv);
+    /* backref replacement is done in two passes:
+     * 1) find out how long the string will be, and allocate buf
+     * 2) copy the part before match, replacement and backrefs to buf
+     *
+     * Jaakko Hyvätti <Jaakko.Hyvatti@iki.fi>
+     */
 
-      new_l = strlen(buf) + subs[0].rm_so; /* part before the match */
-      walk = replace;
-      while(*walk){
-      	if(
-	  '$' == *walk
-	  && '0' <= walk[1] && '9' >= walk[1]
-	  && subs[walk[1] - '0'].rm_so > -1
-      	  && subs[walk[1] - '0'].rm_eo > -1
-        ){
-	  new_l += subs[walk[1] - '0'].rm_eo - subs[walk[1] - '0'].rm_so;
-	  walk += 2;
-	} 
-	else {
-	  new_l++;
-	  walk++;
-	}
+    new_l = strlen(buf) + subs[0].rm_so; /* part before the match */
+    walk = replace;
+    while(*walk){
+      if('$' == *walk && '0' <= walk[1] && '9' >= walk[1] &&
+            subs[walk[1] - '0'].rm_so > -1 && subs[walk[1] - '0'].rm_eo > -1){
+        new_l += subs[walk[1] - '0'].rm_eo - subs[walk[1] - '0'].rm_so;
+        walk += 2;
+      } 
+      else {
+        new_l++;
+        walk++;
       }
+    }
       
-      if (new_l + 1 > buf_len) {
-  	buf_len = 1 + buf_len + 2 * new_l;
-	if((nbuf=malloc(buf_len))==NULL){
-  	  VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
-	  free(buf);
-	  return(-3);
-	}
-	strcpy(nbuf, buf);
-	free(buf);
-       	buf = nbuf;
+    if (new_l + 1 > buf_len) {
+      buf_len = 1 + buf_len + 2 * new_l;
+      if((nbuf=malloc(buf_len))==NULL){
+        VANESSA_LOGGER_DEBUG_ERRNO("malloc 2");
+        free(buf);
+        return(-3);
       }
-      tmp = strlen(buf);
-      /* copy the part of the string before the match */
-      strncat(buf, &key_str[pos], subs[0].rm_so);
+      strcpy(nbuf, buf);
+      free(buf);
+      buf = nbuf;
+    }
+    tmp = strlen(buf);
+    /* copy the part of the string before the match */
+    strncat(buf, &key_str[pos], subs[0].rm_so);
       
-      /* copy replacement and backrefs */
-      walkbuf = &buf[tmp + subs[0].rm_so];
-      walk = replace;
-      while(*walk){
-     	if(
-	  '$' == *walk
-	  && '0' <= walk[1] && '9' >= walk[1]
-	  && subs[walk[1] - '0'].rm_so > -1
-	  && subs[walk[1] - '0'].rm_eo > -1
- 	  ){
-	  tmp = subs[walk[1] - '0'].rm_eo - subs[walk[1] - '0'].rm_so;
-	  memcpy (walkbuf, &key_str[pos + subs[walk[1] - '0'].rm_so], tmp);
-	  walkbuf += tmp;
-	  walk += 2;
-	} 
-	else{
-	  *walkbuf++ = *walk++;
-	}
-      }
-      *walkbuf = '\0';
-      
-      /* and get ready to keep looking for replacements */
-      if(subs[0].rm_so == subs[0].rm_eo){
-     	if(subs[0].rm_so + pos >= string_len){
-  	  break;
-	}
-	new_l = strlen (buf) + 1;
-	if(new_l + 1 > buf_len){
-	  buf_len = 1 + buf_len + 2 * new_l;
-	  nbuf = malloc(buf_len * sizeof(char));
-	  if((nbuf=malloc(buf_len))==NULL){
-  	    VANESSA_LOGGER_DEBUG_ERRNO("malloc 3");
-	    free(buf);
-	    return(-3);
-	  }
-	  strcpy(nbuf, buf);
-	  free(buf);
-	  buf = nbuf;
-	}
-	pos += subs[0].rm_eo + 1;
-	buf [new_l-1] = key_str [pos-1];
-	buf [new_l] = '\0';
+    /* copy replacement and backrefs */
+    walkbuf = &buf[tmp + subs[0].rm_so];
+    walk = replace;
+    while(*walk){
+      if('$' == *walk && '0' <= walk[1] && '9' >= walk[1] &&
+            subs[walk[1] - '0'].rm_so > -1 && subs[walk[1] - '0'].rm_eo > -1){
+        tmp = subs[walk[1] - '0'].rm_eo - subs[walk[1] - '0'].rm_so;
+        memcpy (walkbuf, &key_str[pos + subs[walk[1] - '0'].rm_so], tmp);
+        walkbuf += tmp;
+        walk += 2;
       } 
       else{
-	pos += subs[0].rm_eo;
+        *walkbuf++ = *walk++;
       }
-      buf [new_l] = '\0'; 
-      
-      *str_return=buf;
-      *len_return=strlen(buf);
-      return(0);
     }
+    *walkbuf = '\0';
+      
+    /* and get ready to keep looking for replacements */
+    if(subs[0].rm_so == subs[0].rm_eo){
+      if(subs[0].rm_so + pos >= string_len){
+        break;
+    }
+    new_l = strlen (buf) + 1;
+    if(new_l + 1 > buf_len){
+      buf_len = 1 + buf_len + 2 * new_l;
+      nbuf = malloc(buf_len * sizeof(char));
+      if((nbuf=malloc(buf_len))==NULL){
+ 	VANESSA_LOGGER_DEBUG_ERRNO("malloc 3");
+        free(buf);
+        return(-3);
+      }
+      strcpy(nbuf, buf);
+      free(buf);
+      buf = nbuf;
+    }
+      pos += subs[0].rm_eo + 1;
+      buf [new_l-1] = key_str [pos-1];
+      buf [new_l] = '\0';
+    } 
+    else{
+      pos += subs[0].rm_eo;
+    }
+    buf [new_l] = '\0'; 
+      
+    *str_return=buf;
+    *len_return=strlen(buf);
+    return(0);
   }
   
   return(-2);

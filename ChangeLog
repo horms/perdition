@@ -80,7 +80,9 @@ XXX
    - Added options to enforce TLS negotion on incoming and/or outgoing
      connections.
    - Different configuration files for different basenames and protocols
-
+   - Fixed Posix Regular Expression map library so that it handles
+     escape codes properly and tests the regular expressions in
+     the order they appear in the popmap.re, rather than reverse order.
 
 ----------------------------------------------------------------------
 

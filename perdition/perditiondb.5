@@ -273,15 +273,16 @@ file is:
 .P
 <regular expression>: [<username><domain_delimiter>]<server>[:<port>]
 .P
-Anthing after a '#' on a line is treated as a comment,
-unless the '#' is escaped (preceded by a '/')
-.P
-A '/r', '/n' and '/0' are always treated as litereals
-and terminate the the current line (and file in the case of '\0')
-.P
-Anything else after a '/' is treated as a literal.
-.br
-Thus "/#" -> '#', "//' -> '/'
+A single colon _may_ follow a regular_expression Some ammout of white
+space must follow this colon or the regular_expression if the colon is
+omitted.  Blank lines are ignored, as is anything including and after a #
+(hash) on a line. If a \ precedes a new line then the lines will be
+concatenated.  If a \ precedes any other character, including a # (hash)
+it will be treated as a literal. Anything inside single quotes (') will
+be treated as a litreal. Anything other than a (') inside double quotes
+(") will be treated as a litreal. Whitespace in a regular_expression must
+be escaped or quoted. Whitespace in a substitution need not be escaped or
+quoted.
 .P
 Information on setting the domain_delimiter is found in \fBperdition\fP(8),
 @ is used in this example.
@@ -297,8 +298,9 @@ E.g.
 (.*)@(.*): $1_$2@localhost
 .P
 The first matching regular expression will be used. The regular expressions
-are extended posix regular expressions. The last example illustrates
-the ability to expand backreferances.
+are extended posix regular expressions. The last example illustrates the
+ability to expand backreferances.  Backreferences may be used by inserting
+$n in the substitution where n is in the range 1 .. 9.
 .P
 E.g.
 .P
@@ -317,9 +319,9 @@ match "flim", "flimstix", "itsflim" and "totallyflimless". To only match
 .P
 The map file is read once on startup and cached. This is to increase
 performance as the regular expressions must be compiled internally before
-they can be used. The map file can be re read by sending perdition as
-SIGHUP.  An alternate location for the popmap.re can be specified using the
-\-m|\--map_library_opt command line option or configuration file directive.
+they can be used.  An alternate location for the popmap.re can be specified
+using the \-m|\--map_library_opt command line option or configuration file
+directive.
 .P
 E.g.
 .P
