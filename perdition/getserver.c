@@ -381,7 +381,7 @@ user_server_port_t
 			VANESSA_LOGGER_DEBUG("getserver_key_str");
 			return(NULL);
 		}
-  		status=do_getserver(user_str, dbserver_get, 
+  		status=do_getserver(key_str, dbserver_get, 
 				dbserver_get2, &usp);
 		free(key_str);
 		if(status != -2) {
