@@ -1016,22 +1016,23 @@ create_pid_directory(const char *pidfilename, const char *username,
 {
 	int	status;
 	struct stat stat_buf;
+	char    *pidfilename_cpy;
 	char    *dir;
 
-	dir = strdup(pidfilename);
-	if (!dir) {
+	pidfilename_cpy = strdup(pidfilename);
+	if (!pidfilename_cpy) {
 		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
 		return -1;
 	}
 
-	dirname(dir);
+	dir = dirname(pidfilename_cpy);
 
 	status = stat(dir, &stat_buf); 
 
 	if (status < 0 && errno != ENOENT && errno != ENOTDIR) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Could not stat pid-file "
 				"directory [%s]: %s", dir, strerror(errno));
-		free(dir);
+		free(pidfilename_cpy);
 		return -1;
 	}
 	
@@ -1041,20 +1042,24 @@ create_pid_directory(const char *pidfilename, const char *username,
 		}
 		VANESSA_LOGGER_DEBUG_UNSAFE("Pid-File directory exists but is "
 				"not a directory [%s]", dir);
-		free(dir);
+		free(pidfilename_cpy);
 		return -1;
         }
 
 	if (mkdir(dir, S_IRUSR|S_IWUSR|S_IXUSR | S_IRGRP|S_IWGRP|S_IXGRP) < 0) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Could not create pid-file "
 				"directory [%s]: %s", dir, strerror(errno));
-		free(dir);
+		free(pidfilename_cpy);
 		return -1;
 	}
 
 	if (!geteuid() &&  perdition_chown(dir, username, group) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_chown");
+		free(pidfilename_cpy);
+		return -1;
 	}
+
+	free(pidfilename_cpy);
 
 	return 0;
 }

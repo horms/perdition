@@ -10,6 +10,9 @@ XXX
   * XXX
   - Fixed a logic bug in Makefile.popmap(.in) where the popmaps would
     never be built.
+  - Fixed problem with pid file creation on FreeBSD (and others)?
+    zh Jay
+  - Fixed minor memory leak in pid file creation
 
 ----------------------------------------------------------------------
 
