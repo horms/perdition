@@ -571,7 +571,10 @@ int main (int argc, char **argv, char **envp){
       if((host=strrstr(servername, opt.domain_delimiter))!=NULL){
         /* The Username */
         if(opt.username_from_database){
-          free(pw.pw_name);
+          if (pw.pw_name != username && pw.pw_name != NULL) {
+            free(pw.pw_name);
+            pw.pw_name = NULL;
+          }
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
 	    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
@@ -773,7 +776,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
 		      servername, port, 
 		      "failed: authentication of client with real-server");
-      PERDITION_CLEAN_UP_MAIN;
+     PERDITION_CLEAN_UP_MAIN;
       continue;
     }
     else if(status<0){
