@@ -43,7 +43,7 @@ clean-local:
 dvi-local: perdition_ldap.dvi
 
 perdition_ldap.dvi: $(tex_sources) $(gzeps_sources:.eps.gz=.eps)
-	$(LATEX) $(tex_sources)
+	$(LATEX) $<
 
 %.ps: %.dvi
 	$(DVIPS) $< -o $@
