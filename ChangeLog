@@ -14,6 +14,8 @@ XXX
      no domain_delimter is supplied by the end-user.
    - Logger is reoppened on SIGHUP. This is particularly useful
      perdition is logging to a file.
+   - Compliation of each database library may be disabled 
+     using configure
 
 ----------------------------------------------------------------------
 

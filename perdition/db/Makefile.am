@@ -30,6 +30,6 @@ SUBDIRS = \
   @ldap_build_dir@ \
   @odbc_build_dir@ \
   @mysql_build_dir@ \
-  nis \
+  @nis_build_dir@ \
   @pg_build_dir@ \
-  posix_regex 
+  @posix_regex_build_dir@
