@@ -69,6 +69,7 @@ vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n,
   if(buf!=NULL && n!=NULL && *n!=0){
     do_literal=1;
     buf_remaining=*n;
+    memset(buf, 0, buf_remaining);
   }
   else{
     buf=NULL;

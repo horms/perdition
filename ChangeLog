@@ -9,6 +9,8 @@ XXX
 (XXX)
    * XXX
    - Updated configure.in's download references
+   - Fixed bug in server_ok_line option that caused
+     connections to fail. Found by Marc Langer
 
 ----------------------------------------------------------------------
 
