@@ -5,11 +5,11 @@
 
 if [ "$1" = "configure" ]; then
 	if [ -f /etc/init.d/perdition ]; then
-		invoke-rc.d perdition start
+		invoke-rc.d perdition stop
 	fi
 	ldconfig
 	if [ -f /etc/init.d/perdition ]; then
-		invoke-rc.d perdition stop
+		invoke-rc.d perdition start
 	fi
 fi
 
