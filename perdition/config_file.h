@@ -1,13 +1,13 @@
 /**********************************************************************
  * config_file.h                                          November 1999
- * Horms                                             horms@vergenet.net
+ * Horms                                             horms@verge.net.au
  *
  * Read in a config and parse it into command line arguments,
  * return this as a dynamic array
  *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999-2002  Horms
+ * Copyright (C) 1999-2003  Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

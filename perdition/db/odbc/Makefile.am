@@ -1,10 +1,10 @@
 ######################################################################
 # Makefile.am                                               March 2002
-# Horms                                             horms@vergenet.net
+# Horms                                             horms@verge.net.au
 #
 # perdition
 # Mail retrieval proxy server, ODBC support
-# Copyright (C) 1999-2002 Horms and Frederic Delchambre
+# Copyright (C) 1999-2003 Horms and Frederic Delchambre
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as

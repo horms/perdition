@@ -16,8 +16,8 @@ Description:    Perdition is a fully featured POP3 and IMAP4 proxy server.
 		different email infastructure. And in firewall
 		applications.
 Keywords:       POP3 IMAP4 Email Proxy MySQL PostgreSQL ODBC LDAP
-Author:         Horms <horms@vergenet.net>
-Maintained-by:  Horms <horms@vergenet.net>
+Author:         Horms <horms@verge.net.au>
+Maintained-by:  Horms <horms@verge.net.au>
 Primary-site:   ftp.vergenet.net /pub/perdition
 Alternate-site: ftp.au.vergenet.net /pub/perdition
 Original-site:  

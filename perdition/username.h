@@ -1,13 +1,13 @@
 /**********************************************************************
  * username.h                                                 June 2001
- * Horms                                             horms@vergenet.net
+ * Horms                                             horms@verge.net.au
  *
  * Perdition, POP3 and IMAP4 proxy daemon
  * Routines to mangle usernames.
  *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999-2002  Horms
+ * Copyright (C) 1999-2003  Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

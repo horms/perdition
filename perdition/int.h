@@ -1,10 +1,10 @@
 /**********************************************************************
  * int.h                                                     April 2001
- * Horms                                             horms@vergenet.net
+ * Horms                                             horms@verge.net.au
  *
  * perdition
  * Mail retrieval proxy server 
- * Copyright (C) 1999-2002  Horms
+ * Copyright (C) 1999-2003  Horms
  * 
  * Code largely borrowed from the Samba Project
  * Copyright (C) 2001 Andrew Tridgell

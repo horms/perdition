@@ -1,6 +1,6 @@
 ######################################################################
 # Makefile.am                                            February 2000
-# Horms                                             horms@vergenet.net
+# Horms                                             horms@verge.net.au
 #
 # perdition
 # Mail retrieval proxy server

@@ -1,10 +1,10 @@
 /**********************************************************************
  * jain.h                                                      May 1999
- * Horms                                             horms@vergenet.net
+ * Horms                                             horms@verge.net.au
  *
  * libjain
  * Important functions involving Jain
- * Copyright (C) 1999-2002  Horms
+ * Copyright (C) 1999-2003  Horms
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License

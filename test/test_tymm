@@ -1,14 +1,14 @@
 #!/bin/bash
 ######################################################################
 # test_tymm                                             September 2000
-# Horms                                           <horms@vergenet.net>
+# Horms                                           <horms@verge.net.au>
 #
 # Parallel test of tymm loging into a perdition server running
 # on port 11000 on the local host
 #
 # perdition
 # Mail retrieval proxy server
-# Copyright (C) 1999-2002  Horms
+# Copyright (C) 1999-2003  Horms
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
