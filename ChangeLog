@@ -12,6 +12,7 @@ XXX
      interface to db->open() is different as of that
      version (fools!). 
    - Removed acconfig.h as it is no longer needed
+   - Minor cleanup of ssl check in configure
 
 ----------------------------------------------------------------------
 

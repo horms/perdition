@@ -166,7 +166,9 @@ AC_ARG_WITH(
 )
 
 ssl_lib="-L$ssl_libpath -lssl -lcrypto"
+fi
 
+if test "$enable_ssl" = "yes"; then
 AC_CHECK_FILE(
   $ssl_includepath/openssl/ssl.h,
   :,
@@ -181,7 +183,9 @@ AC_MSG_WARN(
     enable_ssl="no";
   ]
 )
+fi
   
+if test "$enable_ssl" = "yes"; then
 AC_CHECK_LIB(
   ssl,
   ERR_error_string,
@@ -201,15 +205,15 @@ AC_MSG_WARN(
 fi
 
 if test "$enable_ssl" = "yes"; then
-  AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
-  AC_SUBST(ssl_lib)
-  AC_SUBST(ssl_includes)
+   AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
+else
+  AC_DEFINE(WITH_SSL_SUPPORT, 0, Compile with SSL/TLS support)
+  ssl_lib=""
+  ssl_includes=""
 fi
 
-if test "$enable_ssl" = "no"; then
-ssl_lib=""
-ssl_includes=""
-fi
+AC_SUBST(ssl_lib)
+AC_SUBST(ssl_includes)
 
 
 ######################################################################
