@@ -53,6 +53,14 @@
  *               Should the path to a PEM file if non-NULL and the
  *               first item in the PEM file will be used as the 
  *               private key.
+ *      chain_file : Sets the optional all-in-one file where you 
+ *               can assemble the certificates of Certification Authorities 
+ *               (CA) which form the certificate chain of the server 
+ *               certificate. This starts with the issuing CA certificate 
+ *               of the "ssl_cert_file" certificate and can range up to 
+ *               the root CA certificate. Such a file is simply the
+ *               concatenation of the various PEM-encoded CA Certificate 
+ *               files, usually in certificate chain order.  
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  * post: If SSL is initiated and a context is created
@@ -62,10 +70,14 @@
  *       against certificate.
  *       Note: If either cert of privkey are non-NULL then both must
  *       be non-NULL.
+ *       If chain_file is not null, it must contain alist of (syntactically)
+ *       valid pem-encoded certificates 
+ *
  **********************************************************************/
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
-		const char *cert, const char *privkey, const char *ciphers);
+		const char *cert, const char *privkey, 
+		const char * chain_file, const char *ciphers);
 
 
 /**********************************************************************

@@ -147,6 +147,7 @@
 #define DEFAULT_SSL_CERT_VERIFY_DEPTH        9 /* Same as openssl's default */
 #define DEFAULT_SSL_KEY_FILE                 PERDITION_SYSCONFDIR \
 					     "/perdition.key.pem"
+#define DEFAULT_SSL_CHAIN_FILE               NULL
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
@@ -203,6 +204,7 @@ typedef struct {
   int             ssl_cert_accept_not_yet_valid;
   int             ssl_cert_verify_depth;
   char            *ssl_key_file;
+  char            *ssl_chain_file;
   int             ssl_mode;
   char            *ssl_listen_ciphers;
   char            *ssl_outgoing_ciphers;
@@ -257,9 +259,10 @@ typedef struct {
 #define MASK_SSL_CERT_ACCEPT_NOT_YET_VALID     (flag_t) 0x00000020
 #define MASK_SSL_CERT_ACCEPT_SELF_SIGNED       (flag_t) 0x00000040
 #define MASK_SSL_CERT_VERIFY_DEPTH             (flag_t) 0x00000080
-#define MASK_SSL_KEY_FILE                      (flag_t) 0x00000100
-#define MASK_SSL_MODE                          (flag_t) 0x00000200
-#define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000400
+#define MASK_SSL_CHAIN_FILE                    (flag_t) 0x00000100
+#define MASK_SSL_KEY_FILE                      (flag_t) 0x00000200
+#define MASK_SSL_MODE                          (flag_t) 0x00000400
+#define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000800
 #define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000800
 #define MASK_SSL_NO_CERT_VERIFY                (flag_t) 0x00001000
 #define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00002000
@@ -284,12 +287,13 @@ typedef struct {
 #define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 138
 #define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 139
 #define TAG_SSL_CERT_VERIFY_DEPTH              (int) 140
-#define TAG_SSL_KEY_FILE                       (int) 141
-#define TAG_SSL_MODE                           (int) 142
-#define TAG_SSL_LISTEN_CIPHERS                 (int) 143
-#define TAG_SSL_OUTGOING_CIPHERS               (int) 144
-#define TAG_SSL_NO_CERT_VERIFY                 (int) 145
-#define TAG_SSL_NO_CN_VERIFY                   (int) 146
+#define TAG_SSL_CHAIN_FILE                     (int) 141
+#define TAG_SSL_KEY_FILE                       (int) 142
+#define TAG_SSL_MODE                           (int) 143
+#define TAG_SSL_LISTEN_CIPHERS                 (int) 144
+#define TAG_SSL_OUTGOING_CIPHERS               (int) 145
+#define TAG_SSL_NO_CERT_VERIFY                 (int) 146
+#define TAG_SSL_NO_CN_VERIFY                   (int) 147
 
 
 /*Flag values for options()*/

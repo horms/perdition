@@ -32,6 +32,7 @@ XXX
    - Make includes in log.h work outside the perdition tree. Mark D. Roth
    - Postgress module returns correct value (-2) if user can't be found.
      This allows query strings to work correctly. Timur Khanjanov
+   - SSL Certificate Chain file may be used - Frederic Garzon
 
 ----------------------------------------------------------------------
 

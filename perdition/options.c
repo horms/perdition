@@ -314,6 +314,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_CERT_ACCEPT_SELF_SIGNED },
     {"ssl_cert_verify_depth",       '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_CERT_VERIFY_DEPTH },
+    {"ssl_certificate_chain_file",  '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CHAIN_FILE },
     {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_KEY_FILE },
     {"ssl_listen_ciphers",          '\0', POPT_ARG_STRING, NULL, 
@@ -409,6 +411,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.ssl_cert_verify_depth, DEFAULT_SSL_CERT_VERIFY_DEPTH,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_chain_file,  DEFAULT_SSL_CHAIN_FILE,      i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
 		                                            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
@@ -655,6 +658,21 @@ int options(int argc, char **argv, flag_t f){
 			MASK_SSL_CERT_VERIFY_DEPTH,f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_ca_verify_depth");
+#endif /* WITH_SSL_SUPPORT */
+      break;
+      case TAG_SSL_CHAIN_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_chain_file,optarg,opt.ssl_mask,MASK_SSL_CHAIN_FILE,f);
+#else /* WITH_SSL_SUPPORT */
+      PERDITION_DEBUG(
+	"--ssl_chain_file is only supported when ssl support is compiled in");
+      if(f&OPT_ERR){
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_CERT_FILE:
@@ -1226,6 +1244,10 @@ void usage(int exit_status){
     " --ssl_key_file FILENAME:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_chain_file:\n"
+    "    File containing the CA certificates signing the certificate\n"
+    "    when listening for SSL or TLS connections.\n"
+    "    (default \"%s\")\n"
     " --ssl_listen_ciphers STRING:\n"
     "    Cipher list when listening for SSL or TLS connections.\n"
     "    If empty (\"\") then openssl's default will be used.\n"
@@ -1272,6 +1294,7 @@ void usage(int exit_status){
     OPT_STR(DEFAULT_SSL_CERT_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
     OPT_STR(DEFAULT_SSL_KEY_FILE),
+    str_null_safe(DEFAULT_SSL_CHAIN_FILE),
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
     OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS)
 #endif /* WITH_SSL_SUPPORT */

@@ -465,6 +465,18 @@ Should be in PEM format.
 .br
 (default "/etc/perdition/perdition.key.pem")
 .TP
+.B \-\-ssl_certificate_chain_file:
+Sets the optional all-in-one file where you can assemble the
+certificates of Certification Authorities (CA) which form the
+certificate chain of the server certificate. This starts with the
+issuing CA certificate of the "ssl_cert_file" certificate and can
+range up to the root CA certificate. Such a file is simply the
+concatenation of the various PEM-encoded CA Certificate files, usually
+in certificate chain order.  Only available if perdition is compiled
+with SSL support.
+.br
+(default NULL, no CA certificate will be used)
+.TP
 .B \-\-ssl_listen_ciphers STRING:
 Cipher list when listening for SSL or TLS connections as per
 ciphers(1). If empty ("") then openssl's default will be used.
