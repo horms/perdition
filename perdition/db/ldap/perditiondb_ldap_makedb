@@ -40,7 +40,7 @@ echo
 echo "openldap requires a binddn to bind to the LDAP directory"
 echo "The default is \"$DEFAULT_DC\". To use this"
 echo "hit return, otherwise enter a host to connect to, it should be a"
-echo "should be a string-represented DN as defined in RFC 1779."
+echo "string-represented DN as defined in RFC 1779."
 echo -n "Enter binddn [$DEFAULT_DC]: " >&2
 read dc
 if [ -z "$dc" ]; then
@@ -61,23 +61,28 @@ echo
 
 echo "Initialising LDAP popmap..."
 
-ldapadd -D "$dc" -w "$rootpw" << __EOF__
+ldapadd -x -D "$dc" -w "$rootpw" << __EOF__
 dn: dc=my-domain, dc=com
+objectClass: top
+objectClass: dcObject
+objectClass: organization
 dc: my-domain
+o: mailbox
 
 dn: ou=mailbox, dc=my-domain, dc=com
-ou: mailbox
+ou: mauilbox
+objectClass: top
+objectClass: organizationalUnit
+description: Popmap for perdition
 
 dn: uid=horms, ou=mailbox,  dc=my-domain, dc=com
+objectClass: top
+objectClass: uidObject
+objectClass: perditionPopmap
 uid: horms
 username: horms
 mailhost: localhost
 port: 110
-
-dn: uid=tymm, ou=mailbox, dc=my-domain, dc=com
-uid: tymm
-username: tymm
-mailhost: localhost
 __EOF__
 
 if [ $? != 0 ]; then

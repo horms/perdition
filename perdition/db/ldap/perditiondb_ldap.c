@@ -180,7 +180,7 @@ int dbserver_get(
   LDAPMessage *mptr = NULL;
   BerElement *ber = NULL;
   int count;
-  int attrcount;
+  int attrcount = 0;
   int status = -1;
   char *pstr;
   char **bv_val = NULL;
