@@ -151,15 +151,6 @@ static void perdition_reread_handler(int sig);
   ); \
   set_proc_title("perdition: auth %s", str_null_safe(_status));
 
-#ifdef WITH_SSL_SUPPORT
-io_t *perdition_ssl_connection(
-  io_t *io,
-  SSL_CTX *ssl_ctx,
-  flag_t flag
-);
-
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
-#endif /* WITH_SSL_SUPPORT */
 
 /**********************************************************************
  * Muriel the main function
