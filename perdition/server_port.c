@@ -197,6 +197,19 @@ user_server_port_destroy(user_server_port_t *usp)
 	free(usp);
 }
 
+/**********************************************************************
+ * user_server_port_destroy_cb
+ * Callback version of user_server_port_destroy for use with
+ * libvanessa_adt
+ **********************************************************************/
+
+void
+user_server_port_destroy_cb(void *p)
+{
+	user_server_port_destroy(p);
+}
+
+
 
 /**********************************************************************
  * user_server_port_get_port
@@ -242,33 +255,34 @@ user_server_port_get_user(const user_server_port_t *usp){
  *       nothing if user_server_port is NULL
  **********************************************************************/
 
-char *
-user_server_port_display(const user_server_port_t *usp)
+void
+user_server_port_display(char *str, const user_server_port_t *usp)
 {
-	size_t len;
-	char *dest;
-
 	extern options_t opt;
 
-	len = user_server_port_length(usp);
-	dest = (char *)calloc(1, len + 1);
-	if(!dest) {
-		VANESSA_LOGGER_DEBUG_ERRNO("calloc");
-		return(NULL);
-	}
- 
-	if(!usp){
-		return(dest);
-	}
+	if(!usp)
+		return;
 
-	snprintf(dest, len, "%s%s%s%c%s",
+	sprintf(str, "%s%s%s%c%s",
 			usp->user ? usp->user : "",
 			usp->user ? opt.domain_delimiter : "",
 			usp->server ? opt.domain_delimiter : "",
 			usp->port ? SERVER_PORT_DELIMITER : '\0',
 			usp->port ? usp->port : "");
+}
 
-	return(dest);
+
+/**********************************************************************
+ * user_server_port_display_cb
+ * Render a server port structure to a string with the 
+ * Callback version of user_server_port_display for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+void
+user_server_port_display_cb(char *str, void *p)
+{
+	user_server_port_display(str, p);
 }
 
 
@@ -282,7 +296,9 @@ user_server_port_display(const user_server_port_t *usp)
  *         0 if user_server_port is NULL
  **********************************************************************/
 
-size_t user_server_port_length(const user_server_port_t *src){
+size_t 
+user_server_port_length(const user_server_port_t *src)
+{
 	size_t len = 0;
 
 	extern options_t opt;
@@ -300,6 +316,19 @@ size_t user_server_port_length(const user_server_port_t *src){
 
 
 /**********************************************************************
+ * user_server_port_length_cb
+ * Callback version of user_server_port_length for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+size_t 
+user_server_port_length_cb(void *p)
+{
+	return user_server_port_length(p);
+}
+
+
+/**********************************************************************
  * user_server_port_dup
  * Duplicate a user_server_port
  * pre: src: user_server_port to duplicate
@@ -309,7 +338,8 @@ size_t user_server_port_length(const user_server_port_t *src){
  **********************************************************************/
 
 user_server_port_t *
-user_server_port_dup(user_server_port_t *src){
+user_server_port_dup(user_server_port_t *src)
+{
       	user_server_port_t *dest;
 
 	if(!src) {
@@ -327,3 +357,17 @@ user_server_port_dup(user_server_port_t *src){
 
 	return(dest);
 }
+
+
+/**********************************************************************
+ * user_server_port_dup_cb
+ * Callback version of user_server_port_dup for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+void *
+user_server_port_dup_cb(void *p)
+{
+	return user_server_port_dup(p);
+}
+

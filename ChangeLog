@@ -9,6 +9,10 @@ XXX
 (Horms)
   * XXX
   - Added sys/limits.h for ULONG_MAX on FreeBSD. Clement Laforet
+  - Fixed bug in callback functions for user_server_port_t
+    structure. This caused perdition to segmentation fault when
+    the outgoing_server option was used. Thanks to Simon Matter
+    discovering this.
 
 ----------------------------------------------------------------------
 

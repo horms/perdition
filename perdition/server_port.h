@@ -35,10 +35,10 @@
 #define SERVER_PORT_DELIMITER ':'
 
 /* #defines to destroy and dupilcate strings */
-#define DESTROY_SP   (void (*)(void *s))user_server_port_destroy
-#define DUPLICATE_SP (void *(*)(void *s))user_server_port_dup
-#define DISPLAY_SP   (void (*)(char *d, void *s))user_server_port_display
-#define LENGTH_SP    (size_t (*)(void *s))user_server_port_length
+#define DESTROY_SP   user_server_port_destroy_cb
+#define DUPLICATE_SP user_server_port_dup_cb
+#define DISPLAY_SP   user_server_port_display_cb
+#define LENGTH_SP    user_server_port_length_cb
 
 
 typedef struct {
@@ -104,6 +104,16 @@ user_server_port_destroy(user_server_port_t *usp);
 
 
 /**********************************************************************
+ * user_server_port_destroy_cb
+ * Callback version of user_server_port_destroy for use with
+ * libvanessa_adt
+ **********************************************************************/
+
+void 
+user_server_port_destroy_cb(void *p);
+
+
+/**********************************************************************
  * user_server_port_get_port
  * Get the port from a user_server_port structure
  **********************************************************************/
@@ -141,8 +151,18 @@ user_server_port_get_user(const user_server_port_t *usp);
  *       nothing if user_server_port is NULL
  **********************************************************************/
 
-char *
-user_server_port_display(const user_server_port_t *user_server_port);
+void
+user_server_port_display(char *str, const user_server_port_t *usp);
+
+
+/**********************************************************************
+ * user_server_port_display_cb
+ * Callback version of user_server_port_display for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+void
+user_server_port_display_cb(char *str, void *p);
 
 
 /**********************************************************************
@@ -155,7 +175,18 @@ user_server_port_display(const user_server_port_t *user_server_port);
  *         0 if user_server_port is NULL
  **********************************************************************/
 
-size_t user_server_port_length(const user_server_port_t *src);
+size_t 
+user_server_port_length(const user_server_port_t *src);
+
+
+/**********************************************************************
+ * user_server_port_length_cb
+ * Callback version of user_server_port_length for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+size_t
+user_server_port_length_cb(void *p);
 
 
 /**********************************************************************
@@ -169,6 +200,15 @@ size_t user_server_port_length(const user_server_port_t *src);
 
 user_server_port_t *
 user_server_port_dup(user_server_port_t *src);
+
+/**********************************************************************
+ * user_server_port_dup_cb
+ * Callback version of user_server_port_dup for use with 
+ * libvanessa_adt
+ **********************************************************************/
+
+void *
+user_server_port_dup_cb(void *p);
 
 
 #endif /* SERVER_PORT_STIX */
