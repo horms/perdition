@@ -11,6 +11,9 @@ XXX
   * Version XXX
   - Uninstall symlinks created by -hook targets in various Makefile.am
   - Handle the return of an empty string from db_getserver routines
+  - Minor changes to ldap module to use ldap_init as ldap_open
+    is depreciated and to warn about multiple entries being
+    returned. Eric <edk@ypass.net>
 
 
 ----------------------------------------------------------------------

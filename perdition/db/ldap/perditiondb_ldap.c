@@ -237,8 +237,8 @@ int dbserver_get(
 #endif /* WITH_LDAP_LUD_EXTS */
 
   /* Open LDAP connection */
-  if ((connection = ldap_open(ludp->lud_host, ludp->lud_port)) == NULL){
-    PERDITION_DEBUG("ldap_open");
+  if ((connection = ldap_init(ludp->lud_host, ludp->lud_port)) == NULL){
+    PERDITION_DEBUG("ldap_init");
     goto leave;
   }
   if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE) 
@@ -263,6 +263,12 @@ int dbserver_get(
   }
   free(filter);
   filter = NULL;
+
+  /* Warn about multiple entries being returned */
+  if (ldap_count_entries(connection, res) > 1)
+    PERDITION_LOG_UNSAFE(LOG_WARNING,
+        "multiple entries returned by filter: base: %s; scope: %s; filter: %s",
+        ludp->lud_dn, ludp->lud_scope, filter);
 
   /* See what we got back - we only bother with the first entry */
   if ((mptr = ldap_first_entry(connection, res)) == NULL) {
