@@ -44,7 +44,8 @@
  * pop3_out_setup
  * Begin interaction with real server by checking that
  * the connection is ok and doing TLS if neccessar0
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
@@ -61,7 +62,8 @@
  **********************************************************************/
 
 int pop3_out_setup(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol
@@ -71,7 +73,8 @@ int pop3_out_setup(
 /**********************************************************************
  * pop3_out_authenticate
  * Authenticate user with backend pop3 server
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
@@ -84,7 +87,8 @@ int pop3_out_setup(
  **********************************************************************/
 
 int pop3_out_authenticate(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol,
@@ -96,7 +100,8 @@ int pop3_out_authenticate(
 /**********************************************************************
  * pop3_out_response
  * Compare a respnse from a server with the desired response
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      tag: ignored
  *      desired_token: token expected from server
  *      buf: buffer to return server response in
@@ -108,7 +113,8 @@ int pop3_out_authenticate(
  **********************************************************************/
 
 int pop3_out_response(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,

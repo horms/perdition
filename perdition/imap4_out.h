@@ -45,7 +45,8 @@
  * imap4_out_setup
  * Begin interaction with real server by checking that
  * the connection is ok and doing TLS if necessary.
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structure for imap4
@@ -60,7 +61,8 @@
  **********************************************************************/
 
 int imap4_out_setup(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol
@@ -71,7 +73,8 @@ int imap4_out_setup(
  * imap4_authenticate
  * Authenticate user with back-end imap4 server
  * You should call imap4_setup() first
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structure for imap4
@@ -87,7 +90,8 @@ int imap4_out_setup(
  **********************************************************************/
 
 int imap4_out_authenticate(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol,
@@ -99,7 +103,8 @@ int imap4_out_authenticate(
 /**********************************************************************
  * imap4_out_response
  * Compare a response from a server with the desired response
- * pre: io: io_t to read from
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      tag: tag expected from server. NULL for untagged.
  *      desired_token: token expected from server
  *      q: resulting queue is stored here
@@ -112,7 +117,8 @@ int imap4_out_authenticate(
  **********************************************************************/
 
 int imap4_out_response(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,

@@ -70,7 +70,8 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 	token_assign(t, (PERDITION_USTRING) protocol->type[PROTOCOL_OK],
 		     strlen(protocol->type[PROTOCOL_OK]), TOKEN_DONT_CARE);
 
-	if ((protocol->out_response(io, tag, t, &q, NULL, NULL)) < 0) {
+	if ((protocol->out_response(io, NULL, tag, t, &q, NULL, 
+					NULL)) < 0) {
 		VANESSA_LOGGER_DEBUG("out_response");
 		goto leave;
 	}

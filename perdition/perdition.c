@@ -345,7 +345,7 @@ int main (int argc, char **argv, char **envp){
 	  VANESSA_LOGGER_ERR("Fatal error opening logger. Exiting.");
 	  perdition_exit_cleanly(-1);
   }
-  vanessa_logger_close(vanessa_logger_get());
+  vanessa_logger_closelog(vanessa_logger_get());
   vanessa_logger_set(vl);
  
   /* Create a PID file */
@@ -785,7 +785,8 @@ int main (int argc, char **argv, char **envp){
     }
     pw2.pw_passwd=pw.pw_passwd;
 
-    status = (*(protocol->out_setup))(server_io, &pw2, our_tag, protocol);
+    status = (*(protocol->out_setup))(server_io, client_io, &pw2, our_tag, 
+		    protocol);
     if(status==0){
 	    quit(server_io, protocol, our_tag);
 	    LOGIN_FAILED(PROTOCOL_NO, "Connection Negotiation Failure");
@@ -823,8 +824,8 @@ int main (int argc, char **argv, char **envp){
       server_resp_buf_size=MAX_LINE_LENGTH-1;
     }
     token_flush();
-    status = (*(protocol->out_authenticate))(server_io, &pw2, our_tag, protocol,
-      server_resp_buf, &server_resp_buf_size);
+    status = (*(protocol->out_authenticate))(server_io, client_io, &pw2, 
+		    our_tag, protocol, server_resp_buf, &server_resp_buf_size);
     if(status==0) {
 	    quit(server_io, protocol, our_tag);
             if(opt.server_resp_line){

@@ -20,6 +20,8 @@ XXX
  - Don't add libraries discovered in configure to LDADD.
  - Better loging connection failures relating to capabilities
    on the real-server
+ - Pass asynchronous messages sent by the real-server during
+   authentication back to the end-user
 
 ----------------------------------------------------------------------
 

@@ -41,7 +41,8 @@
  * pop3_out_setup
  * Begin interaction with real server by checking that
  * the connection is ok and doing TLS if neccessar
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
@@ -57,8 +58,8 @@
  *       -1 on error
  **********************************************************************/
 
-int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
-	      	const protocol_t *protocol)
+int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw, 
+		token_t *tag, const protocol_t *protocol)
 {
 	token_t *ok;
 	token_t *capa_end = NULL;
@@ -80,7 +81,7 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 	}
 	token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
-	status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	status = pop3_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL);
 	if(status<0){
 		VANESSA_LOGGER_DEBUG("pop3_out_response 1");
 		goto leave;
@@ -116,12 +117,12 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 		goto ok;
 	}
 	
-	if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_CAPA, 0, "")<0){
+	if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_CAPA, 0, "")<0){
 		VANESSA_LOGGER_DEBUG("pop3_write");
 		goto leave;
 	}
 	
-	tmp_status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	tmp_status = pop3_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL);
 	if(tmp_status<0){
 		VANESSA_LOGGER_DEBUG("pop3_out_response capa");
 		goto leave;
@@ -161,7 +162,7 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 	/* Loop through  lines */
 	while(1) {
 		vanessa_queue_destroy(q);
-		q = read_line(io, NULL, NULL, TOKEN_POP3, 0, 
+		q = read_line(rs_io, NULL, NULL, TOKEN_POP3, 0, 
 				PERDITION_LOG_STR_REAL);
       		if(!q) {
 			VANESSA_LOGGER_DEBUG("read_line");
@@ -201,12 +202,12 @@ int pop3_out_setup(io_t *io, const struct passwd *pw, token_t *tag,
 		goto ok;
 	}
 
-	if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_STLS, 0, "")<0){
+	if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_STLS, 0, "")<0){
 		VANESSA_LOGGER_DEBUG("pop3_write");
 		goto leave;
 	}
 
-	tmp_status = pop3_out_response(io, NULL, ok, &q, NULL, NULL);
+	tmp_status = pop3_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL);
 	if(tmp_status < 0){
 		VANESSA_LOGGER_DEBUG("pop3_out_response stls");
 		goto leave;
@@ -251,7 +252,8 @@ leave:
 /**********************************************************************
  * pop3_out_authenticate
  * Authenticate user with backend pop3 server
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
@@ -264,7 +266,8 @@ leave:
  **********************************************************************/
 
 int pop3_out_authenticate(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol,
@@ -282,13 +285,13 @@ int pop3_out_authenticate(
   token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
   /* Send USER command */
-  if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_USER, 1, "%s", pw->pw_name)<0){
+  if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_USER, 1, "%s", pw->pw_name)<0){
     VANESSA_LOGGER_DEBUG("pop3_write");
     status = -1;
     goto leave;
   }
 
-  if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
+  if((status=pop3_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL))<0){
     VANESSA_LOGGER_DEBUG("pop3_out_response user");
     status = -1;
     goto leave;
@@ -301,13 +304,14 @@ int pop3_out_authenticate(
   q = NULL;
 
   /* Send PASS command */
-  if(pop3_write(io, NULL_FLAG, NULL, POP3_CMD_PASS, 1, "%s", pw->pw_passwd)<0){
+  if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_PASS, 1, "%s", 
+			  pw->pw_passwd)<0){
     VANESSA_LOGGER_DEBUG("pop3_write pass");
     status = -1;
     goto leave;
   }
 
-  if((status=pop3_out_response(io, NULL, ok, &q, buf, n))<0){
+  if((status=pop3_out_response(rs_io, eu_io, NULL, ok, &q, buf, n))<0){
     VANESSA_LOGGER_DEBUG("pop3_out_response pass");
   }
 
@@ -324,7 +328,8 @@ int pop3_out_authenticate(
 /**********************************************************************
  * pop3_out_response
  * Compare a respnse from a server with the desired response
- * pre: io: io_t to read from and write to
+ * pre: rs_io: io to use to communicate with real server
+ *      eu_io: io to use to communicate with end user
  *      tag: ignored
  *      desired_token: token expected from server
  *      buf: buffer to return server response in
@@ -336,7 +341,8 @@ int pop3_out_authenticate(
  **********************************************************************/
 
 int pop3_out_response(
-  io_t *io,
+  io_t *rs_io,
+  io_t *eu_io,
   const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,
@@ -346,7 +352,7 @@ int pop3_out_response(
   int status;
   token_t *t;
 
-  *q=read_line(io, buf, n, TOKEN_POP3, 0, PERDITION_LOG_STR_REAL);
+  *q=read_line(rs_io, buf, n, TOKEN_POP3, 0, PERDITION_LOG_STR_REAL);
   if(!*q) {
     VANESSA_LOGGER_DEBUG("read_line");
     return(-1);

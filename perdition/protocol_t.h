@@ -55,16 +55,16 @@ struct protocol_t_struct {
 	char *quit_string;
 	int (*in_get_pw) (io_t *io, struct passwd *return_pw,
 			  token_t **return_tag);
-	int (*out_setup) (io_t *io, const struct passwd *pw,
+	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct passwd *pw,
 				 token_t *tag,
 				 const struct protocol_t_struct *protocol);
-	int (*out_authenticate) (io_t *io, const struct passwd *pw,
-				 token_t *tag,
+	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, 
+				 const struct passwd *pw, token_t *tag,
 				 const struct protocol_t_struct *protocol,
 				 unsigned char *buf, size_t *n);
 	int (*in_authenticate) (const struct passwd *pw, io_t *io,
 				const token_t * tag);
-	int (*out_response) (io_t *io, const token_t *tag, 
+	int (*out_response) (io_t *rs_io, io_t *eu_io, const token_t *tag, 
 			const token_t *desired_token,
 			vanessa_queue_t **q, unsigned char *buf,
 			size_t *n);
