@@ -114,14 +114,14 @@ main(int argc, char **argv)
 			sock.dir, SOCK_BASE, getpid());
 
 	sock.fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-	if (peer.fd < 0) {
+	if (sock.fd < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("socket");
 		goto leave;
 	}
 
 	memset(&unaddr, 0, sizeof(struct sockaddr_un));
 	unaddr.sun_family = AF_UNIX;
-	strncpy(unaddr.sun_path, sock.name, sizeof(struct sockaddr_un));
+	strncpy(unaddr.sun_path, sock.name, PERDITION_UN_STR_LEN);
 
 	if(bind(sock.fd, (struct sockaddr *) &unaddr, 
 				sizeof(struct sockaddr_un)) < 0) {

@@ -37,6 +37,7 @@ XXX
      not existing when certain modules were disabled. Edward Rudd
    - Added Daemon Map.
    - Added option to configure OK response.
+   - Minor fix to debian init script's option handling. Cameron Moore
 
 ----------------------------------------------------------------------
 
