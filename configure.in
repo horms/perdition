@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 1.11beta2)
+AM_INIT_AUTOMAKE(perdition, 1.11beta3)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
@@ -65,7 +65,7 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_logger generic logging library"
 "* available from"
-"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
+"* http://www.vergenet.net/linux/vanessa/download/vanessa_logger/ and mirrors."
 "**********************************************************************"
 )
 )
@@ -78,7 +78,7 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_adt abstract data type library"
 "* available from"
-"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
+"* http://www.vergenet.net/linux/vanessa/download/vanessa_adt/ and mirrors."
 "**********************************************************************"
 ),
   -lvanessa_logger
@@ -92,7 +92,7 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_socket TCP socket interface library"
 "* available from"
-"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
+"* http://www.vergenet.net/linux/vanessa/download/vanessa_socket/ and mirrors."
 "**********************************************************************"
 ),
   -lvanessa_logger
