@@ -37,6 +37,7 @@ XXX
   - Spelling Fixes. Andrew McNamara
   - Fixed incorrect path to pid file in debian init script that
     caused the script to fail to restart perdition. Thomas Hager
+  - Don't accept truncated commands
 
 ----------------------------------------------------------------------
 

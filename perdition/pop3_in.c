@@ -145,6 +145,11 @@ int pop3_in_get_pw(
 	    __POP3_IN_ERR("Null command, mate");
     }
 
+    if(token_len(t) != POP3_CMD_LEN) {
+	    __POP3_IN_ERR("Mate, the command too short, must be one of " 
+			    POP3_CMD_CAPA ", " POP3_CMD_USER ", " 
+			    POP3_CMD_PASS " or " POP3_CMD_QUIT);
+    }
 
     if(strncasecmp(token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
       if(vanessa_queue_length(q)!=0){
