@@ -116,6 +116,8 @@ void usage(int exit_status){
     
   fprintf(
     stream, 
+    "perdition version " VERSION " Copyright Horms\n"
+    "\n"
     "Usage: makegdbm [options] gdbmname\n"
     "   options: -h, --help: print this message\n"
     "            -u, --undo: print content of database file, one entry a line\n"
