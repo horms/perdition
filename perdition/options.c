@@ -202,10 +202,10 @@ options_t opt;
       if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
     /* TLS support hasn't been implemented yet */ \
-    /* if(new!=SSL_MODE_NONE && new&SSL_TLS_MASK){ */ \
-    /*  PERDITION_DEBUG("TLS not implemented"); */ \
-    /*  if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); */ \
-    /*} */ \
+    if(new!=SSL_MODE_NONE && new&SSL_TLS_MASK){ \
+      PERDITION_DEBUG("TLS not implemented"); \
+      if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
+    } \
     opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
   }
 #endif /* WITH_SSL_SUPPORT */

@@ -20,7 +20,8 @@ XXX
     not contain hostnames
   - Better logging of SSL I/O problems
   - Fixed handling of empty tags
-
+  - Log an error and exit if TLS support is requested, as it isn't
+    supported yet.
 
 
 ----------------------------------------------------------------------
