@@ -508,25 +508,32 @@ default port is 110 in POP3 mode and 143 in IMAP4 mode, an alternate port
 can be specified with the \-l|\-\-listen_port command line option. In this 
 mode perdition will fork to manage clients.
 .PP
-.B Stand\-Alone Mode: RPM Installation
+.B Stand\-Alone Mode: Debian and RPM Installation
 .PP
-In the RPM distribution perdition can be started and 
+In the Debian and RPM distributions perdition can be started and 
 stopped in stand\-alone mode using:
 .PP
 /etc/init.d/perdition start
 .br
 /etc/init.d/perdition stop
 .PP
-Editing /etc/sysconfig/perdition allows control of whether perdition
+Editing /etc/sysconfig/perdition (RPM) or /etc/default/perdition
+(Debian) allows control of whether perdition
 will be started in POP3 mode, IMAP4 mode or both (or neither).
 .PP
 The syntax for this file is:
 .PP
 .nf
-POP3=[on|off]
-POP3S=[on|off]
-IMAP4=[on|off]
-IMAP4S=[on|off]
+RUN_PERDITION=[yes|no]
+FLAGS="flags"
+POP3=[yes|no]
+POP3_FLAGS="flags"
+POP3S=[yes|no]
+POP3S_FLAGS="flags"
+IMAP4=[yes|no]
+IMAP4_FLAGS="flags"
+IMAP4S=[yes|no]
+IMAP4S_FLAGS="flags"
 .fi
 .PP
 The file is sourced into the init script so normal bash syntax
@@ -535,59 +542,31 @@ applies. Blank lines are ignored, as is anything after a # on a line.
 e.g.
 .PP
 .nf
+RUN_PERDITION=yes
 POP3=on
-POP3S=off
+POP3_FLAGS="--ssl_mode tls_listen"
+POP3S=on
+IMAP4_FLAGS="--ssl_mode tls_listen"
 IMAP4=on
-IMAP4S=off
+POP3S_FLAGS="--ssl_mode ssl_listen -p 110"
+IMAP4S=on
+IMAP4S_FLAGS="--ssl_mode ssl_listen -p 143"
 .fi
-.PP
-If you are using the RPM and you do not want perdition to run in 
-stand\-alone mode at boot up after installation run:
-.PP
-/sbin/chkconfig \-\-del perdition
-.PP
-.B Stand\-Alone Mode: Debian Installation
-.PP
-In the Debian distribution perdition can be started and 
-stopped in stand\-alone mode using:
-.PP
-/etc/init.d/perdition start
-.br
-/etc/init.d/perdition stop
-.PP
-Editing the definitions of POP3, POP3S, IMAP4 and IMAP4S in
-/etc/init.d/perdition allows control of whether perdition will be started
-in POP3 mode, IMAP4 mode or both (or neither). The valid values are "on"
-and "off".
-.PP
-If you are using a Debian installation of perdition and you do not want 
-perdition to run in stand\-alone mode at boot up after installation run:
-.PP
-/usr/sbin/update\-rc.d perdition remove
 .SH INETD MODE
 Perdition can be used in conjunction with inetd. This enables perdition to
 benefit from tcpd where access can be controlled to some extent using
 /etc/hosts.allow and /etc/hosts.deny.
+Sample /etc/inetd.conf entries follow:
 .PP
-To use perdition with inetd you need to add a line to /etc/inetd.conf and
-then restart inetd. The following line was added to run perdition with
-inetd under Red Hat 6.x and Debian 2.2.:
-.PP
-pop3  stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P POP3
+pop3  stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition.pop3 \-i
 .br
-pop3s stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P POP3S
+pop3s stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition.pop3s \-i
 .br
-imap2 stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P IMAP4
+imap2 stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition.imap4 \-i
 .br
-imaps stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition \-i \-P IMAP4S
+imaps stream tcp nowait root /usr/sbin/tcpd /usr/sbin/perdition.imap4s \-i
 .PP
-On inetd should then be restarted using:
-.PP
-/etc/init.d/inet restart
-.PP
-The procedure for this may vary slightly on different installations.  In
-particular you may have to run killall \-HUP inetd or kill \-HUP <inetd pid>
-to restart inetd.
+inetd should then be restarted
 .SH LOCAL AUTHENTICATION
 If perdition has been compiled against libpam, it may  be set up to
 authenticate the user locally once the USER and PASS commands are entered

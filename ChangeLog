@@ -11,6 +11,7 @@ XXX
    - Debian and Red Hat package's init script will run perdition by default
      (previously /etc/default/perdition / /etc/sysconfig/perdition needed 
       to be edited to enable perdition)
+   - Updated init information in man page
 
 ----------------------------------------------------------------------
 
