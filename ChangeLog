@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
-(XXX)
- * XXX
+27th April 2004
+(Horms)
+ * 1.15beta1
  - Fixed some typos. Updated INSTALL. Jay zh
  - LDAP lookups no long return a bogus leading @ in the
    username.

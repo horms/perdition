@@ -1,3 +1,10 @@
+perdition (1.15beta1-1) unstable; urgency=low
+
+  * Fixed a bug in the forming of the return string from an
+    LDAP lookup. (closes: Bug#243898)
+
+ -- Simon Horman <horms@debian.org>  Tue, 27 Apr 2004 13:24:34 +0900
+
 perdition (1.14release-1) unstable; urgency=low
 
   * Ldap filter parsing code has been completely rewritten
