@@ -1,8 +1,8 @@
-perdition (1.13beta1-1) unstable; urgency=low
+perdition (1.13-1) unstable; urgency=low
 
   * New Upstream
 
- -- Simon Horman <horms@vergenet.net>  Wed, 17 Dec 2003 14:55:02 +0900
+ -- Simon Horman <horms@vergenet.net>  Fri, 19 Dec 2003 15:27:40 +0900
 
 perdition (1.12release-1) unstable; urgency=low
 
