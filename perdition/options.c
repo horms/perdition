@@ -919,6 +919,7 @@ int log_options_str(char *str, size_t n){
   snprintf(
     str,
     n -1,
+    "version=" VERSION ", "
     "add_domain=\"%s\", "
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
