@@ -39,6 +39,10 @@ xxx
      An option is supplied to disable this behaviour
    - Added quiet option which allows for logging only of (fatal) 
      internal errors
+   - More powerful configuration file parser. In particular
+     empty values may be specified and # (hash) characters may
+     be in keys or values.
+   - Buffered reads from client during authentication (and about time too)
 
 
 ----------------------------------------------------------------------

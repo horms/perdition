@@ -46,4 +46,6 @@ typedef long int flag_t;
 
 #define PERDITION_USTRING unsigned char *
 
+#define MAX_LINE_LENGTH 4096
+
 #endif

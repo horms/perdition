@@ -39,14 +39,32 @@ Options
 
 A number of command line options are provided to control perdition's behavior.
 
+
+perdition version 0.1.6pre7 Copyright Horms
+
+perdition is an mail retrieval proxy daemon
+
 Usage: perdition [options]
   options:
      -a|--authenticate_in:
                       User is authenticated by perdition before
                       connection to backend server is made.
+     -B|--no_bind_banner:
+                      If -b|--bind_address is specified, then the
+                      address will be resolved and the reverse-lookup
+                      of this will be used in the greeting. This option
+                      disables this behaviour an reverts to using the
+                      uname to derive the hostname for the greeting
      -b|--bind_address:
                       Bind to interfaces with this address.
-                      If NULL then bind to all interfaces.
+                      In non-inetd mode, connections will only be
+                      accepted on interfaces with this address. If
+                      NULL connections will be accepted from all
+                      interfaces. In inetd and non-inetd mode the source
+                      address of connections to real servers will be
+                      this address, if NULL then the operating system
+                      will select a source address.
+                      The address may be an IP address or a hostname.
                       (default "(null)")
      -c|--client_server_specification:
                       Allow USER of the form ser<delimiter>server[:port]
@@ -58,12 +76,12 @@ Usage: perdition [options]
                       -s|--strip_domain options. Multicharacter
                       delimiters are permitted.
                       (default "@")
-     -d|--debug:      Turn on verbose debuging to syslog.
+     -d|--debug:      Turn on verbose debuging.
      -f|--config_file:
                       Name of config file to read. If set to "" no
                       config file will be used. Command line options
                       override options set in config file.
-                      (default "/etc/perdition/perdition.conf")
+                      (default "/home/horms/tmp/supersparrow/etc/perdition/perdition.conf")
      -g|--group:      Group to run as.
                       (default "nobody")
      -h|--help:       Display this message
@@ -82,7 +100,7 @@ Usage: perdition [options]
                       up the server for a user. A null library mean
                       no library will be accessed and hence, no lookup
                       will take place.
-                      (default "/usr/lib/libperditiondb_gdbm.so")
+                      (default "/home/horms/tmp/supersparrow/lib/libperditiondb_gdbm.so")
      -m|--map_library_opt:
                       String option to pass to databse access function
                       provided by the library specified by the
@@ -90,6 +108,8 @@ Usage: perdition [options]
                       string is up to the library, in the case of
                       perditiondb_gdbm the gdbm map to access is set.
                       (default "(null)")
+     -n|--no_lookup:  Disable host and port lookup
+                      Implies -B|--no_bind_banner
      -o|--server_ok_line:
                       If authentication with the back-end server is
                       successful then send the servers +OK line to
@@ -97,11 +117,6 @@ Usage: perdition [options]
      -P|--protocol:   Protocol to use.
                       (default "POP3")
                       available protocols: "POP3, IMAP4"
-     -p|--outgoing_port:
-                      Define a port to use if a port is not defined for
-                      a user in popmap, or a default server if it is
-                      used.
-                      (default "protocol dependent")
      -s|--outgoing_server:
                       Define a server to use if a user is not in the
                       popmap. Format is servername[:port]. Multiple
@@ -119,6 +134,7 @@ Usage: perdition [options]
                       (default 1800)
      -u|--username:   Username to run as
                       (default "nobody")
+     -q|--quiet  :    Only log errors. Overriden by -d|--debug
 
      Note: default value for binary flags is off
 
@@ -129,6 +145,10 @@ User Database
 For information on mechanisms for resolving users to a host and port and
 information on the -M|--map_library and -m|--map_library_opt flags, please
 see README.perditiondb.
+
+Note that by specifying an map library no map lookups will occur and
+all connections will use the -s|--outgoing_server. In this perdition
+can be configured as a "pure proxy".
 
 
 Stand Alone Mode

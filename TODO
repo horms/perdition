@@ -13,10 +13,7 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
 *  tdb module
 
 From Daniel Rosen
-* Specify a # as an option in a config file, currently it will
-  be seen as a comment.
 * Enable specification of syslog facility and non-sylog logging.
-* Document that gdbm maps can be missing for a pure proxy
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
@@ -25,6 +22,3 @@ From Rob Wyn Jones
 From Krzysztof Sierota
 * Method of evaluating if mailboxes are empty to avoid have to
   authenticate with the backend server. Method is yet to be determined :)
-
-* Specifying map_library "" in perdition.conf does _not_ work.
-* Merge buffered token reading code from supersparrow

@@ -41,4 +41,9 @@ extern vanessa_logger_t *perdition_vl;
 #define PERDITION_LOG(priority, fmt, args...) \
   vanessa_logger_log(perdition_vl, priority, fmt, ## args);
 
+#define PERDITION_DEBUG(s) PERDITION_LOG(LOG_DEBUG, s);
+
+#define PERDITION_DEBUG_ERRNO(s, e) \
+  PERDITION_LOG(LOG_DEBUG, "%s: %e", s, strerror(e));
+
 #endif

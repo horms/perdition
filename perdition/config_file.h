@@ -38,8 +38,6 @@
 
 #include "options.h"
 
-#define MAX_LINE_LENGTH 4096
-
 /* Flags for config_file_to_opt */
 #define CONFIG_FILE_ERR (flag_t) 0x1    /*Log errors to stderr*/
 
