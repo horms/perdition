@@ -147,7 +147,6 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 	char *end;
 	char *cursor;
 	size_t n_len;
-	size_t d_len;
 	int finish;
 
       	if(mangled_capability == NULL) {
@@ -155,7 +154,6 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 	}
 
 	n_len = 0;
-	d_len = strlen(POP3_CAPABILITY_DELIMITER);
 	end = capability;
 	finish = 0;
 	while(1) {
@@ -165,8 +163,9 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 			end = start + strlen(start);
 			finish = 1;
 		}
-		if(!strncmp(start, POP3_CAPABILITY_DELIMITER, d_len)) {
-			end += d_len;
+		if (!strncmp(start, POP3_CAPABILITY_DELIMITER, 
+					POP3_CAPABILITY_DELIMITER_LEN)) {
+			end += POP3_CAPABILITY_DELIMITER_LEN;
 			continue;
 		}
 		n_len += 2  /* Space for trailing "\r\n"*/
@@ -174,7 +173,7 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 		if(finish) {
 			break;
 		}
-		end += d_len;
+		end += POP3_CAPABILITY_DELIMITER_LEN;
 	}
 
 	n_len += 4; /* Space for trailing ".\r\n\0" */
@@ -198,11 +197,12 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 			finish = 1;
 		}
 		if(end == start && *end != '\0') {
-			end += d_len;
+			end += POP3_CAPABILITY_DELIMITER_LEN;
 			continue;
 		}
-		if(!strncmp(start, POP3_CAPABILITY_DELIMITER, d_len)) {
-			end += d_len;
+		if (! strncmp(start, POP3_CAPABILITY_DELIMITER, 
+					POP3_CAPABILITY_DELIMITER_LEN)) {
+			end += POP3_CAPABILITY_DELIMITER_LEN;
 			continue;
 		}
 		if(*start == '\0') {
@@ -212,7 +212,7 @@ char *pop3_mangle_capability(char *capability, char **mangled_capability)
 		if(finish) {
 			break;
 		}
-		end += d_len;
+		end += POP3_CAPABILITY_DELIMITER_LEN;
 	}
 	__POP3_CAPABILITY_APPEND(cursor, ".", 1);
 	
