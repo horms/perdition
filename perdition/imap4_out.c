@@ -58,11 +58,11 @@ int imap4_out_authenticate(
   char *greeting_string=NULL;
   int status=-1;
 
-  if((ok=create_token())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: create_token");
+  if((ok=token_create())==NULL){
+    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: token_create");
     goto leave;
   }
-  assign_token(ok, (PERDITION_USTRING) IMAP4_OK, strlen(IMAP4_OK), -1);
+  token_assign(ok,(PERDITION_USTRING)IMAP4_OK,strlen(IMAP4_OK),TOKEN_DONT_CARE);
 
   if((status=imap4_out_response(in_fd, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
     PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: imap4_out_response");
@@ -122,8 +122,8 @@ int imap4_out_authenticate(
   leave:
   str_free(tag_string);
   str_free(greeting_string);
-  unassign_token(ok);
-  destroy_token(&ok);
+  token_unassign(ok);
+  token_destroy(&ok);
   return(status);
 }
   
@@ -182,7 +182,7 @@ int imap4_out_response(
       PERDITION_LOG(LOG_DEBUG, "imap4_out_response: token_to_string");
       goto leave;
     }
-    destroy_token(&t);
+    token_destroy(&t);
   
     if(tagged && !strcmp(server_tag_string, IMAP4_UNTAGED)){
       vanessa_queue_destroy(*q);
@@ -206,7 +206,7 @@ int imap4_out_response(
   status=token_cmp(desired_token, t);
 
   leave:
-  destroy_token(&t);
+  token_destroy(&t);
   if(status!=1){
     vanessa_queue_destroy(*q);
     *q=NULL;

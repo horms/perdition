@@ -58,15 +58,15 @@ int quit(const int out_fd, const int in_fd, protocol_t *protocol){
 
   status=-1;
 
-  if((t=create_token())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "quit: create_token");
+  if((t=token_create())==NULL){
+    PERDITION_LOG(LOG_DEBUG, "quit: token_create");
     goto leave;
   }
-  assign_token(
+  token_assign(
     t, 
     (PERDITION_USTRING) protocol->type[PROTOCOL_OK], 
     strlen(protocol->type[PROTOCOL_OK]), 
-    -1
+    TOKEN_DONT_CARE
   );
 
   if((protocol->out_response(in_fd,protocol->one_time_tag,t,&q,NULL,NULL))<0){
@@ -77,8 +77,8 @@ int quit(const int out_fd, const int in_fd, protocol_t *protocol){
   status=0;
 
   leave:
-  unassign_token(t);
-  destroy_token(&t);
+  token_unassign(t);
+  token_destroy(&t);
   vanessa_queue_destroy(q);
   return(status);
 }

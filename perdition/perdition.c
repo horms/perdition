@@ -66,7 +66,7 @@ static void perdition_reread_handler(int sig);
     server_port_destroy(server_port); \
   } \
   server_port=NULL; \
-  destroy_token(&tag);
+  token_destroy(&tag);
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -409,7 +409,7 @@ int main (int argc, char **argv){
     /*Log the session*/
     PERDITION_LOG(
       LOG_INFO, 
-      "Connect: %suser=%s server=%s port=%s", 
+      "Connect: %suser=\"%s\" server=\"%s\" port=\"%s\"", 
       from_to_str,
       str_null_safe(pw.pw_name),
       str_null_safe(servername),

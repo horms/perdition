@@ -32,7 +32,7 @@
 /**********************************************************************
  * read_line
  * read a line from fd and parse it into a queue of tokens
- * line is read by making repeated calls to read_token
+ * line is read by making repeated calls to token_read
  * pre: fd: file descriptor to read from
  *      buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
@@ -63,14 +63,14 @@ static vanessa_queue_t *__read_line(const int fd, unsigned char *buf, size_t *n)
     do_literal=0;
   }
 
-  if((q=vanessa_queue_create(DESTROY_TOKEN))==NULL){
+  if((q=vanessa_queue_create(TOKEN_DESTROY))==NULL){
     PERDITION_LOG(LOG_DEBUG, "__read_line: create_queue");
     return(NULL);
   }
  
   do{
-    if((t=read_token(fd,(buf==NULL)?NULL:buf+buf_offset,&buf_remaining))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "__read_line: read_token");
+    if((t=token_read(fd,(buf==NULL)?NULL:buf+buf_offset,&buf_remaining))==NULL){
+      PERDITION_LOG(LOG_DEBUG, "__read_line: token_read");
       vanessa_queue_destroy(q);
       return(NULL);
     }
@@ -164,7 +164,7 @@ char *queue_to_string(vanessa_queue_t *q){
   char *string;
   char *pos;
 
-  if((stack=vanessa_queue_create(DESTROY_TOKEN))==NULL){
+  if((stack=vanessa_queue_create(TOKEN_DESTROY))==NULL){
     PERDITION_LOG(LOG_DEBUG, "queue_to_string: create_queue");
     return(NULL);
   }

@@ -38,7 +38,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt);
 
 
 /**********************************************************************
- * create_token
+ * token_create
  * create an empty token
  * pre: none
  * post: token is created, and values are initialised 
@@ -48,11 +48,11 @@ static int __token_fill_buffer(const int fd, const options_t *opt);
  * 8 bit clean
  **********************************************************************/
 
-token_t *create_token(void){
+token_t *token_create(void){
   token_t *t;
 
   if((t=(token_t *)malloc(sizeof(token_t)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "create_token: malloc");
+    PERDITION_LOG(LOG_DEBUG, "token_create: malloc");
     return(NULL);
   }
   t->n=0;
@@ -67,11 +67,11 @@ token_t *create_token(void){
  * pre: t: token to place bytes in
  *      buf: buffer to use
  *      n: number of bytes in buffer
- *      eol:  end of line flag
+ *      flags: flags for token as per token.h
  * post: if n!=0 then buf is used as the buffer in t
  *       (no copying)
  *       if n==0 the buffer in t is set to NULL
- *       the eol flag in t is set to eol
+ *       the flag in t is set
  * return: none
  *
  * 8 bit clean
@@ -81,10 +81,10 @@ void token_assign(
   token_t *t, 
   unsigned char * buf, 
   const size_t n,
-  const int eol
+  const flag_t flag
 ){
   t->n=n;
-  t->eol=eol;
+  t->flag=flag;
   if(n==0){
     if(buf!=NULL){
       free(buf);
@@ -114,56 +114,7 @@ void token_unassign(token_t *t){
 
 
 /**********************************************************************
- * assign_token
- * place bytes into a token
- * pre: t: token to place bytes in
- *      buf: buffer to use
- *      n: number of bytes in buffer
- *      eol: status to set eol flag to
- * post: if n!=0 then buf is used as the buffer in t
- *       (no copying)
- *       if n==0 the buffer in t is set to NULL
- *       the eol flag in t is set to eol
- * return: none
- *
- * 8 bit clean
- **********************************************************************/
-
-void assign_token(
-  token_t *t, 
-  unsigned char * buf, 
-  const ssize_t n,
-  const int eol
-){
-  t->n=n;
-  t->eol=eol;
-  if(n==0){
-    t->buf=NULL;
-  }
-  else {
-    t->buf=buf;
-  }
-}
-
-
-/**********************************************************************
- * unassign_token
- * make a token empty
- * useful if you want to destroy a token but not what it contains
- * pre: t: token to unasign values of
- * post: values in t are reinitialised, but buffer is not destroyed
- * return: none
- *
- * 8 bit clean
- **********************************************************************/
-
-void unassign_token(token_t *t){
-  assign_token(t, (unsigned char *)NULL, (ssize_t)0, 0);
-}
-
-
-/**********************************************************************
- * destroy_token
+ * token_destroy
  * pre: t pointer to a token
  * post: if the token is null no nothing
  *       if buf is non-NULL then free it
@@ -173,7 +124,7 @@ void unassign_token(token_t *t){
  * 8 bit clean
  **********************************************************************/
 
-void destroy_token(token_t **t){
+void token_destroy(token_t **t){
   if(*t==NULL){
     return;
   }
@@ -188,7 +139,7 @@ void destroy_token(token_t **t){
 
 
 /**********************************************************************
- * write_token
+ * token_write
  * write a token to fd
  * pre: fd: File descriptor to write to
  *      token: token to write
@@ -200,9 +151,9 @@ void destroy_token(token_t **t){
  * 8 bit clean
  **********************************************************************/
 
-int write_token(const int fd, const token_t *t){
+int token_write(const int fd, const token_t *t){
   if(vanessa_socket_pipe_write_bytes(fd, t->buf, t->n)){
-    PERDITION_LOG(LOG_DEBUG, "write_token: write_strn");
+    PERDITION_LOG(LOG_DEBUG, "token_write: vanessa_socket_pipe_write_bytes");
     return(-1);
   }
   
@@ -292,7 +243,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
 
 
 /**********************************************************************
- * read_token
+ * token_read
  * read a token in from fd
  * pre: fd: file descriptor to read from
  *      literal_buf: buffer to store bytes read from server in
@@ -309,13 +260,13 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
  *       BUFFER_SIZE will be read and the remander will be
- *       left (to be handled by an sbsequent call to read_token).
+ *       left (to be handled by an sbsequent call to token_read).
  *       The same appies to *n if literal_buf is being filled.
  *
  * 8 bit clean
  **********************************************************************/
 
-token_t *read_token(const int fd, unsigned char *literal_buf, size_t *n){
+token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
   unsigned char buffer[MAX_LINE_LENGTH];
   unsigned char *assign_buffer;
   unsigned char c;
@@ -324,7 +275,7 @@ token_t *read_token(const int fd, unsigned char *literal_buf, size_t *n){
   size_t len=0;
   int bytes_read;
   int do_literal;
-  int eol=0;
+  flag_t flag=TOKEN_NONE;
 
   extern options_t opt;
 
@@ -344,7 +295,7 @@ token_t *read_token(const int fd, unsigned char *literal_buf, size_t *n){
 
     switch(c){
       case '\n':
-        eol=1;
+        flag=TOKEN_EOL;
         goto end_while;
       case '\r':
 #ifdef __GRR_0__
@@ -366,8 +317,8 @@ end_while:
   }
 
   /*Create token to return*/
-  if((t=create_token())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "read_token: create_token");
+  if((t=token_create())==NULL){
+    PERDITION_LOG(LOG_DEBUG, "token_read: token_create");
     return(NULL);
   }
   if((assign_buffer=(unsigned char*)malloc(sizeof(unsigned char)*len))==NULL){
@@ -375,22 +326,8 @@ end_while:
     return(NULL);
   }
   memcpy(assign_buffer, buffer, len);
-  token_assign(t, assign_buffer, len, eol);
+  token_assign(t, assign_buffer, len, flag);
   return(t);
-}
-
-
-/**********************************************************************
- * token_is_eol
- * Check if the token is at the end of a line
- * pre: t: token to check eol flag of
- * post: none
- * return 1 if the token is at the end of a line
- *        0 otherwise
- **********************************************************************/
-
-int token_is_eol(const token_t *t){
-  return(t->eol);
 }
 
 
@@ -402,46 +339,20 @@ int token_is_eol(const token_t *t){
  * post: none
  * return: 1 is they are the same
  *         0 otherwise
- * eol field will be ignored if eiter token has eol set to -1 (don't care)
+ * flag field will be ignored if eiter token has eol set to TOKEN_DONT_CARE
  *
  * Not 8 bit clean as it is case insensitive using toupper
  **********************************************************************/
 
 int token_cmp(const token_t *a, const token_t *b){
-  int i;
-
-  if(a->n!=b->n){
+  if(
+    a->n!=b->n ||
+    ((a->flag!=b->flag)&&(a->flag!=TOKEN_DONT_CARE)&&(b->flag!=TOKEN_DONT_CARE))
+  ){
     return(0);
   }
 
-  if((a->eol!=b->eol) && (a->eol>-1) && (b->eol>-1)){
-    return(0);
-  }
-
-  for(i=0;i<a->n;i++){
-    if(toupper(*(a->buf+i))!=toupper(*(b->buf+i))){
-      return(0);
-    }
-  }
-
-  return(1);
-}
-
-
-/**********************************************************************
- * token_is_null
- * test if a token is null, that is has an empty payload
- * pre: t: token to test
- * post: none
- * return 0 if token is null
- *        -1 otherwise
- * eol field is ignored
- *
- * 8 bit clean
- **********************************************************************/
-
-int token_is_null(const token_t *t){
-  return(t->n==0?0:-1);
+  return(strncasecmp(a->buf, b->buf, a->n)?0:1);
 }
 
 

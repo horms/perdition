@@ -183,7 +183,7 @@ int imap4_in_get_pw(
         goto loop;
       }
 
-      destroy_token(&t);
+      token_destroy(&t);
       if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
         PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
 	t=NULL;
@@ -194,7 +194,7 @@ int imap4_in_get_pw(
         break;
       }
 
-      destroy_token(&t);
+      token_destroy(&t);
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
           PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
@@ -210,7 +210,7 @@ int imap4_in_get_pw(
       else {
 	return_pw->pw_passwd=NULL;
       }
-      destroy_token(&t);
+      token_destroy(&t);
       vanessa_queue_destroy(q);
       *return_tag=tag;
       return(0);
@@ -225,16 +225,16 @@ int imap4_in_get_pw(
 
     /*Clean up before looping*/
     loop:
-    destroy_token(&t);
-    destroy_token(&tag);
+    token_destroy(&t);
+    token_destroy(&tag);
     str_free(command_string);
     vanessa_queue_destroy(q);
   }
 
 
   /*If we get here clean up and bail*/
-  destroy_token(&t);
-  destroy_token(&tag);
+  token_destroy(&t);
+  token_destroy(&tag);
   str_free(command_string);
   vanessa_queue_destroy(q);
   return(-1);

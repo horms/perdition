@@ -118,7 +118,7 @@ int pop3_in_get_pw(
       PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
       break;
     }
-    destroy_token(&t);
+    token_unassign(t);
 
     if(strcasecmp(command_string, "USER")==0){
       if(return_pw->pw_name!=NULL){
@@ -148,7 +148,7 @@ int pop3_in_get_pw(
         PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
         break;
       }
-      destroy_token(&t);
+      token_destroy(&t);
       
       if((message=cat_str(3, "USER ", return_pw->pw_name, " set"))<0){
         PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: cat_str");
@@ -192,7 +192,7 @@ int pop3_in_get_pw(
       else {
         return_pw->pw_passwd=NULL;
       }
-      destroy_token(&t);
+      token_destroy(&t);
       vanessa_queue_destroy(q);
       return(0);
     }
@@ -220,14 +220,14 @@ int pop3_in_get_pw(
 
     /*Clean up before looping*/
     loop:
-    destroy_token(&t);
+    token_destroy(&t);
     str_free(command_string);
     vanessa_queue_destroy(q);
     str_free(message);
   }
 
   /*If we get here clean up and bail*/
-  destroy_token(&t);
+  token_destroy(&t);
   str_free(command_string);
   vanessa_queue_destroy(q);
   str_free(message);

@@ -57,11 +57,11 @@ int pop3_out_authenticate(
   char *greeting_string=NULL;
   int status=-1;
 
-  if((ok=create_token())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_get_pw: create_token");
+  if((ok=token_create())==NULL){
+    PERDITION_LOG(LOG_DEBUG, "pop3_out_get_pw: token_create");
     goto leave;
   }
-  assign_token(ok, (PERDITION_USTRING) POP3_OK, strlen(POP3_OK), -1);
+  token_assign(ok,(PERDITION_USTRING)POP3_OK,strlen(POP3_OK),TOKEN_DONT_CARE);
 
   if((status=pop3_out_response(in_fd, NULL, ok, &q, NULL, NULL))<0){
     PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: pop3_out_response 1");
@@ -122,8 +122,8 @@ int pop3_out_authenticate(
   leave:
   str_free(read_string);
   str_free(greeting_string);
-  unassign_token(ok);
-  destroy_token(&ok);
+  token_unassign(ok);
+  token_destroy(&ok);
   return(status);
 }
   
@@ -163,6 +163,6 @@ int pop3_out_response(
 
   status=token_cmp(desired_token, t);
   
-  destroy_token(&t);
+  token_destroy(&t);
   return(status);
 }
