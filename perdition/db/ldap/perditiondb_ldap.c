@@ -330,7 +330,6 @@ int dbserver_get(const char *key_str,
 	int err;
 	char *pstr;
 	char **bv_val = NULL;
-	char *filter = NULL;
 	char **returns = NULL;
 	char *binddn = NULL;
 	char *bindpw = NULL;
@@ -419,9 +418,6 @@ int dbserver_get(const char *key_str,
 				"base: %s; scope: %s; filter: %s", 
 				lud->lud_dn, lud->lud_scope, lud->lud_filter);
 	}
-
-	free(filter);
-	filter = NULL;
 
 	/* See what we got back - we only bother with the first entry */
 	if ((mptr = ldap_first_entry(connection, res)) == NULL) {
