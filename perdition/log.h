@@ -60,32 +60,32 @@ extern int errno;
  */
 
 #define PERDITION_LOG_UNSAFE(priority, fmt, args...) \
-  vanessa_logger_log(perdition_vl, priority, fmt, ## args);
+  vanessa_logger_log(perdition_vl, priority, fmt, ## args)
 
 #define PERDITION_LOG(priority, str) \
   vanessa_logger_log(perdition_vl, priority, "%s", str)
 
 #define PERDITION_INFO_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_INFO, fmt, ## args);
+  vanessa_logger_log(perdition_vl, LOG_INFO, fmt, ## args)
 
 #define PERDITION_INFO(str) \
   vanessa_logger_log(perdition_vl, LOG_INFO, "%s", str)
 
 #define PERDITION_ERR_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_ERR, fmt, ## args);
+  vanessa_logger_log(perdition_vl, LOG_ERR, fmt, ## args)
 
 #define PERDITION_ERR(str) \
   vanessa_logger_log(perdition_vl, LOG_ERR, "%s", str)
 
 #define PERDITION_DEBUG_UNSAFE(fmt, args...) \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": " fmt, ## args);
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": " fmt, ## args)
 
 #define PERDITION_DEBUG(str) \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str);
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, __FUNCTION__ ": %s", str)
 
 #define PERDITION_DEBUG_ERRNO(s) \
   vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s: %s: %s", \
-    __FUNCTION__, s, strerror(errno));
+    __FUNCTION__, s, strerror(errno))
 
 #ifdef WITH_SSL_SUPPORT
 #define PERDITION_DEBUG_SSL_ERROR_STRING \
@@ -99,7 +99,7 @@ extern int errno;
 
 #define PERDITION_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
   PERDITION_DEBUG_SSL_ERROR_STRING \
-  vanessa_logger_log(perdition_vl, LOG_DEBUG, fmt, ## args);
+  vanessa_logger_log(perdition_vl, LOG_DEBUG, fmt, ## args)
 
 #define PERDITION_DEBUG_SSL_ERR(str) \
   PERDITION_DEBUG_SSL_ERROR_STRING \
