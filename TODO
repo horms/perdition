@@ -50,4 +50,7 @@ From Matt Prigge
 * Introduce a new protocol labels for SIMAP4 and SPOP3.
 * Make IMAP4 and POP3 act as an implicit "ssl_mode none"
 
-
+Jack Snodgrass
+* Identify user based on source ip
+Zipworld
+* Identify user based on local ip (patch has been provided)

@@ -33,10 +33,6 @@
 
 typedef long int flag_t;
 
-#ifndef HAVE_SOCKLEN_T
-typedef int socklen_t;
-#endif
-
 #define NULL_FLAG (flag_t) 0
 
 #define AUTH_RETRY 3

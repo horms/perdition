@@ -384,7 +384,7 @@ int main (int argc, char **argv){
 
   /*Open incoming socket as required*/
   if(opt.inetd_mode){
-    socklen_t           namelen;
+    int namelen;
 
     if((client_io=io_create_fd(0, 1))==NULL){
       PERDITION_DEBUG("io_create_fd 1");

@@ -6,6 +6,3 @@
 
 /* Group to run perdition as */
 /* #define WITH_GROUP "nobody" */
-
-/* The socklen_t type is available */
-/* #define HAVE_SOCKLEN_T 1 */
