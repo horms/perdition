@@ -223,7 +223,6 @@ leave:
 	if(&opt);
 	if(tmp_status);
 	if(tmp_token);
-	goto ok;
 }
   
 
