@@ -284,11 +284,15 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
  * pre: io: io_t to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
- *      flag: Flags. If locical or of TOKEN_EOL then all characters 
+ *      flag: If logical or of TOKEN_EOL then all characters 
  *            up to a '\n' will be read as a token. That is the token may
- *            have spaces. If locical or of TOKEN_IMAP4 then spaces inside
+ *            have spaces. 
+ *            If logical or of TOKEN_IMAP4 then spaces inside
  *            quotes will be treated as literals rather than token
  *            delimiters.
+ *            If logical or of TOKEN_IMAP4_LITERAL then m bytes 
+ *            will be read as a single token.
+ *      m: Bytes to read if flag is TOKEN_IMAP4_LITERAL
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -301,7 +305,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
  *       BUFFER_SIZE will be read and the remander will be
- *       left (to be handled by an sbsequent call to token_read).
+ *       left (to be handled by an subsequent call to token_read).
  *       The same appies to *n if literal_buf is being filled.
  *
  * 8 bit clean
@@ -311,7 +315,8 @@ token_t *token_read(
   io_t *io,
   unsigned char *literal_buf, 
   size_t *n,
-  flag_t flag
+  flag_t flag,
+  size_t m
 ){
   unsigned char buffer[MAX_LINE_LENGTH];
   unsigned char *assign_buffer;
@@ -326,6 +331,8 @@ token_t *token_read(
 
   extern options_t opt;
 
+  memset(buffer, 0, MAX_LINE_LENGTH);
+
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n)){
     if((bytes_read=token_fill_buffer(io, &opt))<=0){
@@ -338,6 +345,14 @@ token_t *token_read(
     /*Place in literal buffer, if we are doooooooooooooing that today*/
     if(do_literal){
       *(literal_buf+(literal_offset++))=c;
+    }
+
+    if(flag&TOKEN_IMAP4_LITERAL) {
+      buffer[len++]=c;
+      if(len >= m) {
+	      goto end_while;
+      }
+      continue;
     }
 
     switch(c){
@@ -428,6 +443,10 @@ char *token_to_string(const token_t *t, const unsigned char strip){
   unsigned char *buf;
   size_t n;
 
+  if(t==NULL || t->buf == NULL) {
+	  PERDITION_DEBUG("empty token");
+	  return(NULL);
+  }
 
   buf=t->buf;
   n=t->n;

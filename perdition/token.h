@@ -63,8 +63,9 @@ typedef struct{
  * Flags for tokeniser
  */
 /* #define TOKEN_EOL, defined above */ 
-#define TOKEN_POP3        (flag_t) 0x02
-#define TOKEN_IMAP4       (flag_t) 0x04
+#define TOKEN_POP3            (flag_t) 0x02
+#define TOKEN_IMAP4           (flag_t) 0x04
+#define TOKEN_IMAP4_LITERAL   (flag_t) 0x08
 
 #define TOKEN_NO_STRIP    (unsigned char) '\0'
 
@@ -166,11 +167,15 @@ int token_write(io_t *io, const token_t *t);
  * pre: io: io_t to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
- *      flag: Flags. If locical or of TOKEN_EOL then all characters 
+ *      flag: If logical or of TOKEN_EOL then all characters 
  *            up to a '\n' will be read as a token. That is the token may
- *            have spaces. If locical or of TOKEN_IMAP4 then spaces inside
+ *            have spaces. 
+ *            If logical or of TOKEN_IMAP4 then spaces inside
  *            quotes will be treated as literals rather than token
  *            delimiters.
+ *            If logical or of TOKEN_IMAP4_LITTERAL then m bytes 
+ *            will be read as a single token.
+ *      m: Bytes to read if flag is TOKEN_IMAP4_LITTERAL
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -183,7 +188,7 @@ int token_write(io_t *io, const token_t *t);
  *         NULL on error
  * Note: if a token larger than BUFFER_SIZE is read then only
  *       BUFFER_SIZE will be read and the remander will be
- *       left (to be handled by an sbsequent call to read_token).
+ *       left (to be handled by an subsequent call to token_read).
  *       The same appies to *n if literal_buf is being filled.
  *
  * 8 bit clean
@@ -193,8 +198,10 @@ token_t *token_read(
   io_t *io,
   unsigned char *literal_buf, 
   size_t *n,
-  flag_t flag
+  flag_t flag,
+  size_t m
 );
+
 
 /**********************************************************************
  * token_is_eol

@@ -159,7 +159,7 @@ int pop3_out_response(
   int status;
   token_t *t;
 
-  if((*q=read_line(io, buf, n, TOKEN_POP3))==NULL){
+  if((*q=read_line(io, buf, n, TOKEN_POP3, 0))==NULL){
     PERDITION_DEBUG("read_line");
     return(-1);
   }
