@@ -83,11 +83,11 @@ authentication phase.
 Allow USER of the form user<delimiter>server[:port] to specify the
 server and port for a user. 
 .sp
-\fBNote:\fP Overrides \-s|\-\-strip_domain.
+\fBNote:\fP Overrides \-S|\-\-strip_domain.
 .TP
 .B \-D, \-\-domain_delimiter:
 Delimiter used for \-c|\-\-client_server_specification and
-\-s|\-\-strip_domain options. Multi-character delimiters are permitted.
+\-S|\-\-strip_domain options. Multi-character delimiters are permitted.
 .br
 (default "@")
 .TP
@@ -302,7 +302,7 @@ POP3
 user james@other.host
 .fi
 .SH STRIP DOMAIN
-IF strip domain is set using the \-s|\-\-strip_domain option then servers
+IF strip domain is set using the \-S|\-\-strip_domain option then servers
 giving usernames of the form user<delimiter>host[:port] will have the text
 including and after <delimiter> removed from their username before
 authentication takes place.  This option does not take effect if User Port

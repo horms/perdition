@@ -139,7 +139,7 @@ int options(int argc, char **argv, flag_t f){
     {"server_ok_line",              'o', POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P', POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p', POPT_ARG_STRING, NULL, 'p'},
-    {"strip_domain",                'S', POPT_ARG_STRING, NULL, 'S'},
+    {"strip_domain",                'S', POPT_ARG_NONE,   NULL, 'S'},
     {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
     {"timeout",                     't', POPT_ARG_STRING, NULL, 't'},
     {"username",                    'u', POPT_ARG_STRING, NULL, 't'},
@@ -543,10 +543,10 @@ void usage(int exit_status){
     "    Note: -d|--debug must be specified for this option to take effect.\n"
     " -c|--client_server_specification:\n"
     "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
-    "    server and port for a user. Note: over-rides -s|--strip_domain.\n"
+    "    server and port for a user. Note: over-rides -S|--strip_domain.\n"
     " -D|--domain_delimiter:\n"
     "    Delimiter used for -c|--client_server_specification and\n"
-    "    -s|--strip_domain options. Multicharacter delimiters are permitted.\n"
+    "    -S|--strip_domain options. Multicharacter delimiters are permitted.\n"
     "    (default \"%s\")\n"
     " -d|--debug:\n"
     "    Turn on verbose debuging.\n"
