@@ -55,6 +55,8 @@ XXX
    - Fixed potential buffer overflow in token_read()
    - Tided up perditiondb_ldap_makedb
    - In debug mode, log the name of the configuration file being used
+   - Added infomration on how to use bind passwords to LDAP documentation
+     Russell Corker
 
 ----------------------------------------------------------------------
 

@@ -42,3 +42,6 @@ Richard Holbert
 * Lie and say there are 0 messages if a real-server can't be contacted.
 
 * Fix schema path in perditiondb_ldap_makedb
+
+Liu Jinhui
+* Pass through error messages from real servers

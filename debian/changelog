@@ -1,3 +1,14 @@
+perdition (xxx) unstable; urgency=low
+
+  *  New Upstream version
+     Closes Debian Bugs:
+     - Autodetection of WITH_LDAP_LUD_EXTS works correclty.
+       (closes: Bug#170801)
+     - Not a bug (closes: Bug#170783)
+     - Not a bug (closes: Bug#170782)
+
+ -- Simon Horman <horms@vergenet.net>  XXX
+
 perdition (0.1.10-2) unstable; urgency=low
 
   * Added Build-Depends on libtool and built package from

@@ -78,7 +78,7 @@ and the iPlanet Directory Server Administrator's Guide (Appendix C)
 
 LDAP URLs have the following format:
 
-ldap{[}s{]}://hostname{[}:port{]}/search\_base?attributes?scope?filter
+ldap{[}s{]}://hostname{[}:port{]}/search\_base?attributes?scope?filter[?extension[,extension]]
 
 Cleartext connections are made using the ldap:// protocol, and encrypted
 (SSL) conections are made using the ldaps:// protocol.
@@ -118,6 +118,10 @@ filter&
 \multicolumn{1}{p{4.5in}|}{Criteria to be used within the scope of the search. Example, (uid=\%25s).
 The \%25s gets replaced with the userid supplied by the user's email
 client.}\\
+\hline
+extension&
+\multicolumn{1}{p{4.5in}|}{LDAP extension, currently we only support BINDNAME and X-BINDPW extensions (for binding with a name and password before requesting LDAP data). Multiple extensions may be separated by commas, and an extension that is required with have a \emph{!} as a prefix. To bind as \emph{cn=Manager} with password \emph{secret} use \emph{!BINDNAME=cn=Manager,!X-BINDPW=secret}.
+}\\
 \hline
 \end{tabular}
 
