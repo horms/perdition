@@ -7,9 +7,6 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 
 From Horms
 *  Add TLS IMAP and POP support
-o  Fix .spec file
-o  Fix redhat init script
-o  Better logging of SSL Junk
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

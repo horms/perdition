@@ -75,7 +75,7 @@ database to be sourced from LDAP.
 Summary: Library to allow perdition to access MySQL based pop maps.
 Group: Applications/Internet
 Copyright: GPL
-Requires: perdition-%{ver}-%{rel} mysql-shared libz
+Requires: perdition-%{ver}-%{rel}
 Provides: perdition-mysql-%{ver}-%{rel}
 
 %description mysql

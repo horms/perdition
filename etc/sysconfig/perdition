@@ -7,5 +7,11 @@
 # Run an instance of perdition in POP3 mode
 POP3=yes
 
+# Run an instance of perdition in POP3S mode
+POP3S=yes
+
 # Run an instance of perdition in IMAP4 mode
 IMAP4=yes
+
+# Run an instance of perdition in IMAP4S mode
+IMAP4S=yes
