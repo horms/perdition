@@ -77,11 +77,13 @@ int imap4_out_setup(
     goto leave;
   }
 
+  /* N.B: Calling queue_to_string() destroys q */
   if((read_string=queue_to_string(q))==NULL){
     VANESSA_LOGGER_DEBUG("queue_to_string");
     status=-1;
     goto leave;
   }
+  q = NULL;
 
   if((greeting_string=greeting_str(
     greeting_string, 
@@ -96,8 +98,9 @@ int imap4_out_setup(
     VANESSA_LOGGER_DEBUG("Loop detected, abandoning connection");
     goto leave;
   }
-  vanessa_queue_destroy(q);
-  q = NULL;
+
+  /* Ok to go */
+  status=1;
 
   /* XXX: TLS Stuff should go here */
 
