@@ -295,6 +295,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_LOGIN_DISABLED},
     {"lower_case",                  '\0', POPT_ARG_STRING, NULL,
       TAG_LOWER_CASE},
+    {"pid_file",                    '\0', POPT_ARG_STRING,   NULL,
+      TAG_PID_FILE},
     {"no_daemon",                   '\0', POPT_ARG_NONE,   NULL,
       TAG_NO_DAEMON},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
@@ -371,6 +373,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.add_domain,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
     opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
+    opt_i(opt.server_ok_line,  DEFAULT_SERVER_OK_LINE,      i, 0, OPT_NOT_SET);
     opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
     opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
     opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
@@ -383,7 +386,7 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE)) {
       char *filename;
-      filename =  config_file_name(basename, opt.protocol);
+      filename = config_file_name(basename, opt.protocol);
       opt_p(opt.config_file,   filename,                    i, 0, OPT_NOT_SET);
     }
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
@@ -396,6 +399,19 @@ int options(int argc, char **argv, flag_t f){
 
     opt_p(opt.username,        DEFAULT_USERNAME,            i, 0, OPT_NOT_SET);
     opt_da(opt.outgoing_server,DEFAULT_OUTGOING_SERVER,     i, 0, OPT_NOT_SET);
+    opt_p(opt.pid_file,        PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
+    {
+      char *filename;
+      filename = malloc(strlen(PERDTIOIN_PID_DIR) + (2*strlen(basename)) + 7);
+      if (!filename) {
+	      VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+	      return -1;
+      }
+      sprintf(filename, "%s/%s/%s.pid", PERDTIOIN_PID_DIR, basename,
+		      basename);
+      opt_p(opt.pid_file,        filename,                  i, 0, OPT_NOT_SET);
+      free(filename);
+    }
     opt_da(opt.query_key,      DEFAULT_QUERY_KEY,           i, 0, OPT_NOT_SET);
 #ifdef WITH_SSL_SUPPORT
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
@@ -622,6 +638,13 @@ int options(int argc, char **argv, flag_t f){
             OPT_KEY_DELIMITER
           );
         }
+        break;
+      case TAG_PID_FILE:
+	if(*optarg && *optarg != '/'){
+	  VANESSA_LOGGER_ERR_UNSAFE("Invalid pid file: \"%s\"", optarg);
+	  usage(-1);
+	}
+        opt_p(opt.pid_file,optarg,opt.mask2,MASK2_PID_FILE,f);
         break;
       case TAG_SSL_MODE:
 #ifdef WITH_SSL_SUPPORT
@@ -972,6 +995,7 @@ int log_options_str(char *str, size_t n){
     "ok_line=\"%s\", "
     "outgoing_port=\"%s\", "
     "outgoing_server=\"%s\", "
+    "pid_file=\"%s\", "
     "prototol=\"%s\", "
     "server_ok_line=%s, "
     "strip_domain=\"%s\", "
@@ -1026,6 +1050,7 @@ int log_options_str(char *str, size_t n){
     OPT_STR(opt.ok_line),
     OPT_STR(opt.outgoing_port),
     OPT_STR(outgoing_server),
+    OPT_STR(opt.pid_file),
     protocol,
     BIN_OPT_STR(opt.server_ok_line),
     strip_domain,
@@ -1208,6 +1233,10 @@ void usage(int exit_status){
     "    available protocols: \"%s\"\n"
     " -p|--outgoing_port PORT_NAME|PORT_NUMBER:\n"
     "    Default real-server port. (default \"%s\")\n"
+    " --pid_file FILENAME\n"
+    "    Path for pidfile. Must be a full path starting with a '/'\n"
+    "    Empty for no pid file. Not used in inetd mode.\n"
+    "    (default \"%s/ARGV[0]\")\n"
     " -s|--outgoing_server SERVER[,SERVER...]:\n"
     "    Default server(s). (default \"%s\")\n"
     " -S|--strip_domain STATE[,STATE...]:\n"
@@ -1294,6 +1323,7 @@ void usage(int exit_status){
     OPT_STR(default_protocol_str),
     OPT_STR(available_protocols),
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
+    OPT_STR(PERDTIOIN_PID_DIR),
     OPT_STR(DEFAULT_OUTGOING_SERVER),
     DEFAULT_TIMEOUT,
     OPT_STR(DEFAULT_USERNAME),

@@ -61,4 +61,6 @@ void init_set_proc_title(int argc, char *argv[], char *envp[]);
 
 void set_proc_title(const char *fmt,...);
 
+const char * get_progname(const char *argv_0);
+
 #endif /* _HA_SETPROCTITLE_H */

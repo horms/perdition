@@ -60,36 +60,44 @@ case "$1" in
   start)
     if [ "$POP3" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
+        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
         --exec @prefix@/sbin/perdition.pop3 -- $FLAGS $POP3_FLAGS
     fi
     if [ "$POP3S" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
+        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
         --exec @prefix@/sbin/perdition.pop3s -- $FLAGS $POP3S_FLAGS
     fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
+        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
         --exec @prefix@/sbin/perdition.imap4 -- $FLAGS $IMAP4_FLAGS
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
+        --pidfile /var/run/perdition.imap4s.pid \
         --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
     fi
     ;;
   stop)
     if [ "$POP3" = "yes" ]; then 	
       start-stop-daemon --stop --verbose \
+        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
         --exec @prefix@/sbin/perdition.pop3
     fi
     if [ "$POP3S" = "yes" ]; then 	
       start-stop-daemon --stop --verbose \
+        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
         --exec @prefix@/sbin/perdition.pop3s
     fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --stop --verbose \
+        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
         --exec @prefix@/sbin/perdition.imap4
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --stop --verbose \
+        --pidfile /var/run/perdition.imap4s.pid \
         --exec @prefix@/sbin/perdition.imaps
     fi
     ;;
@@ -99,7 +107,26 @@ case "$1" in
     ;;
   force-reload|reload)
     echo "Reloading $NAME configuration files"
-    start-stop-daemon --stop --signal 1 --quiet --exec $DAEMON
+    if [ "$POP3" = "yes" ]; then 	
+      start-stop-daemon --stop --signal 1 --quiet \
+        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
+        --exec @prefix@/sbin/perdition.pop3
+    fi
+    if [ "$POP3S" = "yes" ]; then 	
+      start-stop-daemon --stop --signal 1 --quiet \
+        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
+        --exec @prefix@/sbin/perdition.pop3s
+    fi
+    if [ "$IMAP4" = "yes" ]; then 	
+      start-stop-daemon --stop --signal 1 --quiet \
+        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
+        --exec @prefix@/sbin/perdition.imap4
+    fi
+    if [ "$IMAP4S" = "yes" ]; then 	
+      start-stop-daemon --stop --signal 1 --quiet \
+        --pidfile /var/run/perdition.imap4s.pid \
+        --exec @prefix@/sbin/perdition.imaps
+    fi
     ;;
   *)
     echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}"

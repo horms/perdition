@@ -365,8 +365,8 @@ int dbserver_get(const char *key_str,
 	err = ldap_set_option(connection, LDAP_OPT_PROTOCOL_VERSION, 
 				&pldap_version);
 	if(err != LDAP_SUCCESS) {
-		VANESSA_LOGGER_UNSAFE_ERRNO("ldap_protocol_version: %s",
-				ldap_err2string(err));
+		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_protocol_version: %s: %s",
+				ldap_err2string(err), strerror(errno));
 		return(-1);
 	}
 #endif /* WITH_LDAP_SET_OPTION */

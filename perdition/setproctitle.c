@@ -121,7 +121,7 @@ void init_set_proc_title(int argc, char *argv[], char *envp[])
   /* Set the __progname and __progname_full variables so glibc and company don't
    * go nuts. - MacGyver
    */
-  __progname = strdup("perdition");
+  __progname = strdup(get_progname(argv[0]));
   __progname_full = strdup(argv[0]);
 #endif /* HAVE___PROGNAME */
   
@@ -200,4 +200,17 @@ void set_proc_title(const char *fmt,...)
 #endif /* PF_ARGV_PSSTRINGS */
 
 #endif /* HAVE_SETPROCTITLE */
+}
+
+
+const char *
+get_progname(const char *argv_0)
+{
+	const char *progname;
+
+	progname = strrchr(argv_0, '/');
+	if (progname)
+	   	return progname+1;
+
+	return argv_0;
 }

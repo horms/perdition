@@ -39,6 +39,12 @@
 #include <vanessa_socket.h>
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <grp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libgen.h>
 
 #include "protocol.h"
 #include "log.h"
@@ -69,6 +75,9 @@ struct utsname *system_uname;
 struct sockaddr_in *peername;
 struct sockaddr_in *sockname;
 
+/* PID file that has been created */
+char *pid_file;
+
 /*
  * Used for opening dynamic server lookup library
  * Kept global so they can be used in signal handlers
@@ -79,6 +88,13 @@ static int (*dbserver_get2)(const char *, const char *, char **,
 static void *handle;
 
 static void perdition_reread_handler(int sig);
+static void perdition_exit_cleanly(int i);
+
+static int write_pid_file(const char *pidfilename, const char *username,
+		const char *group);
+static int perdition_chown(const char *path, const char *username, 
+		const char *group);
+
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
@@ -124,7 +140,7 @@ static void perdition_reread_handler(int sig);
 #define PERDITION_SET_UID_AND_GID \
   if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
     VANESSA_LOGGER_ERR("Fatal error setting group and userid. Exiting.");\
-    vanessa_socket_daemon_exit_cleanly(-1); \
+    perdition_exit_cleanly(-1); \
   }
 
 /* Macro to log session just after Authentication */
@@ -139,7 +155,7 @@ static void perdition_reread_handler(int sig);
 			str_null_safe(_port), str_null_safe(_status));     \
 	VANESSA_LOGGER_LOG(LOG_NOTICE, _auth_log.log_str);                 \
 	_auth_log.log_time=time(NULL) + opt.connect_relog;                 \
-	set_proc_title("perdition: auth %s", str_null_safe(_status));
+	set_proc_title("%s: auth %s", progname, str_null_safe(_status));
 
 #define LOGIN_FAILED(_type, _reason)                                      \
 {                                                                         \
@@ -150,7 +166,7 @@ static void perdition_reread_handler(int sig);
 		VANESSA_LOGGER_DEBUG("protocol->write");                  \
 		VANESSA_LOGGER_ERR("Fatal error writing to client. "      \
 				"Exiting child.");                        \
-		vanessa_socket_daemon_exit_cleanly(-1);                   \
+		perdition_exit_cleanly(-1);                   \
 	}                                                                 \
 	VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name,        \
 			servername, port,                                 \
@@ -181,6 +197,7 @@ int main (int argc, char **argv, char **envp){
   char *servername=NULL;
   char *username=NULL;
   char *port=NULL;
+  char *progname=NULL;
   io_t *client_io=NULL;
   io_t *server_io=NULL;
   FILE *fh;
@@ -208,7 +225,7 @@ int main (int argc, char **argv, char **envp){
   if(!vl) {
     fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
                     "Fatal error opening logger. Exiting.\n");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   vanessa_logger_set(vl);
 
@@ -217,7 +234,13 @@ int main (int argc, char **argv, char **envp){
 
   /* Initialise setting of proctitle */
   init_set_proc_title(argc, argv, envp);
-  set_proc_title("perdition");
+  progname = strdup(get_progname(argv[0]));
+  if (!progname) {
+	  VANESSA_LOGGER_DEBUG_ERRNO("strdup");
+	  VANESSA_LOGGER_ERR("Error intialising process title\n");
+	  perdition_exit_cleanly(-1);
+  }
+  set_proc_title(progname);
 
   /*
    * Update Logger
@@ -237,32 +260,32 @@ int main (int argc, char **argv, char **envp){
     VANESSA_LOGGER_ERR_UNSAFE("dlopen of \"%s\" failed", 
     str_null_safe(opt.map_library));
     usage(-1);
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /*Set signal handlers*/
   signal(SIGHUP,    perdition_reread_handler);
-  signal(SIGINT,    vanessa_socket_daemon_exit_cleanly);
-  signal(SIGQUIT,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGILL,    vanessa_socket_daemon_exit_cleanly);
-  signal(SIGTRAP,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGIOT,    vanessa_socket_daemon_exit_cleanly);
-  signal(SIGBUS,    vanessa_socket_daemon_exit_cleanly);
-  signal(SIGFPE,    vanessa_socket_daemon_exit_cleanly);
+  signal(SIGINT,    perdition_exit_cleanly);
+  signal(SIGQUIT,   perdition_exit_cleanly);
+  signal(SIGILL,    perdition_exit_cleanly);
+  signal(SIGTRAP,   perdition_exit_cleanly);
+  signal(SIGIOT,    perdition_exit_cleanly);
+  signal(SIGBUS,    perdition_exit_cleanly);
+  signal(SIGFPE,    perdition_exit_cleanly);
   signal(SIGUSR1,   vanessa_socket_handler_noop);
-  signal(SIGSEGV,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGSEGV,   perdition_exit_cleanly);
   signal(SIGUSR2,   vanessa_socket_handler_noop);
   signal(SIGPIPE,   SIG_IGN);
-  signal(SIGALRM,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGTERM,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGALRM,   perdition_exit_cleanly);
+  signal(SIGTERM,   perdition_exit_cleanly);
   signal(SIGCHLD,   vanessa_socket_handler_reaper);
-  signal(SIGURG,    vanessa_socket_daemon_exit_cleanly);
-  signal(SIGXCPU,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGXFSZ,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGVTALRM, vanessa_socket_daemon_exit_cleanly);
-  signal(SIGPROF,   vanessa_socket_daemon_exit_cleanly);
-  signal(SIGWINCH,  vanessa_socket_daemon_exit_cleanly);
-  signal(SIGIO,     vanessa_socket_daemon_exit_cleanly);
+  signal(SIGURG,    perdition_exit_cleanly);
+  signal(SIGXCPU,   perdition_exit_cleanly);
+  signal(SIGXFSZ,   perdition_exit_cleanly);
+  signal(SIGVTALRM, perdition_exit_cleanly);
+  signal(SIGPROF,   perdition_exit_cleanly);
+  signal(SIGWINCH,  perdition_exit_cleanly);
+  signal(SIGIO,     perdition_exit_cleanly);
 
   /* Set file descriptor to log to, if any */
   fh = NULL;
@@ -304,7 +327,7 @@ int main (int argc, char **argv, char **envp){
   if(vl == NULL) {
     fprintf(stderr, "main: vanessa_logger_openlog\n"
                     "Fatal error opening logger. Exiting.\n");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   vanessa_logger_set(vl);
  
@@ -315,31 +338,31 @@ int main (int argc, char **argv, char **envp){
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
     VANESSA_LOGGER_DEBUG_ERRNO("malloc system_uname");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   if(uname(system_uname)<0){
     VANESSA_LOGGER_DEBUG("uname");
     VANESSA_LOGGER_ERR("Fatal error finding uname for system. Exiting");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /*Set up protocol structure*/
   if((protocol=protocol_initialise(opt.protocol, protocol))==NULL){
     VANESSA_LOGGER_DEBUG("protocol_initialise");
     VANESSA_LOGGER_ERR("Fatal error intialising protocol. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /*Set listen and outgoing port now the protocol structure is accessable*/
   if((opt.listen_port=protocol->port(opt.listen_port))==NULL){
     VANESSA_LOGGER_DEBUG("protocol->port 1");
     VANESSA_LOGGER_ERR("Fatal error finding port to listen on. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   if((opt.outgoing_port=protocol->port(opt.outgoing_port))==NULL){
     VANESSA_LOGGER_DEBUG("protocol->port 2");
     VANESSA_LOGGER_ERR("Fatal error finding port to connect to. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /* 
@@ -352,7 +375,7 @@ int main (int argc, char **argv, char **envp){
   	if(!our_tag) {
 	  	VANESSA_LOGGER_DEBUG("imap4_tag_create");
 	  	VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-	  	vanessa_socket_daemon_exit_cleanly(-1);
+	  	perdition_exit_cleanly(-1);
   	}
   }
   else {
@@ -372,7 +395,7 @@ int main (int argc, char **argv, char **envp){
     if(!ssl_ctx) {
       PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
       VANESSA_LOGGER_ERR("Fatal error establishing SSL context for listening");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
   }
 #else
@@ -390,8 +413,18 @@ int main (int argc, char **argv, char **envp){
     if(log_options()){
       VANESSA_LOGGER_DEBUG("log_options");
       VANESSA_LOGGER_ERR("Fatal error logging options. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
+  }
+
+  /* Create PID file */
+  if (!opt.inetd_mode && opt.pid_file && *opt.pid_file) {
+  	if(write_pid_file(opt.pid_file, opt.username, opt.group) < 0) {
+		VANESSA_LOGGER_DEBUG("write_pid_file");
+		VANESSA_LOGGER_ERR("Could not write pid file");
+		perdition_exit_cleanly(1);
+	}
+	pid_file = opt.pid_file;
   }
 
   /*
@@ -403,7 +436,7 @@ int main (int argc, char **argv, char **envp){
     ))==NULL){
       VANESSA_LOGGER_DEBUG_ERRNO("malloc server_ok_buf");
       VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
   }
 
@@ -413,12 +446,12 @@ int main (int argc, char **argv, char **envp){
   if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
     VANESSA_LOGGER_DEBUG_ERRNO("malloc sockname");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   if((peername=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
     VANESSA_LOGGER_DEBUG_ERRNO("malloc peername");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   
 
@@ -429,7 +462,7 @@ int main (int argc, char **argv, char **envp){
     if(g < 0) {
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_bind");
       VANESSA_LOGGER_ERR("Fatal error listening for connections. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
   }
 
@@ -455,7 +488,7 @@ int main (int argc, char **argv, char **envp){
     if((client_io=io_create_fd(0, 1, PERDITION_LOG_STR_CLIENT))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 1");
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 
     namelen = sizeof(*peername);
@@ -474,20 +507,20 @@ int main (int argc, char **argv, char **envp){
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
       VANESSA_LOGGER_ERR("Fatal error accepting child connection. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 
     if((client_io=io_create_fd(s, s, PERDITION_LOG_STR_CLIENT))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 2");
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
   }
 
   /* A child process, or process handling an inetd connection
    * should exit on reciept of a SIG PIPE.
    */
-  signal(SIGPIPE,   vanessa_socket_daemon_exit_cleanly);
+  signal(SIGPIPE,   perdition_exit_cleanly);
 
   /* Get the source and destination ip address as a string */
   if(peername!=NULL){
@@ -523,7 +556,7 @@ int main (int argc, char **argv, char **envp){
   else {
     VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_str);
   }
-  set_proc_title("perdition: connect");
+  set_proc_title("%s: connect", progname);
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode & SSL_MODE_SSL_LISTEN) {
@@ -531,7 +564,7 @@ int main (int argc, char **argv, char **envp){
     if(!client_io) {
       VANESSA_LOGGER_DEBUG("perdition_ssl_server_connection SSL");
       VANESSA_LOGGER_ERR("Fatal error establishing SSL connection to client");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
   }
 #endif /* WITH_SSL_SUPPORT */
@@ -543,7 +576,7 @@ int main (int argc, char **argv, char **envp){
       "Fatal error writing to client. %sExiting child.",
       from_to_str
     );
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   pw.pw_name=NULL;
@@ -560,7 +593,7 @@ int main (int argc, char **argv, char **envp){
 	"Exiting child", 
 	from_to_str
       );
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
     else if(status == 1){
       VANESSA_LOGGER_ERR_UNSAFE(
@@ -568,7 +601,7 @@ int main (int argc, char **argv, char **envp){
         from_to_str,
         str_null_safe(pw.pw_name)
       );
-      vanessa_socket_daemon_exit_cleanly(0);
+      perdition_exit_cleanly(0);
     }
 #ifdef WITH_SSL_SUPPORT
     else if((status == 2) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN)){
@@ -577,7 +610,7 @@ int main (int argc, char **argv, char **envp){
       if(!client_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_server_connection TLS");
 	VANESSA_LOGGER_ERR("Fatal error establishing TLS connection");
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
       tls_state |= SSL_MODE_TLS_LISTEN;
       opt.capability = protocol->capability(opt.capability,
@@ -600,7 +633,7 @@ int main (int argc, char **argv, char **envp){
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 
     /*Read the server from the map, if we have a map*/
@@ -661,7 +694,7 @@ int main (int argc, char **argv, char **envp){
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
         );
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
       pw2.pw_passwd=pw.pw_passwd;
 
@@ -681,7 +714,7 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_ERR(
 	  "Fatal error authenticating to client locally. Exiting child."
         );
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
 
       /*
@@ -706,7 +739,7 @@ int main (int argc, char **argv, char **envp){
     if((server_io=io_create_fd(s, s, PERDITION_LOG_STR_REAL))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 3");
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 
 #ifdef WITH_SSL_SUPPORT
@@ -716,7 +749,7 @@ int main (int argc, char **argv, char **envp){
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
     }
 #endif /* WITH_SSL_SUPPORT */
@@ -729,7 +762,7 @@ int main (int argc, char **argv, char **envp){
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
     pw2.pw_passwd=pw.pw_passwd;
 
@@ -743,7 +776,7 @@ int main (int argc, char **argv, char **envp){
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_setup %d", status);
       VANESSA_LOGGER_ERR("Fatal error negotiating setup. Exiting child.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 #ifdef WITH_SSL_SUPPORT
     else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
@@ -753,7 +786,7 @@ int main (int argc, char **argv, char **envp){
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
       tls_state |= SSL_MODE_TLS_OUTGOING;
     }
@@ -788,7 +821,7 @@ int main (int argc, char **argv, char **envp){
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
       VANESSA_LOGGER_ERR("Fatal error authenticating user. Exiting child.");
-      vanessa_socket_daemon_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
     }
 
     if(opt.server_ok_line){
@@ -798,7 +831,7 @@ int main (int argc, char **argv, char **envp){
             NULL, 1, "%s", server_ok_buf)<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
     }
     else{
@@ -806,7 +839,7 @@ int main (int argc, char **argv, char **envp){
             protocol->type[PROTOCOL_OK], 0, opt.ok_line)<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
-        vanessa_socket_daemon_exit_cleanly(-1);
+        perdition_exit_cleanly(-1);
       }
     }
 
@@ -824,7 +857,7 @@ int main (int argc, char **argv, char **envp){
   if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
     VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting child.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /*Let the client talk to the real server*/
@@ -832,7 +865,7 @@ int main (int argc, char **argv, char **envp){
         &bytes_written, &bytes_read, &auth_log)<0){
     VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
     VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   /*Time to leave*/
@@ -843,10 +876,10 @@ int main (int argc, char **argv, char **envp){
     bytes_read,
     bytes_written
   );
-  set_proc_title("perdition: close");
+  set_proc_title("%s: close", progname);
 
   getserver_closelib(handle);
-  vanessa_socket_daemon_exit_cleanly(0);
+  perdition_exit_cleanly(0);
 
   /*Here so compilers won't barf*/
   return(0);
@@ -870,7 +903,7 @@ static void perdition_reread_handler(int sig){
 
   if(vanessa_logger_reopen(vanessa_logger_get()) < 0) {
     fprintf(stderr, "Fatal error reopening logger. Exiting.");
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
   VANESSA_LOGGER_INFO("Reopened logger");
 
@@ -890,8 +923,398 @@ static void perdition_reread_handler(int sig){
     VANESSA_LOGGER_DEBUG("getserver_openlib");
     VANESSA_LOGGER_ERR_UNSAFE("Fatal error reopening: %s. Exiting child.", 
       opt.map_library);
-    vanessa_socket_daemon_exit_cleanly(-1);
+    perdition_exit_cleanly(-1);
   }
 
   signal(sig, (void(*)(int))perdition_reread_handler);
 }
+
+
+/**********************************************************************
+ * perdition_exit_cleanly
+ * Exit perdition, cleaning up as neccessary
+ * pre: sig: signal recieved by the process
+ * post: pid file is removed
+ *       process exits
+ **********************************************************************/
+
+static void 
+perdition_exit_cleanly(int i) 
+{
+	extern options_t opt;
+
+     	if (pid_file && (unlink(opt.pid_file) < 0)) {
+		VANESSA_LOGGER_INFO_UNSAFE("Could not remove pid file "
+				"[%s]: %s\n", opt.pid_file,
+				 strerror(errno));
+	}
+	vanessa_socket_daemon_exit_cleanly(i);
+}
+
+
+/* XXX: Should be in libvanessa_socket */
+static int 
+perdition_chown(const char *path, const char *username, const char *group)
+{
+	uid_t uid;
+	gid_t gid;
+	struct passwd *pw;
+	struct group *gr;
+	
+	if (vanessa_socket_str_is_digit(group)) {
+		gid = (gid_t) atoi(group);
+	} else {
+		if ((gr = getgrnam(group)) == NULL) {
+			VANESSA_LOGGER_DEBUG_ERRNO("getgrnam");
+			return (-1);
+		}
+		gid = gr->gr_gid;
+		/*free(gr); */
+	}
+	
+	if (setgid(gid)) {
+		VANESSA_LOGGER_DEBUG_ERRNO("setgid");
+		return (-1);
+	}
+	
+	if (vanessa_socket_str_is_digit(username)) {
+		uid = (uid_t) atoi(username);
+	} else {
+		if ((pw = getpwnam(username)) == NULL) {
+			VANESSA_LOGGER_DEBUG_ERRNO("getpwnam");
+			return (-1);
+		}
+		uid = pw->pw_uid;
+		/*free(pw); */
+	}
+
+	if(chown(path, uid, gid) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("chown");
+		return -1;
+	}
+	
+	return (0);
+}
+
+
+int
+create_pid_directory(const char *pidfilename, const char *username,
+		const char *group)  
+{
+	int	status;
+	struct stat stat_buf;
+	char    *dir;
+
+	dir = strdup(pidfilename);
+	if (!dir) {
+		VANESSA_LOGGER_DEBUG_ERRNO("strdup");
+		return -1;
+	}
+
+	dirname(dir);
+
+	status = stat(dir, &stat_buf); 
+
+	if (status < 0 && errno != ENOENT && errno != ENOTDIR) {
+		VANESSA_LOGGER_DEBUG_UNSAFE("Could not stat pid-file "
+				"directory [%s]: %s", dir, strerror(errno));
+		free(dir);
+		return -1;
+	}
+	
+	if (!status) {
+		if (S_ISDIR(stat_buf.st_mode)) {
+			return 0;
+		}
+		VANESSA_LOGGER_DEBUG_UNSAFE("Pid-File directory exists but is "
+				"not a directory [%s]", dir);
+		free(dir);
+		return -1;
+        }
+
+	if (mkdir(dir, S_IRUSR|S_IWUSR|S_IXUSR | S_IRGRP|S_IWGRP|S_IXGRP) < 0) {
+		VANESSA_LOGGER_DEBUG_UNSAFE("Could not create pid-file "
+				"directory [%s]: %s", dir, strerror(errno));
+		free(dir);
+		return -1;
+	}
+
+	if (!geteuid() &&  perdition_chown(dir, username, group) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_chown");
+	}
+
+	return 0;
+}
+
+
+int
+write_pid_file(const char *pidfilename, const char *username,
+		const char *group)  
+{
+
+	int     pidfilefd;
+	char    pidbuf[11];
+	pid_t   pid;
+	size_t  bytes;
+
+	if (create_pid_directory(pidfilename, username, group) < 0) {
+		return -1;
+	}
+
+	while (1) {
+		pidfilefd = open(pidfilename, O_CREAT|O_EXCL|O_RDWR, 
+				S_IRUSR|S_IWUSR);
+		if (pidfilefd < 0) {
+			if (errno != EEXIST) { /* Old PID file */
+				VANESSA_LOGGER_DEBUG_UNSAFE(
+						"Could not open pid-file "
+						"[%s]: %s", pidfilename, 
+						strerror(errno));
+				return -1;
+			}
+		}
+		else {
+			break;
+		}
+
+		pidfilefd = open(pidfilename, O_RDONLY, S_IRUSR|S_IWUSR);
+		if (pidfilefd < 0) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Could not open pid-file " 
+					"[%s]: %s", pidfilename, 
+					strerror(errno));
+			return -1;
+		}
+
+		while (1) {
+			bytes = read(pidfilefd, pidbuf, sizeof(pidbuf)-1);
+			if (bytes < 0) {
+				if (errno == EINTR) {
+					continue;
+				}
+				VANESSA_LOGGER_DEBUG_UNSAFE(
+						"Could not read pid-file " 
+						"[%s]: %s", pidfilename, 
+						strerror(errno));
+				close(pidfilefd);
+				return -1;
+			}
+			pidbuf[bytes] = '\0';
+			break;
+		}
+
+		close(pidfilefd);
+
+		if (!bytes) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Invalid pid in pid-file "
+	 				"[%s]: %s", pidfilename, 
+					strerror(errno));
+			return -1;
+		}
+
+		pid = strtoul(pidbuf, NULL, 10);
+		if (pid == ULONG_MAX && errno == ERANGE) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Invalid pid in pid-file "
+	 				"[%s]: %s", pidfilename, 
+					strerror(errno));
+			return -1;
+		}
+
+		if (!kill(pid, 0)) {
+			VANESSA_LOGGER_ERR_UNSAFE("Fatal error: "
+					"Pid file [%s] exists for "
+					"proccess [%u] which appears to be "
+					"running, exiting", pidfilename, pid);
+			return -1;
+		}
+		else if (errno != ESRCH) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Error signalling old "
+					"proccess [%u] from pid-file [%s]: %s",
+					pid, pidfilename, strerror(errno));
+			return -1;
+		}
+
+		if(unlink(pidfilename) < 0) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Could not delete "
+					"pid-file [%s]: %s", pidfilename, 
+					strerror(errno));
+			return -1;
+		}
+		VANESSA_LOGGER_INFO_UNSAFE("Removed stale pid-file [%s]", 
+				pidfilename);
+	}
+
+	if (!geteuid() &&  perdition_chown(pidfilename, username, group) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_chown");
+		goto unlink;
+	}
+
+	if (chmod(pidfilename, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("chmod");
+		goto unlink;
+	}
+
+	if (snprintf(pidbuf, sizeof(pidbuf), "%u", 
+				getpid()) >= sizeof(pidbuf)) {
+		VANESSA_LOGGER_DEBUG_UNSAFE("Pid too long for buffer [%u]", 
+				getpid());
+		goto unlink;
+	}
+
+	while (1) {
+		bytes = write(pidfilefd, pidbuf, strlen(pidbuf));
+		if (bytes != strlen(pidbuf)) {
+			if (bytes < 0 && errno == EINTR) {
+				continue;
+			}
+			VANESSA_LOGGER_DEBUG_UNSAFE("Could not write pid-file "
+					"[%s]: %s", pidfilename,
+					strerror(errno));
+			goto unlink;
+		}
+		break;
+	}
+
+	close(pidfilefd);
+
+	return 0;
+
+unlink:
+	close(pidfilefd);
+	if(unlink(pidfilename) < 0)
+		VANESSA_LOGGER_DEBUG_ERRNO("unlink");
+	return -1;
+}
+
+
+/*
+ * $Log$
+ * Revision 1.80  2003/11/20 06:17:37  horms
+ * Added pid file support. Roland Rosenfeld and Horms
+ *
+ * Revision 1.4  2003/10/29 11:40:50  horms
+ * Send arp  creates a driectory to store its pid file in on-the-fly. IPaddr does likewise for state files.
+ *
+ * Revision 1.3  2003/10/23 07:36:29  horms
+ * added pid file to sendarp
+ *
+ * Revision 1.2  2003/10/15 17:03:23  horms
+ * Merged  get_hw_addr into and send_arp
+ *
+ * Revision 1.1  2003/10/15 09:52:12  horms
+ * Move utilities that link against libnet (sendarp and get_hw_addr)
+ * to their own directory so we no longer have to come up with
+ * creative ways to selectively mangle CFLAGS.
+ *
+ * Revision 1.24  2003/09/26 06:02:13  alan
+ * Fixed an undefined variable warning.
+ *
+ * Revision 1.23  2003/07/12 17:02:59  alan
+ * Hopefully last fix for the changes made to allow user to specify arp intervals, etc.
+ *
+ * Revision 1.22  2003/07/12 16:19:54  alan
+ * Fixed a bug in the new send_arp options and their invocation...
+ *
+ * Revision 1.21  2003/04/15 18:56:33  msoffen
+ * Removed printf("\n") that served no purpose anymore (used to print .\n).
+ *
+ * Revision 1.20  2003/04/15 11:07:05  horms
+ * errors go to stderr, not stdout
+ *
+ * Revision 1.19  2003/03/21 17:38:31  alan
+ * Put in a patch by Thiago Rondon <thiago@nl.linux.org> to fix a minor
+ * compile error in send_arp.c, which only affects the 1.1 libnet API code.
+ *
+ * Revision 1.18  2003/02/17 18:51:03  alan
+ * Minor typo correction for #error line in send_arp.c
+ *
+ * Revision 1.17  2003/02/17 16:30:46  msoffen
+ * Made it error out if libnet isn't defined at all (no 1.0 or 1.1 version).
+ *
+ * Revision 1.16  2003/02/17 15:31:50  alan
+ * Fixed a nasty bug where we don't pass the interface to the libnet libraries
+ * correctly.  Thanks to Steve Snodgrass for finding it.
+ *
+ * Revision 1.15  2003/02/07 08:37:17  horms
+ * Removed inclusion of portability.h from .h files
+ * so that it does not need to be installed.
+ *
+ * Revision 1.14  2003/02/05 09:06:33  horms
+ * Lars put a lot of work into making sure that portability.h
+ * is included first, everywhere. However this broke a few
+ * things when building against heartbeat headers that
+ * have been installed (usually somewhere under /usr/include or
+ * /usr/local/include).
+ *
+ * This patch should resolve this problem without undoing all of
+ * Lars's hard work.
+ *
+ * As an asside: I think that portability.h is a virus that has
+ * infected all of heartbeat's code and now must also infect all
+ * code that builds against heartbeat. I wish that it didn't need
+ * to be included all over the place. Especially in headers to
+ * be installed on the system. However, I respect Lars's opinion
+ * that this is the best way to resolve some weird build problems
+ * in the current tree.
+ *
+ * Revision 1.13  2003/01/31 10:02:09  lars
+ * Various small code cleanups:
+ * - Lots of "signed vs unsigned" comparison fixes
+ * - time_t globally replaced with TIME_T
+ * - All seqnos moved to "seqno_t", which defaults to unsigned long
+ * - DIMOF() definition centralized to portability.h and typecast to int
+ * - EOS define moved to portability.h
+ * - dropped inclusion of signal.h from stonith.h, so that sigignore is
+ *   properly defined
+ *
+ * Revision 1.12  2002/09/12 14:06:18  msoffen
+ * Removed a write to stderr of ".", really served no purpose and always ran.
+ * It was a carryover from the old send_arp.c.
+ *
+ * Revision 1.11  2002/09/05 06:12:42  alan
+ * Put in code to recover a bug fix from Japan, plus
+ * make the code hopefully work with both the old and new libnet APIs.
+ *
+ * Revision 1.10  2002/08/16 14:18:41  msoffen
+ * Changes to get IP takeover working properly on OpenBSD
+ * Changed how *BSD deletes an alias.
+ * Create get_hw_addr (uses libnet package).
+ *
+ * Revision 1.9  2002/07/08 04:14:12  alan
+ * Updated comments in the front of various files.
+ * Removed Matt's Solaris fix (which seems to be illegal on Linux).
+ *
+ * Revision 1.8  2002/06/06 04:43:40  alan
+ * Got rid of a warning (error) about an unused RCS version string.
+ *
+ * Revision 1.7  2002/05/28 18:25:48  msoffen
+ * Changes to replace send_arp with a libnet based version.  This works accross
+ * all operating systems we currently "support" (Linux, FreeBSD, Solaris).
+ *
+ * Revision 1.6  2001/10/24 00:21:58  alan
+ * Fix to send both a broadcast ARP request as well as the ARP response we
+ * were already sending.  All the interesting research work for this fix was
+ * done by Masaki Hasegawa <masaki-h@pp.iij4u.or.jp> and his colleagues.
+ *
+ * Revision 1.5  2001/06/07 21:29:44  alan
+ * Put in various portability changes to compile on Solaris w/o warnings.
+ * The symptoms came courtesy of David Lee.
+ *
+ * Revision 1.4  2000/12/04 20:33:17  alan
+ * OpenBSD fixes from Frank DENIS aka Jedi/Sector One <j@c9x.org>
+ *
+ * Revision 1.3  1999/10/05 06:17:29  alanr
+ * Fixed various uninitialized variables
+ *
+ * Revision 1.2  1999/09/30 18:34:27  alanr
+ * Matt Soffen's FreeBSD changes
+ *
+ * Revision 1.1.1.1  1999/09/23 15:31:24  alanr
+ * High-Availability Linux
+ *
+ * Revision 1.4  1999/09/08 03:46:27  alanr
+ * Changed things so they work when rearranged to match the FHS :-)
+ *
+ * Revision 1.3  1999/08/17 03:49:09  alanr
+ * *** empty log message ***
+ *
+ */

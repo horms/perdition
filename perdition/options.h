@@ -45,6 +45,12 @@
 #define PERDITION_SYSCONFDIR "/usr/local/etc/perdition"
 #endif
 
+#ifndef PERDITION_LOCALSTATEDIR
+#define PERDITION_LOCALSTATEDIR "/usr/local/var"
+#endif
+
+#define PERDTIOIN_PID_DIR PERDITION_LOCALSTATEDIR "/run"
+
 #include "log.h"
 #include "protocol.h"
 #include "str.h"
@@ -188,6 +194,7 @@ typedef struct {
   char            *outgoing_port;
   vanessa_dynamic_array_t *outgoing_server;
   char            *ok_line;
+  char            *pid_file;
   int             protocol;
   int             quiet;
   int             server_ok_line;
@@ -253,6 +260,7 @@ typedef struct {
 #define MASK_QUIET                       (flag_t) 0x80000000
 
 #define MASK2_OK_LINE                    (flag_t) 0x00000001
+#define MASK2_PID_FILE                   (flag_t) 0x00000002
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -283,22 +291,23 @@ typedef struct {
 #define TAG_LOGIN_DISABLED                     (int) 129
 #define TAG_LOWER_CASE                         (int) 130
 #define TAG_NO_DAEMON                          (int) 131
-#define TAG_QUERY_KEY                          (int) 132
-#define TAG_SSL_CA_FILE                        (int) 133
-#define TAG_SSL_CA_PATH                        (int) 134
-#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 135
-#define TAG_SSL_CERT_FILE                      (int) 136
-#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 137
-#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 138
-#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 139
-#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 140
-#define TAG_SSL_CHAIN_FILE                     (int) 141
-#define TAG_SSL_KEY_FILE                       (int) 142
-#define TAG_SSL_MODE                           (int) 143
-#define TAG_SSL_LISTEN_CIPHERS                 (int) 144
-#define TAG_SSL_OUTGOING_CIPHERS               (int) 145
-#define TAG_SSL_NO_CERT_VERIFY                 (int) 146
-#define TAG_SSL_NO_CN_VERIFY                   (int) 147
+#define TAG_PID_FILE                           (int) 132
+#define TAG_QUERY_KEY                          (int) 133
+#define TAG_SSL_CA_FILE                        (int) 134
+#define TAG_SSL_CA_PATH                        (int) 135
+#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 136
+#define TAG_SSL_CERT_FILE                      (int) 137
+#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 138
+#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 139
+#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 140
+#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 141
+#define TAG_SSL_CHAIN_FILE                     (int) 142
+#define TAG_SSL_KEY_FILE                       (int) 143
+#define TAG_SSL_MODE                           (int) 144
+#define TAG_SSL_LISTEN_CIPHERS                 (int) 145
+#define TAG_SSL_OUTGOING_CIPHERS               (int) 146
+#define TAG_SSL_NO_CERT_VERIFY                 (int) 147
+#define TAG_SSL_NO_CN_VERIFY                   (int) 148
 
 
 /*Flag values for options()*/

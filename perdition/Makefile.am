@@ -84,6 +84,7 @@ INCLUDES= \
 -I$(top_srcdir)/libjain \
 -DPERDITION_LIBDIR=\"${libdir}\" \
 -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
+-DPERDITION_LOCALSTATEDIR=\"$(localstatedir)\" \
 @ssl_includes@ 
 
 # Removed because Debian doesn't like it

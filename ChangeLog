@@ -39,6 +39,7 @@ XXX
    - Added option to configure OK response.
    - Minor fix to debian init script's option handling. Cameron Moore
    - Make use of WITH_LDAP_SET_OPTION consistent. Thomas Hager
+   - Added pid file support. Roland Rosenfeld and Horms
 
 ----------------------------------------------------------------------
 
