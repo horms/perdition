@@ -208,6 +208,11 @@ if test "$enable_ssl" = "yes"; then
   AC_SUBST(ssl_includes)
 fi
 
+if test "$enable_ssl" = "no"; then
+ssl_lib=""
+ssl_includes=""
+fi
+
 
 ######################################################################
 # MySQL
@@ -287,6 +292,11 @@ AC_MSG_WARN(
 )
 fi
 
+if test "$mysql_build_dir" != "mysql"; then
+mysql_lib=""
+mysql_includes=""
+fi
+
 
 ######################################################################
 # ODBC
@@ -361,6 +371,10 @@ AC_MSG_WARN(
     sleep 5
 fi
 
+if test "$odbc_build_dir" = "odbc"; then
+odbc_lib=""
+odbc_includes=""
+fi
 
 ######################################################################
 # PostgreSQL
@@ -441,6 +455,11 @@ AC_MSG_WARN(
 )
 fi
 
+if test "$pg_build_dir" != "postgresql"; then
+pg_lib=""
+pg_includes=""
+fi
+
 
 ######################################################################
 # GDBM
@@ -485,6 +504,7 @@ AC_MSG_WARN(
   ]
 )
 fi
+
 
 ######################################################################
 # BerkeleyDB
@@ -684,7 +704,9 @@ AC_MSG_WARN(
 "* perditiondb_ldap will not be built"
 "**********************************************************************"
 ) ;\
-    sleep 5
+    sleep 5;
+    ldab_libs="";
+    ldap_includes="";
 fi
 
 
@@ -789,7 +811,7 @@ then
 AC_MSG_WARN(
 ""
 "**********************************************************************"
-"* Latex not installed. LDAP documentation will nto be built"
+"* Latex not installed. LDAP documentation will not be built"
 "**********************************************************************"
 );
 	ldap_doc_dir=""
