@@ -14,10 +14,12 @@ Horms: <horms@vergenet.net>
 
 Perditiondb Library Authors
 
-ChrisS: <chriss@uk.uu.net>
+Frederic Delchambre <dedel@freegates.be>      (MySQL)
+
+ChrisS: <chriss@uk.uu.net>                    (LDAP)
         a.k.a Chris Stratford
 
-Frederic Delchambre <dedel@freegates.be>
+Nathan Neulinger <nneul@umr.edu>              (NIS)
 
 
 Contributing Authors

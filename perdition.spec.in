@@ -61,14 +61,25 @@ Library to allow perdition to access PosgreSQL based pop maps.
 
 
 %package ldap
-Summary: Access to LDAP regular expression maps for Perdition
+Summary: Access to LDAP maps for Perdition
 Group: Applications/Internet
 Copyright: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-ldap-%{ver}-%{rel}
 
 %description ldap
-Library to allow perdition to access LDAP regular expression based pop maps.
+Library to allow perdition to access LDAP based pop maps.
+
+
+%package nis
+Summary: Access to NIS maps for perdition
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-ldap-%{ver}-%{rel}
+
+%description nis
+Library to allow perdition to access NIS based pop maps.
 
 
 %prep
@@ -198,8 +209,19 @@ make -q	-C /etc/perdition/
 %config /etc/perdition/ldap/makedb
 %config /etc/perdition/ldap/popmap.ldif
 
+%files nis
+%defattr(-,root,root)
+%{prefix}/lib/libperditiondb_nis.a
+%{prefix}/lib/libperditiondb_nis.la
+%{prefix}/lib/libperditiondb_nis.so
+%{prefix}/lib/libperditiondb_nis.so.0
+%{prefix}/lib/libperditiondb_nis.so.0.0.0
+
 
 %changelog
+* Mon Oct 15 2000 Horms <horms@vergenet.net>
+- added NIS library
+
 * Mon May 15 2000 Horms <horms@vergenet.net>
 - added sysconfig file
 - split libraries into separate packages so that packages such

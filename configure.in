@@ -39,6 +39,7 @@ dnl Replace `main' with a function in -ldl:
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
 dnl Replace `main' with a function in -lgdbm:
 AC_CHECK_LIB(gdbm, gdbm_open, true, true)
+AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
 AC_CHECK_LIB(
@@ -106,6 +107,14 @@ AC_CHECK_HEADERS(
   [ 
     mysql_build_dir="" 
     AC_MSG_WARN([*** perditiondb_mysql will not be built ***])
+  ]
+)
+AC_CHECK_HEADERS(
+  rpcsvc/ypclnt.h, 
+  [ nis_build_dir="nis" ],
+  [ 
+    nis_build_dir="" 
+    AC_MSG_WARN([*** perditiondb_nis will not be built ***])
   ]
 )
 AC_CHECK_HEADERS(
@@ -182,6 +191,7 @@ AC_SUBST(gdbm_build_dir)
 AC_SUBST(makegdbm_build_dir)
 AC_SUBST(postgresql_build_dir)
 AC_SUBST(mysql_build_dir)
+AC_SUBST(nis_build_dir)
 AC_SUBST(ldap_build_dir)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
@@ -199,6 +209,7 @@ perdition/db/Makefile
 perdition/db/gdbm/Makefile 
 perdition/db/posix_regex/Makefile 
 perdition/db/mysql/Makefile 
+perdition/db/nis/Makefile 
 perdition/db/postgresql/Makefile 
 perdition/db/ldap/Makefile 
 makegdbm/Makefile 

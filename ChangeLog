@@ -28,6 +28,7 @@ xxx
    - Added perdition_LDFLAGS = -Wl,--rpath -Wl,@prefix@ to
      perdition/Makefile.am to aid finding modules.
      Thanks to Arvid Requate
+   - Added NIS map, thanks to Nathan Neulinger
 
 ----------------------------------------------------------------------
 

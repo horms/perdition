@@ -1,10 +1,10 @@
 ######################################################################
-# Makefile.am                                               March 2000
-# ChrisS                                              chriss@uk.uu.net
+# Makefile.am                                            February 2000
+# Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retreival proxy server, LDAP support
-# Copyright (C) 1999  ChrisS and Horms
+# Mail retreival proxy server, NIS support
+# Copyright (C) 2000 Nathan Neulinge and Horms
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,20 +20,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 # 02111-1307  USA
-#
 ######################################################################
 
-lib_LTLIBRARIES = libperditiondb_ldap.la
+lib_LTLIBRARIES = libperditiondb_nis.la
 
-libperditiondb_ldap_la_SOURCES = \
-perditiondb_ldap.c \
-perditiondb_ldap.h
+libperditiondb_nis_la_SOURCES = \
+perditiondb_nis.c \
+perditiondb_nis.h
 
-libperditiondb_ldap_la_LDFLAGS    = -version-info 0:0:0
+libperditiondb_nis_la_LDFLAGS    = -version-info 0:0:0
+
+libperditiondb_nis_la_LIBADD = 
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain
 
-libperditiondb_ldap_la_LIBADD = -lldap -llber

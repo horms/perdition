@@ -11,7 +11,7 @@
  *
  * perdition
  * Mail retreival proxy server, LDAP support
- * Copyright (C) 2000  ChrisS, Horms
+ * Copyright (C) 2000  ChrisS and Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

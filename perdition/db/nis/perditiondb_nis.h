@@ -1,12 +1,12 @@
 /**********************************************************************
- * perditiondb_ldap.h                                        March 2000
- * ChrisS                                              chriss@uk.uu.net
+ * perditiondb_nis.h                                       October 2000
+ * Nathan Neulinger                                       nneul@umr.edu
  *
- * Access an LDAP database
+ * Access a nis/yp database map
  *
  * perdition
- * Mail retreival proxy server, LDAP support
- * Copyright (C) 2000 ChrisS and Horms
+ * Mail retreival proxy server, NIS support
+ * Copyright (C) 2000 Nathan Neulinge and Horms
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,23 +25,14 @@
  *
  **********************************************************************/
 
-#ifndef PERDITIONDB_LDAP_H
-#define PERDITIONDB_LDAP_H
-
 #include "log.h"
-#include "options.h"
-
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <lber.h>
-#include <ldap.h>
+#include <rpcsvc/ypclnt.h>
 
-int dbserver_fini(void);
-
-int dbserver_init(char *options_str);
+#define PERDITIONDB_NIS_DEFAULT_MAPNAME "user_mail_server"
 
 int dbserver_get(
   char *key_str, 
@@ -49,10 +40,3 @@ int dbserver_get(
   char **str_return, 
   int *len_return
 );
-
-
-#define PERDITIONDB_LDAP_DEFAULT_URL \
-  "ldap://localhost/" \
-  "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)"
-
-#endif

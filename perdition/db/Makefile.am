@@ -29,6 +29,7 @@ SUBDIRS = \
 posix_regex \
 @mysql_build_dir@ \
 @postgresql_build_dir@ \
-@ldap_build_dir@
+@ldap_build_dir@ \
+@nis_build_dir@
 
 m4datadir = $(datadir)/aclocal

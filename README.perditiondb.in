@@ -147,6 +147,23 @@ E.g.
 perdition -m /etc/my_popmap.db
 
 
+NIS
+---
+
+Ths nis library reads a YP/NIS map, the key is the userid, the value is the servername.
+
+The default map name is 'user_mail_server', and can be changed by specifying the map
+name with the -m flag.
+
+To use this library, you need to specify something like:
+
+perdition -M /usr/lib/libperditiondb_nis.so
+
+Note - you will need to customize your yp server's Makefile to actually get a new
+map on the server. This is intended for sites that already have a significant
+infrastructure based around yp.
+
+
 Posix Regex
 -----------
 
