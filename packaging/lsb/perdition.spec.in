@@ -134,7 +134,7 @@ access databases via ODBC.
 # I am providing my own configure macro replacement. Hopefully this
 # will result in fewer portability problems than using the one supplied
 # by various vendours. I fear that I hope in vein.
-CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS
+CFLAGS="${CFLAGS:-%optflags} -I/usr/kerberos/include" ; export CFLAGS
 if [ -f confgure.in ]; then
 	aclocal
 	libtoolize --force --copy
@@ -210,14 +210,14 @@ true
 %{_mandir}/man8/perdition.*
 %{_mandir}/man5/perditiondb.*
 
-# nis
+# nis map
 %{_libdir}/libperditiondb_nis.a
 %{_libdir}/libperditiondb_nis.la
 %{_libdir}/libperditiondb_nis.so
 %{_libdir}/libperditiondb_nis.so.0
 %{_libdir}/libperditiondb_nis.so.0.0.0
 
-# posix_regex
+# posix_regex map
 %{_libdir}/libperditiondb_posix_regex.a
 %{_libdir}/libperditiondb_posix_regex.la
 %{_libdir}/libperditiondb_posix_regex.so
@@ -225,7 +225,7 @@ true
 %{_libdir}/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
-# gdbm
+# gdbm map
 %{_libdir}/libperditiondb_gdbm.a
 %{_libdir}/libperditiondb_gdbm.la
 %{_libdir}/libperditiondb_gdbm.so
@@ -236,6 +236,13 @@ true
 /etc/perdition/Makefile.popmap
 %{_mandir}/man1/makegdbm.*
 %config /etc/perdition/popmap
+
+# daemon map
+%{_libdir}/libperditiondb_daemon.a
+%{_libdir}/libperditiondb_daemon.la
+%{_libdir}/libperditiondb_daemon.so
+%{_libdir}/libperditiondb_daemon.so.0
+%{_libdir}/libperditiondb_daemon.so.0.0.0
 
 %files bdb
 %defattr(-,root,root)

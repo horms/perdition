@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev (>= 0.0.4), libvanessa-adt-dev (>= 0.0.4), libvanessa-socket-dev (>= 0.0.5), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbm-dev | libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb-dev
+Build-Depends: libvanessa-logger-dev (>= 0.0.5), libvanessa-adt-dev (>= 0.0.5), libvanessa-socket-dev (>= 0.0.6), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbm-dev | libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb-dev
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>
@@ -23,7 +23,7 @@ Description: POP3 and IMAP4 Proxy server
 
 Package: perdition-dev
 Architecture: any
-Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.4), libvanessa-adt-dev (>= 0.0.4), libvanessa-socket-dev (>= 0.0.5), libc6-dev
+Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.5), libvanessa-adt-dev (>= 0.0.5), libvanessa-socket-dev (>= 0.0.6), libc6-dev
 Description: Development libraries and headers for perdition
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package

@@ -4,6 +4,12 @@ perdition (1.12release-1) unstable; urgency=low
 
  -- Simon Horman <horms@vergenet.net>  Mon, 15 Dec 2003 15:11:45 +0900
 
+perdition (1.11release-3) unstable; urgency=low
+
+   * Child processes don't delete the pid file (closes: Bug#222181)
+
+ -- Simon Horman <horms@vergenet.net>  Mon,  1 Dec 2003 11:31:35 +0900
+
 perdition (1.11release-2) unstable; urgency=low
 
   * Added PID file support (closes: Bug#219248)
