@@ -45,7 +45,6 @@ perdition_SOURCES = \
         imap4_out.c         imap4_out.h \
         imap4_write.c       imap4_write.h \
         io.c                io.h \
-        io_select.c         io_select.h \
         log.h \
         options.c           options.h \
         pam.c               pam.h \
