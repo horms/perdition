@@ -51,6 +51,7 @@ XXX
    - Logic errors in configure script when --disable-ssl
      was in effect, such that configure would fail
      if openssl libraries were not installed.
+   - Fixed handling of '#' within regular expression in popmap.re
 
 ----------------------------------------------------------------------
 

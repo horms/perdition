@@ -273,6 +273,16 @@ file is:
 .P
 <regular expression>: [<username><domain_delimiter>]<server>[:<port>]
 .P
+Anthing after a '#' on a line is treated as a comment,
+unless the '#' is escaped (preceded by a '/')
+.P
+A '/r', '/n' and '/0' are always treated as litereals
+and terminate the the current line (and file in the case of '\0')
+.P
+Anything else after a '/' is treated as a literal.
+.br
+Thus "/#" -> '#', "//' -> '/'
+.P
 Information on setting the domain_delimiter is found in \fBperdition\fP(8),
 @ is used in this example.
 .P

@@ -64,6 +64,7 @@ int dbserver_init(char *options_str){
   char *regex;
   char *server_port_str;
   int blank;
+  int escape;
 
   extern int errno;
 
@@ -100,11 +101,21 @@ int dbserver_init(char *options_str){
   line_end=line+PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH;
   while(fgets(line, PERDITIONDB_POSIX_REGEX_MAX_LINE_LENGTH, stream)!=NULL){
     blank=1;
+    escape=0;
     regex=line;
     server_port_str=NULL;
     *line_end='\0';
     for(line_cur=line;line_cur<line_end;line_cur++){
-      if(*line_cur=='\0'||*line_cur=='\n'||*line_cur=='\r' || *line_cur=='#'){
+      if(*line_cur=='\\' && !escape) {
+	memmove(line_cur, line_cur+1, strlen(line_cur+1));
+	line_cur--;
+	line_end--;
+        escape = 1;
+	continue;
+      }
+      if(*line_cur=='\0'||*line_cur=='\n'||*line_cur=='\r'||
+        (*line_cur=='#'&&!escape)
+      ){
         *line_cur='\0';
         break;
       }
@@ -121,8 +132,8 @@ int dbserver_init(char *options_str){
         *line_cur='\0';
         server_port_str=line_cur+1;
         blank=1;
-        continue;
       }
+      escape=0;
     }
     if(blank||(*regex=='\0'||server_port_str==NULL||*server_port_str=='\0')){
       continue;
