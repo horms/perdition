@@ -32,8 +32,6 @@ From Stephen Lombard
 From Erik R. Leo
 BSD/OS login.conf support
 
-Document pop-before-smtp support
-
 From Matt Prigge
 * Modify the necessary Makefiles (etc/perdition/Makefile?) to keep 'make
   install' from overwriting the current configuration.
@@ -47,9 +45,6 @@ Jack Snodgrass
 * Identify user based on source ip
 Zipworld
 * Identify user based on local ip (patch has been provided)
-
-Birger Toedtmann
-* Altrernate ldap servers
 
 Richard Holbert
 * Lie and say there are 0 messages if a real-server can't be contacted.

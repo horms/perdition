@@ -34,7 +34,7 @@ server respectively. This enables mail retrieval for a domain to
 be split across multiple real mail servers on a per user basis.
 This can also be used to as a POP3 or IMAP4 proxy especially in
 firewall applications.
-
+.P
 When a connection is made to perdition in POP3 mode, it reads the
 USER and PASS commands and then refers to its popmap to find
 where the user's connection should be forwarded to. A connection
@@ -47,7 +47,7 @@ state it was in on initial connection. That is new USER and PASS
 commands are expected. Similarly in IMAP4 mode, perdition accepts
 the LOGIN command and passes the username and password onto the
 back\-end IMAP4 server specified in the popmap for authentication.
-
+.P
 At this stage the only capabilities supported by perdition in
 IMAP4 mode is IMAP4 and no authentication schemes, other than
 the LOGIN command are accepted.
@@ -432,6 +432,22 @@ l           110             #Short option used as key
 group       mail            #Long option used as key
 a                           #Option with no argument
 .fi
+.SH POP BEFORE SMTP
+Perdition supports POP before SMTP in both POP3 and IMAP4 mode
+by logging having logging the following messages:
+.P
+When a user connects:
+.P
+Connect: <source_ip_address>[inetd_pid_<pid>]
+.P
+When a user is authenticted
+.P
+Auth: <source_ip_address> user="<username>" server="<servername">
+port="<port>" status=failed|ok
+.P
+When a user disconnects
+.P
+Close: <source_ip_address> user="<username>" received=<bytes> sent=<bytes>
 .SH LOGGING
 By default, logs are logged via syslog using the facility mail.  You should
 inspect /etc/syslog.conf to find where these logs are written.  Under Red
@@ -439,68 +455,6 @@ Hat 6.x these logs will be written to /var/log/maillog, under Solaris 7
 these logs will be written to /var/log/syslog.  Normally each session will
 have two perdition log entries.  Logs are prepended, depending on syslog
 with the date, host, and perdition[<pid>]: .
-.PP
-When the user connects the following is logged with a priority of info:
-.PP
-Connect: <client_ip>\-><server_ip>[ inetd_pid=<pid>]
-.TP
-.B client_ip:
-The source ip address for the client.
-.TP
-.B server_ip:
-The ip address that the connection was accepted for by the server.
-.TP
-.B inetd_pid:
-The process id of the parent proccess. This is only displayed
-when perdition is run in inetd mode, and should be the process id
-of the inetd process that spawned perdition.
-.fi
-.PP
-.PP
-After the user attemps authentication with the back\-end server
-the following is logged with a priority of notice:
-.PP
-Auth: <client_ip>\-><server_ip> username="<username>" server="<server>"
-port="<port>" status="<status>"
-.TP
-.B client_ip:
-The source ip address for the client.
-.TP
-.B server_ip:
-The ip address that the connection was accepted for by the server.
-.TP
-.B username:
-The user that has requested authentication
-.TP
-.B server:
-The back end server for the user
-Server will be "(null)" if no server was found.
-.TP
-.B port:
-The port to connect to on the server
-.TP
-.B status:
-"ok" if authentication was successful, "failed" otherwise.
-.PP
-When a user disconnects after a successful connection to
-a back\-end server the following is logged with a priority of info:
-.PP
-Closing:  <client_ip>\-><server_ip> username="<username>" received=<bytes_in> sent=<bytes_out>
-.TP
-.B client_ip:
-The source ip address for the client.
-.TP
-.B server_ip:
-The ip address that the connection was accepted for by the server.
-.TP
-.B username:
-The username given by the user to perdition
-.TP
-.B bytes_in:
-The number of bytes received from the client to the server
-.TP
-.B bytes_out:
-The number of bytes sent to the client from the server
 .PP
 Fatal errors are also logged with a prority of err. In stand\-alone mode
 the startup parameters are logged on initialisation.  If the \-d|\-\-debug
