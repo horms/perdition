@@ -96,7 +96,6 @@ static int __io_select(int n, fd_set *readfds, fd_set *writefds,
 	int pending = 0;
 	int selected;
 	fd_set want_readfds;
-	fd_set want_writefds;
 	struct timeval zero_timeout; 
 	SSL *ssl;
 

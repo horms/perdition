@@ -5,6 +5,16 @@ Mail retrieval proxy server
 Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
+xxx
+(Horms)
+
+  * Version xxx
+  - Added LDAP schema, perdition.schema
+
+
+
+----------------------------------------------------------------------
+
 14th March 2002
 (Horms)
 

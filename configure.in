@@ -415,11 +415,19 @@ fi
 ######################################################################
 # Open LDAP
 
+ldap_build_dir="ldap";
+
 AC_ARG_WITH(
   ldap-includes,
   [  --with-ldap-includes=DIR  
                           Open LDAP include files are in DIR.  ],
-  [ ldap_includepath="$withval" ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_build_dir=""; 
+    else
+      ldap_includepath="$withval" 
+    fi
+  ],
   [ 
     AC_MSG_CHECKING(OpenLDAP include path)
     for ldap_includepath in /usr/openldap/include /usr/local/openldap/include \
@@ -435,11 +443,18 @@ AC_ARG_WITH(
 
 ldap_includes="-I$ldap_includepath"
 
+if test "$ldap_build_dir" = "ldap"; then
 AC_ARG_WITH(
   ldap-libraries,
   [  --with-ldap-libraries=DIR 
                           Open LDAP library files are in DIR.  ],
-  [  ldap_libpath="$withval" ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_build_dir=""; 
+    else
+      ldap_libpath="$withval" 
+    fi
+  ],
   [ 
     AC_MSG_CHECKING(OpenLDAP library path)
     for ldap_libpath in /usr/openldap/lib /usr/local/openldap/lib \
@@ -453,48 +468,29 @@ AC_ARG_WITH(
     AC_MSG_RESULT($ldap_libpath)
   ]
 )
+fi
 
 ldap_libs="$socket_lib $nsl_lib $resolv_lib -L$ldap_libpath -lldap -llber"
 
+if test "$ldap_build_dir" = "ldap"; then
 AC_CHECK_FILE(
   $ldap_includepath/ldap.h,
-  [
-    ldap_build_dir="ldap"
-  ],
-  [ 
-    ldap_build_dir="" 
-AC_MSG_WARN(
-""
-"**********************************************************************"
-"* perditiondb_ldap will not be built"
-"**********************************************************************"
-) ;\
-    sleep 5
-  ]
+  [ : ] ,
+  [ ldap_build_dir="" ]
 )
+fi
 
-if test -n "$ldap_build_dir"; then
+if test "$ldap_build_dir" = "ldap"; then
 AC_CHECK_LIB(
   ldap,
   ldap_url_parse,
-  [
-    ldap_build_dir="ldap"
-  ],
-  [ 
-    ldap_build_dir="" 
-AC_MSG_WARN(
-""
-"**********************************************************************"
-"* perditiondb_ldap will not be built"
-"**********************************************************************"
-) ;\
-    sleep 5
-  ],
+  [ : ],
+  [ ldap_build_dir="" ]
   $ldap_libs
 )
 fi
 
-if test -n "$ldap_build_dir"; then
+if test "$ldap_build_dir" = "ldap"; then
         AC_MSG_CHECKING(OpenLDAP lud_exts in LDAPURLDesc)
 	AC_TRY_COMPILE([#include <stdlib.h>
 			#include <lber.h>
@@ -512,6 +508,52 @@ AC_MSG_WARN(
 "************************************************************"
 )
 	)
+fi
+
+if test "$ldap_build_dir" = "ldap"; then
+AC_ARG_WITH(
+  ldap-schema-directory,
+  [  --with-schema-directory=DIR 
+                          Open LDAP schema files are in DIR.  ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_build_dir=""; 
+    else
+      ldap_schemapath="$withval" 
+    fi
+  ],
+  [ 
+    AC_MSG_CHECKING(OpenLDAP schema path)
+    for ldap_schemadir in /etc/openldap/schema /etc/ldap/schema \
+        /usr/local/openldap/etc/schema; do
+      if test -f "${ldap_schemadir}/openldap.schema"; then
+        break
+      fi
+      ldap_schemadir="Not found"
+    done
+    AC_MSG_RESULT($ldap_schemadir)
+    if test "$ldap_schemadir" = "Not found"; then
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Could not find OpenLDAP schema directory."
+"* perdition.schema will not be installed"
+"************************************************************"
+)
+      ldap_schemadir=""
+    fi
+  ]
+)
+fi
+
+if test "$ldap_build_dir" != "ldap"; then
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_ldap will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
 fi
 
 
@@ -647,6 +689,7 @@ AC_SUBST(mysql_includes)
 AC_SUBST(ldap_build_dir)
 AC_SUBST(ldap_libs)
 AC_SUBST(ldap_includes)
+AC_SUBST(ldap_schemadir)
 AC_SUBST(posix_regex_libs)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)
