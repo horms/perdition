@@ -64,6 +64,7 @@ io_t *perdition_ssl_connection(
 ){
   io_t *new_io=NULL;
   SSL *ssl=NULL;
+  int ret;
   
   if((ssl=SSL_new(ssl_ctx))==NULL){
     PERDITION_DEBUG_SSL_ERR("SSL_new");
@@ -81,15 +82,17 @@ io_t *perdition_ssl_connection(
   /* Get for TLS/SSL handshake */
   if(flag&PERDITION_CLIENT){
     SSL_set_connect_state(ssl);
-    if(SSL_connect(ssl)<=0){
-      PERDITION_DEBUG_SSL_ERR("SSL_connect");
+    ret = SSL_connect(ssl);
+    if(ret <= 0){
+      PERDITION_DEBUG_SSL_IO_ERR("SSL_connect", io_get_ssl(io), ret);
       goto bail;
     }
   }
   else {
     SSL_set_accept_state(ssl);
-    if(SSL_accept(ssl)<=0){
-      PERDITION_DEBUG_SSL_ERR("SSL_accept");
+    ret = SSL_accept(ssl);
+    if(ret <= 0){
+      PERDITION_DEBUG_SSL_IO_ERR("SSL_accept", io_get_ssl(io), ret);
       goto bail;
     }
   }

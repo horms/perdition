@@ -91,11 +91,51 @@ extern int errno;
 #define PERDITION_DEBUG_SSL_ERROR_STRING \
   { \
     unsigned long e; \
+    SSL_load_error_strings(); \
     while((e=ERR_get_error())) { \
       vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s", \
         ERR_error_string(e, NULL)); \
     } \
+    ERR_free_strings(); \
   }
+
+#define PERDITION_DEBUG_SSL_IO_ERR(str, ssl, ret) \
+{ \
+  int error; \
+  error = SSL_get_error(ssl, ret); \
+  if(error == SSL_ERROR_SYSCALL && ERR_peek_error() == 0) { \
+    if(ret == 0) { \
+      PERDITION_DEBUG(str ": An EOF that violates the protocol " \
+                      "has occured"); \
+    } \
+    else if(ret == -1) { \
+      PERDITION_DEBUG_ERRNO(str ": I/O Error"); \
+    } \
+    else { \
+      PERDITION_DEBUG(str ": Unknown Syscall Error"); \
+    } \
+  } \
+  else if(error == SSL_ERROR_ZERO_RETURN) { \
+    PERDITION_DEBUG(str ": Connection has closed"); \
+  } \
+  else if(error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE) { \
+    PERDITION_DEBUG(str ": Warning: wants read or write"); \
+  } \
+  /* SSL_ERROR_WANT_ACCEPT does not appear to be defined for some reason \
+  else if(error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) { \
+    PERDITION_DEBUG(str ": Warning: wants connect or accept"); \
+  } \
+  */ \
+  else if(error == SSL_ERROR_WANT_CONNECT) { \
+    PERDITION_DEBUG(str ": Warning: wants connect"); \
+  } \
+  else if(error == SSL_ERROR_WANT_X509_LOOKUP) { \
+    PERDITION_DEBUG(str ": Warning: wants x509 lookup"); \
+  } \
+  else { \
+    PERDITION_DEBUG_SSL_ERR(str); \
+  } \
+}
 
 #define PERDITION_DEBUG_SSL_ERR_UNSAFE(fmt, args...) \
   PERDITION_DEBUG_SSL_ERROR_STRING \

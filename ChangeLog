@@ -18,6 +18,7 @@ XXX
     will exit on reciept of a SIG PIPE.
   - Document that if no_lookup is used then popmaps must
     not contain hostnames
+  - Better logging of SSL I/O problems
 
 
 
