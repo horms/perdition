@@ -345,12 +345,9 @@ token_t *token_read(
 
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n) && len < MAX_LINE_LENGTH){
-    if((bytes_read=token_fill_buffer(io, &opt))<0){
+    if((bytes_read=token_fill_buffer(io, &opt))<=0){
       VANESSA_LOGGER_DEBUG("token_fill_buffer");
       return(NULL);
-    }
-    else if(!bytes_read){
-      break;
     }
 
     c=token_read_buffer[token_read_offset++];
