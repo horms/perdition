@@ -143,6 +143,7 @@ int imap4_out_setup(
       goto leave;
     }
     if(!do_tls && token_cmp(t, check_t)) {
+      VANESSA_LOGGER_DEBUG_UNSAFE("do_tls: %s", token_to_string(t, TOKEN_NO_STRIP));
       do_tls = 1;
     }
     if(token_is_eol(t)) {
