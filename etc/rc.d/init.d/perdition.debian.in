@@ -59,37 +59,37 @@ fi
 case "$1" in
   start)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --name perdition.pop3 \
+      start-stop-daemon --start --verbose \
         --exec @prefix@/sbin/perdition.pop3 -- $FLAGS $POP3_FLAGS
     fi
     if [ "$POP3S" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --name perdition.pop3s \
+      start-stop-daemon --start --verbose \
         --exec @prefix@/sbin/perdition.pop3s -- $FLAGS $POP3S_FLAGS
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --name perdition.imap4 \
+      start-stop-daemon --start --verbose \
         --exec @prefix@/sbin/perdition.imap4 -- $FLAGS $IMAP4_FLAGS
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
-      start-stop-daemon --start --verbose --name perdition.imaps \
+      start-stop-daemon --start --verbose \
         --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
     fi
     ;;
   stop)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --name perdition.pop3 \
+      start-stop-daemon --stop --verbose \
         --exec @prefix@/sbin/perdition.pop3
     fi
     if [ "$POP3S" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --name perdition.pop3s \
+      start-stop-daemon --stop --verbose \
         --exec @prefix@/sbin/perdition.pop3s
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --name perdition.imap4 \
+      start-stop-daemon --stop --verbose \
         --exec @prefix@/sbin/perdition.imap4
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose --name perdition.imaps \
+      start-stop-daemon --stop --verbose \
         --exec @prefix@/sbin/perdition.imaps
     fi
     ;;
