@@ -47,6 +47,7 @@
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. Will be passed to token_read().
  *      m: Will be passed to token_read().
+ *      log_str: logging tag for connection logging
  * post: Token is read from fd into token
  *       If literal_buf is not NULL, and n is not NULL and *n is not 0
  *       Bytes read from fd are copied to literal_buf.
@@ -123,15 +124,12 @@ static vanessa_queue_t *__read_line(
   return(q);
 }
 
-vanessa_queue_t *read_line(
-  io_t *io, 
-  unsigned char *buf, 
-  size_t *n, 
-  flag_t flag,
-  size_t m
+vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n, 
+  flag_t flag, size_t m, const char *log_str
 ){
   int do_literal=0;
   char *local_buf;
+  char *dump_buf;
   size_t local_n;
   vanessa_queue_t *local_q;
 
@@ -152,19 +150,25 @@ vanessa_queue_t *read_line(
     }
     else{
       local_buf=buf;
-      local_n=(*n)-1;
+      local_n=*n;
     }
 
     if((local_q=__read_line(io, local_buf, &local_n, flag, m))==NULL){
       VANESSA_LOGGER_DEBUG("__read_line");
-      if(!do_literal){
-        free(local_buf);
-      }
-      return(NULL);
+      goto leave;
     }
 
-    *(local_buf+local_n)='\0';
+    dump_buf = VANESSA_LOGGER_DUMP(local_buf, local_n, 0);
+    if(!dump_buf) {
+      VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
+      vanessa_queue_destroy(local_q);
+      local_q = NULL;
+      goto leave;
+    }
+    VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", log_str, dump_buf);
+    free(dump_buf);
 
+leave:
     if(!do_literal){
       free(local_buf);
     }

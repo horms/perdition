@@ -109,7 +109,6 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
 #endif /* HAVE_PARSE_PRINT_FORMAT */
 
   extern options_t opt;
-  extern vanessa_logger_t *perdition_vl;
 
 #ifndef HAVE_PARSE_PRINT_FORMAT
   fmt_args = 0;
@@ -138,11 +137,19 @@ int str_write(io_t *io, const flag_t flag, const size_t nargs,
   if(!(flag&WRITE_STR_NO_CLLF)){
     *(__str_write_buf+bytes++) = '\r';
     *(__str_write_buf+bytes++) = '\n';
-    *(__str_write_buf+bytes) = '\0';
   }
 
   if(opt.connection_logging){
-    VANESSA_LOGGER_LOG(LOG_DEBUG, __str_write_buf);
+    char *dump_str;
+
+    dump_str = VANESSA_LOGGER_DUMP(__str_write_buf, bytes, 0);
+    if(!dump_str) {
+      VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
+      return(-1);
+    }
+    VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", PERDITION_LOG_STR_SELF,
+		    dump_str);
+    free(dump_str);
   }
     
   /* Attempt one write system call and return an error if it

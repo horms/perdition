@@ -52,6 +52,7 @@
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. Will be passed to token_read().
  *      m: Will be passed to token_read().
+ *      log_str: logging tag for connection logging
  * post: Token is read from fd into token
  *       If literal_buf is not NULL, and n is not NULL and *n is not 0
  *       Bytes read from fd are copied to literal_buf.
@@ -61,12 +62,8 @@
  *       return what has been read so far. (No buffer overflows today)
  **********************************************************************/
 
-vanessa_queue_t *read_line(
-  io_t *io,
-  unsigned char *buf, 
-  size_t *n,
-  flag_t flag,
-  size_t m
+vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n,
+  flag_t flag, size_t m, const char *log_str
 );
 
 
