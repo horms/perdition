@@ -168,7 +168,7 @@ int imap4_in_get_pw(
     }
     else if(strcasecmp(command_string, "LOGIN")==0){
       str_free(command_string);
-      if(vanessa_queue_length(q)!=2){
+      if(vanessa_queue_length(q)!=2 && vanessa_queue_length(q)!=1){
         sleep(PERDITION_ERR_SLEEP);
         if(imap4_write(
           out_fd,
@@ -195,15 +195,20 @@ int imap4_in_get_pw(
       }
 
       destroy_token(&t);
-      if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
-	tag=NULL;
-        break;
+      if(vanessa_queue_length(q)==1){
+        if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
+          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
+	  tag=NULL;
+          break;
+        }
+        if((return_pw->pw_passwd=token_to_string(t))==NULL){
+          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
+          free(return_pw->pw_name);
+          break;
+        }
       }
-      if((return_pw->pw_passwd=token_to_string(t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
-        free(return_pw->pw_name);
-        break;
+      else {
+	return_pw->pw_passwd=NULL;
       }
       destroy_token(&t);
       vanessa_queue_destroy(q);

@@ -169,7 +169,7 @@ int pop3_in_get_pw(
         }
         goto loop;
       }
-      if(vanessa_queue_length(q)!=1){
+      if(vanessa_queue_length(q)>1){
         sleep(PERDITION_ERR_SLEEP);
         if(pop3_write(out_fd,NULL_FLAG,NULL,POP3_ERR,"Try PASS <password>")<0){
           PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
@@ -177,15 +177,20 @@ int pop3_in_get_pw(
         }
         goto loop;
       }
-      if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: vanessq_queue_pop");
-        free(return_pw->pw_name);
-        break;
+      if(vanessa_queue_length(q)==1){
+        if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
+          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: vanessq_queue_pop");
+          free(return_pw->pw_name);
+          break;
+        }
+        if((return_pw->pw_passwd=token_to_string(t))==NULL){
+          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
+          free(return_pw->pw_name);
+          break;
+        }
       }
-      if((return_pw->pw_passwd=token_to_string(t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
-        free(return_pw->pw_name);
-        break;
+      else {
+        return_pw->pw_passwd=NULL;
       }
       destroy_token(&t);
       vanessa_queue_destroy(q);

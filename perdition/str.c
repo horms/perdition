@@ -122,9 +122,7 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
   while(nostring-->0){
     string=va_arg(ap, char*);
     if(string==NULL){
-      PERDITION_LOG(LOG_DEBUG, "write_str: null string");
-      free(list);
-      return(-1);
+      continue;
     }
     /* Add String to writev iovec structure. */
     list[section].iov_base = (void *)string;
