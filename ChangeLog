@@ -5,6 +5,14 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+   * XXX
+   - Fixed capability command for POP3S
+   - Minor updates to databse documentation for MySQL and ODBC
+
+----------------------------------------------------------------------
+
 26th March 2003
 (Horms)
    * 1.11beta7

@@ -152,6 +152,12 @@ static char *pop3s_capability(char *capability,
 		return(NULL);
 	}
 
+	capability = pop3_mangle_capability(capability, mangled_capability);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
+		return(NULL);
+	}
+
 	return(capability);
 }
 

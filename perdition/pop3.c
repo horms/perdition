@@ -124,13 +124,14 @@ static flag_t pop3_encryption(flag_t ssl_flags)
 
 
 /**********************************************************************
- * pop3_capability 
- * Return the capability string to be used.
+ * pop3_mangle_capability 
+ * Modify a capability from the single line format used internally,
+ * where a double space ("  ") delimites a capability, to the format
+ * used ont he wire where a "\r\n" delimits a capability.
  * pre: capability: capability string that has been set
- *      tls_flags: not used
- *      tls_state: not used
- * post: capability to use, as per protocol_capability
- *       with POP parameters
+ * post: mangled_capability is set to the wire format of capability
+ * return: capability on success
+ *         NULL on error
  **********************************************************************/
 
 /* Be careful with this macro, it does not do bounds checking */
@@ -140,8 +141,7 @@ static flag_t pop3_encryption(flag_t ssl_flags)
 	strcpy(_cursor, "\r\n");                                      \
 	cursor += 2;
 
-char *pop3_capability(char *capability, char **mangled_capability, 
-		flag_t tls_flags, flag_t tls_state) 
+char *pop3_mangle_capability(char *capability, char **mangled_capability)
 {
 	char *start;
 	char *end;
@@ -149,22 +149,6 @@ char *pop3_capability(char *capability, char **mangled_capability,
 	size_t n_len;
 	size_t d_len;
 	int finish;
-	flag_t mode;
-
-	if((tls_flags & SSL_MODE_TLS_LISTEN) &&
-			!(tls_state & SSL_MODE_TLS_LISTEN)) {
-		mode = PROTOCOL_C_ADD;
-	}
-	else {
-		mode = PROTOCOL_C_DEL;
-	}
-	capability = protocol_capability(capability, mode,
-			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
-			POP3_CAPABILITY_DELIMITER);
-	if(capability == NULL) {
-		VANESSA_LOGGER_DEBUG("protocol_capability");
-		return(NULL);
-	}
 
       	if(mangled_capability == NULL) {
 		return(capability);
@@ -232,5 +216,45 @@ char *pop3_capability(char *capability, char **mangled_capability,
 	}
 	__POP3_CAPABILITY_APPEND(cursor, ".", 1);
 	
+	return(capability);
+}
+
+
+/**********************************************************************
+ * pop3_capability 
+ * Return the capability string to be used.
+ * pre: capability: capability string that has been set
+ *      tls_flags: not used
+ *      tls_state: not used
+ * post: capability to use, as per protocol_capability
+ *       with POP parameters
+ **********************************************************************/
+
+char *pop3_capability(char *capability, char **mangled_capability, 
+		flag_t tls_flags, flag_t tls_state) 
+{
+	flag_t mode;
+
+	if((tls_flags & SSL_MODE_TLS_LISTEN) &&
+			!(tls_state & SSL_MODE_TLS_LISTEN)) {
+		mode = PROTOCOL_C_ADD;
+	}
+	else {
+		mode = PROTOCOL_C_DEL;
+	}
+	capability = protocol_capability(capability, mode,
+			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
+			POP3_CAPABILITY_DELIMITER);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return(NULL);
+	}
+
+	capability = pop3_mangle_capability(capability, mangled_capability);
+	if(capability == NULL) {
+		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
+		return(NULL);
+	}
+
 	return(capability);
 }

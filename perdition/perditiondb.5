@@ -308,7 +308,7 @@ for ease of reading)
 .P
 <dbhost>[:<dbport>[:<dbname>[:<dbtable>[:<dbuser>
 .br
-[:<dbpwd>[:<dbsrvcol>[:<dbusercol>[:<dbportcol>]]]]]]]]
+[:<dbpwd>[:<dbusercol>[:<dbsrvcol>[:<dbportcol>]]]]]]]]
 .P
 E.g.
 .P
@@ -371,8 +371,21 @@ Where /usr/lib is the directory in which the perdition libraries
 were installed.
 A script, perditiondb_odbc_makedb is provided to seed the.
 For more information please see the MySQL documentaion above.
-
+The dabase options passed using \-m are the same as for MySQL
+except that the databse name (dbname) is the Datar Source Name (DSN).
 .P
+<dbhost>[:<dbport>[:<DSN>[:<dbtable>[:<dbuser>
+.br
+[:<dbpwd>[:<dbusercol>[:<dbsrvcol>[:<dbportcol>]]]]]]]]
+.P
+E.g.
+.P
+perdition \-m "some.host.com:3306:aDb:bTable:cUser:"\\
+.br
+"dPassword:eSrvCol:fUserCol:gPortCol"
+.P
+As per the notes in the MySQL documentation above,
+please avoid ommitting values.
 .B
 LDAP
 .P

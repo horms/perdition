@@ -59,5 +59,19 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol);
 char *pop3_capability(char *capability, char **mangled_capability,
 		flag_t tls_flags, flag_t tls_state);
 
+
+/**********************************************************************
+ * pop3_mangle_capability 
+ * Modify a capability from the single line format used internally,
+ * where a double space ("  ") delimites a capability, to the format
+ * used ont he wire where a "\r\n" delimits a capability.
+ * pre: capability: capability string that has been set
+ * post: mangled_capability is set to the wire format of capability
+ * return: capability on success
+ *         NULL on error
+ **********************************************************************/
+
+char *pop3_mangle_capability(char *capability, char **mangled_capability);
+
 #endif
 
