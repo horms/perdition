@@ -33,6 +33,8 @@ XXX
    - Postgress module returns correct value (-2) if user can't be found.
      This allows query strings to work correctly. Timur Khanjanov
    - SSL Certificate Chain file may be used - Frederic Garzon
+   - Fixed minor install problem relating to man page paths
+     not existing when certain modules were disabled. Edward Rudd
 
 ----------------------------------------------------------------------
 

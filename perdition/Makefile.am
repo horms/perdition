@@ -31,7 +31,7 @@ EXTRA_DIST = perdition.8 perditiondb.5
 
 sbin_PROGRAMS = perdition
 	          
-install-exec-hook:
+install-exec-hook: install-man8
 	for i in pop3 pop3s imap4 imap4s imaps; do \
 		(cd $(DESTDIR)$(sbindir) && rm -f perdition.$$i && \
 			ln -sf perdition perdition.$$i); \
