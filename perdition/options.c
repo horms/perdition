@@ -201,11 +201,6 @@ options_t opt;
       PERDITION_DEBUG("invalid ssl_mode combination"); \
       if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
-    /* TLS support hasn't been implemented yet */ \
-    if(new!=SSL_MODE_NONE && new&SSL_TLS_MASK){ \
-      PERDITION_DEBUG("TLS not implemented"); \
-      if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
-    } \
     opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
   }
 #endif /* WITH_SSL_SUPPORT */
@@ -245,7 +240,9 @@ int options(int argc, char **argv, flag_t f){
     {"group",                       'g',  POPT_ARG_STRING, NULL, 'g'},
     {"help",                        'h',  POPT_ARG_NONE,   NULL, 'h'},
     {"inetd_mode",                  'i',  POPT_ARG_NONE,   NULL, 'i'},
+    {"capability",                  'I',  POPT_ARG_STRING, NULL, 'I'},
     {"imap_capability",             'I',  POPT_ARG_STRING, NULL, 'I'},
+    {"pop_capability",              'I',  POPT_ARG_STRING, NULL, 'I'},
     {"jain",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
     {"jane",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
     {"jayne",                       'j',  POPT_ARG_NONE,   NULL, 'j'},
@@ -254,6 +251,7 @@ int options(int argc, char **argv, flag_t f){
     {"map_library",                 'M',  POPT_ARG_STRING, NULL, 'M'},
     {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
+    {"pop_capability",              'O',  POPT_ARG_STRING, NULL, 'O'},
     {"server_ok_line",              'o',  POPT_ARG_NONE,   NULL, 'o'},
     {"protocol",                    'P',  POPT_ARG_STRING, NULL, 'P'},
     {"outgoing_port",               'p',  POPT_ARG_STRING, NULL, 'p'},
@@ -322,12 +320,13 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
                                                             i, 0, OPT_NOT_SET);
     opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
+    opt_p(opt.capability,      PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
+    opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
     opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
     opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
     opt_p(opt.config_file,     DEFAULT_CONFIG_FILE,         i, 0, OPT_NOT_SET);
     opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
     opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
-    opt_p(opt.imap_capability, DEFAULT_IMAP_CAPABILITY,     i, 0, OPT_NOT_SET);
     opt_p(opt.listen_port,     PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_p(opt.map_library,     DEFAULT_MAP_LIB,             i, 0, OPT_NOT_SET);
     opt_p(opt.map_library_opt, DEFAULT_MAP_LIB_OPT,         i, 0, OPT_NOT_SET);
@@ -419,7 +418,7 @@ int options(int argc, char **argv, flag_t f){
 	}
 	break;
       case 'I':
-	opt_p(opt.imap_capability,optarg,opt.mask,MASK_IMAP_CAPABILITY,f);
+	opt_p(opt.capability,optarg,opt.mask,MASK_CAPABILITY,f);
 	break;
       case 'i':
         opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
@@ -754,6 +753,7 @@ int log_options(void){
     "authenticate_in=%s, "
 #endif /* WITH_PAM_SUPPORT */
     "bind_address=\"%s\", "
+    "capability=\"%s\", "
     "client_server_specification=%s, "
     "config_file=\"%s\", "
     "connection_limit=%d, "
@@ -762,7 +762,6 @@ int log_options(void){
     "domain_delimiter=\"%s\", "
     "group=\"%s\", "
     "inetd_mode=%s, "
-    "imap_capability=\"%s\", "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
     "lower_case=\"%s\", "
@@ -794,6 +793,7 @@ int log_options(void){
     BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
     str_null_safe(opt.bind_address),
+    str_null_safe(opt.capability),
     BIN_OPT_STR(opt.client_server_specification),
     str_null_safe(opt.config_file),
     opt.connection_limit,
@@ -802,7 +802,6 @@ int log_options(void){
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
     BIN_OPT_STR(opt.inetd_mode),
-    str_null_safe(opt.imap_capability),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
     str_null_safe(lower_case),
@@ -935,8 +934,9 @@ void usage(int exit_status){
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
     "    Display this message\n"
-    " -I|--imap_capability:\n"
-    "    Capabilities string returned when running the IMAP4 protocol\n"
+    " -I|--capability|--pop_capability|--imap_capability:\n"
+    "    Capabilities for the protocol. See perdition man page for more\n"
+    "    information on the format of this string.\n"
     "    (default \"%s\")\n"
     " -i|--inetd_mode:\n"
     "    Run in inetd mode\n"
@@ -1026,7 +1026,7 @@ void usage(int exit_status){
     str_null_safe(DEFAULT_LOG_FACILITY),
     str_null_safe(DEFAULT_CONFIG_FILE),
     str_null_safe(DEFAULT_GROUP),
-    str_null_safe(DEFAULT_IMAP_CAPABILITY),
+    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,
     str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     str_null_safe(DEFAULT_MAP_LIB),

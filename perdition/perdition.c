@@ -356,13 +356,19 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
   /*Set up the ssl mode*/
   opt.ssl_mode=protocol->encryption(opt.ssl_mode);
+  opt.capability = protocol->capability(opt.capability, 
+		  &(opt.mangled_capability), opt.ssl_mode);
 
   if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
       (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
     PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
     vanessa_socket_daemon_exit_cleanly(-1);
   }
+#else
+  opt.capability = protocol->capability(opt.capability, 
+		  &(opt.mangled_capability), SSL_MODE_NONE);
 #endif /* WITH_SSL_SUPPORT */
+
 
   /*
    * Log the options we will be running with.
@@ -540,7 +546,7 @@ int main (int argc, char **argv, char **envp){
       );
       vanessa_socket_daemon_exit_cleanly(-1);
     }
-    else if(status>0){
+    else if(status == 1){
       PERDITION_ERR_UNSAFE(
         "Closing NULL session: %susername=%s", 
         from_to_str,
@@ -548,6 +554,29 @@ int main (int argc, char **argv, char **envp){
       );
       vanessa_socket_daemon_exit_cleanly(0);
     }
+#ifdef WITH_SSL_SUPPORT
+    else if(status == 2){
+
+      PERDITION_DEBUG("STLS make connection");
+      /*Set up the ssl mode*/
+      opt.ssl_mode=SSL_MODE_SSL_LISTEN;
+
+      PERDITION_DEBUG("STLS read config");
+      if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
+        (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
+           PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
+        vanessa_socket_daemon_exit_cleanly(-1);
+      }
+
+      PERDITION_DEBUG("STLS handshake");
+      if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
+          client_io, ssl_ctx, PERDITION_SERVER))==NULL){
+        PERDITION_DEBUG("perdition_ssl_connection 1");
+        vanessa_socket_daemon_exit_cleanly(-1);
+      }
+      continue;
+    }
+#endif /* WITH_SSL_SUPPORT */
 
     if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
       PERDITION_DEBUG("username_mangle STATE_GET_SERVER");

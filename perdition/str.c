@@ -322,3 +322,146 @@ const char *str_basename(const char *filename){
 
     return((result==NULL)?filename:result+1);
 }
+
+
+/**********************************************************************
+ * str_delete_substring
+ * Remove a needles from a haystack.
+ * It is not an error if there are no needles in the haystack.
+ * pre: haystack: String to remove needles from.
+ *      needle: Needle to remove from haystack
+ *      delimiter: Delimiter that may follow the needle.
+ * post: Needles, and a following delimiter if present, will be
+ *       removed from the haystack.
+ *       Note that a needle must either be followed by a delimiter
+ *       or be at the end of the haystack to be removed.
+ * return: New haystack. This should be freed by the caller.
+ *         NULL on error
+ **********************************************************************/
+
+char *str_delete_substring(const char *haystack, const char *needle,
+		const char *delimiter){
+	size_t needle_len;
+	size_t delimiter_len;
+	char *start;
+	char *end;
+	char *prefix;
+	char *new_haystack;
+
+	needle_len = strlen(needle);
+	delimiter_len = strlen(delimiter);
+
+	new_haystack = strdup(haystack);
+	if(new_haystack == NULL) {
+		PERDITION_DEBUG_ERRNO("strdup");
+		return(NULL);
+	}
+
+	start = new_haystack;
+	while(1) {
+		if((start = strstr(start, needle)) == NULL) {
+			break;
+		}
+
+		/* Is the needle at the begining of the string or
+		 * preceded by a delimiter. If not it is not a valid
+		 * match */
+		prefix = start - delimiter_len;
+		if(start != new_haystack && (prefix < new_haystack ||
+				strncmp(prefix, delimiter, delimiter_len))) {
+			start += needle_len;
+			continue;
+		}
+
+		/* Is the needle at the end of the string or
+		 * followed by a delimiter. If not it is not a valid
+		 * match */
+		end = start + needle_len;
+		if(*end != '\0' && strncmp(end, delimiter, delimiter_len)) {
+			start += needle_len;
+			continue;
+		}
+
+		/* leading delimiter */
+		if(start != '\0') {
+			start = prefix;
+		}
+		memmove(start, end, strlen(end) + 1);
+	}
+
+	return(new_haystack);
+}
+
+
+/**********************************************************************
+ * str_append_substring_if_missing
+ * Append a delimiter and needle to the haystack, if the haystack
+ * does not contain a needle that is either followed by
+ * delimiter or is at the end of the haystack.
+ * pre: haystack: String to add needle to.
+ *      needle: Needle to add to haystack
+ *      delimiter: Delimiter.
+ * post: A copy of the haystack is created.
+ *       If the needle isn't present in the original haystack, it is added.
+ * return: New haystack. This should be freed by the caller.
+ *         NULL on error
+ **********************************************************************/
+
+char *str_append_substring_if_missing(const char *haystack, const char *needle,
+		const char *delimiter){
+	size_t n_len;
+	size_t d_len;
+	const char *cursor;
+	const char *tmp;
+	char *new_haystack = NULL;
+	int found = 0;
+
+	n_len = strlen(needle);
+	d_len = strlen(delimiter);
+
+	cursor = haystack;
+	while(1) {
+		if((cursor = strstr(cursor, needle)) == NULL) {
+			break;
+		}
+
+		/* Is the needle at the begining of the string or
+		 * preceded by a delimiter. If not it is not a valid
+		 * match */
+		tmp = cursor - d_len;
+		if(cursor != new_haystack && (tmp < new_haystack ||
+				strncmp(tmp, delimiter, d_len))) {
+			cursor += n_len;
+			continue;
+		}
+
+		/* Is the needle at the end of the string or
+		 * followed by a delimiter. If not it is not a valid
+		 * match */
+		tmp = cursor + n_len;
+		if(*tmp != '\0' && strncmp(tmp, delimiter, d_len)) {
+			cursor += n_len;
+			continue;
+		}
+
+		found = 1;
+		break;
+	}
+
+	if(found) {
+		new_haystack = strdup(haystack);
+		if(new_haystack == NULL) {
+			PERDITION_DEBUG_ERRNO("strdup");
+			return(NULL);
+		}
+		return(new_haystack);
+	}
+
+	new_haystack = str_cat(3, haystack, delimiter, needle);
+	if(new_haystack == NULL) {
+		PERDITION_DEBUG("str_cat");
+		return(NULL);
+	}
+
+	return(new_haystack);
+}

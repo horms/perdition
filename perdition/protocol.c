@@ -34,6 +34,7 @@
 #include "imap4.h"
 #include "imap4s.h"
 #include "protocol.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -200,4 +201,44 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   }
 
   return(string);
+}
+
+
+char *protocol_capability(char *capability, flag_t ssl_flags,
+		const char *default_capability, const char *tls_capability,
+		const char *capability_delimiter) {
+  char *tmp_str;
+  
+  if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, capability)){
+    tmp_str = strdup(default_capability);
+    if(tmp_str == NULL) {
+      PERDITION_DEBUG_ERRNO("strdup");
+      return(NULL);
+    }
+  }
+  else {
+    tmp_str = capability;
+  }
+
+  if(ssl_flags & SSL_MODE_TLS_LISTEN) {
+    capability = str_append_substring_if_missing(tmp_str, tls_capability, 
+		    capability_delimiter);
+    if(capability == NULL) {
+      PERDITION_DEBUG("str_delete_substring");
+      free(tmp_str);
+      return(NULL);
+    }
+  }
+  else {
+    capability = str_delete_substring(tmp_str, tls_capability, 
+		    capability_delimiter);
+    if(capability == NULL) {
+      PERDITION_DEBUG("str_delete_substring");
+      free(tmp_str);
+      return(NULL);
+    }
+  }
+
+  free(tmp_str);
+  return(capability);
 }

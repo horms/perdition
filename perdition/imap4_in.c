@@ -311,6 +311,26 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
         break;
       }
     }
+#ifdef WITH_SSL_SUPPORT
+    else if(strcasecmp(command_string, "STARTTLS")==0){
+      if(io_get_type(io) != io_type_ssl){
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, "Begin TLS negotiation now")<0){
+           PERDITION_DEBUG("imap4_write");
+          return(-1);
+        }
+        vanessa_queue_destroy(q);
+        return(2);
+      }
+      else
+      {
+        sleep(PERDITION_ERR_SLEEP);
+        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, "SSL already active")<0){
+          PERDITION_DEBUG("ssl already active");
+          break;
+        }
+      }
+    }    
+#endif /* WITH_SSL_SUPPORT */
     else if(strcasecmp(command_string, "CAPABILITY")==0){
       if(imap4_in_capability_cmd(io, tag)){
         PERDITION_DEBUG("imap4_in_capability");
@@ -496,7 +516,7 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag){
   extern options_t opt;
 
   if(imap4_write(io, NULL_FLAG, NULL, "CAPABILITY", 
-			  str_null_safe(opt.imap_capability))<0){
+			  str_null_safe(opt.capability))<0){
     PERDITION_DEBUG("imap4_write 1");
     return(-1);
   }

@@ -6,7 +6,7 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 From Horms
-*  Add TLS IMAP and POP support
+*  Make TLS IMAP and POP support RFC 2595 compliant
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

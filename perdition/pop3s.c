@@ -32,6 +32,7 @@
 #include "pop3.h"
 #include "pop3s.h"
 #include "options.h"
+#include "protocol.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -67,6 +68,7 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
   protocol->destroy = pop3_destroy_protocol;
   protocol->port = pop3s_port;
   protocol->encryption = pop3s_encryption;
+  protocol->capability = pop3_capability;
 
   return(protocol);
 }
@@ -112,4 +114,25 @@ flag_t pop3s_encryption(flag_t ssl_flags) {
     return(ssl_flags);
   }
   return(SSL_MODE_SSL_ALL);
+}
+
+
+/**********************************************************************
+ * pop3s_capability 
+ * Return the capability string to be used.
+ * pre: capability: capability string that has been set
+ * post: capability to use, as per protocol_capability
+ *       with POP parameters
+ **********************************************************************/
+
+char *pop3s_capability(char *capability, flag_t ssl_flags) {
+  capability = protocol_capability(capability, ssl_flags, 
+		  POP3_DEFAULT_CAPABILITY, POP3_TLS_CAPABILITY,
+		  POP3_CAPABILITY_DELIMITER);
+  if(capability == NULL) {
+	  PERDITION_DEBUG("protocol_capability");
+	  return(NULL);
+  }
+
+  return(capability);
 }

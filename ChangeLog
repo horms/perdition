@@ -10,6 +10,7 @@ XXX
    * XXX
    - Added Berkely DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
+   - Added the beginings of TLS support. Thanks to Wolfgang Breyha
 
 ----------------------------------------------------------------------
 

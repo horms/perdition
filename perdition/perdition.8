@@ -160,9 +160,24 @@ Group to run as.
 .B \-h, \-\-help:
 Display this message
 .TP
-.B \-I, \-\-imap_capability:
-Capabilities string returned when running the IMAP4 protocol
-(default "IMAP4 IMAP4REV1 LITERAL+")
+.B \-I, \-\-capability, \-\-pop_capability, \-\-imap_capability:
+Capabilities for the protocol.
+.sp
+When using a POP3 based protocol, the capabilities should be
+delimited by two spaces. This is because the capabilities themselves
+may contain single spaces. The default is: "UIDL  USER".
+.sp
+When using an IMAP4 based protocol, this string is taken as a string
+literal that will be returned when a client issues the CAPABILITY
+command. As such the capabilities should be space delimited.
+The default is: "IMAP4 IMAP4REV1 LITERAL+"
+.sp
+If perdition is listening for TLS connections then the
+capability STLS for POP3 or STARTTLS for IMAP4 will be
+appended to the list of capabilities if it is not already 
+present. Simmilarly these capabilities will be removed from
+the list of capabilities if they are present and perdition is not
+listening for TLS connections.
 .TP
 .B \-i, \-\-inetd_mode:
 Run in inetd mode
@@ -619,4 +634,5 @@ Geoff Mitchell <g.mitchell@videonetworks.com>
 Willi Langenberger <wlang@wu\-wien.ac.at>
 .br
 Matt Prigge <mprigge@pobox.com>
-
+.br
+Wolfgang Breyha <wolfgang.breyha@uta.at>

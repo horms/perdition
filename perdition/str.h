@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef STRBERT
-#define STRBERT
+#ifndef _PERDITION_STR_H
+#define _PERDITION_STR_H
 
 #include <string.h>
 #include <ctype.h>
@@ -207,4 +207,41 @@ char *strn_toupper(char *str, size_t count);
 const char *str_basename(const char *filename);
 
 
-#endif /* STRBERT */
+/**********************************************************************
+ * str_delete_substring
+ * Remove a needles from a haystack.
+ * It is not an error if there are no needles in the haystack.
+ * pre: haystack: String to remove needles from.
+ *      needle: Needle to remove from haystack
+ *      delimiter: Delimiter that may follow the needle.
+ * post: Needles, and a following delimiter if present, will be
+ *       removed from the haystack.
+ *       Note that a needle must either be followed by a delimiter
+ *       or be at the end of the haystack to be removed.
+ * return: New haystack. This should be freed by the caller.
+ *         NULL on error
+ **********************************************************************/
+
+char *str_delete_substring(const char *haystack, const char *needle,
+		const char *delimiter);
+
+
+/**********************************************************************
+ * str_append_substring_if_missing
+ * Append a delimiter and needle to the haystack, if the haystack
+ * does not contain a needle that is either followed by
+ * delimiter or is at the end of the haystack.
+ * pre: haystack: String to add needle to.
+ *      needle: Needle to add to haystack
+ *      delimiter: Delimiter.
+ * post: A copy of the haystack is created.
+ *       If the needle isn't present in the original haystack, it is added.
+ * return: New haystack. This should be freed by the caller.
+ *         NULL on error
+ **********************************************************************/
+
+char *str_append_substring_if_missing(const char *haystack, const char *needle,
+		const char *delimiter);
+
+
+#endif /* _PERDITION_STR_H */

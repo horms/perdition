@@ -30,6 +30,7 @@
 #endif
 
 #include "imap4.h"
+#include "protocol.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -65,6 +66,7 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->destroy = imap4_destroy_protocol;
   protocol->port = imap4_port;
   protocol->encryption = imap4_encryption;
+  protocol->capability = imap4_capability;
 
   return(protocol);
 }
@@ -106,4 +108,28 @@ char *imap4_port(char *port){
 
 flag_t imap4_encryption(flag_t ssl_flags) {
   return(ssl_flags);
+}
+
+
+/**********************************************************************
+ * imap4_capability 
+ * Return the capability string to be used.
+ * pre: capability: capability string that has been set
+ *      mangled_capability: not used
+ *      ssl_flags: the encryption flags that bave been set
+ * post: capability to use, as per protocol_capability
+ *       with IMAP4 parameters
+ **********************************************************************/
+
+char *imap4_capability(char *capability, char **mangled_capability,
+		flag_t ssl_flags) {
+  capability = protocol_capability(capability, ssl_flags, 
+		  IMAP4_DEFAULT_CAPABILITY, IMAP4_TLS_CAPABILITY,
+		  IMAP4_CAPABILITY_DELIMITER);
+  if(capability == NULL) {
+	  PERDITION_DEBUG("protocol_capability");
+	  return(NULL);
+  }
+
+  return(capability);
 }

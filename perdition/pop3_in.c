@@ -30,6 +30,7 @@
 #endif
 
 #include "pop3_in.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -113,6 +114,7 @@ int pop3_in_get_pw(
   char *command_string = NULL;
   token_t *t = NULL;
   char *message=NULL;
+  extern options_t opt;
 
   return_pw->pw_name=NULL;
 
@@ -133,6 +135,33 @@ int pop3_in_get_pw(
       break;
     }
     token_unassign(t);
+
+    if(strcasecmp(command_string, "CAPA")==0){
+      pop3_write(io, NULL_FLAG, NULL, POP3_OK, "Capability list follows");
+      pop3_write(io, WRITE_STR_NO_CLLF, NULL, NULL, opt.mangled_capability);
+      goto loop;
+    }
+
+#ifdef WITH_SSL_SUPPORT
+    if(strcasecmp(command_string, "STLS")==0){
+      if(io_get_type(io) != io_type_ssl){
+        pop3_write(io, NULL_FLAG, NULL, POP3_OK, 
+			"STLS waiting for rapeclgrq qngn");
+        token_destroy(&t);
+        vanessa_queue_destroy(q);
+        return(2);
+      }
+      else
+      {
+        sleep(PERDITION_ERR_SLEEP);
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "SSL already active")<0){
+          PERDITION_DEBUG("pop3_write");
+          break;
+        }
+        goto loop;
+      }
+    } 
+#endif /* WITH_SSL_SUPPORT */
 
     if(strcasecmp(command_string, "USER")==0){
       if(return_pw->pw_name!=NULL){
@@ -228,7 +257,11 @@ int pop3_in_get_pw(
 	NULL_FLAG,
 	NULL,
         POP3_ERR,
+#ifdef WITH_SSL_SUPPORT
+	"Command must be one of CAPA, STLS, USER, PASS or QUIT"
+#else
         "Command must be one of USER, PASS or QUIT"
+#endif /* WITH_SSL_SUPPORT */
       )<0){
         PERDITION_DEBUG("pop3_write");
         break;
