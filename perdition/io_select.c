@@ -29,11 +29,12 @@
 #include "../config.h"
 #endif
 
+#include <vanessa_adt.h>
+
+#include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <vanessa_adt.h>
-#include <sys/select.h>
 
 #ifdef WITH_SSL_SUPPORT
 #include <openssl/ssl.h>
