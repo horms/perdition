@@ -6,7 +6,6 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 From Horms
-o  Support for a backup MySQL server
 *  Add TLS IMAP and POP support
 
 From Rob Wyn Jones
@@ -17,11 +16,8 @@ From Krzysztof Sierota
 * Method of evaluating if mailboxes are empty to avoid have to
   authenticate with the backend server. Method is yet to be determined :)
 
-From Stephen Lombard
-o Oracle or ODBC db library
-
 From Erik R. Leo
-o BSD/OS login.conf support
+* BSD/OS login.conf support
 
 Jack Snodgrass
 o Identify user based on source ip
