@@ -136,13 +136,14 @@
 #define _GSK_SPLIT_USER(_full_user_str) \
 	if(domain_str == NULL) { \
 		domain_str = strrstr((_full_user_str), opt.domain_delimiter); \
-		if(domain_str == NULL) { \
-			str_free(key_str); \
-			return(NULL); \
-		} \
 		user_str = (_full_user_str); \
-		user_str_size = domain_str-user_str; \
-		domain_str++; \
+		if(domain_str == NULL) { \
+			user_str_size = strlen(_full_user_str); \
+		} \
+		else { \
+			user_str_size = domain_str-user_str; \
+			domain_str++; \
+		} \
 	}
 
 
@@ -205,7 +206,9 @@ static char *getserver_key_str(const char *query_fmt,
 				break;
 			case 'd':
 				_GSK_SPLIT_USER(full_user_str);
-				_GSK_STR_ADD_STR(domain_str);
+				if(domain_str) {
+					_GSK_STR_ADD_STR(domain_str);
+				}
 				break;
 			case 'i':
 				_GSK_STR_ADD_STR(from_str);
@@ -223,7 +226,7 @@ static char *getserver_key_str(const char *query_fmt,
 				to_port_str[5] = '\0';
 				_GSK_STR_ADD_STR(to_port_str);
 				break;
-			case '/':
+			case '\\':
 				_GSK_STR_ADD_C('\\');
 				break;
 			default:

@@ -79,7 +79,7 @@ void config_file_to_opt(const char *filename){
 
 
 #define __CONFIG_FILE_NAME_EXISTS                                      \
-	if(!status) {                                                   \
+	if(!status) {                                                  \
 		return(configuration_file);                            \
 	}                                                              \
 	free(configuration_file);                                      \
