@@ -58,8 +58,11 @@ void config_file_to_opt(const char *filename){
     return;
   }
 
+  /* Removed as this breaks SSL + inetd mode configurations
+   * and is generally bogus
   VANESSA_LOGGER_DEBUG_RAW_UNSAFE("Reading configuration file: \"%s\"",
 		  filename);
+  */
   a=vanessa_config_file_read(filename, 0);
   if(!a) {
     return;

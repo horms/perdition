@@ -25,6 +25,8 @@ XXX
  - When add_domain is used, allow the depth to which the domain
    name has leading levels stripped.
  - Fix gcc-4.0 compile problem. Andreas Jochens
+ - Removed bogus loging that occurs before the logger is
+   fully intialised when debug is enabled. Roberto Suarez Soto
 
 ----------------------------------------------------------------------
 
