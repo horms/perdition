@@ -9,6 +9,7 @@ xxx
 (Horms)
 
    * Version xxx
+   - Red Hat init script reports status correctly
    - Fixed minor spelling errors in documentation
    - Added missing library symlings to spec file
    - Server ok line option fixed. Was expecting arguments when it

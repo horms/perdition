@@ -63,7 +63,12 @@ case "$1" in
 	fi
 	;;
   status)
-        status perdition
+        if [ "$POP3" = "yes" ]; then
+        	status perdition.pop3
+	fi
+	if [ "$IMAP4" = "yes" ]; then
+        	status perdition.imap4
+	fi
 	;;
   restart|reload)
         $0 stop
