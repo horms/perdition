@@ -35,7 +35,7 @@ pre: key_str:     Key as a null terminated string
      len_return:  Length of value is returned here
 post: The str_key is looked up and the corresponding value is 
       returned in str_return and len_return.
-return:  0 on sucess
+return:  0 on success
         -1 on db access error
            This inclides file, connection and other data access
            errors. It does not cover memory allocation problems.
@@ -64,7 +64,7 @@ Initialise db as necessary
 pre: options_str: Options string. The usage of this is 
                   implementation dependant.
 post: db is intialised
-return:  0 on sucess
+return:  0 on success
         -1 on db access error
            This inclides file, connection and other data access
            errors. It does not cover memory allocation problems.
@@ -75,7 +75,7 @@ dbserver_fini
 Shut down db as necessary
 pre: none
 post: db is shut down
-return:  0 on sucess
+return:  0 on success
         -1 on db access error
            This inclides file, connection and other data access
            errors. It does not cover memory allocation problems.

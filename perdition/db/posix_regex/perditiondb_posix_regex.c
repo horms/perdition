@@ -39,7 +39,7 @@ static vanessa_dynamic_array_t *regex_a;
  *                   is used
  * post: regex map is opened, regex are compiled and stored with
  *       their server in the static vanessa_dynamic_array_t *regex_a
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on file access error
  *         -2 if key cannot be found in map
  *         -3 on other error
@@ -186,7 +186,7 @@ int dbserver_init(char *options_str){
  *      len_return:  Length of value is returned here
  * post: The str_key is looked up and the corresponding value is 
  *       returned in str_return and len_return.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on file access error
  *         -2 if key cannot be found in map
  *         -3 on other error
@@ -369,7 +369,7 @@ int dbserver_get(
  * Free memory structures associated with the regex map
  * pre: none
  * post: static vanessa_dynamic_array_t *regex_t is freed
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on file access error
  *         -2 if key cannot be found in map
  *         -3 on other error

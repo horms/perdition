@@ -39,7 +39,7 @@
  *      len_return: length of value is returned here
  * post: The str_key is looked up in the gdbm map and the
  *       corresponding value is returned in str_return and len_return.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on file access error
  *         -2 if key cannot be found in map
  *         -3 on other error

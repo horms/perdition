@@ -70,7 +70,7 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
  * pre: options_str: Options string. Sting is the LDAP url to use
  *      see the default, PERDITIONDB_LDAP_DEFAULT_URL, for an example
  * post: Options string is parsed if not null into ludp
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -108,7 +108,7 @@ int dbserver_init(char *options_str) {
  * Free static vanessa_dynamic_array_t a if it has been initialised
  * pre: none
  * post: static vanessa_dynamic_array_t a and its contents are freed
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -133,7 +133,7 @@ int dbserver_fini(void) {
  *      len_return: length of value is returned here
  * post: The str_key is looked up in the gdbm map and the
  *       corresponding value is returned in str_return and len_return.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on LDAP access error
  *         -2 if key cannot be found in map
  *         -3 on other error

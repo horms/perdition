@@ -19,7 +19,7 @@
  *      len_return:  Length of value is returned here
  * post: The str_key is looked up and the corresponding value is 
  *       returned in str_return and len_return.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -45,7 +45,7 @@
  * pre: options_str: Options string. The usage of this is 
  *                   implementation dependant.
  * post: db is intialised
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -56,7 +56,7 @@
  * Shut down db as necessary
  * pre: none
  * post: db is shut down
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -175,7 +175,7 @@ server_port_t *getserver(
  * post: Library is open and handle is put in *handle_return
  *       Symbol dbserver_get is accessed an put in *dbserver_get_return
  *       If the symbol dbserver_init is defined then it is run
- * return: 0 on sucess
+ * return: 0 on success
  *         -1 on error
  **********************************************************************/
 
@@ -230,7 +230,7 @@ int getserver_openlib(
  * pre: handle: library handle to close
  * post: If the symbol dbserver_fini is defined then it is run
  *       Library is closed
- * return: 0 on sucess
+ * return: 0 on success
  *         -1 on error
  **********************************************************************/
 

@@ -60,7 +60,7 @@ static void perditiondb_postgresql_log(char *msg_str, PGconn *conn){
  * Free static vanessa_dynamic_array_t a if it has been initialised
  * pre: none
  * post: static vanessa_dynamic_array_t a and its contents are freed
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -86,7 +86,7 @@ int dbserver_fini(void){
  *       static vanessa_dynamic_array_t a and 
  *       static char *dbhost, *dbname, *dbtable, *dbuser, *dbpwd are
  *       set to pointers insiside a or defaults as neccesary.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
@@ -171,7 +171,7 @@ static int truncate_str(char *str, const char c){
  *      len_return:  Length of value is returned here
  * post: The str_key is looked up and the corresponding value is 
  *       returned in str_return and len_return.
- * return:  0 on sucess
+ * return:  0 on success
  *         -1 on db access error
  *            This inclides file, connection and other data access
  *            errors. It does not cover memory allocation problems.
