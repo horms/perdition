@@ -10,7 +10,7 @@ To install perdition
 
 tar zxf perdition-@VERSION@.tar.gz
 cd perdition-@VERSION@
-./configure [--prefix=/usr]
+./configure --enable-static [--prefix=/usr]
 make
 make install
 
@@ -23,7 +23,7 @@ rpm -ta perdition-@VERSION@.tar.gz
 or
 
 cd perdition-@VERSION@
-./configure --prefix=/usr
+./configure --enable-static --prefix=/usr
 make distcheck
 rpm -ta perdition-@VERSION@.tar.gz
 
@@ -50,7 +50,7 @@ LDFLAGS="-L/usr/local/lib/"
 export LDFLAGS
 
 cd perdition-@VERSION@
-./configure [--prefix=/usr]
+./configure --enable-static [--prefix=/usr]
 make
 make install
 
@@ -71,7 +71,7 @@ The Makefiles that are generated may not work with make so use
 gmake instead.
 
 cd perdition-@VERSION@
-./configure [--prefix=/usr]
+./configure --enable-static [--prefix=/usr]
 gmake
 gmake install
 

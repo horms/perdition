@@ -21,6 +21,7 @@ From Horms
 * Fix up LDAP Bind Credentials
 * Fix up LDAP configuration options
 + Config files for different protocols
++ Fix regular expression popmap code
 + Periodically issue a log message, so perdition-pbs will work
   for long imap sessions
 

@@ -60,6 +60,10 @@ XXX
    - Allow cipher suite list to be set
    - Added source port to available escape sequences for query_key
    - Relog AUTH line periodically
+   - Recommend running configure with --enable-shared
+     So that the map libraries are built correctly.
+     This is the default on many (most ?) systems anyway
+   - Removed Redhat 6.2 specific .spec file
 
 ----------------------------------------------------------------------
 
