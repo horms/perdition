@@ -3,3 +3,4 @@ usr/lib/libperditiondb_postgresql.a
 usr/lib/libperditiondb_postgresql.la
 usr/lib/libperditiondb_postgresql.so
 usr/lib/libperditiondb_postgresql.so.0
+/usr/man/man8/perditiondb_postgresql_makedb.8

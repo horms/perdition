@@ -12,3 +12,4 @@ usr/lib/libjain.so.0
 usr/sbin/perdition
 usr/sbin/perdition.imap4
 usr/sbin/perdition.pop3
+/usr/man/man8/perdition.8

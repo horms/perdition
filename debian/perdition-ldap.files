@@ -3,3 +3,4 @@ usr/lib/libperditiondb_ldap.a
 usr/lib/libperditiondb_ldap.la
 usr/lib/libperditiondb_ldap.so
 usr/lib/libperditiondb_ldap.so.0
+/usr/man/man8/perditiondb_ldap_makedb.8

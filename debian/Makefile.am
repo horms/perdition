@@ -28,14 +28,16 @@ changelog \
 control \
 copyright \
 perdition-dev.files \
+perdition-gdbm.conffiles \
 perdition-gdbm.files \
-perdition-gdbm.postinst \
 perdition-gdbm.prerm \
 perdition-ldap.files \
 perdition-mysql.files \
 perdition-nis.files \
+perdition-posix-regex.conffiles \
 perdition-posix-regex.files \
 perdition-postgresql.files \
+perdition.conffiles \
 perdition.dirs \
 perdition.files \
 perdition.postinst \

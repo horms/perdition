@@ -3,3 +3,4 @@ usr/lib/libperditiondb_mysql.a
 usr/lib/libperditiondb_mysql.la
 usr/lib/libperditiondb_mysql.so
 usr/lib/libperditiondb_mysql.so.0
+/usr/man/man8/perditiondb_mysql_makedb.8

@@ -5,10 +5,10 @@ Mail retrieval proxy server
 Copyright (C) 1999  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-*  Make man page (from information in README)
 *  Option to force lowercase before map lookup
 *  Support for a backup MySQL server
 *  tdb module
+*  Fix perditiondb_ldap_makedb so it is more robust and informative
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
