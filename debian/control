@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev (>= 0.0.3), libvanessa-adt-dev (>= 0.0.3), libvanessa-socket-dev (>= 0.0.4), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb-dev
+Build-Depends: libvanessa-logger-dev (>= 0.0.4), libvanessa-adt-dev (>= 0.0.4), libvanessa-socket-dev (>= 0.0.5), libpopt-dev, libpam0g-dev, libmysqlclient-dev, postgresql-dev, libgdbmg1-dev, libldap2-dev | libopenldap-dev, debhelper (>= 2.0.0), zlib1g-dev, libssl-dev | libssl09-dev, libtool, automake, tetex-extra, gzip, gv, unixodbc-dev, libdb-dev
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>
@@ -8,7 +8,9 @@ Standards-Version: 3.5.8
 Package: perdition
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libvanessa-socket0 (<= 0.0.4), libvanessa-adt0 (<= 0.0.3), libvanessa-logger0 (<= 0.0.3)
+Conflicts: perdition-bdb
+Replaces: perdition-bdb
+Provides: perdition-bdb
 Description: POP3 and IMAP4 Proxy server
  Perdition allows users to connect to a content-free POP3 or IMAP4
  server that will redirect them to their real POP3 or IMAP4 server. This
@@ -16,8 +18,8 @@ Description: POP3 and IMAP4 Proxy server
  servers on a per user basis. This can also be used to as a POP3 or IMAP4
  proxy especially in firewall applications. Perdition supports arbitrary
  library based map access to determine the server for a user. POSIX
- Regular Expression, GDBM, MySQL, PostgreSQL and LDAP libraries ship with
- the distribution.
+ Regular Expression, GDBM, Berkely DB, MySQL, PostgreSQL, ODBC and LDAP 
+ libraries ship with the distribution.
 
 Package: perdition-dev
 Architecture: any
@@ -27,14 +29,6 @@ Description: Development libraries and headers for perdition
  shared libraries much in the manner of NSS in glibc. This package
  provides headers and libraries that may be useful in the development
  of perditiondb libraries.
-
-Package: perdition-bdb
-Architecture: any
-Depends: ${shlibs:Depends}
-Description: Library to allow perdition to access Berkely DB based popmaps
- Perdition allows for arbitrary user database access through
- shared libraries much in the manner of NSS in glibc. This package
- allows a user database to be sourced from a Berkely DB.
 
 Package: perdition-ldap
 Architecture: any

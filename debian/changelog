@@ -1,3 +1,26 @@
+perdition (1.11beta8-4) unstable; urgency=low
+
+  * Removed conflicts and added shlibs.local to handle versioned depenancy on
+    libvanessa-adt0, libvanessa-socket0 and libvanessa-logger0 in
+    perdition package (closes: Bug#192479)
+  * Merged perdition-bdb package into perdition package
+
+ -- Simon Horman <horms@vergenet.net>  Fri,  9 May 2003 10:49:51 +0900
+
+perdition (1.11beta8-3) unstable; urgency=low
+
+  * Fix so perdition can build against libdb4.1-dev
+    (closes: Bug#191032)
+
+ -- Simon Horman <horms@vergenet.net>  Mon, 28 Apr 2003 15:22:54 +0900
+
+perdition (1.11beta8-2) unstable; urgency=low
+
+  * Updated versioned dependancies on libvanessa-adt-dev,
+    libvanessa-socket-dev and libvanessa-logger-dev
+
+ -- Simon Horman <horms@vergenet.net>  Sat, 19 Apr 2003 09:49:25 +0900
+
 perdition (1.11beta8-1) unstable; urgency=low
 
   * Imap subfolders should work correctly. Actually this

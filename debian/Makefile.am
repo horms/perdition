@@ -27,9 +27,6 @@ EXTRA_DIST = \
 changelog \
 control \
 copyright \
-perdition-bdb.files \
-perdition-bdb.postinst \
-perdition-bdb.prerm \
 perdition-dev.files \
 perdition-ldap.conffiles \
 perdition-ldap.files \
@@ -52,6 +49,7 @@ perdition.postrm \
 perdition.preinst \
 perdition.prerm \
 rules \
+shlibs.local \
 dpkg-checkbuild
 
 clean-local:
