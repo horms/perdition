@@ -169,7 +169,7 @@ int imap4_out_response(
 
   /*Check tag*/
   while(1){
-    if((*q=read_line(in_fd, buf, n))==NULL){
+    if((*q=read_line(in_fd, buf, n, TOKEN_IMAP4))==NULL){
       PERDITION_LOG(LOG_DEBUG, "imap4_out_response: read_line");
       return(-1);
     }

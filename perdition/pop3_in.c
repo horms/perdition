@@ -103,7 +103,7 @@ int pop3_in_get_pw(
   return_pw->pw_name=NULL;
 
   while(1){
-    if((q=read_line(in_fd, NULL, NULL))==NULL){
+    if((q=read_line(in_fd, NULL, NULL, TOKEN_POP3))==NULL){
       PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: read_line");
       break;
     }

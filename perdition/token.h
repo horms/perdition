@@ -60,6 +60,13 @@ typedef struct{
 #define TOKEN_DONT_CARE   (flag_t) 0x03   /* Don't care what token is.
 					     Used for comparisons */
 
+/*
+ * Flags for tokeniser
+ */
+/* #define TOKEN_EOL, defined above */ 
+#define TOKEN_POP3        (flag_t) 0x02
+#define TOKEN_IMAP4       (flag_t) 0x04
+
 #define TOKEN_NO_STRIP    (unsigned char) '\0'
 
 token_t *create_token(void);
@@ -160,10 +167,11 @@ int token_write(const int fd, const token_t *t);
  * pre: fd: file descriptor to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
- *      flag: Flags. If TOKEN_EOL then all characters up to a
- *            '\n' will be read as a token. That is the token
- *            may have spaces.
- *
+ *      flag: Flags. If locical or of TOKEN_EOL then all characters 
+ *            up to a '\n' will be read as a token. That is the token may
+ *            have spaces. If locical or of TOKEN_IMAP4 then spaces inside
+ *            quotes will be treated as literals rather than token
+ *            delimiters.
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored

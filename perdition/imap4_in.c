@@ -103,7 +103,7 @@ int imap4_in_get_pw(
   return_pw->pw_name=NULL;
 
   while(1){
-    if((q=read_line(in_fd, NULL, NULL))==NULL){
+    if((q=read_line(in_fd, NULL, NULL, TOKEN_IMAP4))==NULL){
       PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: read_imap4_line");
       break;
     }

@@ -51,9 +51,12 @@
  * pre: fd: file descriptor to read from
  *      buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
- *      flag: Flags. If TOKEN_EOL then all characters up to a
- *            '\n' will be read as a token. That is the token
- *            may have spaces.
+ *      flag: Flags. Will be passed to token_read().
+ *            If logical or of TOKEN_POP3 (and anything else) then other
+ *            than for the first token read on a line flags will be
+ *            logically ored with TOKEN_EOL before passing to token_read().
+ *            That is, in POP3 mode the second token read may include
+ *            spaces and will cover all characters to the end of the line.
  * post: Token is read from fd into token
  *       If literal_buf is not NULL, and n is not NULL and *n is not 0
  *       Bytes read from fd are copied to literal_buf.

@@ -248,9 +248,11 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  * pre: fd: file descriptor to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
- *      flag: Flags. If TOKEN_EOL then all characters up to a
- *            '\n' will be read as a token. That is the token
- *            may have spaces.
+ *      flag: Flags. If locical or of TOKEN_EOL then all characters 
+ *            up to a '\n' will be read as a token. That is the token may
+ *            have spaces. If locical or of TOKEN_IMAP4 then spaces inside
+ *            quotes will be treated as literals rather than token
+ *            delimiters.
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -283,7 +285,8 @@ token_t *token_read(
   size_t len=0;
   int bytes_read;
   int do_literal;
-  flag_t flag=TOKEN_NONE;
+  flag_t save_flag=TOKEN_NONE;
+  flag_t quoted=0;
 
   extern options_t opt;
 
@@ -303,12 +306,19 @@ token_t *token_read(
 
     switch(c){
       case '\n':
-        flag=TOKEN_EOL;
+        save_flag=TOKEN_EOL;
         goto end_while;
       case '\r':
         break;
+      case '\"':
+	if(flag&TOKEN_IMAP4){
+	  quoted^=1;
+	  PERDITION_LOG(LOG_DEBUG, "token_read: quoted=%d\n", quoted);
+	}
+        buffer[len++]=c;
+	break;
       case ' ':
-        if(!(flag&TOKEN_EOL)){
+        if(!(flag&TOKEN_EOL) && !quoted){
 	  goto end_while;
         }
       default:
@@ -332,7 +342,7 @@ end_while:
     return(NULL);
   }
   memcpy(assign_buffer, buffer, len);
-  token_assign(t, assign_buffer, len, flag);
+  token_assign(t, assign_buffer, len, save_flag);
   return(t);
 }
 
