@@ -248,6 +248,9 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  * pre: fd: file descriptor to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
+ *      flag: Flags. If TOKEN_EOL then all characters up to a
+ *            '\n' will be read as a token. That is the token
+ *            may have spaces.
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -266,7 +269,12 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  * 8 bit clean
  **********************************************************************/
 
-token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
+token_t *token_read(
+  const int fd, 
+  unsigned char *literal_buf, 
+  size_t *n,
+  flag_t flag
+){
   unsigned char buffer[MAX_LINE_LENGTH];
   unsigned char *assign_buffer;
   unsigned char c;
@@ -300,7 +308,9 @@ token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n){
       case '\r':
         break;
       case ' ':
-        goto end_while;
+        if(!(flag&TOKEN_EOL)){
+	  goto end_while;
+        }
       default:
         buffer[len++]=c;
     }

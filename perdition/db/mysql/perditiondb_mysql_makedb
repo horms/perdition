@@ -198,9 +198,9 @@ echo -n "Creating table $dbtable in database $dbname..."
 mysql --user="$dbuser" --password="$dbpw" "$dbname" --host="$dbserver" << _EOF_
 drop table if exists $dbtable;
 create table $dbtable (
-  user char(16) not null primary key, 
-  servername char(255) not null, 
-  port char(8) default null
+  user varchar(128) not null primary key, 
+  servername varchar(255) not null, 
+  port varchar(8) default null
 );
 create index idx${dbtable}_user on $dbtable (user);
 _EOF_
@@ -222,6 +222,6 @@ echo "logged into $dbname"
 echo
 echo "insert into $dbtable values (\"user\", \"servername\", \"port\");"
 echo "where: "
-echo "  user:       name of user. Up to 16 characters. May not be NULL."
-echo "  servername: name of server for user. Up to 256 characters. May not be NULL."
+echo "  user:       name of user. Up to 128 characters. May not be NULL."
+echo "  servername: name of server for user. Up to 255 characters. May not be NULL."
 echo "  port:       port to connect to on server. May be NULL."

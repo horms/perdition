@@ -43,7 +43,46 @@
 #include "daemon.h"
 #include "token.h"
 
-vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n);
+
+/**********************************************************************
+ * read_line
+ * read a line from fd and parse it into a queue of tokens
+ * line is read by making repeated calls to token_read
+ * pre: fd: file descriptor to read from
+ *      buf: buffer to store bytes read from server in
+ *      n: pointer to size_t containing the size of literal_buf
+ *      flag: Flags. If TOKEN_EOL then all characters up to a
+ *            '\n' will be read as a token. That is the token
+ *            may have spaces.
+ * post: Token is read from fd into token
+ *       If literal_buf is not NULL, and n is not NULL and *n is not 0
+ *       Bytes read from fd are copied to literal_buf.
+ * return: token
+ *         NULL on error
+ * Note: If buf is being filled and space is exausted function will
+ *       return what has been read so far. (No buffer overflows today)
+ **********************************************************************/
+
+
+vanessa_queue_t *read_line(
+  const int fd, 
+  unsigned char *buf, 
+  size_t *n,
+  flag_t flag
+);
+
+
+/**********************************************************************
+ * queue_to_string
+ * convert the contents of a queue of tokens into a string
+ * a space ( ) is inserted in the resultant string between each
+ * token
+ * pre: q queue to dump as a string
+ * post: a string is allocated and the quie is dumped to the string
+ *       the string is '\0' terminated
+ * return: allocated string
+ *         NULL on error
+ **********************************************************************/
 
 char *queue_to_string(vanessa_queue_t *q);
 

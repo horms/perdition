@@ -350,7 +350,7 @@ int main (int argc, char **argv){
       PERDITION_LOG(LOG_DEBUG, "main: protocol->in_get_pw");
       PERDITION_LOG(
 	LOG_ERR, 
-	"Fatal Error reading authentication information from client. %s ",
+	"Fatal Error reading authentication information from client. %s. "
 	"Exiting child.", 
 	from_to_str
       );

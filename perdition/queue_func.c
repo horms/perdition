@@ -36,6 +36,9 @@
  * pre: fd: file descriptor to read from
  *      buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
+ *      flag: Flags. If TOKEN_EOL then all characters up to a
+ *            '\n' will be read as a token. That is the token
+ *            may have spaces.
  * post: Token is read from fd into token
  *       If literal_buf is not NULL, and n is not NULL and *n is not 0
  *       Bytes read from fd are copied to literal_buf.
@@ -46,7 +49,12 @@
  **********************************************************************/
 
 
-static vanessa_queue_t *__read_line(const int fd, unsigned char *buf, size_t *n){
+static vanessa_queue_t *__read_line(
+  const int fd, 
+  unsigned char *buf, 
+  size_t *n,
+  flag_t flag
+){
   token_t *t=NULL;
   size_t buf_offset=0;
   size_t buf_remaining;
@@ -69,7 +77,12 @@ static vanessa_queue_t *__read_line(const int fd, unsigned char *buf, size_t *n)
   }
  
   do{
-    if((t=token_read(fd,(buf==NULL)?NULL:buf+buf_offset,&buf_remaining))==NULL){
+    if((t=token_read(
+      fd,
+      (buf==NULL)?NULL:buf+buf_offset,
+      &buf_remaining,
+      flag
+    ))==NULL){
       PERDITION_LOG(LOG_DEBUG, "__read_line: token_read");
       vanessa_queue_destroy(q);
       return(NULL);
@@ -93,7 +106,12 @@ static vanessa_queue_t *__read_line(const int fd, unsigned char *buf, size_t *n)
   return(q);
 }
 
-vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
+vanessa_queue_t *read_line(
+  const int fd, 
+  unsigned char *buf, 
+  size_t *n,
+  flat_t flag
+){
   int do_literal=0;
   char *local_buf;
   size_t local_n;
@@ -119,7 +137,7 @@ vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
       local_n=(*n)-1;
     }
 
-    if((local_q=__read_line(fd, local_buf, &local_n))==NULL){
+    if((local_q=__read_line(fd, local_buf, &local_n, flag))==NULL){
       PERDITION_DEBUG("read_line: __read_line");
       if(!do_literal){
         free(local_buf);
@@ -140,7 +158,7 @@ vanessa_queue_t *read_line(const int fd, unsigned char *buf, size_t *n){
   }
 
   /* Fast Path :) */
-  return(__read_line(fd, buf, n));
+  return(__read_line(fd, buf, n, flag));
 
 }
 

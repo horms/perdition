@@ -160,6 +160,10 @@ int token_write(const int fd, const token_t *t);
  * pre: fd: file descriptor to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
+ *      flag: Flags. If TOKEN_EOL then all characters up to a
+ *            '\n' will be read as a token. That is the token
+ *            may have spaces.
+ *
  * post: Token is read from fd into token
  *       ' ' will terminate a token
  *       '\r' is ignored
@@ -178,8 +182,12 @@ int token_write(const int fd, const token_t *t);
  * 8 bit clean
  **********************************************************************/
 
-token_t *token_read(const int fd, unsigned char *literal_buf, size_t *n);
-
+token_t *token_read(
+  const int fd, 
+  unsigned char *literal_buf, 
+  size_t *n,
+  flag_t flag
+);
 
 /**********************************************************************
  * token_is_eol

@@ -120,7 +120,7 @@ int options(int argc, char **argv, flag_t f){
     {"no_bind_banner",              'B', POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b', POPT_ARG_STRING, NULL, 'b'},
     {"connection_logging",          'C', POPT_ARG_NONE,   NULL, 'C'},
-    {"client_server_specification", 'c', POPT_ARG_STRING, NULL, 'c'},
+    {"client_server_specification", 'c', POPT_ARG_NONE,   NULL, 'c'},
     {"domain_delimiter",            'D', POPT_ARG_STRING, NULL, 'D'},
     {"debug",                       'd', POPT_ARG_NONE,   NULL, 'd'},
     {"log_facility",                'F', POPT_ARG_STRING, NULL, 'F'},

@@ -22,7 +22,7 @@
 .\" 02111-1307  USA
 .\"
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH PERDITIONDB 5 "8th January 2001"
+.TH PERDITIONDB 5 "3rd May 2001"
 .SH NAME
 perditiondb \- perdition modular popmap support
 .SH DESCRIPTION
@@ -298,29 +298,46 @@ The library will connect to a MySQL database and do a query on a table
 expected to have the columns:
 .P
 .nf
-+------------+-----------+------+-----+---------+-------+
-| Field      | Type      | Null | Key | Default | Extra |
-+------------+-----------+------+-----+---------+-------+
-| user       | char(16)  |      | PRI |         |       |
-| servername | char(255) |      |     |         |       |
-| port       | char(8)   | YES  |     | NULL    |       |
-+------------+-----------+------+-----+---------+-------+
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| user       | varchar(128) |      | PRI |         |       |
+| servername | varchar(255) |      |     |         |       |
+| port       | varchar(8)   | YES  |     | NULL    |       |
++------------+--------------+------+-----+---------+-------+
 .fi
 .P
-While the names of the fields - other than "user" - are not important the
-order is.  All fields are literal character strings, the allowed length of
-the strings is not important. The first field, in this case the user must
-be a primary key and an exact match will be made of this field from the
-username supplied by the user.
+The fields may be in a different order and other, non-perdition fields may
+also be present in this table. The names of the columns can be other than
+their above defaults by using the library option string (described below).
+All fields must be literal character strings. The allowed length of the
+strings is not important, however it is reccomended that the length of the
+user field be kept under 128 to avoid exceeding perdition's internal query
+length limit, PERDITIONDB_MYSQL_QUERY_LENGTH which is by default 256. This
+may be altered by recompiling peridtion with an alternate value for this.
+The user field must also be a unique index and an exact match will be made
+of this field from the username supplied by the user.
 .P
 The servername is of the form [<username><domain_delimiter>]<host>, where
-host is the hostname or IP address to connect to and username, if specified
-is the username to use when connecting to host.
+host is the hostname or IP address to connect to and username, if
+specified, is the username to use when connecting to host.
+.P
+The port is the TCP port to use when connecting to the server. This field
+can be specified if the backend server answers on a non-standard port
+(standard ports being 110 for POP3 and 143 for IMAP). Only specifiy this
+field in the database if you intend to use POP3 or IMAP exclusively as it
+will try to use this port no matter what protocol is being used. If POP3
+and IMAP are both being used on non-standard backend server ports, those
+ports can be specified with the -p argument when you invoke the perdition
+executable (this is a global definition, but should be adequate for most
+installations).
 .P
 The database is accesed each time perdition needs to find the host and port
 for a user.  The default database values are as follows:
 .P
 database host:     localhost
+.br
+database port:     (MySQL Client Default; usually 3306)
 .br
 database name:     dbPerdition
 .br
@@ -329,17 +346,35 @@ database table:    tblPerdition
 database user:     perdition
 .br
 database password: perdition
+.br
+user column:       user
+.br
+server column:     servername
+.br
+port column:       port
+.br
 .P
-A script, perditiondb_mysql_makedb is provided to initialise such a
+A script, perditiondb_mysql_makedb, is provided to initialise such a
 database.  Alternate values can be set using the -m|--map_library_opt
 command line option or configuration file directive with an argument of the
 form:
 .P
-[<dbhost>[:<dbname>[:<dbtable>[:<dbuser>[:<dbpwd>]]]]]
+<dbhost>[:<dbport>[:<dbname>[:<dbtable>[:<dbuser>[:<dbpwd>[:<dbsrvcol>[:<dbusercol>[:<dbportcol>]]]]]]]]
 .P
 E.g.
 .P
-perdition -M some.host.com:aDb:bTable:cuser:horrage
+perdition -m some.host.com:3306:aDb:bTable:cUser:dPassword:eSrvCol:fUserCol:gPortCol
+.P
+Arguments may be omitted from the end of the option string with no consequence other than
+that the default value for any omitted argument will be used. Arguments may not be omitted if
+any argument to its right is defined. Someone seeking to set only the server and password
+to something other than the default might attempt the following:
+.P
+perdition -m some.host.com:::::OddPassword
+.P
+This will not work. It will set the server and password to the values shown, but all arguments
+in between will be set as NULL rather than the default. In the author's opinion it is always best
+to specify \fBall\fP of the arguments, whether default or not, to avoid confusion or ambiguity.
 .SH POSTGRESQL
 .P
 This is a port of the MySQL library to PostgreSQL, The library can be used
@@ -416,3 +451,12 @@ Wim Bonis <bonis@solution\-service.de>
 Arvid Requate <arvid@Team.OWL\-Online.DE>
 .br
 Mikolaj J. Habryn <dichro@rcpt.to>
+.br
+Ronny Cook <ronny@asiaonline.net>
+.br
+Geoff Mitchell <g.mitchell@videonetworks.com>
+.br
+Willi Langenberger <wlang@wu-wien.ac.at>
+.br
+Matt Prigge <mprigge@pobox.com>
+
