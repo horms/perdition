@@ -48,7 +48,7 @@ int perdition_conv(
   if((
     *response=(struct pam_response *)malloc(sizeof(struct pam_response))
   )==NULL){
-    PERDITION_LOG(LOG_DEBUG, "perdition_conv: malloc: %s", strerror(errno));
+    PERDITION_DEBUG_ERRNO("malloc");
     return(PAM_CONV_ERR);
   }
 
@@ -58,7 +58,7 @@ int perdition_conv(
     pass=NULL;
   }
   else if((pass=strdup((char *)appdata_ptr))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "perdition_conv: strdup: %s", strerror(errno));
+    PERDITION_DEBUG("strdup", errno);
     return(PAM_CONV_ERR);
   }
 
@@ -74,9 +74,8 @@ int do_pam_authentication(
   conv_struct.appdata_ptr=(void *)pass;
   pam_retval = pam_set_item(pamh, PAM_CONV, (void *) &conv_struct);
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_LOG(
-      LOG_DEBUG, 
-      "do_pam_authentication: pam_set_item: PAM_CONV: %s", 
+    PERDITION_DEBUG(
+      "pam_set_item: PAM_CONV: %s", 
       pam_strerror(pamh, pam_retval)
     );
     return(-1);
@@ -84,28 +83,19 @@ int do_pam_authentication(
 
   pam_retval = pam_set_item(pamh, PAM_USER, user);
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_LOG(
-      LOG_DEBUG, 
-      "do_pam_authentication: pam_set_item: %s", 
-      pam_strerror(pamh, pam_retval)
-    );
+    PERDITION_DEBUG("pam_set_item: %s", pam_strerror(pamh, pam_retval));
     return(-1);
   }
 
   pam_retval = pam_authenticate(pamh, 0);  /* is user really user? */
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_LOG(
-      LOG_DEBUG, 
-      "do_pam_authentication: pam_authenticate: %s", 
-      pam_strerror(pamh, pam_retval)
-    );
+    PERDITION_DEBUG("pam_authenticate: %s", pam_strerror(pamh, pam_retval));
     return(-1);
   }
 
   pam_retval = pam_acct_mgmt(pamh, 0);     /* permitted access? */
   if (pam_retval != PAM_SUCCESS) {
-    PERDITION_LOG(
-      LOG_DEBUG, 
+    PERDITION_DEBUG(
       "do_pam_authentication: pam_acct_mgmt: %s", 
       pam_strerror(pamh, pam_retval)
     );
@@ -118,10 +108,7 @@ int do_pam_authentication(
 int do_pam_end(pam_handle_t *pamh, int default_return){
   pam_retval=pam_end(pamh,pam_retval);  /* close Linux-PAM */
   if (pam_retval != PAM_SUCCESS) {   /* close Linux-PAM */
-    PERDITION_LOG(LOG_DEBUG, 
-      "do_pam_end: pam_end: %s", 
-      pam_strerror(pamh, pam_retval)
-    );
+    PERDITION_DEBUG("do_pam_end: pam_end: %s", pam_strerror(pamh, pam_retval));
     pamh = NULL;
     return(EX_PAM_ERROR);
   }

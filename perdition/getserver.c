@@ -127,7 +127,7 @@ server_port_t *getserver(
   ){
     *popserver='\0';
     if((server_port=server_port_create())==NULL){
-      PERDITION_LOG(LOG_DEBUG, "getserver: server_port_create");
+      PERDITION_DEBUG("server_port_create");
       return(NULL);
     }
     server_port_strn_assign(
@@ -141,12 +141,12 @@ server_port_t *getserver(
     status=dbserver_get(key_str,opt.map_library_opt,&content_str,&content_len);
     if(status<0){
       if(status!=-2){
-        PERDITION_LOG(LOG_DEBUG, "getserver: dbserver_get");
+        PERDITION_DEBUG("dbserver_get");
       }
       return(NULL);
     }
     if((server_port=server_port_create())==NULL){
-      PERDITION_LOG(LOG_DEBUG, "getserver: server_port_create");
+      PERDITION_DEBUG("server_port_create");
       return(NULL);
     }
     server_port=server_port_strn_assign(server_port, content_str, content_len);
@@ -186,7 +186,7 @@ int getserver_openlib(
     if(opt.debug){
       fprintf(stderr, "dlopen failed: %s\n", error);
     }
-    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlopen: %s", error);
+    PERDITION_DEBUG("dlopen: %s", error);
     return(-1);
   }
 
@@ -195,7 +195,7 @@ int getserver_openlib(
     if(opt.debug){
       fprintf(stderr, "Could not find symbol dbserver_get: %s", error);
     }
-    PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dlsym: %s", error);
+    PERDITION_DEBUG("dlsym: %s", error);
     dlclose(*handle_return);
     return(-1);
   }
@@ -205,7 +205,7 @@ int getserver_openlib(
       if(opt.debug){
         fprintf(stderr, "Error running dbserver_init: %s\n", error);
       }
-      PERDITION_LOG(LOG_DEBUG, "getserver_openlib: dbserver_init: %s", error);
+      PERDITION_DEBUG("dbserver_init: %s", error);
       dlclose(*handle_return);
       return(-1);
     }
@@ -233,7 +233,7 @@ int getserver_closelib(void *handle){
   dbserver_fini=dlsym(handle, "dbserver_fini");
   if((error=dlerror())==NULL){
     if(dbserver_fini()){
-      PERDITION_LOG(LOG_DEBUG, "getserver_closelib: dbserver_fini: %s", error);
+      PERDITION_DEBUG("dbserver_fini: %s", error);
       status=-1;
     }
   }

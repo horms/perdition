@@ -23,8 +23,9 @@ From Mikolaj J. Habryn
 * Support for non-blocking connects to multiple back end servers
   and using the first to respond
 
-From Nathan Neulinger
-* Add SSL IMAP and POP support
+* Add TLS IMAP and POP support
+* Document how to create certificate and key files
+* Update debian/ and perdition.spec.in to reflect SSL changes
 
 
 From Stephen Lombard

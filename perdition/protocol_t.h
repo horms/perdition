@@ -49,7 +49,7 @@
 struct protocol_t_struct {
   char **type;
   int (*write)(
-    const int, 
+    io_t *io,
     const flag_t, 
     const token_t *, 
     const char *, 
@@ -58,23 +58,18 @@ struct protocol_t_struct {
   char *greeting_string;
   char *quit_string;
   char *one_time_tag;
-  int (*in_get_pw)(const int, const int, struct passwd *return_pw, token_t **);
+  int (*in_get_pw)(io_t *io, struct passwd *return_pw, token_t **);
   int (*out_authenticate)(
-    const int, 
-    const int, 
+    io_t *io,
     const struct passwd *,
     const token_t *tag,
     const struct protocol_t_struct *,
     unsigned char *buf,
     size_t *n
   );
-  int (*in_authenticate)(
-    const struct passwd *pw,
-    const int err_fd,
-    const token_t *tag
-  );
+  int (*in_authenticate)(const struct passwd *pw, io_t *io, const token_t *tag);
   int (*out_response)(
-    const int, 
+    io_t *io,
     const char *, 
     const token_t *,
     vanessa_queue_t **,

@@ -34,13 +34,20 @@
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- *
- * Return 1 on success, 0 on failure and -1 on error.
+ * pre: pw: passwd structure with username and password to authenticate
+ *      io: io_t to write errors to
+ *      tag: Tag to use in (Error) responses
+ * post: An atempt is made to authenticate the user locallay
+ *       If this fails then an tagged response is written to io
+ *       Else no output is made
+ * return: 1 if authentication succedes
+ *         0 if authentication fails
+ *         -1 if an error occurs
  **********************************************************************/
 
 int imap4_in_authenticate(
   const struct passwd *pw, 
-  const int err_fd,
+  io_t *io,
   const token_t *tag 
 ){
   pam_handle_t *pamh=NULL;
@@ -51,14 +58,14 @@ int imap4_in_authenticate(
   if((
      pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
   )!=PAM_SUCCESS){
-    PERDITION_LOG(LOG_DEBUG, "main: pam_start: %s", strerror(errno));
+    PERDITION_DEBUG_ERRNO("pam_start");
     do_pam_end(pamh, EX_PAM_ERROR);
     return(-1);
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(imap4_write(err_fd,NULL_FLAG,tag,IMAP4_NO,"Authentication failure")<0){
-      PERDITION_LOG(LOG_DEBUG, "main: imap4_write");
+    if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, "Authentication failure")<0){
+      PERDITION_DEBUG("imap4_write");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
     }
@@ -77,8 +84,7 @@ int imap4_in_authenticate(
  * imap4_in_get_pw
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
- * Pre: in_fd: file descriptor to read from
- *      out_fd: file descriptor to write to
+ * Pre: io: io_t to read from and write to
  *      return_pw: pointer to an allocated struct pw, 
  *                 where username and password
  *                 will be returned if one is found
@@ -89,12 +95,7 @@ int imap4_in_authenticate(
  *         -1 on error
  **********************************************************************/
 
-int imap4_in_get_pw(
-  const int in_fd, 
-  const int out_fd,
-  struct passwd *return_pw,
-  token_t **return_tag
-){
+int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
   vanessa_queue_t *q=NULL;
   token_t *tag=NULL;
   token_t *t=NULL;
@@ -103,26 +104,26 @@ int imap4_in_get_pw(
   return_pw->pw_name=NULL;
 
   while(1){
-    if((q=read_line(in_fd, NULL, NULL, TOKEN_IMAP4))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: read_imap4_line");
+    if((q=read_line(io, NULL, NULL, TOKEN_IMAP4))==NULL){
+      PERDITION_DEBUG("read_imap4_line");
       break;
     }
 
     if((q=vanessa_queue_pop(q, (void **)&tag))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop 1");
+      PERDITION_DEBUG("vanessa_queue_pop 1");
       break;
     }
 
     if(token_is_eol(tag)){
       if(token_is_null(tag)){
-        if(imap4_write(out_fd, NULL_FLAG, NULL, IMAP4_BAD, "Null command")<0){
-          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_write 1");
+        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, "Null command")<0){
+          PERDITION_DEBUG("imap4_write 1");
           goto loop;
         }
       }
       else {
-        if(imap4_write(out_fd, NULL_FLAG, NULL, IMAP4_BAD, "Missing command")){
-          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_write 2");
+        if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BAD, "Missing command")){
+          PERDITION_DEBUG("imap4_write 2");
           goto loop;
         }
       }
@@ -130,37 +131,37 @@ int imap4_in_get_pw(
     }
 
     if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop 2");
+      PERDITION_DEBUG("vanessa_queue_pop 2");
       t=NULL;
       break;
     }
 
     if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
+      PERDITION_DEBUG("token_to_string");
       break;
     }
      
     if(strcasecmp(command_string, "NOOP")==0){
-      if(imap4_in_noop(out_fd, tag)){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_in_noop");
+      if(imap4_in_noop_cmd(io, tag)){
+        PERDITION_DEBUG("imap4_in_noop");
         break;
       }
     }
     else if(strcasecmp(command_string, "CAPABILITY")==0){
-      if(imap4_in_capability(out_fd, tag)){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_in_capability");
+      if(imap4_in_capability_cmd(io, tag)){
+        PERDITION_DEBUG("imap4_in_capability");
         break;
       }
     }
     else if(strcasecmp(command_string, "AUTHENTICATE")==0){
-      if(imap4_in_authenticate_cmd(out_fd, tag)){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_in_noop");
+      if(imap4_in_authenticate_cmd(io, tag)){
+        PERDITION_DEBUG("imap4_in_noop");
         break;
       }
     }
     else if(strcasecmp(command_string, "LOGOUT")==0){
-      if(imap4_in_logout(out_fd, tag)){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_in_noop");
+      if(imap4_in_logout_cmd(io, tag)){
+        PERDITION_DEBUG("imap4_in_noop");
         break;
       }
       vanessa_queue_destroy(q);
@@ -171,13 +172,13 @@ int imap4_in_get_pw(
       if(vanessa_queue_length(q)!=2 && vanessa_queue_length(q)!=1){
         sleep(PERDITION_ERR_SLEEP);
         if(imap4_write(
-          out_fd,
+          io,
           NULL_FLAG,
           tag,
           IMAP4_BAD,
           "Try LOGIN <username> <passwd>"
         )<0){
-          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_write");
+          PERDITION_DEBUG("imap4_write");
           break;
         }
         goto loop;
@@ -185,24 +186,24 @@ int imap4_in_get_pw(
 
       token_destroy(&t);
       if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
+        PERDITION_DEBUG("vanessa_queue_pop");
 	t=NULL;
         break;
       }
       if((return_pw->pw_name=token_to_string(t, '\"'))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
+        PERDITION_DEBUG("token_to_string");
         break;
       }
 
       token_destroy(&t);
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
-          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: vanessa_queue_pop");
+          PERDITION_DEBUG("vanessa_queue_pop");
 	  tag=NULL;
           break;
         }
         if((return_pw->pw_passwd=token_to_string(t, '\"'))==NULL){
-          PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: token_to_string");
+          PERDITION_DEBUG("token_to_string");
           free(return_pw->pw_name);
           break;
         }
@@ -217,8 +218,8 @@ int imap4_in_get_pw(
     }
     else {
       sleep(PERDITION_ERR_SLEEP);
-      if(imap4_write(out_fd,NULL_FLAG,tag,IMAP4_BAD,"Unrecognised command")<0){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_get_pw: imap4_write");
+      if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, "Unrecognised command")<0){
+        PERDITION_DEBUG("imap4_write");
         break;
       }
     }
@@ -242,16 +243,17 @@ int imap4_in_get_pw(
 
 
 /**********************************************************************
- * imap4_in_noop
- * Do a noop - doesn't do anything special at the moment
- * Pre: fd: file descriptor to write to
- * Return 1 on success
- *        0 otherwise
+ * imap4_in_noop_cmd
+ * Do a response to a NOOP command
+ * pre: io: io_t to write to
+ * post: Taged response to NOOP is written to io
+ * return: 0 on success
+ *         -1 otherwise
  **********************************************************************/
 
-int imap4_in_noop(const int fd, const token_t *tag){
-  if(imap4_write(fd, NULL_FLAG, tag, IMAP4_OK, "NOOP")<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_noop: imap4_write");
+int imap4_in_noop_cmd(io_t *io, const token_t *tag){
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, "NOOP")<0){
+    PERDITION_DEBUG("imap4_write");
     return(-1);
   }
 
@@ -260,21 +262,23 @@ int imap4_in_noop(const int fd, const token_t *tag){
 
 
 /**********************************************************************
- * imap4_in_logout
- * Do a response to a logout
- * Pre: fd: file descriptor to write to
- * Return 1 on success
- *        0 otherwise
+ * imap4_in_logout_cmd
+ * Do a response to a LOGOUT command
+ * pre: io: io_t to write to
+ * post: An untagged response advising of logout is written to io
+ *       A tagged response to the LOGGOUT is written to io
+ * return 0 on success
+ *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_logout(const int fd, const token_t *tag){
-  if(imap4_write(fd, NULL_FLAG, NULL, "BYE", "IMAP4 server loging out")<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_logout: imap4_write 1");
+int imap4_in_logout_cmd(io_t *io, const token_t *tag){
+  if(imap4_write(io, NULL_FLAG, NULL, "BYE", "IMAP4 server loging out")<0){
+    PERDITION_DEBUG("imap4_write 1");
     return(-1);
   }
 
-  if(imap4_write(fd, NULL_FLAG, tag, IMAP4_OK, "LOGOUT")<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_logout: imap4_write 2");
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, "LOGOUT")<0){
+    PERDITION_DEBUG("imap4_write 2");
     return(-1);
   }
 
@@ -283,21 +287,23 @@ int imap4_in_logout(const int fd, const token_t *tag){
 
 
 /**********************************************************************
- * imap4_in_capability
- * Do a response to a capability command
- * Pre: fd: file descriptor to write to
- * Return 1 on success
- *        0 otherwise
+ * imap4_in_capability_cmd
+ * Do a response to a CAPABILITY command
+ * pre: io: io_t to write to
+ * post: An untagged response giving capabilities is written to io
+ *       A tagged response to the CAPABILITY command is written to io
+ * return 0 on success
+ *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_capability(const int fd, const token_t *tag){
-  if(imap4_write(fd, NULL_FLAG, NULL, "CAPABILITY", IMAP4_CAPABILITIES)<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_logout: imap4_write 1");
+int imap4_in_capability_cmd(io_t *io, const token_t *tag){
+  if(imap4_write(io, NULL_FLAG, NULL, "CAPABILITY", IMAP4_CAPABILITIES)<0){
+    PERDITION_DEBUG("imap4_write 1");
     return(-1);
   }
 
-  if(imap4_write(fd, NULL_FLAG, tag, IMAP4_OK, "CAPABILITY")<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_logout: imap4_write 2");
+  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, "CAPABILITY")<0){
+    PERDITION_DEBUG("imap4_write 2");
     return(-1);
   }
 
@@ -307,21 +313,22 @@ int imap4_in_capability(const int fd, const token_t *tag){
 
 /**********************************************************************
  * imap4_in_authenticate_cmd
- * Do a response to a capability command
- * Pre: fd: file descriptor to write to
- * Return 1 on success
- *        0 otherwise
+ * Do a response to an AUTHENTICATE command
+ * pre: io: io_t to write to
+ * post: A tagged error to the AUTHENTICATE command is given
+ * return 0 on success
+ *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_authenticate_cmd(const int fd, const token_t *tag){
+int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
   if(imap4_write(
-    fd, 
+    io, 
     NULL_FLAG,
     tag, 
     IMAP4_NO, 
     "AUTHENTICATE mechchanism not supported"
   )<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_logout: imap4_write 2");
+    PERDITION_DEBUG("imap4_write 2");
     return(-1);
   }
 

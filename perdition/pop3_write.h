@@ -39,8 +39,22 @@
 #define POP3_ERR "-ERR"
 #define POP3_DEFAULT_PORT "110"
 
+
+/**********************************************************************
+ * pop3_write
+ * Write a message of the form [<type> ]<string>
+ * Pre: io: io_t to write to
+ *      flag: flag to pass to str_write, as per str.h
+ *      tag: ignored
+ *      type: type of message, POP3_OK or POP3_ERR
+ *            if NULL then only string is written
+ *      string: mesage to display
+ * Return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+      
 int pop3_write(
-  const int fd, 
+  io_t *io,
   const flag_t flag,
   const token_t *tag,
   const char *type, 

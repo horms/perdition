@@ -2,9 +2,6 @@
  * perdition_types.h                                     September 1999
  * Horms                                             horms@vergenet.net
  *
- * NB: perdition_tupes.h (this file) and not perdition.h should
- *     be included by other source files
- *
  * perdition
  * Mail retrieval proxy server
  * Copyright (C) 1999-2001  Horms
@@ -47,5 +44,9 @@ typedef long int flag_t;
 #define PERDITION_USTRING unsigned char *
 
 #define MAX_LINE_LENGTH 4096
+
+#define PERDITION_NONE   (flag_t) 0x0
+#define PERDITION_CLIENT (flag_t) 0x1
+#define PERDITION_SERVER (flag_t) 0x2
 
 #endif

@@ -28,6 +28,15 @@
 #ifndef SYSLOG_BERT
 #define SYSLOG_BERT
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
+#ifdef WITH_SSL_SUPPORT
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#endif /* WITH_SSL_SUPPORT */
+
 #include <vanessa_logger.h>
 #include <syslog.h>
 #include <string.h>
@@ -36,13 +45,35 @@
 #define LOG_IDENT "perdition"
 
 extern vanessa_logger_t *perdition_vl;
+extern int errno;
 
 #define PERDITION_LOG(priority, fmt, args...) \
   vanessa_logger_log(perdition_vl, priority, fmt, ## args);
 
-#define PERDITION_DEBUG(s) PERDITION_LOG(LOG_DEBUG, s);
+#define PERDITION_INFO(fmt, args...) \
+  PERDITION_LOG(LOG_INFO, fmt, ## args);
 
-#define PERDITION_DEBUG_ERRNO(s, e) \
-  PERDITION_LOG(LOG_DEBUG, "%s: %s", s, strerror(e));
+#define PERDITION_ERR(fmt, args...) \
+  PERDITION_LOG(LOG_ERR, fmt, ## args);
+
+#define PERDITION_DEBUG(fmt, args...) \
+  PERDITION_LOG(LOG_DEBUG, __FUNCTION__ ": " fmt, ## args);
+
+#define PERDITION_DEBUG_ERRNO(s) \
+  PERDITION_LOG(LOG_DEBUG, "%s: %s: %s", __FUNCTION__, s, strerror(errno));
+
+#ifdef WITH_SSL_SUPPORT
+#define PERDITION_DEBUG_SSL_ERR(fmt, args...) \
+  { \
+    unsigned long e; \
+    while((e=ERR_get_error())){ \
+      PERDITION_DEBUG("%s", ERR_error_string(e, NULL)); \
+    } \
+  } \
+  PERDITION_DEBUG(fmt, ## args);
+#endif /* WITH_SSL_SUPPORT */
+
+
+
 
 #endif

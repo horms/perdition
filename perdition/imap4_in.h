@@ -49,25 +49,95 @@
 
 
 #ifdef WITH_PAM_SUPPORT
+/**********************************************************************
+ * imap4_in_authenticate
+ * Authenticate an incoming pop session
+ * Not really needed if we are going to authenticate with an upstream
+ * pop server but it may be useful in some cases
+ * pre: pw: passwd structure with username and password to authenticate
+ *      io: io_t to write errors to
+ *      tag: Tag to use in (Error) responses
+ * post: An atempt is made to authenticate the user locallay
+ *       If this fails then an tagged response is written to io
+ *       Else no output is made
+ * return: 1 if authentication succedes
+ *         0 if authentication fails
+ *         -1 if an error occurs
+ **********************************************************************/
+
 int imap4_in_authenticate(
   const struct passwd *pw, 
-  const int out_fd,
-  const token_t *tag
+  io_t *io,
+  const token_t *tag 
 );
-#endif
+#endif /* WITH_PAM_SUPPORT */
 
-int imap4_in_get_pw(
-  const int in_fd, 
-  const int out_fd,
-  struct passwd *return_pw,
-  token_t **return_tag
-);
-  
-int imap4_in_noop(const int fd, const token_t *tag);
 
-int imap4_in_capability(const int fd, const token_t *tag);
+/**********************************************************************
+ * imap4_in_get_pw
+ * read USER and PASS commands and return them in a struct passwd *
+ * allocated by this function
+ * Pre: io: io_t to read from and write to
+ *      return_pw: pointer to an allocated struct pw, 
+ *                 where username and password
+ *                 will be returned if one is found
+ *      return_tag: pointer to return clients tag
+ * Post: pw_return structure with pw_name and pw_passwd set
+ * Return: 0 on success
+ *         1 if user quits (LOGOUT command)
+ *         -1 on error
+ **********************************************************************/
 
-int imap4_in_authenticate_cmd(const int fd, const token_t *tag);
+int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag);
 
-int imap4_in_logout(const int fd, const token_t *tag);
+
+/**********************************************************************
+ * imap4_in_noop_cmd
+ * Do a response to a NOOP command
+ * pre: io: io_t to write to
+ * post: Taged response to NOOP is written to io
+ * return: 0 on success
+ *         -1 otherwise
+ **********************************************************************/
+
+int imap4_in_noop_cmd(io_t *io, const token_t *tag);
+
+
+/**********************************************************************
+ * imap4_in_logout_cmd
+ * Do a response to a LOGOUT command
+ * pre: io: io_t to write to
+ * post: An untagged response advising of logout is written to io
+ *       A tagged response to the LOGGOUT is written to io
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_logout_cmd(io_t *io, const token_t *tag);
+
+
+/**********************************************************************
+ * imap4_in_capability_cmd
+ * Do a response to a CAPABILITY command
+ * pre: io: io_t to write to
+ * post: An untagged response giving capabilities is written to io
+ *       A tagged response to the CAPABILITY command is written to io
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_capability_cmd(io_t *io, const token_t *tag);
+
+
+/**********************************************************************
+ * imap4_in_authenticate_cmd
+ * Do a response to an AUTHENTICATE command
+ * pre: io: io_t to write to
+ * post: A tagged error to the AUTHENTICATE command is given
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_authenticate_cmd(io_t *io, const token_t *tag);
+
 #endif

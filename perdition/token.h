@@ -148,7 +148,7 @@ void token_destroy(token_t **t);
 /**********************************************************************
  * token_write
  * write a token to fd
- * pre: fd: File descriptor to write to
+ * pre: io: io_t to write to
  *      token: token to write
  * post: contents of token is written to fd using 
  *       vanessa_socket_pipe_write_bytes
@@ -158,13 +158,13 @@ void token_destroy(token_t **t);
  * 8 bit clean
  **********************************************************************/
 
-int token_write(const int fd, const token_t *t);
+int token_write(io_t *io, const token_t *t);
 
 
 /**********************************************************************
  * token_read
  * read a token in from fd
- * pre: fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. If locical or of TOKEN_EOL then all characters 
@@ -191,7 +191,7 @@ int token_write(const int fd, const token_t *t);
  **********************************************************************/
 
 token_t *token_read(
-  const int fd, 
+  io_t *io,
   unsigned char *literal_buf, 
   size_t *n,
   flag_t flag

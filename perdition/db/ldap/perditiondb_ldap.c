@@ -104,7 +104,7 @@ int dbserver_init(char *options_str) {
     if (opt.debug) {
       fprintf(stderr, "dbserver_init: malloc\n");
     }
-    PERDITION_LOG(LOG_DEBUG, "dbserver_init: malloc");
+    PERDITION_DEBUG_ERRNO("malloc");
     return(-1);
   }
 
@@ -123,7 +123,7 @@ int dbserver_init(char *options_str) {
     if(opt.debug){
       fprintf(stderr, "dbserver_init: not an LDAP URL\n");
     }
-    PERDITION_LOG(LOG_DEBUG, "dbserver_init: not an LDAP URL");
+    PERDITION_DEBUG("not an LDAP URL");
     free(tmpstr);
     return(-1);
   }
@@ -132,7 +132,7 @@ int dbserver_init(char *options_str) {
     if(opt.debug){
       fprintf(stderr, "dbserver_init: ldap_url_parse\n");
     }
-    PERDITION_LOG(LOG_DEBUG, "dbserver_init: ldap_url_parse");
+    PERDITION_DEBUG("ldap_url_parse");
     free(tmpstr);
     return(-1);
   }
@@ -201,19 +201,19 @@ int dbserver_get(
 
   /* Open LDAP connection */
   if ((connection = ldap_open(ludp->lud_host, ludp->lud_port)) == NULL){
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: ldap_open");
+    PERDITION_DEBUG("ldap_open");
     return(-1);
   }
   if ((msgid = ldap_bind_s(connection, NULL, NULL,
        LDAP_AUTH_SIMPLE)) != LDAP_SUCCESS){
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: ldap_bind");
+    PERDITION_DEBUG("ldap_bind");
     return(-1);
   }
 
   /* Build a filter string */
   if ((filter = (char *)malloc(strlen(key_str) +
        strlen(ludp->lud_filter))) == NULL) {
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: filter malloc");
+    PERDITION_DEBUG_ERRNO("filter malloc");
     ldap_unbind_s(connection);
     return(-3);
   }
@@ -230,7 +230,7 @@ int dbserver_get(
 
   /* See what we got back - we only bother with the first entry */
   if ((mptr = ldap_first_entry(connection, res)) == NULL) {
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: ldap_first_entry");
+    PERDITION_DEBUG("ldap_first_entry");
     ldap_unbind_s(connection);
     return(-2);
   }
@@ -240,7 +240,7 @@ int dbserver_get(
 
   /* Store the attributes somewhere */
   if ((ldap_returns = (char **)malloc(attrcount * sizeof(char *))) == NULL) {
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: ldap_returns malloc");
+    PERDITION_DEBUG_ERRNO("ldap_returns malloc");
     ldap_unbind_s(connection);
     return(-3);
   }
@@ -272,7 +272,7 @@ int dbserver_get(
   *len_return += attrcount;
 
   if ((*str_return = (char *)malloc(*len_return)) == NULL){
-    PERDITION_LOG(LOG_DEBUG, "db_server_get: servername malloc");
+    PERDITION_DEBUG_ERRNO("servername malloc");
     ldap_value_free(bv_val);
     return(-3);
   }

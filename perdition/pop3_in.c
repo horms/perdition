@@ -34,13 +34,20 @@
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- *
- * Return 1 on success, 0 on failure and -1 on error.
+ * pre: pw: passwd struct with username and password to authenticate
+ *      io: io_t to write any errors to
+ *      tag: ignored
+ * post: An attemped is made to authenticate the user locally.
+ *       If this fails then an error message is written to io
+ *       Else there is no output to io
+ * return: 1 if authentication is successful
+ *         0 if authentication is unsuccessful
+ *         -1 on error
  **********************************************************************/
 
 int pop3_in_authenticate(
   const struct passwd *pw, 
-  const int err_fd,
+  io_t *io,
   const token_t *tag
 ){
   pam_handle_t *pamh=NULL;
@@ -51,14 +58,14 @@ int pop3_in_authenticate(
   if((
      pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
   )!=PAM_SUCCESS){
-    PERDITION_LOG(LOG_DEBUG, "main: pam_start: %s", strerror(errno));
+    PERDITION_DEBUG_ERRNO("pam_start");
     do_pam_end(pamh, EX_PAM_ERROR);
     return(-1);
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(pop3_write(err_fd,NULL_FLAG,NULL,POP3_ERR,"Authentication failure")<0){
-      PERDITION_LOG(LOG_DEBUG, "main: pop3_write");
+    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "Authentication failure")<0){
+      PERDITION_DEBUG("pop3_write");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
     }
@@ -77,45 +84,43 @@ int pop3_in_authenticate(
  * pop3_in_get_pw
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
- * Pre: in_fd: file descriptor to read from
- *      out_fd: file descriptor to write to
+ * pre: io: io_t to write to and read from
  *      return_pw: pointer to an allocated struct pw, 
  *                 where username and password
  *                 will be returned if one is found
- *      return_tag:   ignored 
- * Post: pw_return structure with pw_name and pw_passwd set
- * Return: 0 on success
+ *      return_tag: ignored 
+ * post: pw_return structure with pw_name and pw_passwd set
+ * return: 0 on success
  *         1 if user quits (QUIT command)
  *         -1 on error
  **********************************************************************/
 
 int pop3_in_get_pw(
-  const int in_fd, 
-  const int out_fd,
+  io_t *io,
   struct passwd *return_pw,
-  token_t ** return_tag
+  token_t **return_tag
 ){
   vanessa_queue_t *q = NULL;
-  char *command_string=NULL;
+  char *command_string = NULL;
   token_t *t = NULL;
   char *message=NULL;
 
   return_pw->pw_name=NULL;
 
   while(1){
-    if((q=read_line(in_fd, NULL, NULL, TOKEN_POP3))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: read_line");
+    if((q=read_line(io, NULL, NULL, TOKEN_POP3))==NULL){
+      PERDITION_DEBUG("pop3_in_get_pw: read_line");
       break;
     }
 
     if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: vanessa_queue_pop");
+      PERDITION_DEBUG("vanessa_queue_pop");
       t=NULL;
       break;
     }
 
     if((command_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
+      PERDITION_DEBUG("token_to_string");
       break;
     }
     token_unassign(t);
@@ -123,43 +128,42 @@ int pop3_in_get_pw(
     if(strcasecmp(command_string, "USER")==0){
       if(return_pw->pw_name!=NULL){
         sleep(PERDITION_ERR_SLEEP);
-        if(pop3_write(out_fd,NULL_FLAG,NULL,POP3_ERR,"USER is already set")<0){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write 1");
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "USER is already set")<0){
+          PERDITION_DEBUG("pop3_write 1");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)!=1){
-	PERDITION_LOG(
-	  LOG_DEBUG,
+	PERDITION_DEBUG(
 	  "vanessa_queue_length(q)=%d\n",
 	  vanessa_queue_length(q)
 	);
         sleep(PERDITION_ERR_SLEEP);
-        if(pop3_write(out_fd,NULL_FLAG,NULL,POP3_ERR,"Try USER <username>")<0){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write 2");
+        if(pop3_write(io, NULL_FLAG,NULL,POP3_ERR,"Try USER <username>")<0){
+          PERDITION_DEBUG("pop3_write 2");
           break;
         }
         goto loop;
       }
 
       if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: vanessa_queue_pop");
+        PERDITION_DEBUG("vanessa_queue_pop");
         t=NULL;
         break;
       }
       if((return_pw->pw_name=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
+        PERDITION_DEBUG("token_to_string");
         break;
       }
       token_destroy(&t);
       
       if((message=str_cat(3, "USER ", return_pw->pw_name, " set"))<0){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: str_cat");
+        PERDITION_DEBUG("str_cat");
         goto loop;
       }
-      if(pop3_write(out_fd, NULL_FLAG, NULL, POP3_OK, message)<0){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, message)<0){
+        PERDITION_DEBUG("pop3_write");
         goto loop;
       }
     }
@@ -167,28 +171,28 @@ int pop3_in_get_pw(
       str_free(command_string);
       if(return_pw->pw_name==NULL){
         sleep(PERDITION_ERR_SLEEP);
-        if(pop3_write(out_fd, NULL_FLAG, NULL, POP3_ERR, "USER not yet set")<0){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "USER not yet set")<0){
+          PERDITION_DEBUG("pop3_write");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)>1){
         sleep(PERDITION_ERR_SLEEP);
-        if(pop3_write(out_fd,NULL_FLAG,NULL,POP3_ERR,"Try PASS <password>")<0){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
+        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, "Try PASS <password>")<0){
+          PERDITION_DEBUG("pop3_write");
           break;
         }
         goto loop;
       }
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: vanessq_queue_pop");
+          PERDITION_DEBUG("vanessq_queue_pop");
           free(return_pw->pw_name);
           break;
         }
         if((return_pw->pw_passwd=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-          PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: token_to_string");
+          PERDITION_DEBUG("token_to_string");
           free(return_pw->pw_name);
           break;
         }
@@ -201,8 +205,8 @@ int pop3_in_get_pw(
       return(0);
     }
     else if(strcasecmp(command_string, "QUIT")==0){
-      if(pop3_write(out_fd, NULL_FLAG, NULL, POP3_OK, "QUIT")<0){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
+      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, "QUIT")<0){
+        PERDITION_DEBUG("pop3_write");
         break;
       }
       vanessa_queue_destroy(q);
@@ -211,13 +215,13 @@ int pop3_in_get_pw(
     else{
       sleep(PERDITION_ERR_SLEEP);
       if(pop3_write(
-        out_fd, 
+        io, 
 	NULL_FLAG,
 	NULL,
         POP3_ERR,
         "Command must be one of USER, PASS or QUIT"
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: pop3_write");
+        PERDITION_DEBUG("pop3_write");
         break;
       }
     }

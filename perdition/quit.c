@@ -31,24 +31,25 @@
 /**********************************************************************
  * quit
  * Send a quit request to a server
- * Pre: fd: file descriptor to write to
+ * Pre: io: io_t to write to
  * Return 0 on success
  *        -1 on error
  **********************************************************************/
 
-int quit(const int out_fd, const int in_fd, protocol_t *protocol){
+int quit(io_t *io, const protocol_t *protocol){
   token_t *t;
   vanessa_queue_t *q;
   int status;
 
-  if(str_write(out_fd,
+  if(str_write(
+    io,
     NULL_FLAG,
-    3,
+    "%s%s%s",
     protocol->one_time_tag,
     protocol->one_time_tag==NULL?"":" ",
     protocol->quit_string
   )<0){
-    PERDITION_LOG(LOG_DEBUG, "quit: str_write");
+    PERDITION_DEBUG("str_write");
     return(-1);
   }
  
@@ -59,7 +60,7 @@ int quit(const int out_fd, const int in_fd, protocol_t *protocol){
   status=-1;
 
   if((t=token_create())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "quit: token_create");
+    PERDITION_DEBUG("token_create");
     goto leave;
   }
   token_assign(
@@ -69,8 +70,8 @@ int quit(const int out_fd, const int in_fd, protocol_t *protocol){
     TOKEN_DONT_CARE
   );
 
-  if((protocol->out_response(in_fd,protocol->one_time_tag,t,&q,NULL,NULL))<0){
-    PERDITION_LOG(LOG_DEBUG, "quit: out_response");
+  if((protocol->out_response(io, protocol->one_time_tag, t, &q, NULL, NULL))<0){
+    PERDITION_DEBUG("out_response");
     goto leave;
   }
 

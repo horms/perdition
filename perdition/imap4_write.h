@@ -33,7 +33,6 @@
 #include "str.h"
 #include "token.h"
 
-
 #define IMAP4_GREETING "IMAP4 Ready"
 #define IMAP4_QUIT "LOGOUT"
 #define IMAP4_OK "OK"
@@ -47,8 +46,23 @@
 #define IMAP4_CAPABILITIES "IMAP4 IMAP4REV1"
 #endif
 
+
+/**********************************************************************
+ * imap4_write
+ * Display an message of the form [<tag> <type> ]<string>
+ * Pre: io: io_t to write to
+ *      flag: flag to pass to str_write as per str.h
+ *      tag: tag to display
+ *           if NULL, then IMAP4_UNTAGED is used
+ *      type: type of message, IMAP4_OK, IMAP4_NO or IMAP4_BAD
+ *            if NULL then only string is written, no tag and no type
+ *      string: mesage to display
+ * Return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
 int imap4_write(
-  const int fd, 
+  io_t *io,
   const flag_t flag,
   const token_t *tag, 
   const char *type, 

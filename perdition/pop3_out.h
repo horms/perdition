@@ -39,18 +39,46 @@
 #include "protocol_t.h"
 #include "greeting.h"
 
+
+/**********************************************************************
+ * pop3_out_authenticate
+ * Authenticate user with backend pop3 server
+ * pre: io: io_t to read from and write to
+ *      pw:     structure with username and passwd
+ *      tag:    ignored 
+ *      protocol: protocol structure for POP3
+ *      buf: buffer to return server response in
+ *      n: size of buffer
+ * post: 1: on success
+ *       0: on failure
+ *       -1 on error
+ **********************************************************************/
+
 int pop3_out_authenticate(
-  const int in_fd,
-  const int out_fd,
+  io_t *io,
   const struct passwd *pw,
   const token_t *tag,
   const protocol_t *protocol,
   unsigned char *buf,
   size_t *n
 );
+  
+
+/**********************************************************************
+ * pop3_out_response
+ * Compare a respnse from a server with the desired response
+ * pre: io: io_t to read from and write to
+ *      out_fd: file descriptor to write to
+ *      tag_string: ignored
+ *      desired_token: token expected from server
+ * post: 1 : tag and desired token found
+ *       0: tag and desired token not found
+ *       -1: on error
+ **********************************************************************/
+
 
 int pop3_out_response(
-  int in_fd,
+  io_t *io,
   const char *tag_string,
   const token_t *desired_token,
   vanessa_queue_t **q,

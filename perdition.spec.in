@@ -14,7 +14,7 @@ Packager: Horms <horms@vergenet.net>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel MySQL-devel MySQL-shared postgresql-devel openldap-devel popt pam zlib-devel
+BuildRequires: vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel MySQL-devel MySQL-shared postgresql-devel openldap-devel popt pam zlib-devel openssl-devel
 
 %description
 Perdition is allows users to connect to a content-free POP3 or IMAP4 server

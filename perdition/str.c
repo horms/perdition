@@ -45,7 +45,7 @@ char *strn_to_str(const char *string, const size_t n){
   char *dest;
 
   if((dest=(char *)malloc(n+1))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "strn_to_str: malloc", strerror(errno));
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   strncpy(dest, string, n);
@@ -62,9 +62,9 @@ char *strn_to_str(const char *string, const size_t n){
  * if !(flag&WRITE_STR_NO_CLLF)
  *   append a CRLF to the output (intput strings should not end in a CRLF)
  * 
- * pre: fd: File descriptor to write to
+ * pre: io: io_t to write to
  *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
- *      nostring: number of strings
+ *      fmt: format for output, as per vsnprintf()
  *      ...: strings
  * post strings are printed to fd
  * return: -1 on error
@@ -73,87 +73,38 @@ char *strn_to_str(const char *string, const size_t n){
  * Not 8 bit clean
  **********************************************************************/
 
+static char __str_write_buf[STR_WRITE_BUF_LEN];
 
-int str_write(const int fd, flag_t flag, int nostring, ...){
-  struct iovec *list=NULL;
+int str_write(io_t *io, const flag_t flag, const char *fmt, ...){
   va_list ap;
-  char *string;
-  char *dbg_fmt=NULL;
-  char *dbg_fmt_crnt;
-  int section=0;
   int bytes=0;
 
-  extern int errno;
   extern options_t opt;
   extern vanessa_logger_t *perdition_vl;
 
-  if(nostring<1){
-    return(-1);
-  }
-
-  /* Allocate iovec structure. */
-  if((list=(struct iovec *)malloc((nostring+1)*sizeof(struct iovec)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "str_write: malloc: %s", strerror(errno));
-    return(-1);
-  }
-
-  /* Allocate iovec structure. */
-  if(opt.connection_logging){
-    if((dbg_fmt=(char *)malloc((nostring+2)*2*sizeof(char)))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "str_write: malloc 2: %s", strerror(errno));
-      free(list);
-      return(-1);
-    }
-  }
-
-  va_start(ap, nostring);
-  dbg_fmt_crnt=dbg_fmt;
-  while(nostring-->0){
-    if(opt.connection_logging){
-      *dbg_fmt_crnt++='%';
-      *dbg_fmt_crnt++='s';
-    }
-    string=va_arg(ap, char*);
-    if(string==NULL){
-      continue;
-    }
-    /* Add String to writev iovec structure. */
-    list[section].iov_base = (void *)string;
-    list[section].iov_len = (size_t)strlen(string);
-    bytes += list[section].iov_len;
-    section++;
+  va_start(ap, fmt);
+  if((bytes=vsnprintf(__str_write_buf, STR_WRITE_BUF_LEN-2, fmt, ap))<0){
+    PERDITION_DEBUG_ERRNO("vsnprintf");
   }
   va_end(ap);
 
   /* Add carriage return,newline to output. */
   if(!(flag&WRITE_STR_NO_CLLF)){
-    list[section].iov_base = (void *)"\r\n";
-    list[section].iov_len = (size_t)2;
-    bytes += list[section].iov_len;
-    section++;
-    if(opt.connection_logging){
-      *dbg_fmt_crnt++='\r';
-      *dbg_fmt_crnt++='\n';
-    }
+    *(__str_write_buf+bytes++) = '\r';
+    *(__str_write_buf+bytes++) = '\n';
   }
 
   if(opt.connection_logging){
-    *dbg_fmt_crnt='\0';
-    va_start(ap, nostring);
-    vanessa_logger_logv(perdition_vl, LOG_DEBUG, dbg_fmt, ap);
-    va_end(ap);
-    free(dbg_fmt);
+    vanessa_logger_log(perdition_vl, LOG_DEBUG, "%s", __str_write_buf);
   }
     
-  /* Attempt one writev system call and return an error if it
+  /* Attempt one write system call and return an error if it
      doesn't write all the bytes. */
-  if(writev(fd,list,section) != bytes){
-    PERDITION_LOG(LOG_ERR, "str_write: writev: %s", strerror(errno));
-    free(list);
+  if(io_write(io, __str_write_buf, bytes) != bytes){
+    PERDITION_DEBUG_ERRNO("write");
     return(-1);
   }
 
-  free(list);
   return(0);
 }
 
@@ -170,7 +121,7 @@ int str_write(const int fd, flag_t flag, int nostring, ...){
  * Not 8 bit clean
  **********************************************************************/
 
-char *str_cat(int nostring, ...){
+char *str_cat(const int nostring, ...){
   va_list ap;
   char **string;
   char **current_string;
@@ -183,7 +134,7 @@ char *str_cat(int nostring, ...){
   }
 
   if((string=(char **)malloc(sizeof(char *)*nostring))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "str_cat: malloc 1");
+    PERDITION_DEBUG_ERRNO("malloc 1");
     return(NULL);
   }
 
@@ -194,7 +145,7 @@ char *str_cat(int nostring, ...){
   for(i=0;i<nostring;i++){
     *current_string=va_arg(ap, char*);
     if(*current_string==NULL){
-      PERDITION_LOG(LOG_DEBUG, "str_write: null string");
+      PERDITION_DEBUG("null string");
       free(string);
       return(NULL);
     }
@@ -204,7 +155,7 @@ char *str_cat(int nostring, ...){
   va_end(ap);
 
   if((dest=(char *)malloc(sizeof(char)*length))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "str_cat: malloc 2");
+    PERDITION_DEBUG_ERRNO("malloc 2");
     free(string);
     return(NULL);
   }
@@ -231,7 +182,7 @@ char *str_cat(int nostring, ...){
  * Not 8 bit clean
  **********************************************************************/
 
-char *str_basename(char *filename){
+const char *str_basename(const char *filename){
     char *result;
 
     if(filename==NULL){

@@ -34,22 +34,68 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <sys/uio.h>
+#include <vanessa_socket.h>
 
-#include "log.h"
 #include "perdition_types.h"
+#include "io.h"
 
 #define STR_NULL "(null)"
 
 /*Flags for str_write */
 #define WRITE_STR_NO_CLLF     0x1     /*Append a CLLF*/
+#define STR_WRITE_BUF_LEN     MAX_LINE_LENGTH
 
-int vanessa_socket_str_is_digit(const char *str);
+
+/**********************************************************************
+ * strn_to_str
+ * pre: string:  source string
+ *      n:    bytes from string to put in allocated string
+ * post: a new string is allocated to hold n bytes of string and 
+ *       a teminating '\0'
+ * return: NULL on error
+ *         allocated string otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
 
 char *strn_to_str(const char *string, const size_t n);
 
-int str_write(const int fd, flag_t flag, int nostring, ...);
 
-char *str_cat(int nostring, ...);
+/**********************************************************************
+ * str_write
+ * write strings to fd by puting them into tokens and
+ * printing the tokens
+ * if !(flag&WRITE_STR_NO_CLLF)
+ *   append a CRLF to the output (intput strings should not end in a CRLF)
+ * 
+ * pre: io: io_t to write to
+ *      flag: If WRITE_STR_NO_CLLF then CLLF is appended to output
+ *      fmt: format for output, as per vsnprintf()
+ *      ...: strings
+ * post strings are printed to fd
+ * return: -1 on error
+ *         0 otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+int str_write(io_t *io, const flag_t flag, const char *fmt, ...);
+
+
+/**********************************************************************
+ * str_cat
+ * 
+ * pre: nostring: number of strings
+ *      ...: strings
+ * post: a string is allocated to store the concatenation of the strings
+ * return: NULL on error
+ *         concatenated string otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+char *str_cat(const int nostring, ...);
+
 
 /**********************************************************************
  * str_free
@@ -94,6 +140,6 @@ char *str_cat(int nostring, ...);
  * Not 8 bit clean
  **********************************************************************/
 
-char *str_basename(char *filename);
+const char *str_basename(const char *filename);
 
 #endif

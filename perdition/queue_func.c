@@ -33,7 +33,7 @@
  * read_line
  * read a line from fd and parse it into a queue of tokens
  * line is read by making repeated calls to token_read
- * pre: fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. Will be passed to token_read().
@@ -54,7 +54,7 @@
 
 
 static vanessa_queue_t *__read_line(
-  const int fd, 
+  io_t *io,
   unsigned char *buf, 
   size_t *n,
   flag_t flag
@@ -76,7 +76,7 @@ static vanessa_queue_t *__read_line(
   }
 
   if((q=vanessa_queue_create(TOKEN_DESTROY))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "__read_line: create_queue");
+    PERDITION_DEBUG("create_queue");
     return(NULL);
   }
  
@@ -86,12 +86,12 @@ static vanessa_queue_t *__read_line(
     }
 
     if((t=token_read(
-      fd,
+      io,
       (buf==NULL)?NULL:buf+buf_offset,
       &buf_remaining,
       flag
     ))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "__read_line: token_read");
+      PERDITION_DEBUG("token_read");
       vanessa_queue_destroy(q);
       return(NULL);
     }
@@ -102,7 +102,7 @@ static vanessa_queue_t *__read_line(
     }
 
     if((q=vanessa_queue_push(q, (void *)t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "__read_line: vanessa_queue_push");
+      PERDITION_DEBUG("vanessa_queue_push");
       return(NULL);
     }
   }while(!token_is_eol(t) && !(do_literal && buf_offset>=*n));
@@ -115,9 +115,9 @@ static vanessa_queue_t *__read_line(
 }
 
 vanessa_queue_t *read_line(
-  const int fd, 
+  io_t *io, 
   unsigned char *buf, 
-  size_t *n,
+  size_t *n, 
   flag_t flag
 ){
   int do_literal=0;
@@ -135,7 +135,7 @@ vanessa_queue_t *read_line(
 
     if(!do_literal){
       if((local_buf=(char *)malloc(MAX_LINE_LENGTH*sizeof(char)))==NULL){
-        PERDITION_DEBUG_ERRNO("read_line: malloc", errno);
+        PERDITION_DEBUG_ERRNO("malloc");
         return(NULL);
       }
       local_n=MAX_LINE_LENGTH-1;
@@ -145,8 +145,8 @@ vanessa_queue_t *read_line(
       local_n=(*n)-1;
     }
 
-    if((local_q=__read_line(fd, local_buf, &local_n, flag))==NULL){
-      PERDITION_DEBUG("read_line: __read_line");
+    if((local_q=__read_line(io, local_buf, &local_n, flag))==NULL){
+      PERDITION_DEBUG("__read_line");
       if(!do_literal){
         free(local_buf);
       }
@@ -154,7 +154,7 @@ vanessa_queue_t *read_line(
     }
 
     *(local_buf+local_n)='\0';
-    PERDITION_DEBUG(local_buf);
+    PERDITION_DEBUG("%s", local_buf);
 
     if(!do_literal){
       free(local_buf);
@@ -166,7 +166,7 @@ vanessa_queue_t *read_line(
   }
 
   /* Fast Path :) */
-  return(__read_line(fd, buf, n, flag));
+  return(__read_line(io, buf, n, flag));
 
 }
 
@@ -191,20 +191,20 @@ char *queue_to_string(vanessa_queue_t *q){
   char *pos;
 
   if((stack=vanessa_queue_create(TOKEN_DESTROY))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "queue_to_string: create_queue");
+    PERDITION_DEBUG("create_queue");
     return(NULL);
   }
 
   while(q->first!=NULL){
     if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "queue_to_string: vanessa_queue_pop 1");
+      PERDITION_DEBUG("vanessa_queue_pop 1");
       return(NULL);
     }
 
     length+=1+t->n;
 
     if((stack=vanessa_queue_push(stack, (void *)t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "queue_to_string: vanessa_queue_push");
+      PERDITION_DEBUG("vanessa_queue_push");
       return(NULL);
     }
   }
@@ -212,7 +212,7 @@ char *queue_to_string(vanessa_queue_t *q){
   vanessa_queue_destroy(q);
 
   if((string=(char*)malloc(sizeof(char)*length))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "queue_to_string: malloc");
+    PERDITION_DEBUG("malloc");
     vanessa_queue_destroy(stack);
     return(NULL);
   }
@@ -220,7 +220,7 @@ char *queue_to_string(vanessa_queue_t *q){
   pos=string;
   while(stack->first!=NULL){
     if((stack=vanessa_queue_pop(stack, (void **)&t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "queue_to_string: vanessa_queue_pop 2");
+      PERDITION_DEBUG("vanessa_queue_pop 2");
       free(string);
       return(NULL);
     }

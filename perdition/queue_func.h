@@ -48,7 +48,7 @@
  * read_line
  * read a line from fd and parse it into a queue of tokens
  * line is read by making repeated calls to token_read
- * pre: fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. Will be passed to token_read().
@@ -68,7 +68,7 @@
 
 
 vanessa_queue_t *read_line(
-  const int fd, 
+  io_t *io,
   unsigned char *buf, 
   size_t *n,
   flag_t flag

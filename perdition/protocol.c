@@ -40,7 +40,7 @@ char *protocol_known[] = {"2", "POP3", "IMAP4"};
 
 protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
   if((protocol=(protocol_t *)malloc(sizeof(protocol_t)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "proto_initialise: malloc");
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
 
@@ -48,18 +48,18 @@ protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
   switch (protocol_type){
     case PROTOCOL_POP3:
       if((protocol=pop3_initialise_protocol(protocol))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "proto_initialise: pop3_initialise_protocol");
+        PERDITION_DEBUG("pop3_initialise_protocol");
 	return(NULL);
       }
       break;
     case PROTOCOL_IMAP4:
       if((protocol=imap4_initialise_protocol(protocol))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "proto_initialise: imap4_initialise_protocol");
+        PERDITION_DEBUG("imap4_initialise_protocol");
 	return(NULL);
       }
       break;
     default:
-      PERDITION_LOG(LOG_DEBUG, "proto_initialise: Unknown protocol");
+      PERDITION_DEBUG("Unknown protocol");
       return(NULL);
   }
 
@@ -137,11 +137,7 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   noknown=atoi(protocol_known[0]);
   
   if((request<1 || request>noknown) && request!=PROTOCOL_ALL){
-    PERDITION_LOG(
-      LOG_DEBUG,
-      "protocol_list: protocol \"%d\" out of range",
-      request
-    );
+    PERDITION_DEBUG("protocol \"%d\" out of range", request);
     return(NULL);
   }
 
@@ -157,7 +153,7 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   }
 
   if((string=(char *)malloc(length))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "protocol_list: malloc");
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
 

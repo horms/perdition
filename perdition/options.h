@@ -42,7 +42,7 @@
 #endif
 
 #ifndef PERDITION_SYSCONFDIR
-#define PERDITION_SYSCONFDIR "/usr/local/etc/perdition/"
+#define PERDITION_SYSCONFDIR "/usr/local/etc/perdition"
 #endif
 
 #include "log.h"
@@ -58,11 +58,35 @@
  * or of these.
  */
 
-#define STATE_NONE         0x0
-#define STATE_GET_SERVER   0x1
-#define STATE_LOCAL_AUTH   0x2
-#define STATE_REMOTE_LOGIN 0x4
-#define STATE_ALL          STATE_GET_SERVER|STATE_LOCAL_AUTH|STATE_REMOTE_LOGIN
+#define STRIP_STATE_NONE         0x0
+#define STRIP_STATE_GET_SERVER   0x1
+#define STRIP_STATE_LOCAL_AUTH   0x2
+#define STRIP_STATE_REMOTE_LOGIN 0x4
+#define STRIP_STATE_ALL          \
+  (STRIP_STATE_GET_SERVER|STRIP_STATE_LOCAL_AUTH|STRIP_STATE_REMOTE_LOGIN)
+
+
+#ifdef WITH_SSL_SUPPORT
+/*
+ * States for ssl_mode option which may be the logical
+ * or of these.
+ * 
+ */
+#define SSL_MODE_EMPTY         0x0   /* 0000 */
+#define SSL_MODE_NONE          0xf   /* 1111 */
+#define SSL_MODE_SSL_LISTEN    0x1   /* 0001 */
+#define SSL_MODE_SSL_OUTGOING  0x2   /* 0010 */
+#define SSL_MODE_SSL_ALL       0x3   /* 0011 (SSL_OUTGOING|SSL_LISTEN) */
+#define SSL_MODE_TLS_LISTEN    0x4   /* 0100 */
+#define SSL_MODE_TLS_OUTGOING  0x8   /* 1000 */
+#define SSL_MODE_TLS_ALL       0xc   /* 1100 (TLS_OUTGOING|TLS_LISTEN) */
+
+#define SSL_LISTEN_MASK        0x5   /* 0101 (SSL_LISTEN|TLS_LISTEN) */
+#define SSL_OUTGOING_MASK      0xa   /* 1010 (SSL_OUTGOING|TLS_OUTGOING) */
+
+#define SSL_SSL_MASK           SSL_MODE_SSL_ALL
+#define SSL_TLS_MASK           SSL_MODE_TLS_ALL
+#endif /* WITH_SSL_SUPPORT */
 
 
 #ifdef WITH_PAM_SUPPORT
@@ -70,7 +94,8 @@
 #endif /* WITH_PAM_SUPPORT */
 #define DEFAULT_BIND_ADDRESS                 NULL
 #define DEFAULT_CLIENT_SERVER_SPECIFICATION  0
-#define DEFAULT_CONFIG_FILE              PERDITION_SYSCONFDIR "/perdition.conf"
+#define DEFAULT_CONFIG_FILE              \
+  PERDITION_SYSCONFDIR "/perdition.conf"
 #define DEFAULT_CONNECTION_LIMIT             0
 #define DEFAULT_CONNECTION_LOGGING           0
 #define DEFAULT_DEBUG                        0
@@ -89,7 +114,7 @@
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
-#define DEFAULT_STRIP_DOMAIN                 STATE_NONE
+#define DEFAULT_STRIP_DOMAIN                 STRIP_STATE_NONE
 #define DEFAULT_SERVER_OK_LINE               0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
 #ifdef WITH_USER
@@ -99,6 +124,14 @@
 #endif /* WITH_USER */
 #define DEFAULT_USERNAME_FROM_DATABASE       0
 #define DEFAULT_QUIET                        0
+#ifdef WITH_SSL_SUPPORT
+#define DEFAULT_SSL_CERT_FILE                \
+  PERDITION_SYSCONFDIR "/perdition.crt.pem"
+#define DEFAULT_SSL_KEY_FILE                 \
+  PERDITION_SYSCONFDIR "/perdition.key.pem"
+#define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
+#endif /* WITH_SSL_SUPPORT */
+
 
 typedef struct {
 #ifdef WITH_PAM_SUPPORT
@@ -130,9 +163,15 @@ typedef struct {
   char            *username;
   int             username_from_database;
   flag_t          mask;
+#ifdef WITH_SSL_SUPPORT
+  char            *ssl_cert_file;
+  char            *ssl_key_file;
+  int             ssl_mode;
+  flag_t          ssl_mask;
+#endif /* WITH_SSL_SUPPORT */
 } options_t;
 
-/*options_t.mask entries*/
+/* options_t.mask entries */
 #ifdef WITH_PAM_SUPPORT
 #define MASK_AUTHENTICATE_IN             (flag_t) 0x00000001
 #endif /* WITH_PAM_SUPPORT */
@@ -160,6 +199,24 @@ typedef struct {
 #define MASK_USERNAME                    (flag_t) 0x00400000
 #define MASK_USERNAME_FROM_DATABASE      (flag_t) 0x00800000
 #define MASK_QUIET                       (flag_t) 0x01000000
+
+#ifdef WITH_SSL_SUPPORT
+/* options_t.ssl_mask entries */
+#define MASK_SSL_CERT_FILE             (flag_t) 0x00000001
+#define MASK_SSL_KEY_FILE              (flag_t) 0x00000002
+#define MASK_SSL_MODE                  (flag_t) 0x00000004
+#endif /* WITH_SSL_SUPPORT */
+
+/* 
+ * popt keys of the short value returned. But we are running
+ * out of short vales, so the poor ssl arguments are log argument
+ * only. So as we still have a key, use integer values outside
+ * of the values we might use for a sort value
+ */
+#define TAG_SSL_CERT_FILE              (int) 128
+#define TAG_SSL_KEY_FILE               (int) 129
+#define TAG_SSL_MODE                   (int) 130
+
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

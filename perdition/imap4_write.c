@@ -30,7 +30,7 @@
 /**********************************************************************
  * imap4_write
  * Display an message of the form [<tag> <type> ]<string>
- * Pre: fd: file descriptor to write to
+ * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
  *           if NULL, then IMAP4_UNTAGED is used
@@ -42,7 +42,7 @@
  **********************************************************************/
 
 int imap4_write(
-  const int fd, 
+  io_t *io,
   const flag_t flag,
   const token_t *tag, 
   const char *type, 
@@ -52,8 +52,8 @@ int imap4_write(
   int free_tag_string=0;
 
   if(type==NULL){
-    if(str_write(fd, flag, 1, string)<0){
-      PERDITION_LOG(LOG_DEBUG, "imap4_write: str_writeings");
+    if(str_write(io, flag, "%s", string)<0){
+      PERDITION_DEBUG("str_write");
       return(-1);
     }
   }
@@ -63,13 +63,13 @@ int imap4_write(
     }
     else {
       if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-        PERDITION_LOG(LOG_DEBUG, "imap4_in_tagged_ok: token_to_string");
+        PERDITION_DEBUG("token_to_string");
         return(-1);
       }
       free_tag_string=1;
     }
-    if(str_write(fd, flag, 5, tag_string, " ", type, " ", string)<0){
-      PERDITION_LOG(LOG_DEBUG, "imap4_write: str_writeings");
+    if(str_write(io, flag, "%s %s %s", tag_string, type, string)<0){
+      PERDITION_DEBUG("str_write");
       return(-1);
     }
   }

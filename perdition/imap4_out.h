@@ -40,17 +40,47 @@
 #include "queue_func.h"
 #include "protocol_t.h"
 
+
+/**********************************************************************
+ * imap4_authenticate
+ * Authenticate user with backend imap4 server
+ * pre: io: io_t to read from and write to
+ *      pw:     structure with username and passwd
+ *      tag:    tag to use when authenticating with back-end server
+ *      protocol: protocol structiure for imap4
+ *      buf:    buffer to return response from server in
+ *      n:      size of buf in bytes
+ * post: 1: on success
+ *       0: on failure
+ *       -1 on error
+ **********************************************************************/
+
 int imap4_out_authenticate(
-  const int in_fd,
-  const int out_fd,
+  io_t *io,
   const struct passwd *pw,
   const token_t *tag,
   const protocol_t *protocol,
   unsigned char *buf,
   size_t *n
 );
+
+
+/**********************************************************************
+ * imap4_out_response
+ * Compare a respnse from a server with the desired response
+ * pre: io: io_t to read from
+ *      tag_string: tag expected from server
+ *      desired_token: token expected from server
+ *      q: resulting queue is stored here
+ *      buf: buffer to read server response in to
+ *      n: size of buf
+ * post: 1 : tag and desired token found
+ *       0: tag and desired token not found
+ *       -1: on error
+ **********************************************************************/
+
 int imap4_out_response(
-  const int in_fd, 
+  io_t *io,
   const char *tag_string,
   const token_t *desired_token,
   vanessa_queue_t **q,

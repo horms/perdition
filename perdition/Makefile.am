@@ -37,57 +37,38 @@ install-exec-hook:
 
 
 perdition_SOURCES = \
-        config_file.c \
-        config_file.h \
-        daemon.c \
-        daemon.h \
-        getserver.c \
-        getserver.h \
-        greeting.c \
-        greeting.h \
-        options.c \
-        options.h \
-        pam.c \
-	pam.h \
+        config_file.c       config_file.h \
+        daemon.c            daemon.h \
+        getserver.c         getserver.h \
+        greeting.c          greeting.h \
+        io.c                io.h \
+        options.c           options.h \
+        pam.c               pam.h \
         perdition.c \
-        perdition.h \
         perdition_types.h \
-        pop3.c \
-        pop3.h \
-        pop3_in.c \
-        pop3_in.h \
-        pop3_out.c \
-        pop3_out.h \
-        pop3_write.c \
-        pop3_write.h \
-        protocol.c \
-        protocol.h \
+        pop3.c              pop3.h \
+        pop3_in.c           pop3_in.h \
+        pop3_out.c          pop3_out.h \
+        pop3_write.c        pop3_write.h \
+        protocol.c          protocol.h \
         protocol_t.h \
-        quit.c \
-        quit.h \
-        imap4.c \
-        imap4.h \
-        imap4_in.c \
-        imap4_in.h \
-        imap4_out.c \
-        imap4_out.h \
-        imap4_write.c \
-        imap4_write.h \
-        token.c \
-        token.h \
-        queue_func.c \
-        queue_func.h \
-        server_port.c \
-        server_port.h \
-        str.c \
-        str.h \
+        quit.c              quit.h \
+        imap4.c             imap4.h \
+        imap4_in.c          imap4_in.h \
+        imap4_out.c         imap4_out.h \
+        imap4_write.c       imap4_write.h \
+        token.c             token.h \
+        queue_func.c        queue_func.h \
+        server_port.c       server_port.h \
+        str.c               str.h \
         log.h
 
 
 INCLUDES= \
   -I$(top_srcdir)/libjain \
   -DPERDITION_LIBDIR=\"${libdir}\" \
-  -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\"
+  -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
+  @ssl_includes@
 
 # Removed because Debian doesn't like it
 #LDFLAGS = -Wl,--rpath -Wl,@prefix@
@@ -104,7 +85,8 @@ LDADD = \
 @socket_lib@ \
 @nsl_lib@ \
 @resolv_lib@ \
-@dl_lib@
+@dl_lib@ \
+@ssl_libs@
 
 perdition_LDFLAGS = -rdynamic
 

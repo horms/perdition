@@ -33,8 +33,8 @@ static unsigned char token_read_buffer[MAX_LINE_LENGTH];
 static size_t token_read_offset=0;
 static size_t token_read_bytes=0;
 
-static int token_fill_buffer(const int fd, const options_t *opt);
-static int __token_fill_buffer(const int fd, const options_t *opt);
+static int token_fill_buffer(io_t *io, const options_t *opt);
+static int __token_fill_buffer(io_t *io, const options_t *opt);
 
 
 /**********************************************************************
@@ -52,7 +52,7 @@ token_t *token_create(void){
   token_t *t;
 
   if((t=(token_t *)malloc(sizeof(token_t)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "token_create: malloc");
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   t->n=0;
@@ -141,7 +141,7 @@ void token_destroy(token_t **t){
 /**********************************************************************
  * token_write
  * write a token to fd
- * pre: fd: File descriptor to write to
+ * pre: io: io_t to write to
  *      token: token to write
  * post: contents of token is written to fd using 
  *       vanessa_socket_pipe_write_bytes
@@ -151,9 +151,9 @@ void token_destroy(token_t **t){
  * 8 bit clean
  **********************************************************************/
 
-int token_write(const int fd, const token_t *t){
-  if(vanessa_socket_pipe_write_bytes(fd, t->buf, t->n)){
-    PERDITION_LOG(LOG_DEBUG, "token_write: vanessa_socket_pipe_write_bytes");
+int token_write(io_t *io, const token_t *t){
+  if(io_write(io, t->buf, t->n)){
+    PERDITION_DEBUG("vanessa_socket_pipe_write_bytes");
     return(-1);
   }
   
@@ -164,7 +164,7 @@ int token_write(const int fd, const token_t *t){
 /**********************************************************************
  * token_fill_buffer
  * read a token in from fd
- * pre: fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      opt: options
  * post: Bytes are read from fd into a buffer, if the buffer is
  *       empty
@@ -174,22 +174,28 @@ int token_write(const int fd, const token_t *t){
  * 8 bit clean
  **********************************************************************/
 
-static int token_fill_buffer(const int fd, const options_t *opt) {
+static int token_fill_buffer(io_t *io, const options_t *opt) {
   if(token_read_bytes>token_read_offset) {
     if(token_read_bytes==0){
-      PERDITION_DEBUG("token_fill_buffer: returning without read");
+      PERDITION_DEBUG("returning without read");
     }  
     return(token_read_bytes);
   }
-  return(__token_fill_buffer(fd, opt));
+  return(__token_fill_buffer(io, opt));
 }
 
-static int __token_fill_buffer(const int fd, const options_t *opt){
+static int __token_fill_buffer(io_t *io, const options_t *opt){
   struct timeval timeout;
   fd_set except_template;
   fd_set read_template;
   int bytes_read;
   int status;
+  int fd;
+
+  if((fd=io_get_rfd(io))<0){
+    PERDITION_DEBUG("io_get_rfd %d", fd);
+    return(-1);
+  }
 
   while(1){
     FD_ZERO(&read_template);
@@ -208,28 +214,32 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
     );
     if(status<0){
       if(errno!=EINTR){
-        PERDITION_DEBUG_ERRNO("token_fill_buffer: select:", errno);
+        PERDITION_DEBUG_ERRNO("select");
         return(-1);
       }
       continue;  /* Ignore EINTR */
     }
     else if(FD_ISSET(fd, &except_template)){
-      PERDITION_DEBUG("token_fill_buffer: error on file descriptor");
+      PERDITION_DEBUG("error on file descriptor");
       return(-1);
     }
     else if(status==0){
-      PERDITION_DEBUG("token_fill_buffer: idle timeout");
+      PERDITION_DEBUG("idle timeout");
       return(0);
     }
 
     /*If we get this far fd must be ready for reading*/
-    if((bytes_read=read(fd, token_read_buffer, MAX_LINE_LENGTH-1))<0){
-      PERDITION_DEBUG_ERRNO("token_fill_buffer: error reading input", errno);
+    if((bytes_read=io_read(
+      io, 
+      token_read_buffer, 
+      MAX_LINE_LENGTH-1
+    ))<0){
+      PERDITION_DEBUG_ERRNO("error reading input");
       return(-1);
     }
 
     if(bytes_read==0){
-      PERDITION_DEBUG_ERRNO("token_fill_buffer: zero bytes read", errno);
+      PERDITION_DEBUG_ERRNO("zero bytes read");
     }
 
     token_read_offset=0;
@@ -237,7 +247,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
     return(bytes_read);
   }
 
-  PERDITION_DEBUG("token_fill_buffer: fall-through return\n");
+  PERDITION_DEBUG("fall-through return");
   return(0); /* Here to stop compiler complaining */
 }
 
@@ -245,7 +255,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
 /**********************************************************************
  * token_read
  * read a token in from fd
- * pre: fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      literal_buf: buffer to store bytes read from server in
  *      n: pointer to size_t containing the size of literal_buf
  *      flag: Flags. If locical or of TOKEN_EOL then all characters 
@@ -272,7 +282,7 @@ static int __token_fill_buffer(const int fd, const options_t *opt){
  **********************************************************************/
 
 token_t *token_read(
-  const int fd, 
+  io_t *io,
   unsigned char *literal_buf, 
   size_t *n,
   flag_t flag
@@ -292,8 +302,8 @@ token_t *token_read(
 
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n)){
-    if((bytes_read=token_fill_buffer(fd, &opt))<=0){
-      PERDITION_DEBUG("token_read: token_fill_buffer");
+    if((bytes_read=token_fill_buffer(io, &opt))<=0){
+      PERDITION_DEBUG("token_fill_buffer");
       return(NULL);
     }
 
@@ -313,7 +323,7 @@ token_t *token_read(
       case '\"':
 	if(flag&TOKEN_IMAP4){
 	  quoted^=1;
-	  PERDITION_LOG(LOG_DEBUG, "token_read: quoted=%d\n", quoted);
+	  PERDITION_DEBUG("quoted=%d", quoted);
 	}
         buffer[len++]=c;
 	break;
@@ -334,11 +344,11 @@ end_while:
 
   /*Create token to return*/
   if((t=token_create())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "token_read: token_create");
+    PERDITION_DEBUG("token_create");
     return(NULL);
   }
   if((assign_buffer=(unsigned char*)malloc(len))==NULL){
-    PERDITION_DEBUG_ERRNO("token_read: malloc", errno);
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   memcpy(assign_buffer, buffer, len);
@@ -402,7 +412,7 @@ char *token_to_string(const token_t *t, const unsigned char strip){
   }
 
   if((string=strn_to_str((char *)buf, n))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "token_to_string: strn_to_str");
+    PERDITION_DEBUG("strn_to_str");
     return(NULL);
   }
   return(string);

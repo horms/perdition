@@ -28,7 +28,7 @@ perdition \- POP3 and IMAP4 proxy server
 .SH SYNOPSIS
 \fBperdition\fP [options]
 .SH DESCRIPTION
-\fBperdition\fP is allows users to connect to a content-free POP3 or
+\fBperdition\fP allows users to connect to a content-free POP3 or
 IMAP4 server that will redirect them to their real POP3 or IMAP4
 server respectively. This enables mail retrieval for a domain to
 be split across multiple real mail servers on a per user basis.
@@ -38,7 +38,7 @@ firewall applications.
 When a connection is made to perdition in POP3 mode, it reads the
 USER and PASS commands and then refers to its popmap to find
 where the user's connection should be forwarded to. A connection
-to the foreign pop server, perdition then enders the USER and
+to the foreign pop server, perdition then enters the USER and
 PASS commands to the foreign server. If authentication is
 successful then perdition pipes data between the client and the
 foreign server.  If authentication fails then the foreign server
@@ -94,9 +94,9 @@ Delimiter used for \-c|\-\-client_server_specification and
 Turn on verbose debugging.
 .TP
 .B \-F, \-\-logging_facility facility:
-Syslog facility to log to. If the faclilty has a leading '/' then it will
+Syslog facility to log to. If the facility has a leading '/' then it will
 be treated as a file to log to. (default "mail").  Note: If an error occurs
-before options are read it may be logged to syslog faclilty mail
+before options are read it may be logged to syslog facility mail
 .TP
 .B \-f, \-\-config_file filename:
 Name of config file to read. If set to "" no config file will be
@@ -204,11 +204,54 @@ Username to run as.
 If the servername in the popmap specified in the form:
 user<delimiter>domain then use the username given by the servername.  If a
 servername is given in this form then the domain will be used as the server
-to connect to, regarless of it the -U|\-\-username_from_database option is
+to connect to, regardless of it the -U|\-\-username_from_database option is
 specified or not.
 .TP
 .B \-q, \-\-quiet:
 Only log errors. Overridden by \-d|\-\-debug
+.TP
+.B \-\-ssl_mode:
+Use SSL and or TLS for the listening and/or outgoing connections.
+A comma delimited list of: none, ssl_listen, ssl_outgoing,
+ssl_all, tls_listen, tls_outgoing, tls_all. TLS is defined
+in RFC 2595. Only available if perdition is compiled with SSL support.
+.br
+(default "(null)")
+.sp
+.B none:
+Do not use SSL or TLS for any connections. This is the same as
+providing no option, the default.
+.sp
+.B ssl_listen:
+When listening for incoming connections they will be treated
+as SSL connections.
+.sp
+.B ssl_outoing:
+Use SSL to connect to real pop servers.
+.sp
+.B ssl_all:
+Short hand for ssl_listen,ssl_outoing.
+.sp
+.B tls_listen:
+When listening for incoming connections they will be treated
+as TLS connections.
+.sp
+.B tls_outgoing:
+.sp
+.B tls_all:
+Short hand for tls_listen,tls_all.
+.TP
+.B \-\-ssl_cert_file:
+Certificate to use when listening for SSL or TLS connections. Only
+available if perdition is compiled with SSL support.
+.br
+(default "/etc/perdition/perdition.key.pem")
+.TP
+.B \-\-ssl_key_file:
+Public key to use when listening for SSL or TLS connections. Only available
+if perdition is compiled with SSL support.
+.br
+(default "/tmp/supersparrow//etc/perdition/perdition.crt.pem")
 .TP
 \fBNote:\fP Default value for binary flags is off.
 .SH USER DATABASE (POPMAP)
@@ -354,8 +397,8 @@ ignored, as is anything including and after a # (hash) on a
 line. If a \\ precedes a new line then the lines will be concatenated.
 IF a \\ precedes any other character, including a # (hash) it
 will be treated as a literal. Anything inside single quotes (')
-will be treated as a litreal. Anything other than a (') inside
-double quotes (") will be treated as a litreal. Whitespace
+will be treated as a literal. Anything other than a (') inside
+double quotes (") will be treated as a literal. Whitespace
 in keys must be escaped or quoted. Whitespace in values
 need not be escaped or quoted.
 
@@ -378,7 +421,7 @@ these logs will be written to /var/log/syslog.  Normally each session will
 have two perdition log entries.  Logs are prepended, depending on syslog
 with the date, host, and perdition[<pid>]: .
 .PP
-When the user connects the format of the logs is:
+When the user connects the following is logged:
 .PP
 Connect: [<client_ip>\-><server_ip>] user=<username> server=<server> port=<port>
 .TP
@@ -387,7 +430,6 @@ The source ip address for the client.
 .TP
 .B server_ip:
 The ip address that the connection was accepted for by the server.
-The client_ip, \-> and server_ip will be omitted in inetd mode
 .TP
 .B username:
 The username given by the user to perdition
@@ -401,8 +443,14 @@ The port to connect to on the server
 Server will be "(null)" if no server was found.
 .fi
 .PP
+.PP
+When the user has successfully authenticated with the back\-end server
+the following is logged:
+.PP
+Authentication successful
+.PP
 When a user disconnects after a successful connection to
-a back\-end server the format of the log is:
+a back\-end server the following is logged:
 .PP
 Closing:  [<client_ip>\-><server_ip> ]username=<username> <bytes_in> <bytes_out>
 .TP
@@ -411,7 +459,6 @@ The source ip address for the client.
 .TP
 .B server_ip:
 The ip address that the connection was accepted for by the server.
-The client_ip, \-> and server_ip will be omitted in inetd mode
 .TP
 .B username:
 The username given by the user to perdition

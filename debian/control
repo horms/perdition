@@ -1,5 +1,5 @@
 Source: perdition
-Build-Depends: libvanessa-logger-dev, libvanessa-adt-dev, libvanessa-socket-dev, libpopt-dev, libpam0g-dev, libmysqlclient6-dev | libmysqlclient10-dev, postgresql-dev, libgdbmg1-dev, libopenldap-dev | libldap2-dev, debhelper, zlib1g-dev
+Build-Depends: libvanessa-logger-dev, libvanessa-adt-dev, libvanessa-socket-dev, libpopt-dev, libpam0g-dev, libmysqlclient6-dev | libmysqlclient10-dev, postgresql-dev, libgdbmg1-dev, libopenldap-dev | libldap2-dev, debhelper, zlib1g-dev, libssl-dev
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@vergenet.net>

@@ -31,29 +31,30 @@
 /**********************************************************************
  * greeting
  * Send a greeting to the user
- * Pre: fd: file descriptor to write to
+ * pre: io_t: io_t to write to
  *      protocol: Protocol in use
  *      message: Message to display
  *      flag: Flags as per greeting.h
- * Return 0 on success
+ * post: greeting is written to io
+ * return 0 on success
  *        -1 on error
  **********************************************************************/
 
-int greeting(const int fd, const protocol_t *protocol, flag_t flag){
+int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
   char *message=NULL;
 
   if((message=greeting_str(message, protocol, flag))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "greeting: greeting_str");
+    PERDITION_DEBUG("greeting_str");
     return(-1);
   }
   if(protocol->write(
-    fd, 
+    io, 
     NULL_FLAG, 
     NULL, 
     protocol->type[PROTOCOL_OK], 
     message
   )<0){
-    PERDITION_LOG(LOG_DEBUG, "greeting: protocol->write");
+    PERDITION_DEBUG("protocol->write");
     return(-1);
   }
   free(message);
@@ -64,14 +65,15 @@ int greeting(const int fd, const protocol_t *protocol, flag_t flag){
 /**********************************************************************
  * greeting_str
  * Produce greeting string
- * Pre: message: unallocated ponter to put greeting string in
+ * pre: message: unallocated ponter to put greeting string in
  *      protocol: Protocol in use
  *      flag: Flags as per greeting.h
- * Return message string on success
+ * post: Protocol specific message string is formed
+ * return message string on success
  *        NULL on error
  **********************************************************************/
 
-char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
+char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
   char *host;
   struct hostent *hp;
   struct in_addr in;
@@ -83,22 +85,14 @@ char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
   if(flag&GREETING_ADD_NODENAME){
     if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
       if((hp=gethostbyname(opt.bind_address))==NULL){
-        PERDITION_LOG(
-	  LOG_DEBUG, 
-	  "warning: greeting_str: gethostbyname: %s", 
-	  strerror(errno)
-	);
+        PERDITION_DEBUG_ERRNO("gethostbyname");
         host=opt.bind_address;
       }
       else {
 	bcopy(hp->h_addr, &in, hp->h_length);
 	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
 	if(hp==NULL){
-          PERDITION_LOG(
-	    LOG_DEBUG, 
-	    "warning: greeting_str: gethostbyaddr: %s", 
-	    strerror(errno)
-	  );
+          PERDITION_DEBUG("gethostbyaddr", errno);
           host=opt.bind_address;
 	}
 	else {
@@ -111,13 +105,13 @@ char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
       host=system_uname->nodename;
     }
     if((message=str_cat(3, protocol->greeting_string, " ", host))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "greeting_str: str_cat");
+      PERDITION_DEBUG("str_cat");
       return(NULL);
     }
   }
   else{
     if((message=strdup(protocol->greeting_string))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "greeting_str: strdup");
+      PERDITION_DEBUG("strdup");
       return(NULL);
     }
   }

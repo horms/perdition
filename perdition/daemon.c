@@ -62,8 +62,8 @@ void daemon_process(void){
    * has no controlling terminal, which is a Good Thing for daemons.
    */
   if(setsid()<0){
-    PERDITION_LOG(LOG_DEBUG, "daemon_process: setsid: %s", strerror(errno));
-    PERDITION_LOG(LOG_ERR, "Fatal error begoming group leader. Exiting.\n");
+    PERDITION_DEBUG_ERRNO("setsid");
+    PERDITION_ERR("Fatal error begoming group leader. Exiting.");
     daemon_exit_cleanly(-1);
   }
 
@@ -99,18 +99,18 @@ void daemon_process(void){
    * any other combination that makes sense for your particular daemon.
    */
    if(open("/dev/null", O_RDONLY)<0){
-     PERDITION_LOG(LOG_DEBUG, "daemon_process: open: %s", strerror(errno));
-     PERDITION_LOG(LOG_ERR, "Fatal error Opening /dev/null. Exiting.");
+     PERDITION_DEBUG_ERRNO("open");
+     PERDITION_ERR("Fatal error Opening /dev/null. Exiting.");
      daemon_exit_cleanly(-1);
    }
    if(open("/dev/null", O_WRONLY|O_APPEND)<0){
-     PERDITION_LOG(LOG_DEBUG, "daemon_process: open: %s" , strerror(errno));
-     PERDITION_LOG(LOG_ERR, "Fatal error Opening /dev/null. Exiting.");
+     PERDITION_DEBUG_ERRNO("open");
+     PERDITION_ERR("Fatal error Opening /dev/null. Exiting.");
      daemon_exit_cleanly(-1);
    }
    if(open("/dev/null", O_WRONLY|O_APPEND)<0){
-     PERDITION_LOG(LOG_DEBUG, "daemon_process: open: %s", strerror(errno));
-     PERDITION_LOG(LOG_ERR, "Fatal error Opening /dev/null. Exiting.");
+     PERDITION_DEBUG_ERRNO("open");
+     PERDITION_ERR("Fatal error Opening /dev/null. Exiting.");
      daemon_exit_cleanly(-1);
    }
 }
@@ -130,8 +130,8 @@ void daemon_inetd_process(void){
    * couldn't unmount a filesystem, because it was our current directory.
    */
   if(chdir("/")<0){
-    PERDITION_LOG(LOG_DEBUG, "daemon: chdir: %s", strerror(errno));
-    PERDITION_LOG(LOG_ERR, "Fatal error changing directory to /. Exiting.");
+    PERDITION_DEBUG_ERRNO("chdir");
+    PERDITION_ERR("Fatal error changing directory to /. Exiting.");
     daemon_exit_cleanly(-1);
   }
 
@@ -155,8 +155,8 @@ void daemon_become_child(void){
   status=fork();
 
   if(status<0){
-    PERDITION_LOG(LOG_DEBUG, "daemon_become_child: fork: %s", strerror(errno));
-    PERDITION_LOG(LOG_ERR, "Fatal error forking. Exiting.");
+    PERDITION_DEBUG_ERRNO("fork");
+    PERDITION_ERR("Fatal error forking. Exiting.");
     daemon_exit_cleanly(-1);
   }
   if(status>0){
@@ -177,11 +177,8 @@ void daemon_close_fd(void){
   fflush(NULL);
 
   if((max_fd=sysconf(_SC_OPEN_MAX))<2){
-    PERDITION_LOG(LOG_DEBUG, "daemon_close_fd: sysconf: %s", strerror(errno));
-    PERDITION_LOG(
-      LOG_ERR, 
-      "Fatal error finding maximum file descriptors. Exiting."
-    );
+    PERDITION_DEBUG_ERRNO("sysconf");
+    PERDITION_ERR("Fatal error finding maximum file descriptors. Exiting.");
 
     /*
      * don't use daemon_exit_cleanly as daemon_close_fd 
@@ -214,7 +211,7 @@ int daemon_setid(const char *user, const char *group){
   }
   else{
     if((gr=getgrnam(group))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "daemon_setid: getgrnam: %s", strerror(errno));
+      PERDITION_DEBUG_ERRNO("getgrnam");
       return(-1);
     }
     gid=gr->gr_gid;
@@ -222,7 +219,7 @@ int daemon_setid(const char *user, const char *group){
   }
 
   if(setgid(gid)){
-    PERDITION_LOG(LOG_DEBUG, "daemon_setid: setgid: %s", strerror(errno));
+    PERDITION_DEBUG("setgid", errno);
     return(-1);
   }
 
@@ -231,7 +228,7 @@ int daemon_setid(const char *user, const char *group){
   }
   else{
     if((pw=getpwnam(user))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "daemon_setid: getpwnam: %s", strerror(errno));
+      PERDITION_DEBUG_ERRNO("getpwnam");
       return(-1);
     }
     uid=pw->pw_uid;
@@ -239,13 +236,12 @@ int daemon_setid(const char *user, const char *group){
   }
 
   if(setuid(uid)){
-    PERDITION_LOG(LOG_DEBUG, "daemon_setid: setuid: %s", strerror(errno));
+    PERDITION_DEBUG_ERRNO("setuid");
     return(-1);
   }
 
-  PERDITION_LOG(
-    LOG_DEBUG, 
-    "daemon_setid: uid=%d euid=%d gid=%d egid=%d",
+  PERDITION_DEBUG(
+    "uid=%d euid=%d gid=%d egid=%d",
     getuid(),
     geteuid(),
     getgid(),
@@ -268,7 +264,7 @@ void daemon_exit_cleanly(int i){
   if(daemon_exit_cleanly_called){ signal(i, SIG_DFL); abort(); }
   daemon_exit_cleanly_called=1;
   /*Only log if it is a signal, not a requested exit*/
-  if(i>0){ PERDITION_LOG(LOG_INFO, "Exiting on signal %d", i); }
+  if(i>0){ PERDITION_INFO("Exiting on signal %d", i); }
   daemon_close_fd();
   exit((i>0)?0:i);
 }

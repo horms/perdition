@@ -30,8 +30,7 @@
 /**********************************************************************
  * imap4_authenticate
  * Authenticate user with backend imap4 server
- * pre: in_fd: File descriptor to read server responses from
- *      out_fd: File descriptor to write to server on
+ * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structiure for imap4
@@ -43,8 +42,7 @@
  **********************************************************************/
 
 int imap4_out_authenticate(
-  const int in_fd, 
-  const int out_fd, 
+  io_t *io,
   const struct passwd *pw,
   const token_t *tag,
   const protocol_t *protocol,
@@ -59,13 +57,13 @@ int imap4_out_authenticate(
   int status=-1;
 
   if((ok=token_create())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: token_create");
+    PERDITION_DEBUG("token_create");
     goto leave;
   }
   token_assign(ok,(PERDITION_USTRING)IMAP4_OK,strlen(IMAP4_OK),TOKEN_DONT_CARE);
 
-  if((status=imap4_out_response(in_fd, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: imap4_out_response");
+  if((status=imap4_out_response(io, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
+    PERDITION_DEBUG("imap4_out_response");
     goto leave;
   }
   else if(!status){
@@ -74,7 +72,7 @@ int imap4_out_authenticate(
   }
 
   if((read_string=queue_to_string(q))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: queueo_string");
+    PERDITION_DEBUG("queue_to_string");
     status=-1;
     goto leave;
   }
@@ -84,39 +82,36 @@ int imap4_out_authenticate(
     protocol,
     GREETING_ADD_NODENAME
   ))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: greeting_str");
+    PERDITION_DEBUG("greeting_str");
     goto leave;
   }
 
   if((status=strcmp(read_string, greeting_string))==0){
-    PERDITION_LOG(LOG_DEBUG, "Loop detected, abandoning connection");
+    PERDITION_DEBUG("Loop detected, abandoning connection");
     goto leave;
   }
 
   if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "imap4_in_tagged_ok: token_to_string");
+    PERDITION_DEBUG("token_to_string");
     return(-1);
   }
 
   if(str_write(
-    out_fd, 
+    io, 
     NULL_FLAG,
-    6, 
+    "%s LOGIN \"%s\" \"%s\"", 
     tag_string, 
-    " LOGIN \"",
     pw->pw_name,
-    "\" \"",
-    pw->pw_passwd,
-    "\"")<0
-  ){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: imap4_write");
+    pw->pw_passwd
+  )<0){
+    PERDITION_DEBUG("imap4_write");
     status=-1;
     goto leave;
   }
 
 
-  if((status=imap4_out_response(in_fd, tag_string, ok, &q, buf, n))<0){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_authenticate: imap4_out_response 2");
+  if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
+    PERDITION_DEBUG("imap4_out_response 2");
   }
   vanessa_queue_destroy(q);
 
@@ -132,7 +127,7 @@ int imap4_out_authenticate(
 /**********************************************************************
  * imap4_out_response
  * Compare a respnse from a server with the desired response
- * pre: in_fd: file descriptor to read from
+ * pre: io: io_t to read from
  *      tag_string: tag expected from server
  *      desired_token: token expected from server
  *      q: resulting queue is stored here
@@ -144,7 +139,7 @@ int imap4_out_authenticate(
  **********************************************************************/
 
 int imap4_out_response(
-  const int in_fd, 
+  io_t *io,
   const char *tag_string,
   const token_t *desired_token,
   vanessa_queue_t **q,
@@ -169,18 +164,18 @@ int imap4_out_response(
 
   /*Check tag*/
   while(1){
-    if((*q=read_line(in_fd, buf, n, TOKEN_IMAP4))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_out_response: read_line");
+    if((*q=read_line(io, buf, n, TOKEN_IMAP4))==NULL){
+      PERDITION_DEBUG("read_line");
       return(-1);
     }
   
     if((*q=vanessa_queue_pop(*q, (void **)&t))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_out_response: vanessa_queue_pop");
+      PERDITION_DEBUG("vanessa_queue_pop");
       return(-1);
     }
 
     if((server_tag_string=token_to_string(t, TOKEN_NO_STRIP))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "imap4_out_response: token_to_string");
+      PERDITION_DEBUG("token_to_string");
       goto leave;
     }
     token_destroy(&t);
@@ -191,7 +186,7 @@ int imap4_out_response(
     }
   
     if(strcmp(server_tag_string, tag_string)){
-      PERDITION_LOG(LOG_DEBUG, "imap4_out_resonse: invalid tag from server");
+      PERDITION_DEBUG("invalid tag from server");
       goto leave;
     }
   
@@ -199,7 +194,7 @@ int imap4_out_response(
   }
 
   if((*q=vanessa_queue_pop(*q, (void **)&t))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "imap4_out_response: vanessa_queue_pop");
+    PERDITION_DEBUG("vanessa_queue_pop");
     return(-1);
   }
   

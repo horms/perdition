@@ -46,13 +46,12 @@ static char *dbpwd   = PERDITIONDB_PGSQL_DEFAULT_DBPWD;
  * Show an error message with postgresql errors
  * pre: msg_str: message to prepent to message
  *      conn: postgresql database connection that error is for
- * post: msg_str is logged to PERDITION_LOG with postgresql error appended
+ * post: msg_str is logged to PERDITION_DEBUG with postgresql error appended
  * return: none
  **********************************************************************/
 
-static void perditiondb_postgresql_log(char *msg_str, PGconn *conn){
-   PERDITION_LOG(LOG_DEBUG, "%s: %s",msg_str,PQerrorMessage(conn));
-}
+#define perditiondb_postgresql_log(msg_str, conn) \
+   PERDITION_DEBUG("%s: %s",msg_str,PQerrorMessage(conn))
 
 
 /**********************************************************************
@@ -102,10 +101,7 @@ int dbserver_init(char *options_str){
        options_str, 
        PERDITIONDB_PGSQL_FIELD_DELIMITER
      ))==NULL){
-       PERDITION_LOG(
-	 LOG_DEBUG, 
-	 "dbserver_init: vanessa_dynamic_array_split_str"
-       );
+       PERDITION_DEBUG("vanessa_dynamic_array_split_str");
        a=NULL;
        return(-1);
      }
@@ -198,7 +194,7 @@ int dbserver_get(
 
    conn = PQsetdbLogin(dbhost, dbport, NULL, NULL, dbname, dbuser, dbpwd);
    if(PQstatus(conn) == CONNECTION_BAD){  
-     perditiondb_postgresql_log("dbserver_init: PQsetdbLogin", conn);
+     perditiondb_postgresql_log("PQsetdbLogin", conn);
      PQfinish(conn);
      return(-1);
    }
@@ -210,14 +206,14 @@ int dbserver_get(
      dbtable, 
      key_str
    )<0){
-     PERDITION_LOG(LOG_DEBUG, "db_server_get: query truncated, aborting");
+     PERDITION_DEBUG("query truncated, aborting");
      PQfinish(conn);
      return(-3);
    }
 
    res = PQexec(conn, sqlstr);
    if(!res || PQresultStatus(res) != PGRES_TUPLES_OK){  
-     perditiondb_postgresql_log("db_server_get: PQexec", conn);
+     perditiondb_postgresql_log("PQexec", conn);
      PQclear(res);
      PQfinish(conn);
      return(-1);
@@ -262,7 +258,7 @@ int dbserver_get(
 
 
    if((*str_return=(char *)malloc(*len_return))==NULL){  
-     PERDITION_LOG(LOG_DEBUG,"db_server_get: str_return malloc");
+     PERDITION_DEBUG_ERRNO("str_return malloc");
      PQclear(res);
      PQfinish(conn);
      return(-3);

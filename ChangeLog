@@ -5,7 +5,17 @@ Mail retrieval proxy server
 Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-19th May 2001
+xxx
+(Horms)
+
+  * Version xxx
+  - Added SSL Support
+  - Added loging of successful Authentication
+  - Added logging of reread or map library
+
+----------------------------------------------------------------------
+
+9th May 2001
 (Horms)
 
   * Version 0.1.8
@@ -25,6 +35,9 @@ Copyright (C) 1999-2001  Horms <horms@vergenet.net>
   - Updated documenation of MySQL module Matt Prigge
   - Added -U|--username_from_database option to control the use of
     servernames of the form user<delimiter>domain.
+  - Added SSL Support
+  - Added loging of successful Authentication
+  - Added logging of reread or map library
 
 ----------------------------------------------------------------------
 

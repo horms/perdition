@@ -30,8 +30,7 @@
 /**********************************************************************
  * pop3_out_authenticate
  * Authenticate user with backend pop3 server
- * pre: in_fd: File descriptor to read server responses from
- *      out_fd: File descriptor to write to server on
+ * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
@@ -43,8 +42,7 @@
  **********************************************************************/
 
 int pop3_out_authenticate(
-  const int in_fd, 
-  const int out_fd, 
+  io_t *io,
   const struct passwd *pw,
   const token_t *tag,
   const protocol_t *protocol,
@@ -58,13 +56,13 @@ int pop3_out_authenticate(
   int status=-1;
 
   if((ok=token_create())==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_get_pw: token_create");
+    PERDITION_DEBUG("token_create");
     goto leave;
   }
   token_assign(ok,(PERDITION_USTRING)POP3_OK,strlen(POP3_OK),TOKEN_DONT_CARE);
 
-  if((status=pop3_out_response(in_fd, NULL, ok, &q, NULL, NULL))<0){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: pop3_out_response 1");
+  if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
+    PERDITION_DEBUG("pop3_out_response 1");
     goto leave;
   }
   else if(!status){
@@ -73,7 +71,7 @@ int pop3_out_authenticate(
   }
 
   if((read_string=queue_to_string(q))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: queueo_string");
+    PERDITION_DEBUG("queueo_string");
     status=-1;
     goto leave;
   }
@@ -83,7 +81,7 @@ int pop3_out_authenticate(
     protocol, 
     GREETING_ADD_NODENAME
   ))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: greeting_str");
+    PERDITION_DEBUG("greeting_str");
     status=-1;
     goto leave;
   }
@@ -93,13 +91,13 @@ int pop3_out_authenticate(
     goto leave;
   }
 
-  if(pop3_write(out_fd, NULL_FLAG, NULL, "USER", pw->pw_name)<0){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_get_pw: pop3_write");
+  if(pop3_write(io, NULL_FLAG, NULL, "USER", pw->pw_name)<0){
+    PERDITION_DEBUG("pop3_write");
     goto leave;
   }
 
-  if((status=pop3_out_response(in_fd, NULL, ok, &q, NULL, NULL))<0){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: pop3_out_response 2");
+  if((status=pop3_out_response(io, NULL, ok, &q, NULL, NULL))<0){
+    PERDITION_DEBUG("pop3_out_response 2");
     goto leave;
   }
   else if(!status){
@@ -109,13 +107,13 @@ int pop3_out_authenticate(
 
   vanessa_queue_destroy(q);
 
-  if(pop3_write(out_fd, NULL_FLAG, NULL, "PASS", pw->pw_passwd)<0){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_get_pw: pop3_write");
+  if(pop3_write(io, NULL_FLAG, NULL, "PASS", pw->pw_passwd)<0){
+    PERDITION_DEBUG("pop3_write");
     return(-1);
   }
 
-  if((status=pop3_out_response(in_fd, NULL, ok, &q, buf, n))<0){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_authenticate: pop3_out_response 3");
+  if((status=pop3_out_response(io, NULL, ok, &q, buf, n))<0){
+    PERDITION_DEBUG("pop3_out_response 3");
   }
   vanessa_queue_destroy(q);
 
@@ -131,7 +129,7 @@ int pop3_out_authenticate(
 /**********************************************************************
  * pop3_out_response
  * Compare a respnse from a server with the desired response
- * pre: in_fd: file descriptor to read from
+ * pre: io: io_t to read from and write to
  *      out_fd: file descriptor to write to
  *      tag_string: ignored
  *      desired_token: token expected from server
@@ -142,7 +140,7 @@ int pop3_out_authenticate(
 
 
 int pop3_out_response(
-  int in_fd, 
+  io_t *io,
   const char *tag_string,
   const token_t *desired_token,
   vanessa_queue_t **q,
@@ -152,12 +150,12 @@ int pop3_out_response(
   int status;
   token_t *t;
 
-  if((*q=read_line(in_fd, buf, n, TOKEN_POP3))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_response: read_line");
+  if((*q=read_line(io, buf, n, TOKEN_POP3))==NULL){
+    PERDITION_DEBUG("read_line");
     return(-1);
   }
   if((*q=vanessa_queue_pop(*q, (void *)&t))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "pop3_out_response: vanessa_queue_pop");
+    PERDITION_DEBUG("vanessa_queue_pop");
     return(-1);
   }
 

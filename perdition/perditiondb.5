@@ -148,6 +148,12 @@ will call dbserver_fini if it is defined and then
 dbserver_init if it is defined. Note: dbserver_init will be 
 called if defined, even if dbserver_fini is not defined.
 .P
+In the case of the posix regular expressions library this will
+cause popmap.re to be reparsed, hence effecting any changes that have been
+made to that file. For the GDBM library it will reopen the database and for
+the other libraries it will reinitalise its connection to the database,
+LDAP or NIS server.
+.P
 The shared library has access to the following global symbols exported 
 by perdition.
 .TP

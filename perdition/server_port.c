@@ -37,7 +37,7 @@ server_port_t *server_port_create (void){
   server_port_t *server_port;
 
   if((server_port=(server_port_t *)malloc(sizeof(server_port_t)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "server_port_create: malloc: %s", strerror(errno));
+    PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }
   server_port->servername=NULL;
@@ -100,14 +100,14 @@ server_port_t *server_port_strn_assign(
 
   if(delimiter!=len){
     if((server_port->port=strn_to_str(str+delimiter+1,len-delimiter-1))==NULL){
-      PERDITION_LOG( LOG_DEBUG, "server_port_strn_assign: strn_to_str port");
+      PERDITION_DEBUG("strn_to_str port");
       free(server_port);
       return(NULL);
     }
   }
 
   if((server_port->servername=strn_to_str(str, delimiter))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "server_port_strn_assign: strn_to_str servername");
+    PERDITION_DEBUG("strn_to_str servername");
     free(server_port->port);
     free(server_port);
     return(NULL);

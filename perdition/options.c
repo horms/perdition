@@ -100,27 +100,80 @@ options_t opt;
 
 #define OPT_STRIP_DOMAIN \
   if(strcasecmp(optarg_copy, "all")==0){ \
-    opt_i_or(opt.strip_domain,STATE_ALL,opt.mask,MASK_STRIP_DOMAIN,f); \
+    opt_i_or(opt.strip_domain, STRIP_STATE_ALL, opt.mask, \
+      MASK_STRIP_DOMAIN, f); \
   } \
   else if( \
     strcasecmp(optarg_copy, "servername_lookup")==0 || \
     strcasecmp(optarg_copy, "server_lookup")==0 \
   ){ \
-    opt_i_or(opt.strip_domain,STATE_GET_SERVER,opt.mask,MASK_STRIP_DOMAIN,f); \
+    opt_i_or(opt.strip_domain, STRIP_STATE_GET_SERVER, opt.mask,\
+      MASK_STRIP_DOMAIN, f); \
   } \
   else if( \
     strcasecmp(optarg_copy, "local_authentication")==0 || \
     strcasecmp(optarg_copy, "local_auth")==0 \
   ){ \
-    opt_i_or(opt.strip_domain,STATE_LOCAL_AUTH,opt.mask,MASK_STRIP_DOMAIN,f); \
+    opt_i_or(opt.strip_domain, STRIP_STATE_LOCAL_AUTH, \
+      opt.mask, MASK_STRIP_DOMAIN, f); \
   } \
   else if(strcasecmp(optarg_copy, "remote_login")==0){ \
-    opt_i_or(opt.strip_domain,STATE_REMOTE_LOGIN,opt.mask,MASK_STRIP_DOMAIN,f);\
+    opt_i_or(opt.strip_domain, STRIP_STATE_REMOTE_LOGIN, \
+      opt.mask, MASK_STRIP_DOMAIN,f);\
   } \
   else { \
-   PERDITION_LOG(LOG_DEBUG, "options: unknown state: %s", optarg_copy); \
+   PERDITION_DEBUG("unknown state: %s", optarg_copy); \
    if(f&OPT_ERR) daemon_exit_cleanly(-1); \
   }
+
+#ifdef WITH_SSL_SUPPORT
+#define OPT_SSL_MODE \
+  { \
+    int new=0; \
+    int all=0; \
+    if(strcasecmp(optarg_copy, "none")==0){ \
+       new=SSL_MODE_NONE; \
+    } \
+    else if(strcasecmp(optarg_copy, "ssl_listen")==0){ \
+       new=SSL_MODE_SSL_LISTEN; \
+    } \
+    else if(strcasecmp(optarg_copy, "ssl_outgoing")==0){ \
+       new=SSL_MODE_SSL_OUTGOING; \
+    } \
+    else if(strcasecmp(optarg_copy, "ssl_all")==0){ \
+       new=SSL_MODE_SSL_ALL; \
+    } \
+    else if(strcasecmp(optarg_copy, "tls_listen")==0){ \
+       new=SSL_MODE_TLS_LISTEN; \
+    } \
+    else if(strcasecmp(optarg_copy, "tls_outgoing")==0){ \
+       new=SSL_MODE_TLS_OUTGOING; \
+    } \
+    else if(strcasecmp(optarg_copy, "tls_all")==0){ \
+       new=SSL_MODE_TLS_ALL; \
+    } \
+    else { \
+     PERDITION_ERR("unknown ssl_mode: %s", optarg_copy); \
+     if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+    } \
+    \
+    all=new|opt.ssl_mode; \
+    if( ( ((all&SSL_LISTEN_MASK)==SSL_LISTEN_MASK) || \
+          ((all&SSL_OUTGOING_MASK)==SSL_OUTGOING_MASK) ) && \
+        ( new!=SSL_MODE_NONE || \
+          (opt.ssl_mode!=SSL_MODE_NONE && opt.ssl_mode!=SSL_MODE_EMPTY) ) \
+     ){ \
+      PERDITION_DEBUG("invalid ssl_mode combination"); \
+      if(f&OPT_ERR) daemon_exit_cleanly(-1); \
+    } \
+    /* TLS support hasn't been implemented yet */ \
+    /* if(new!=SSL_MODE_NONE && new&SSL_TLS_MASK){ */ \
+    /*  PERDITION_DEBUG("TLS not implemented"); */ \
+    /*  if(f&OPT_ERR) daemon_exit_cleanly(-1); */ \
+    /*} */ \
+    opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
+  }
+#endif /* WITH_SSL_SUPPORT */
 
 /**********************************************************************
  * options
@@ -137,42 +190,48 @@ int options(int argc, char **argv, flag_t f){
   int index;
   flag_t i;
   const char *optarg;
-  char *basename;
+  const char *basename;
   char *optarg_copy;
   char *end;
   poptContext context;
 
   static struct poptOption options[] =
   {
-    {"authenticate_in",             'a', POPT_ARG_NONE,   NULL, 'a'},
-    {"no_bind_banner",              'B', POPT_ARG_NONE,   NULL, 'B'},
-    {"bind_address",                'b', POPT_ARG_STRING, NULL, 'b'},
-    {"connection_logging",          'C', POPT_ARG_NONE,   NULL, 'C'},
-    {"client_server_specification", 'c', POPT_ARG_NONE,   NULL, 'c'},
-    {"domain_delimiter",            'D', POPT_ARG_STRING, NULL, 'D'},
-    {"debug",                       'd', POPT_ARG_NONE,   NULL, 'd'},
-    {"log_facility",                'F', POPT_ARG_STRING, NULL, 'F'},
-    {"config_file",                 'f', POPT_ARG_STRING, NULL, 'f'},
-    {"group",                       'g', POPT_ARG_STRING, NULL, 'g'},
-    {"help",                        'h', POPT_ARG_NONE,   NULL, 'h'},
-    {"inetd_mode",                  'i', POPT_ARG_NONE,   NULL, 'i'},
-    {"jain",                        'j', POPT_ARG_NONE,   NULL, 'j'},
-    {"jane",                        'j', POPT_ARG_NONE,   NULL, 'j'},
-    {"jayne",                       'j', POPT_ARG_NONE,   NULL, 'j'},
-    {"connection_limit",            'L', POPT_ARG_STRING, NULL, 'L'},
-    {"listen_port",                 'l', POPT_ARG_STRING, NULL, 'l'},
-    {"map_library",                 'M', POPT_ARG_STRING, NULL, 'M'},
-    {"map_library_opt",             'm', POPT_ARG_STRING, NULL, 'm'},
-    {"no_lookup",                   'n', POPT_ARG_NONE,   NULL, 'n'},
-    {"server_ok_line",              'o', POPT_ARG_NONE,   NULL, 'o'},
-    {"protocol",                    'P', POPT_ARG_STRING, NULL, 'P'},
-    {"outgoing_port",               'p', POPT_ARG_STRING, NULL, 'p'},
-    {"strip_domain",                'S', POPT_ARG_STRING, NULL, 'S'},
-    {"outgoing_server",             's', POPT_ARG_STRING, NULL, 's'},
-    {"timeout",                     't', POPT_ARG_STRING, NULL, 't'},
-    {"username",                    'u', POPT_ARG_STRING, NULL, 'u'},
-    {"username_from_database",      'U', POPT_ARG_NONE,   NULL, 'U'},
-    {"quiet",                       'q', POPT_ARG_NONE,   NULL, 'q'},
+    {"authenticate_in",             'a',  POPT_ARG_NONE,   NULL, 'a'},
+    {"no_bind_banner",              'B',  POPT_ARG_NONE,   NULL, 'B'},
+    {"bind_address",                'b',  POPT_ARG_STRING, NULL, 'b'},
+    {"connection_logging",          'C',  POPT_ARG_NONE,   NULL, 'C'},
+    {"client_server_specification", 'c',  POPT_ARG_NONE,   NULL, 'c'},
+    {"domain_delimiter",            'D',  POPT_ARG_STRING, NULL, 'D'},
+    {"debug",                       'd',  POPT_ARG_NONE,   NULL, 'd'},
+    {"log_facility",                'F',  POPT_ARG_STRING, NULL, 'F'},
+    {"config_file",                 'f',  POPT_ARG_STRING, NULL, 'f'},
+    {"group",                       'g',  POPT_ARG_STRING, NULL, 'g'},
+    {"help",                        'h',  POPT_ARG_NONE,   NULL, 'h'},
+    {"inetd_mode",                  'i',  POPT_ARG_NONE,   NULL, 'i'},
+    {"jain",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
+    {"jane",                        'j',  POPT_ARG_NONE,   NULL, 'j'},
+    {"jayne",                       'j',  POPT_ARG_NONE,   NULL, 'j'},
+    {"connection_limit",            'L',  POPT_ARG_STRING, NULL, 'L'},
+    {"listen_port",                 'l',  POPT_ARG_STRING, NULL, 'l'},
+    {"map_library",                 'M',  POPT_ARG_STRING, NULL, 'M'},
+    {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
+    {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
+    {"server_ok_line",              'o',  POPT_ARG_NONE,   NULL, 'o'},
+    {"protocol",                    'P',  POPT_ARG_STRING, NULL, 'P'},
+    {"outgoing_port",               'p',  POPT_ARG_STRING, NULL, 'p'},
+    {"strip_domain",                'S',  POPT_ARG_STRING, NULL, 'S'},
+    {"outgoing_server",             's',  POPT_ARG_STRING, NULL, 's'},
+    {"timeout",                     't',  POPT_ARG_STRING, NULL, 't'},
+    {"username",                    'u',  POPT_ARG_STRING, NULL, 'u'},
+    {"username_from_database",      'U',  POPT_ARG_NONE,   NULL, 'U'},
+    {"quiet",                       'q',  POPT_ARG_NONE,   NULL, 'q'},
+    {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_MODE },
+    {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_CERT_FILE },
+    {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_KEY_FILE },
     {NULL,                           0,   0,               NULL, 0 }
   };
 
@@ -219,6 +278,11 @@ int options(int argc, char **argv, flag_t f){
     opt_p(opt.outgoing_port,   PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
     opt_da(opt.outgoing_server,DEFAULT_OUTGOING_SERVER,     i, 0, OPT_NOT_SET);
     opt_p(opt.username,        DEFAULT_USERNAME,            i, 0, OPT_NOT_SET);
+#ifdef WITH_SSL_SUPPORT
+    opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
+#endif /* WITH_SSL_SUPPORT */
   }
 
   if(f&OPT_CLEAR_MASK) opt.mask=(flag_t)0;
@@ -233,19 +297,13 @@ int options(int argc, char **argv, flag_t f){
         opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
         break;
 #else
+      PERDITION_DEBUG(
+	"-a|--authenticate is only supported when compiled against libpam");
       if(f&OPT_ERR){
-        fprintf(
-	  stderr, 
-	  "-a|--authenticate in only supported when compiled against libpam\n"
-        );
         sleep(1);
         usage(-1);
       }
       else{
-        PERDITION_LOG(
-	  LOG_DEBUG,  
-	  "-a|--authenticate in only supported when compiled against libpam"
-        );
         poptFreeContext(context);
         return(-1);
       }
@@ -294,9 +352,7 @@ int options(int argc, char **argv, flag_t f){
         opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
         break;
       case 'j':
-        if(f&OPT_ERR){ 
-	  printf( "Jain, Oath\n"); 
-	}
+	PERDITION_DEBUG( "Jain, Oath\n"); 
         break;
       case 'L':
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
@@ -337,7 +393,7 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'S':
 	if((optarg_copy=strdup(optarg)) == NULL){
-          PERDITION_LOG(LOG_DEBUG, "options: strdup: %s", strerror(errno));
+          PERDITION_DEBUG_ERRNO("strdup 1");
           if(f&OPT_ERR) daemon_exit_cleanly(-1);
 	}
 	while((end=strchr(optarg_copy, ','))!=NULL){
@@ -353,7 +409,7 @@ int options(int argc, char **argv, flag_t f){
             vanessa_dynamic_array_destroy(opt.outgoing_server);
           }
 	  if((optarg_copy=strdup(optarg)) == NULL){
-            PERDITION_LOG(LOG_DEBUG, "options: strdup: %s", strerror(errno));
+            PERDITION_DEBUG_ERRNO("strdup 2");
             if(f&OPT_ERR) daemon_exit_cleanly(-1);
 	  }
           opt.outgoing_server=split_str_server_port(
@@ -378,26 +434,81 @@ int options(int argc, char **argv, flag_t f){
       case 'q':
         opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
         break;
+      case TAG_SSL_MODE:
+#ifdef WITH_SSL_SUPPORT
+	if((optarg_copy=strdup(optarg)) == NULL){
+          PERDITION_DEBUG_ERRNO("strdup 1");
+          if(f&OPT_ERR) daemon_exit_cleanly(-1);
+	}
+	while((end=strchr(optarg_copy, ','))!=NULL){
+	  *end='\0';
+	  OPT_SSL_MODE;
+	  optarg_copy=end+1;
+	}
+	OPT_SSL_MODE;
+#else /* WITH_SSL_SUPPORT */
+        PERDITION_DEBUG(
+	  "--ssl_mode is only supported when ssl support is compiled in");
+        if(f&OPT_ERR){
+          sleep(1);
+          usage(-1);
+        }
+        else{
+          poptFreeContext(context);
+          return(-1);
+        }
+#endif /* WITH_SSL_SUPPORT */
+      break;
+      case TAG_SSL_CERT_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_CERT_FILE,f);
+#else /* WITH_SSL_SUPPORT */
+      PERDITION_DEBUG(
+	"--ssl_cert_file is only supported when ssl support is compiled in");
+      if(f&OPT_ERR){
+        sleep(1);
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      case TAG_SSL_KEY_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
+#else /* WITH_SSL_SUPPORT */
+      PERDITION_DEBUG(
+	"--ssl_key_file is only supported when ssl support is compiled in");
+      if(f&OPT_ERR){
+        sleep(1);
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      default:
+        PERDITION_DEBUG("Unknown Option");
+        exit;
     }
   }
 
   if (c < -1) {
-    char tmp_buf[BUFFER_SIZE];
-    snprintf(
-      tmp_buf, 
-      BUFFER_SIZE, 
+    PERDITION_DEBUG(
       "options: %s: %s\n",
       poptBadOption(context, POPT_BADOPTION_NOALIAS),
       poptStrerror(c)
     );
-
+      
     if(f&OPT_ERR){
-      fprintf(stderr, "%s", tmp_buf);
       sleep(1);
       usage(-1);
     }
     else{
-      PERDITION_LOG(LOG_DEBUG, tmp_buf);
       poptFreeContext(context);
       return(-1);
     }
@@ -428,21 +539,37 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
 }
 
 
+#define BIN_OPT_STR(opt) ((opt)?"on":"off")
+
 /**********************************************************************
  * log_options
  * Log options
  **********************************************************************/
 
+#define LOG_OPTIONS_ADD_STR(str, dest, start) \
+{ \
+  if(dest!=start) \
+    *dest++=','; \
+  strcpy(dest, str); \
+  dest+=strlen(dest); \
+}
+
 int log_options(void){
   char *protocol=NULL;
   char *outgoing_server=NULL;
+  char strip_domain[40];
+  char *strip_domain_p;
+#ifdef WITH_SSL_SUPPORT
+  char ssl_mode[26];
+  char *ssl_mode_p;
+#endif /* WITH_SSL_SUPPORT */
 
   extern options_t opt;
   extern struct utsname *system_uname;
   extern vanessa_logger_t *perdition_vl;
 
   if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "log_options: protocol_list");
+    PERDITION_DEBUG("protocol_list");
     return(-1);
   }
 
@@ -451,72 +578,133 @@ int log_options(void){
       opt.outgoing_server,
       OPT_SERVER_DELIMITER
     ))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "log_options: vanessa_dynamic_array_display");
+      PERDITION_DEBUG("vanessa_dynamic_array_display");
       free(protocol);
       return(-1);
     }
   }
 
+  strip_domain_p=strip_domain;
+  if(opt.strip_domain&STRIP_STATE_GET_SERVER &&
+      opt.strip_domain&STRIP_STATE_LOCAL_AUTH &&
+      opt.strip_domain&STRIP_STATE_REMOTE_LOGIN) {
+    LOG_OPTIONS_ADD_STR("all", strip_domain_p, strip_domain)
+  }
+  else {
+    if(opt.strip_domain&STRIP_STATE_GET_SERVER)
+      LOG_OPTIONS_ADD_STR("servername_lookup", strip_domain_p, strip_domain)
+    if(opt.strip_domain&STRIP_STATE_LOCAL_AUTH)
+      LOG_OPTIONS_ADD_STR("local_authentication", strip_domain_p, strip_domain)
+    if(opt.strip_domain&STRIP_STATE_REMOTE_LOGIN)
+      LOG_OPTIONS_ADD_STR("remote_login", strip_domain_p, strip_domain)
+    if(strip_domain_p==strip_domain)
+      *strip_domain_p='\0';
+  }
+  
+#ifdef WITH_SSL_SUPPORT
+  switch(opt.ssl_mode){
+    case SSL_MODE_EMPTY: 
+      *ssl_mode='\0';
+      break;
+    case SSL_MODE_NONE:
+      strcpy(ssl_mode, "none");
+      break;
+    default:
+      ssl_mode_p=ssl_mode;
+      if(opt.ssl_mode&SSL_MODE_SSL_LISTEN 
+          && opt.ssl_mode&SSL_MODE_SSL_OUTGOING)
+        LOG_OPTIONS_ADD_STR("ssl_all", ssl_mode_p, ssl_mode)
+      else if(opt.ssl_mode&SSL_MODE_TLS_LISTEN &&
+          opt.ssl_mode&SSL_MODE_TLS_OUTGOING)
+        LOG_OPTIONS_ADD_STR("tls_all", ssl_mode_p, ssl_mode)
+      else {
+        if(opt.ssl_mode&SSL_MODE_SSL_LISTEN)
+          LOG_OPTIONS_ADD_STR("ssl_listen", ssl_mode_p, ssl_mode)
+        if(opt.ssl_mode&SSL_MODE_SSL_OUTGOING)
+          LOG_OPTIONS_ADD_STR("ssl_outgoing", ssl_mode_p, ssl_mode)
+        if(opt.ssl_mode&SSL_MODE_TLS_LISTEN)
+          LOG_OPTIONS_ADD_STR("tls_listen", ssl_mode_p, ssl_mode)
+        if(opt.ssl_mode&SSL_MODE_TLS_OUTGOING)
+          LOG_OPTIONS_ADD_STR("tls_outgoing", ssl_mode_p, ssl_mode)
+        if(ssl_mode_p==ssl_mode)
+          *ssl_mode_p='\0';
+      }
+      break;
+  }
+#endif /* WITH_SSL_SUPPORT */
+
   vanessa_logger_log(
     perdition_vl,
     LOG_INFO, 
 #ifdef WITH_PAM_SUPPORT
-    "authenticate_in=%d, "
+    "authenticate_in=%s, "
 #endif /* WITH_PAM_SUPPORT */
     "bind_address=\"%s\", "
-    "client_server_specification=%d, "
+    "client_server_specification=%s, "
     "config_file=\"%s\", "
     "connection_limit=%d, "
-    "connection_logging=%d, "
-    "debug=%d, "
+    "connection_logging=%s, "
+    "debug=%s, "
     "domain_delimiter=\"%s\", "
     "group=\"%s\", "
-    "inetd_mode=%d, "
+    "inetd_mode=%s, "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
-    "no_bind_banner=%d, "
-    "no_lookup=%d, "
+    "no_bind_banner=%s, "
+    "no_lookup=%s, "
     "nodename=\"%s\", "
     "outgoing_port=\"%s\", "
     "outgoing_server=\"%s\", "
     "prototol=\"%s\", "
-    "server_ok_line=%d, "
-    "strip_domain=%d, "
-    "timeout=%d, "
+    "server_ok_line=%s, "
+    "strip_domain=\"%s\", "
+    "timeout=%s, "
     "username=\"%s\", "
-    "username_from_database=%d, "
-    "quiet=%d " 
+    "username_from_database=%s, "
+    "quiet=%s, " 
+#ifdef WITH_SSL_SUPPORT
+    "ssl_mode=\"%s\", "
+    "ssl_cert_file=\"%s\", "
+    "ssl_key_file=\"%s\", "
+    "(ssl_mask=0x%x) "
+#endif /* WITH_SSL_SUPPORT */
     "(mask=0x%x)\n",
 #ifdef WITH_PAM_SUPPORT
-    opt.authenticate_in,
+    BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
     str_null_safe(opt.bind_address),
-    opt.client_server_specification,
-    opt.config_file,
+    BIN_OPT_STR(opt.client_server_specification),
+    str_null_safe(opt.config_file),
     opt.connection_limit,
-    opt.connection_logging,
-    opt.debug,
+    BIN_OPT_STR(opt.connection_logging),
+    BIN_OPT_STR(opt.debug),
     str_null_safe(opt.domain_delimiter),
     str_null_safe(opt.group),
-    opt.inetd_mode,
+    BIN_OPT_STR(opt.inetd_mode),
     str_null_safe(opt.listen_port),
     str_null_safe(opt.log_facility),
     str_null_safe(opt.map_library),
     str_null_safe(opt.map_library_opt),
-    opt.no_bind_banner,
-    opt.no_lookup,
+    BIN_OPT_STR(opt.no_bind_banner),
+    BIN_OPT_STR(opt.no_lookup),
     str_null_safe(system_uname->nodename),
     str_null_safe(opt.outgoing_port),
     str_null_safe(outgoing_server),
     protocol,
-    opt.server_ok_line,
-    opt.strip_domain,
-    opt.timeout,
+    BIN_OPT_STR(opt.server_ok_line),
+    strip_domain,
+    BIN_OPT_STR(opt.timeout),
     str_null_safe(opt.username),
-    opt.username_from_database,
-    opt.quiet,
+    BIN_OPT_STR(opt.username_from_database),
+    BIN_OPT_STR(opt.quiet),
+#ifdef WITH_SSL_SUPPORT
+    ssl_mode,
+    str_null_safe(opt.ssl_cert_file),
+    str_null_safe(opt.ssl_key_file),
+    opt.ssl_mask,
+#endif /* WITH_SSL_SUPPORT */
     opt.mask
   );
 
@@ -544,7 +732,7 @@ void usage(int exit_status){
     ", ", 
     PROTOCOL_ALL
   ))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "usage: protocol_list 1");
+    PERDITION_DEBUG("protocol_list 1");
     available_protocols="*error*";
   }
 
@@ -553,7 +741,7 @@ void usage(int exit_status){
     NULL,
     PROTOCOL_DEFAULT
   ))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "usage: protocol_list 2");
+    PERDITION_DEBUG("protocol_list 2");
     default_protocol_str="*error*";
   }
 
@@ -663,6 +851,20 @@ void usage(int exit_status){
     "    -U|--username_from_database option is specified or not.\n"
     " -q|--quiet:\n"
     "    Only log errors. Overriden by -d|--debug\n"
+#ifdef WITH_SSL_SUPPORT
+    " --ssl_mode:\n"
+    "    Use SSL and or TLS for the listening and/or outgoing connections.\n"
+    "    A comma delimited list of: none, ssl_incoming, ssl_outgoing,\n"
+    "    ssl_all, tls_incoming, tls_outgoing, tls_all. See manpage for\n"
+    "    details of these options.\n"
+    "    (default \"%s\")\n"
+    " --ssl_cert_file:\n"
+    "    Certificate to use when listening for SSL or TLS connections.\n"
+    "    (default \"%s\")\n"
+    " --ssl_key_file:\n"
+    "    Public key to use when listening for SSL or TLS connections.\n"
+    "    (default \"%s\")\n"
+#endif /* WITH_SSL_SUPPORT */
     "\n"
     " Note: default value for binary flags is off\n",
     VERSION,
@@ -681,6 +883,12 @@ void usage(int exit_status){
     str_null_safe(DEFAULT_OUTGOING_SERVER),
     DEFAULT_TIMEOUT,
     str_null_safe(DEFAULT_USERNAME)
+#ifdef WITH_SSL_SUPPORT
+    ,
+    str_null_safe(NULL),
+    str_null_safe(DEFAULT_SSL_KEY_FILE),
+    str_null_safe(DEFAULT_SSL_CERT_FILE)
+#endif /* WITH_SSL_SUPPORT */
   );
 
   fflush(stream);

@@ -25,7 +25,29 @@
  *
  **********************************************************************/
 
-#include "perdition.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h" 
+#endif
+
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <vanessa_socket.h>
+
+#include "protocol.h"
+#include "daemon.h"
+#include "log.h"
+#include "options.h"
+#include "getserver.h"
+#include "perdition_types.h"
+#include "greeting.h"
+#include "quit.h"
+#include "config_file.h"
+#include "config_file.h"
+#include "server_port.h"
 
 /*Use uname information here and there to idinify this system*/
 struct utsname *system_uname;
@@ -67,6 +89,11 @@ static void strip_username_free(void);
   if (!round_robin_server){ \
     server_port_destroy(server_port); \
   } \
+  if(server_io!=NULL) { \
+    io_close(server_io); \
+    io_destroy(server_io); \
+  } \
+  server_io=NULL; \
   server_port=NULL; \
   token_destroy(&tag); \
   strip_username_free();
@@ -75,30 +102,37 @@ static void strip_username_free(void);
 #ifdef WITH_PAM_SUPPORT 
 #define PERDITION_SET_UID_AND_GID \
   if(opt.debug && geteuid() && opt.authenticate_in){ \
-    PERDITION_LOG( \
-      LOG_INFO,  \
+    PERDITION_INFO( \
       "Warning: not invoked as root, local authentication may fail" \
     ); \
   } \
   if(!geteuid() && daemon_setid(opt.username, opt.group)){ \
-    PERDITION_LOG(LOG_ERR, "Fatal error setting group and userid. Exiting.");\
+    PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
     daemon_exit_cleanly(-1); \
   }
 #else
 #define PERDITION_SET_UID_AND_GID \
   if(!geteuid() && daemon_setid(opt.username, opt.group)){ \
-    PERDITION_LOG(LOG_ERR, "Fatal error setting group and userid. Exiting.");\
+    PERDITION_ERR("Fatal error setting group and userid. Exiting.");\
     daemon_exit_cleanly(-1); \
   }
 #endif
+
+#ifdef WITH_SSL_SUPPORT
+io_t *perdition_ssl_connection(
+  io_t *io,
+  SSL_CTX *ssl_ctx,
+  flag_t flag
+);
+
+SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
+#endif /* WITH_SSL_SUPPORT */
 
 /**********************************************************************
  * Muriel the main function
  **********************************************************************/
 
 int main (int argc, char **argv){
-  struct sockaddr_in from;
-  struct sockaddr_in to;
   struct passwd pw;
   struct passwd pw2;
   unsigned char *server_ok_buf=NULL;
@@ -113,35 +147,58 @@ int main (int argc, char **argv){
   char *servername=NULL;
   char *username;
   char *port=NULL;
+  io_t *client_io=NULL;
+  io_t *server_io=NULL;
   int bytes_written=0;
   int bytes_read=0;
-  int client_in=-1;
-  int client_out=-1;
-  int server=-1;
   int status;
   int round_robin_server=0;
   int rnd;
+  int s;
+
+#ifdef WITH_SSL_SUPPORT
+  SSL_CTX *ssl_ctx=NULL;
+  SSL *ssl;
+  X509 *server_cert;
+#endif /* WITH_SSL_SUPPORT */
 
   extern struct sockaddr_in *peername;
   extern struct sockaddr_in *sockname;
   extern struct utsname *system_uname;
   extern options_t opt;
 
-  /*Parse options*/
-  options(argc, argv, OPT_FIRST_CALL);
-
   /*
    * Create Logger
    */
-  if((perdition_vl=vanessa_logger_openlog_syslog_byname(
-    DEFAULT_LOG_FACILITY,
+  if((perdition_vl=vanessa_logger_openlog_filehandle(
+    stdout,
     LOG_IDENT,
-    opt.debug?LOG_DEBUG:LOG_INFO,
+    LOG_DEBUG,
     LOG_CONS
   ))==NULL){
     fprintf(stderr, "main: vanessa_logger_openlog_syslog\n");
     fprintf(stderr, "Fatal error opening logger. Exiting.\n");
     daemon_exit_cleanly(-1);
+  }
+
+  /*Parse options*/
+  options(argc, argv, OPT_FIRST_CALL);
+
+  /*
+   * Update Logger
+   */
+  if(!opt.debug){
+    vanessa_logger_closelog(perdition_vl);
+    if((perdition_vl=vanessa_logger_openlog_filehandle(
+      stdout,
+      LOG_IDENT,
+      opt.quiet?LOG_ERR:LOG_INFO,
+      LOG_CONS
+    ))==NULL){
+      fprintf(stderr, "main: vanessa_logger_openlog_syslog\n");
+      fprintf(stderr, "Fatal error opening logger. Exiting.\n");
+      daemon_exit_cleanly(-1);
+    }
   }
 
   /*Read congif file*/
@@ -160,14 +217,18 @@ int main (int argc, char **argv){
     )<0
   ){
     fprintf(stderr,"dlopen of \"%s\" failed\n",str_null_safe(opt.map_library));
-    PERDITION_LOG(
-      LOG_ERR,
-      "dlopen of \"%s\" failed",
-      str_null_safe(opt.map_library)
-    );
+    PERDITION_ERR("dlopen of \"%s\" failed", str_null_safe(opt.map_library));
     usage(-1);
     daemon_exit_cleanly(-1);
   }
+
+#ifdef WITH_SSL_SUPPORT
+  if(opt.ssl_mode&SSL_MODE_SSL_LISTEN &&
+      (ssl_ctx=perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file))==NULL){
+    PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 1");
+    daemon_exit_cleanly(-1);
+  }
+#endif /* WITH_SSL_SUPPORT */
 
   /*Set signal handlers*/
   signal(SIGHUP,    (void(*)(int))perdition_reread_handler);
@@ -232,32 +293,32 @@ int main (int argc, char **argv){
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
-    PERDITION_LOG(LOG_DEBUG,"main: malloc system_uname: %s",strerror(errno));
-    PERDITION_LOG(LOG_ERR, "Fatal error allocating memory. Exiting.");
+    PERDITION_DEBUG_ERRNO("malloc system_uname");
+    PERDITION_ERR("Fatal error allocating memory. Exiting.");
     daemon_exit_cleanly(-1);
   }
   if(uname(system_uname)<0){
-    PERDITION_LOG(LOG_DEBUG, "main: uname");
-    PERDITION_LOG(LOG_ERR, "Fatal error finding uname for system. Exiting");
+    PERDITION_DEBUG("uname");
+    PERDITION_ERR("Fatal error finding uname for system. Exiting");
     daemon_exit_cleanly(-1);
   }
 
   /*Set up protocol structure*/
   if((protocol=protocol_initialise(opt.protocol, protocol))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "main: protocol_initialise");
-    PERDITION_LOG(LOG_ERR, "Fatal error intialising protocol. Exiting.");
+    PERDITION_DEBUG("protocol_initialise");
+    PERDITION_ERR("Fatal error intialising protocol. Exiting.");
     daemon_exit_cleanly(-1);
   }
 
   /*Set listen and outgoing port now the protocol structure is accessable*/
   if((opt.listen_port=(*(protocol->port))(opt.listen_port))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "main: protocol->port 1");
-    PERDITION_LOG(LOG_ERR, "Fatal error finding port to listen on. Exiting.");
+    PERDITION_DEBUG("protocol->port 1");
+    PERDITION_ERR("Fatal error finding port to listen on. Exiting.");
     daemon_exit_cleanly(-1);
   }
   if((opt.outgoing_port=(*(protocol->port))(opt.outgoing_port))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "main: protocol->port 2");
-    PERDITION_LOG(LOG_ERR, "Fatal error finding port to connect to. Exiting.");
+    PERDITION_DEBUG("protocol->port 2");
+    PERDITION_ERR("Fatal error finding port to connect to. Exiting.");
     daemon_exit_cleanly(-1);
   }
 
@@ -268,8 +329,8 @@ int main (int argc, char **argv){
    */
   if((!opt.quiet && !opt.inetd_mode) || opt.debug){
     if(log_options()){
-      PERDITION_LOG(LOG_DEBUG, "main: log_options");
-      PERDITION_LOG(LOG_ERR, "Fatal error loging options. Exiting.");
+      PERDITION_DEBUG("log_options");
+      PERDITION_ERR("Fatal error loging options. Exiting.");
       daemon_exit_cleanly(-1);
     }
   }
@@ -287,41 +348,85 @@ int main (int argc, char **argv){
     if((server_ok_buf=(unsigned char *)malloc(
       sizeof(unsigned char)*MAX_LINE_LENGTH
     ))==NULL){
-      PERDITION_LOG(LOG_DEBUG,"main: malloc server_ok_buf: %s",strerror(errno));
-      PERDITION_LOG(LOG_ERR, "Fatal error allocating memory. Exiting.");
+      PERDITION_DEBUG_ERRNO("malloc server_ok_buf");
+      PERDITION_ERR("Fatal error allocating memory. Exiting.");
       daemon_exit_cleanly(-1);
     }
   }
 
+  /*
+   * Allocate the peername and sockanme structures
+   */
+  if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
+    PERDITION_DEBUG_ERRNO("malloc sockname");
+    PERDITION_ERR("Fatal error allocating memory. Exiting.");
+    daemon_exit_cleanly(-1);
+  }
+  if((peername=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
+    PERDITION_DEBUG_ERRNO("malloc peername");
+    PERDITION_ERR("Fatal error allocating memory. Exiting.");
+    daemon_exit_cleanly(-1);
+  }
+  
+
   /*Open incoming socket as required*/
   if(opt.inetd_mode){
-    client_in=0;
-    client_out=1;
-    *from_to_str='\0';
-    *to_str='\0';
-    *from_str='\0';
-    peername=NULL;
-    sockname=NULL;
+    socklen_t           namelen;
+
+    if((client_io=io_create_fd(0, 1))==NULL){
+      PERDITION_DEBUG("io_create_fd 1");
+      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      daemon_exit_cleanly(-1);
+    }
+
+    namelen = sizeof(*peername);
+    if(getpeername(0, (struct sockaddr *)peername, &namelen)){
+      peername=NULL;
+    }
+
+    namelen = sizeof(*sockname);
+    if(getsockname(1, (struct sockaddr *)sockname, &namelen)){
+      sockname=NULL;
+    }
   }
   else{
-    if((client_in=vanessa_socket_server_connect(
+    if((s=vanessa_socket_server_connect(
       opt.listen_port, 
       opt.bind_address,
       opt.connection_limit, 
-      &from,
-      &to,
+      peername,
+      sockname,
       0
     ))<0){
-      PERDITION_LOG(LOG_DEBUG, "main: vanessa_socket_server_connect");
-      PERDITION_LOG(LOG_ERR, "Fatal error accepting child connecion. Exiting.");
+      PERDITION_DEBUG("vanessa_socket_server_connect");
+      PERDITION_ERR("Fatal error accepting child connecion. Exiting.");
       daemon_exit_cleanly(-1);
     }
-    client_out=client_in;
-    snprintf(from_str, 17, "%s", inet_ntoa(from.sin_addr));
-    snprintf(to_str,   17, "%s", inet_ntoa(to.sin_addr));
+
+    if((client_io=io_create_fd(s, s))==NULL){
+      PERDITION_DEBUG("io_create_fd 2");
+      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      daemon_exit_cleanly(-1);
+    }
+  }
+
+  if(peername!=NULL){
+    snprintf(from_str, 17, "%s", inet_ntoa(peername->sin_addr));
+  }
+  else {
+    *from_str='\0';
+  }
+  if(sockname!=NULL){
+    snprintf(to_str,   17, "%s", inet_ntoa(sockname->sin_addr));
+  }
+  else {
+    *to_str='\0';
+  }
+  if(peername!=NULL && sockname!=NULL){
     snprintf(from_to_str, 36, "%s->%s ", from_str, to_str);
-    peername=&from;
-    sockname=&to;
+  }
+  else{
+    *from_to_str='\0';
   }
 
   /*Become someone else*/
@@ -335,11 +440,18 @@ int main (int argc, char **argv){
   srand(time(NULL)*getpid());
   rnd=rand();
 
+#ifdef WITH_SSL_SUPPORT
+  if(opt.ssl_mode&SSL_MODE_SSL_LISTEN && (client_io=perdition_ssl_connection(
+      client_io, ssl_ctx, PERDITION_SERVER))==NULL){
+    PERDITION_DEBUG("perdition_ssl_connection 1");
+    daemon_exit_cleanly(-1);
+  }
+#endif /* WITH_SSL_SUPPORT */
+
   /*Speak to our client*/
-  if(greeting(client_out, protocol, GREETING_ADD_NODENAME)){
-    PERDITION_LOG(LOG_DEBUG, "main: greeting");
-    PERDITION_LOG(
-      LOG_ERR, 
+  if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
+    PERDITION_DEBUG("greeting");
+    PERDITION_ERR(
       "Fatal error writing to client. %s Exiting child.",
       from_to_str
     );
@@ -351,10 +463,9 @@ int main (int argc, char **argv){
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
-    if((status=(*(protocol->in_get_pw))(client_in, client_out, &pw, &tag))<0){
-      PERDITION_LOG(LOG_DEBUG, "main: protocol->in_get_pw");
-      PERDITION_LOG(
-	LOG_ERR, 
+    if((status=(*(protocol->in_get_pw))(client_io, &pw, &tag))<0){
+      PERDITION_DEBUG("protocol->in_get_pw");
+      PERDITION_ERR(
 	"Fatal Error reading authentication information from client \"%s\": "
 	"Exiting child", 
 	from_to_str
@@ -362,8 +473,7 @@ int main (int argc, char **argv){
       daemon_exit_cleanly(-1);
     }
     else if(status>0){
-      PERDITION_LOG(
-        LOG_DEBUG, 
+      PERDITION_ERR(
         "Closing NULL session: %susername=%s", 
         from_to_str,
         str_null_safe(pw.pw_name)
@@ -372,10 +482,9 @@ int main (int argc, char **argv){
     }
 
     /*Read the server from the map, if we have a map*/
-    if((username=strip_username(pw.pw_name, STATE_GET_SERVER))==NULL){
-      PERDITION_DEBUG("main: strip_username STATE_GET_SERVER");
-      PERDITION_LOG(
-	LOG_ERR, 
+    if((username=strip_username(pw.pw_name, STRIP_STATE_GET_SERVER))==NULL){
+      PERDITION_DEBUG("strip_username STATE_GET_SERVER");
+      PERDITION_ERR(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -398,9 +507,8 @@ int main (int argc, char **argv){
           free(pw.pw_name);
 	  *host='\0';
           if((pw.pw_name=strdup(servername))==NULL){
-	    PERDITION_DEBUG("main: strdup");
-            PERDITION_LOG(
-	      LOG_ERR, 
+	    PERDITION_DEBUG_ERRNO("strdup");
+            PERDITION_ERR(
 	      "Fatal error manipulating username for client \"%s\": "
 	      "Exiting child",
 	      from_str
@@ -428,8 +536,7 @@ int main (int argc, char **argv){
     }
 
     /*Log the session*/
-    PERDITION_LOG(
-      LOG_INFO, 
+    PERDITION_INFO(
       "Connect: %suser=\"%s\" server=\"%s\" port=\"%s\"", 
       from_to_str,
       str_null_safe(pw.pw_name),
@@ -441,14 +548,14 @@ int main (int argc, char **argv){
     if(servername==NULL){
       sleep(PERDITION_AUTH_FAIL_SLEEP);
       if((*(protocol->write))(
-        client_out, 
+        client_io, 
         NULL_FLAG,
 	tag,
 	protocol->type[PROTOCOL_ERR], 
 	"Could not determine server"
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->write");
-        PERDITION_LOG(LOG_ERR, "Fatal error writing to client. Exiting child.");
+        PERDITION_DEBUG("protocol->write");
+        PERDITION_ERR("Fatal error writing to client. Exiting child.");
         daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
@@ -457,10 +564,10 @@ int main (int argc, char **argv){
 
 #ifdef WITH_PAM_SUPPORT
     if(opt.authenticate_in){
-      if((pw2.pw_name=strip_username(pw.pw_name, STATE_LOCAL_AUTH))==NULL){
-        PERDITION_DEBUG("main: strip_username STATE_LOCAL_AUTH");
-        PERDITION_LOG(
-	  LOG_ERR, 
+      if((pw2.pw_name=strip_username(pw.pw_name, 
+            STRIP_STATE_LOCAL_AUTH))==NULL){
+        PERDITION_DEBUG("strip_username STATE_LOCAL_AUTH");
+        PERDITION_ERR(
 	  "Fatal error manipulating username for client \"%s\": Exiting child",
 	  from_str
         );
@@ -468,19 +575,17 @@ int main (int argc, char **argv){
       }
       pw2.pw_passwd=pw.pw_passwd;
 
-      if((status=protocol->in_authenticate(&pw2, client_out, tag))==0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->in_authenticate");
-        PERDITION_LOG(
-	  LOG_INFO, 
+      if((status=protocol->in_authenticate(&pw2, client_io, tag))==0){
+        PERDITION_DEBUG("protocol->in_authenticate");
+        PERDITION_INFO(
 	  "Local authentication failure for client: Allowing retry."
         );
         PERDITION_CLEAN_UP_MAIN;
         continue;
       }
       else if(status<0){
-        PERDITION_LOG(LOG_DEBUG, "main: pop3_in_authenticate");
-        PERDITION_LOG(
-	  LOG_ERR, 
+        PERDITION_DEBUG("pop3_in_authenticate");
+        PERDITION_ERR(
 	  "Fatal error authenticating to client locally. Exiting child."
         );
         daemon_exit_cleanly(-1);
@@ -495,36 +600,102 @@ int main (int argc, char **argv){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    if((server=vanessa_socket_client_src_open(
+    if((s=vanessa_socket_client_src_open(
       opt.bind_address,
       NULL,
       servername, 
       port, 
       (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0)
     ))<0){
-      PERDITION_LOG(LOG_DEBUG, "main: vanessa_socket_client_open");
-      PERDITION_LOG(LOG_INFO, "Could not connect to server");
+      PERDITION_DEBUG("vanessa_socket_client_open");
+      PERDITION_INFO("Could not connect to server");
       sleep(PERDITION_ERR_SLEEP);
       if((*(protocol->write))(
-        client_out,
+        client_io,
         NULL_FLAG,
 	tag,
 	protocol->type[PROTOCOL_ERR], 
 	"Could not connect to server"
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->write");
-        PERDITION_LOG(LOG_ERR, "Fatal error writing to client. Exiting child.");
+        PERDITION_DEBUG("protocol->write");
+        PERDITION_ERR("Fatal error writing to client. Exiting child.");
         daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
 
-    /*Authenticate the user with the pop server*/
-    if((pw2.pw_name=strip_username(pw.pw_name, STATE_REMOTE_LOGIN))==NULL){
-      PERDITION_DEBUG("main: strip_username STATE_REMOTE_LOGIN");
-      PERDITION_LOG(
-	LOG_ERR, 
+    if((server_io=io_create_fd(s, s))==NULL){
+      PERDITION_DEBUG("io_create_fd 3");
+      PERDITION_ERR("Fatal error setting IO. Exiting.");
+      daemon_exit_cleanly(-1);
+    }
+
+#ifdef WITH_SSL_SUPPORT
+    if(opt.ssl_mode&SSL_MODE_SSL_OUTGOING){
+      if((ssl_ctx=perdition_ssl_ctx(NULL, NULL))==NULL){
+        PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx 2");
+        daemon_exit_cleanly(-1);
+      }
+
+      if((server_io=perdition_ssl_connection(
+        server_io, 
+        ssl_ctx,
+        PERDITION_CLIENT
+      ))==NULL){
+        PERDITION_DEBUG("perdition_ssl_connection 2");
+        daemon_exit_cleanly(-1);
+      }
+  
+      if((ssl=io_get_ssl(server_io))==NULL){
+        PERDITION_DEBUG("vanessa_socket_get_ssl");
+        daemon_exit_cleanly(-1);
+      }
+
+      PERDITION_DEBUG("SSL connection using %s", SSL_get_cipher(ssl));
+
+      if((server_cert=SSL_get_peer_certificate(ssl))==NULL){
+        PERDITION_DEBUG_SSL_ERR("SSL_get_peer_certificate");
+        PERDITION_ERR("No Server certificate");
+        daemon_exit_cleanly(-1);
+      }
+
+      {
+        char *str;
+
+        PERDITION_DEBUG("Server certificate:");
+  
+        str=X509_NAME_oneline(X509_get_subject_name(server_cert), 0, 0);
+        if(str==NULL){
+          PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
+          PERDITION_ERR("Error reading certificate subject name");
+          daemon_exit_cleanly(-1);
+        }
+        PERDITION_DEBUG ("subject: %s", str);
+        free(str);
+  
+        str=X509_NAME_oneline(X509_get_issuer_name(server_cert), 0, 0);
+        if(str==NULL){
+          PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
+          PERDITION_ERR("Error reading certificate issuer name");
+          daemon_exit_cleanly(-1);
+        }
+        PERDITION_DEBUG("issuer: %s", str);
+        free(str);
+  
+        /* We could do all sorts of certificate verification stuff here before
+         *        deallocating the certificate. */
+  
+        X509_free (server_cert);
+      }
+    }
+#endif /* WITH_SSL_SUPPORT */
+
+    /* Authenticate the user with the pop server */
+    if((pw2.pw_name=strip_username(pw.pw_name, 
+          STRIP_STATE_REMOTE_LOGIN))==NULL){
+      PERDITION_DEBUG("strip_username STATE_REMOTE_LOGIN");
+      PERDITION_ERR(
 	"Fatal error manipulating username for client \"%s\": Exiting child",
 	from_str
       );
@@ -536,8 +707,7 @@ int main (int argc, char **argv){
       server_ok_buf_size=MAX_LINE_LENGTH-1;
     }
     status = (*(protocol->out_authenticate))(
-      server, 
-      server, 
+      server_io, 
       &pw2, 
       tag,
       protocol,
@@ -547,61 +717,68 @@ int main (int argc, char **argv){
 
     if(status==0){
       sleep(PERDITION_ERR_SLEEP);
-      PERDITION_LOG(LOG_INFO, "Fail reauthentication for user %s", pw2.pw_name);
-      quit(server, server, protocol);
-      if(close(server)){
-        PERDITION_LOG(LOG_DEBUG, "main: close(server) 2");
-        PERDITION_LOG(
-	  LOG_ERR, "Fatal error closing conection to client. Exiting child."
+      PERDITION_INFO("Fail reauthentication for user %s", pw2.pw_name);
+      quit(server_io, protocol);
+      if(io_close(server_io)){
+        PERDITION_DEBUG("io_close 2");
+        PERDITION_ERR(
+	  "Fatal error closing connection to client. Exiting child."
 	);
 	daemon_exit_cleanly(-1);
       }
       if(protocol->write(
-        client_out, 
+        client_io, 
         NULL_FLAG,
         tag, 
         protocol->type[PROTOCOL_NO], 
-        "Re-Authentecation Failure"
+        "Re-Authentication Failure"
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->write");
-        PERDITION_LOG(LOG_ERR, "Fatal error writing to client. Exiting child.");
+        PERDITION_DEBUG("protocol->write");
+        PERDITION_ERR("Fatal error writing to client. Exiting child.");
         daemon_exit_cleanly(-1);
       }
       PERDITION_CLEAN_UP_MAIN;
       continue;
     }
     else if(status<0){
-      PERDITION_LOG(LOG_DEBUG, "main: protocol->out_authenticate %d", status);
-      PERDITION_LOG(LOG_ERR, "Fatal error authenticating user. Exiting child.");
+      PERDITION_DEBUG("protocol->out_authenticate %d", status);
+      PERDITION_ERR("Fatal error authenticating user. Exiting child.");
       daemon_exit_cleanly(-1);
     }
 
-    /*If we get this far, dance for joy with lmf*/
+    PERDITION_INFO(
+      "Authentication successful: %suser=\"%s\" server=\"%s\" port=\"%s\"", 
+      from_to_str,
+      str_null_safe(pw.pw_name),
+      str_null_safe(servername),
+      str_null_safe(port)
+    );
+    
     if(opt.server_ok_line){
       *(server_ok_buf+server_ok_buf_size)='\0';
       buffer=server_ok_buf;
       if(protocol->write(
-        client_out, 
+        client_io, 
         WRITE_STR_NO_CLLF,
         tag, 
         NULL,
         server_ok_buf
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->write");
-        PERDITION_LOG(LOG_ERR, "Fatal error writing to client. Exiting child.");
+        PERDITION_DEBUG("protocol->write");
+        PERDITION_ERR("Fatal error writing to client. Exiting child.");
         daemon_exit_cleanly(-1);
       }
     }
     else{
       if(protocol->write(
-        client_out, 
+        client_io, 
         NULL_FLAG,
         tag, 
         protocol->type[PROTOCOL_OK],
         "You are so in"
       )<0){
-        PERDITION_LOG(LOG_DEBUG, "main: protocol->write");
-        PERDITION_LOG(LOG_ERR, "Fatal error writing to client. Exiting child.");
+        PERDITION_DEBUG("protocol->write");
+        PERDITION_ERR("Fatal error writing to client. Exiting child.");
         daemon_exit_cleanly(-1);
       }
     }
@@ -615,31 +792,28 @@ int main (int argc, char **argv){
 
   /*We need a buffer for reads and writes to the server*/
   if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "main: malloc: %s, Exiting", strerror(errno));
-    PERDITION_LOG(LOG_ERR, "Fatal error allocating memory. Exiting child.");
+    PERDITION_DEBUG("malloc: %s, Exiting", strerror(errno));
+    PERDITION_ERR("Fatal error allocating memory. Exiting child.");
     daemon_exit_cleanly(-1);
   }
 
   /*Let the client talk to the real server*/
-  if(vanessa_socket_pipe(
-    server,
-    server,
-    client_in,
-    client_out,
+  if(io_pipe(
+    server_io,
+    client_io,
     buffer,
     BUFFER_SIZE,
     opt.timeout,
     &bytes_written,
     &bytes_read
   )<0){
-    PERDITION_LOG(LOG_DEBUG, "main: vanessa_socket_pipe");
-    PERDITION_LOG(LOG_ERR, "Fatal error piping data. Exiting child.");
+    PERDITION_DEBUG("vanessa_socket_pipe");
+    PERDITION_ERR("Fatal error piping data. Exiting child.");
     daemon_exit_cleanly(-1);
   }
 
   /*Time to leave*/
-  PERDITION_LOG(
-    LOG_INFO, 
+  PERDITION_INFO(
     "Closing: %suser=%s %d %d", 
     from_to_str,
     pw.pw_name,
@@ -649,7 +823,6 @@ int main (int argc, char **argv){
   getserver_closelib(handle);
   daemon_exit_cleanly(0);
 
-  PERDITION_CLEAN_UP_MAIN;
   /*Here so compilers won't barf*/
   return(0);
 }
@@ -670,6 +843,8 @@ int main (int argc, char **argv){
 static void perdition_reread_handler(int sig){
   extern options_t opt;
 
+  PERDITION_INFO("Reloading map library \"%s\" with options \"%s\"",
+    opt.map_library, opt.map_library_opt);
   getserver_closelib(handle);
   if(
     opt.map_library!=NULL && 
@@ -680,12 +855,8 @@ static void perdition_reread_handler(int sig){
       &dbserver_get
     )<0
   ){
-    PERDITION_LOG(LOG_DEBUG, "perdition_reread_handler: getserver_openlib");
-    PERDITION_LOG(
-      LOG_ERR, 
-      "Fatal error reopening: %s. Exiting child.",
-      opt.map_library
-    );
+    PERDITION_DEBUG("getserver_openlib");
+    PERDITION_ERR("Fatal error reopening: %s. Exiting child.", opt.map_library);
     daemon_exit_cleanly(-1);
   }
 
@@ -729,7 +900,7 @@ static char *__strip_username(char *username){
     else {
       len=end-username;
       if((__striped_username=(char *)malloc(len+1))==NULL){
-	PERDITION_DEBUG_ERRNO("__strip_username: malloc", errno);
+	PERDITION_DEBUG_ERRNO("malloc");
 	return(NULL);
       }
       __striped_username_alloced=1;
@@ -749,19 +920,19 @@ static char *strip_username(char *username, int state){
   }
 
   switch(state){
-    case STATE_GET_SERVER:
+    case STRIP_STATE_GET_SERVER:
       if(opt.client_server_specification){
         return(username);
       }
       else {
         return(__strip_username(username));
       }
-    case STATE_LOCAL_AUTH:
+    case STRIP_STATE_LOCAL_AUTH:
       return(__strip_username(username));
-    case STATE_REMOTE_LOGIN:
+    case STRIP_STATE_REMOTE_LOGIN:
       return(__strip_username(username));
     default:
-      PERDITION_DEBUG("strip_username: unknown state\n");
+      PERDITION_DEBUG("unknown state\n");
       return(NULL);
   }
 
@@ -784,3 +955,161 @@ static void strip_username_free(void){
   }
   __striped_username=NULL;
 }
+
+
+
+#ifdef WITH_SSL_SUPPORT
+/**********************************************************************
+ * perdition_ssl_connection
+ * Change a stdio bassed connection into an SSL connection
+ * io: io_t to change
+ * ssl_cts: SSL Context to use
+ * flag: If PERDITION_CLIENT the io is a client that has connected to
+ *       a server and SSL_connect() will be called. If PERDITION_SERVER
+ *       then the io is a serve rthat has accepted a connection and
+ *       SSL_accept will be called. There are no other valid values
+ *       for flag.
+ * post: io_t has an ssl object associated with it and SSL is intiated
+ *       for the connection.
+ * return: io_t with ssl object associated with it
+ *         NULL on error
+ **********************************************************************/
+
+io_t *perdition_ssl_connection(
+  io_t *io,
+  SSL_CTX *ssl_ctx,
+  flag_t flag
+){
+  io_t *new_io=NULL;
+  SSL *ssl=NULL;
+  
+  if((ssl=SSL_new(ssl_ctx))==NULL){
+    PERDITION_DEBUG_SSL_ERR("SSL_new");
+    goto bail;
+  }
+
+  /* Set up io object that will use SSL */
+  if((new_io=io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io)))==NULL){
+    PERDITION_DEBUG("io_create_ssl");
+    goto bail;
+  }
+
+  io_destroy(io);
+
+  /* Get for TLS/SSL handshake */
+  if(flag&PERDITION_CLIENT){
+    SSL_set_connect_state(ssl);
+    if(SSL_connect(ssl)<=0){
+      PERDITION_DEBUG_SSL_ERR("SSL_connect");
+      goto bail;
+    }
+  }
+  else {
+    SSL_set_accept_state(ssl);
+    if(SSL_accept(ssl)<=0){
+      PERDITION_DEBUG_SSL_ERR("SSL_accept");
+      goto bail;
+    }
+  }
+
+  PERDITION_DEBUG("SSL connection using %s", SSL_get_cipher(ssl));
+
+  return(new_io);
+
+bail:
+  if(new_io==NULL)
+    SSL_free(ssl);
+  else
+    io_destroy(new_io);
+  return(NULL);
+}
+
+
+/**********************************************************************
+ * perdition_ssl_ctx
+ * Create an SSL context
+ * pre: cert: certificate to use. May be NULL if privkey is NULL. 
+ *            Should the path to a PEM file if non-NULL and the
+ *            first item in the PEM file will be used as the 
+ *            certificate.
+ *      privkey: private key to use May be NULL if cert is NULL. 
+ *               Should the path to a PEM file if non-NULL and the
+ *               first item in the PEM file will be used as the 
+ *               private key.
+ * post: If SSL is initiated and a context is created
+ *       If cert is non-NULL then this certificate file is loaded
+ *       If privkey is non-NULL then this private key file is loaded
+ *       If cert and privkey are non-NULL then check private key
+ *       against certificate.
+ *       Note: If either cert of privkey are non-NULL then both must
+ *       be non-NULL.
+ **********************************************************************/
+
+SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey){
+  SSL_METHOD *ssl_method;
+  SSL_CTX *ssl_ctx;
+
+  /* 
+   * If either the certificate or private key is non-NULL the
+   * other should be too
+   */
+
+  if(cert==NULL && privkey!=NULL){
+    PERDITION_DEBUG("Certificate is NULL but private key is non-NULL");
+    return(NULL);
+  }
+
+  if(privkey==NULL && cert!=NULL){
+    PERDITION_DEBUG("Private key is NULL but certificate is non-NULL");
+    return(NULL);
+  }
+
+  /*
+   * Initialise an SSL context
+   */
+
+  SSLeay_add_ssl_algorithms();
+  ssl_method = SSLv23_method();
+  SSL_load_error_strings();
+
+  if((ssl_ctx=SSL_CTX_new(ssl_method))==NULL){
+    PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
+    return(NULL);
+  }
+
+  /*
+   * If the certificate or private key is NULL (one is implied by
+   * the other, and it has been checked) then there is no
+   * more proccessing to be done
+   */
+  if(cert==NULL){
+    return(ssl_ctx);
+  }
+
+  /*
+   * Load and check the certificate and private key
+   */
+
+  if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM)<=0){
+    PERDITION_DEBUG_SSL_ERR("SSL_CTX_use_certificate_file: \"%s\"", cert);
+    PERDITION_ERR("Error loading certificate file \"%s\"", cert);
+    SSL_CTX_free(ssl_ctx);
+    return(NULL);
+  }
+ 
+  if (SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, SSL_FILETYPE_PEM)<= 0){
+    PERDITION_DEBUG_SSL_ERR("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
+    PERDITION_ERR("Error loading pricvate key file \"%s\"", privkey);
+    SSL_CTX_free(ssl_ctx);
+    return(NULL);
+  }
+  
+  if(!SSL_CTX_check_private_key(ssl_ctx)){
+    PERDITION_DEBUG("Private key does not match the certificate public key.");
+    SSL_CTX_free(ssl_ctx);
+    return(NULL);
+  }
+
+  return(ssl_ctx);
+}
+#endif /* sl_ctxITH_SSL_SUPPORT */
