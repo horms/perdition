@@ -740,7 +740,7 @@ int log_options(void){
     "ssl_key_file=\"%s\", "
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
-    "(mask=0x%x)\n",
+    "(mask=0x%x) %u\n",
     str_null_safe(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
@@ -778,7 +778,7 @@ int log_options(void){
     str_null_safe(opt.ssl_key_file),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
-    opt.mask
+    opt.mask, time(NULL)
   );
 
   if(protocol!=NULL){ free(protocol); }

@@ -2,13 +2,13 @@ Change Log
 
 perdition
 Mail retrieval proxy server
-Copyright (C) 1999-2001  Horms <horms@vergenet.net>
+Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+14th March 2002
 (Horms)
 
-  * xxx
+  * Version 0.1.10beta1
   - Fixed problem with setting ssl_key_file.
   - Brief documentation for how to generate .pem files for SSL/TLS
   - Handle systems that don't have socklen_t
