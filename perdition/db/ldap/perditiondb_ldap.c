@@ -43,9 +43,9 @@
 
 static char *pldap_filter = NULL;
 
-#ifdef LDAP_SET_OPTION
+#ifdef WITH_LDAP_SET_OPTION
 static int pldap_version = PERDITIONDB_LDAP_VERSION;
-#endif /* LDAP_SET_OPTION */
+#endif /* WITH_LDAP_SET_OPTION */
 
 /**********************************************************************
  * dbserver_init
@@ -348,7 +348,7 @@ int dbserver_get(const char *key_str,
 	}
 #endif /* WITH_LDAP_LUD_EXTS */
 
-#ifdef LDAP_SET_OPTION
+#ifdef WITH_LDAP_SET_OPTION
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
 	{
 		struct timeval mytimeval;
@@ -361,9 +361,7 @@ int dbserver_get(const char *key_str,
 		}
 	}
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
-#endif /* LDAP_SET_OPTION */
 
-#ifdef LDAP_SET_OPTION
 	err = ldap_set_option(connection, LDAP_OPT_PROTOCOL_VERSION, 
 				&pldap_version);
 	if(err != LDAP_SUCCESS) {
@@ -371,7 +369,7 @@ int dbserver_get(const char *key_str,
 				ldap_err2string(err));
 		return(-1);
 	}
-#endif /* LDAP_SET_OPTION */
+#endif /* WITH_LDAP_SET_OPTION */
 
 	err = ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE);
 	if (err != LDAP_SUCCESS) {
