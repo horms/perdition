@@ -9,6 +9,8 @@ xxx
 (Horms)
 
   * xxx
+  - Fixed minor .spec file and documentaion errors
+    Scot W. Hetzel <scot@genroco.com>
   - Fixed problem with setting ssl_key_file.
   - Brief documentation for how to generate .pem files for SSL/TLS
   - Handle systems that don't have socklen_t

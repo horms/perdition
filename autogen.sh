@@ -1,6 +1,4 @@
-#!/bin/bash
-#Running bash because /bin/sh is a complete piece of shit on solaris
-#I wonder how long it will take the fuckwits at Sun to wake up
+#!/bin/sh
 
 # Run this to generate all the initial makefiles, etc.
 

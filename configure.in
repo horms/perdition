@@ -28,7 +28,7 @@ AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(perdition, 0.1.10test1)
 
 AC_PROG_CC
-AC_PROG_LIBTOOL
+AM_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -106,6 +106,110 @@ AC_CHECK_LIB(
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
+
+
+######################################################################
+# OpenSSL
+
+
+AC_MSG_CHECKING("if SSL/TLS support has been disabled");
+AC_ARG_ENABLE(
+  ssl,
+  [  --disable-ssl           DO not compile with SSL/TLS support.  ],
+  [ 
+    if test "$enable_ssl" = "no"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [ 
+    enable_ssl="yes";
+    AC_MSG_RESULT("no") 
+  ]
+)
+
+AC_ARG_WITH(
+  ssl-includes,
+  [  --with-ssl-includes=DIR 
+                          OpenSSL include files are in DIR.  ],
+  [  ssl_includepath="$withval" ],
+  [ 
+    AC_MSG_CHECKING(OpenSSL library path)
+    for ssl_includepath in /usr/openssl/include /usr/local/openssl/include \
+        /usr/include/openssl /usr/local/include/openssl \
+  	  /usr/include /usr/local/include; do
+      if test -f "${ssl_includepath}/ssl.h"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($ssl_inludepath)
+  ]
+)
+
+ssl_includes="-I$ssl_includepath"
+
+AC_ARG_WITH(
+  ssl-libraries,
+  [  --with-ssl-libraries=DIR 
+                          OpenSSL library files are in DIR.  ],
+  [  ssl_libpath="$withval" ],
+  [ 
+    AC_MSG_CHECKING(OpenSSL library path)
+    for ssl_libpath in /usr/openssl/lib /usr/local/openssl/lib \
+        /usr/lib/openssl /usr/local/lib/openssl \
+  	  /usr/lib /usr/local/lib; do
+      if test -f "${ssl_libpath}/libssl.a"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($ssl_libpath)
+  ]
+)
+
+ssl_libs="-L$ssl_libpath -lssl -lcrypto"
+
+AC_CHECK_FILE(
+  $ssl_includepath/ssl.h,
+  :,
+  [ 
+    enable_ssl=no;
+    if test "$enable_ssl" = "yes"; then
+      AC_MSG_WARN(
+        ""
+        "**********************************************************************"
+        "* SSL/TLS will not be built"
+        "**********************************************************************"
+      ) ;\
+      sleep 5
+    fi
+  ]
+)
+  
+AC_CHECK_LIB(
+  ssl,
+  ERR_error_string,
+  :,
+  [ 
+    enable_ssl=no;
+    if test "$enable_ssl" = "yes"; then
+      AC_MSG_WARN(
+        ""
+        "**********************************************************************"
+        "* SSL/TLS will not be built"
+        "**********************************************************************"
+      ) ;\
+      sleep 5
+    fi
+  ],
+  $ssl_libs
+)
+
+if test "$enable_ssl" = "yes"; then
+  AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
+  AC_SUBST(ssl_libs)
+  AC_SUBST(ssl_includes)
+fi
 
 
 ######################################################################
@@ -229,7 +333,7 @@ AC_ARG_WITH(
   ]
 )
 
-pg_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -L$pg_libpath -lpq"
+pg_libs="$socket_lib $nsl_lib $crypt_lib $ssl_libs -lvanessa_logger -lvanessa_adt -L$pg_libpath -lpq"
 
 AC_CHECK_FILE(
   $pg_includepath/libpq-fe.h,
@@ -392,108 +496,6 @@ AC_CHECK_LIB(
 )
 fi
 
-######################################################################
-# OpenSSL
-
-
-AC_MSG_CHECKING("if SSL/TLS support has been disabled");
-AC_ARG_ENABLE(
-  ssl,
-  [  --disable-ssl           DO not compile with SSL/TLS support.  ],
-  [ 
-    if test "$enable_ssl" = "no"; then
-      AC_MSG_RESULT("yes")
-    else
-      AC_MSG_RESULT("no")
-    fi
-  ],
-  [ 
-    enable_ssl="yes";
-    AC_MSG_RESULT("no") 
-  ]
-)
-
-if test "$enable_ssl" = "yes"; then
-
-  AC_ARG_WITH(
-    ssl-includes,
-    [  --with-ssl-includes=DIR 
-                            OpenSSL include files are in DIR.  ],
-    [  ssl_includepath="$withval" ],
-    [ 
-      AC_MSG_CHECKING(OpenSSL library path)
-      for ssl_includepath in /usr/openssl/include /usr/local/openssl/include \
-          /usr/include/openssl /usr/local/include/openssl \
-    	  /usr/include /usr/local/include; do
-        if test -f "${ssl_includepath}/ssl.h"; then
-          break
-        fi
-      done
-      AC_MSG_RESULT($ssl_inludepath)
-    ]
-  )
-  
-  ssl_includes="-I$ssl_includepath"
-  
-  AC_ARG_WITH(
-    ssl-libraries,
-    [  --with-ssl-libraries=DIR 
-                            OpenSSL library files are in DIR.  ],
-    [  ssl_libpath="$withval" ],
-    [ 
-      AC_MSG_CHECKING(OpenSSL library path)
-      for ssl_libpath in /usr/openssl/lib /usr/local/openssl/lib \
-          /usr/lib/openssl /usr/local/lib/openssl \
-    	  /usr/lib /usr/local/lib; do
-        if test -f "${ssl_libpath}/libssl.a"; then
-          break
-        fi
-      done
-      AC_MSG_RESULT($ssl_libpath)
-    ]
-  )
-  
-  ssl_libs="-L$ssl_libpath -lssl -lcrypto"
-  
-  AC_CHECK_FILE(
-    $ssl_includepath/ssl.h,
-    :,
-    [ 
-      enable_ssl=no;
-      AC_MSG_WARN(
-        ""
-        "**********************************************************************"
-        "* SSL/TLS will not be built"
-        "**********************************************************************"
-      ) ;\
-      sleep 5
-    ]
-  )
-  
-fi
-
-if test "$enable_ssl" = "yes"; then
-  AC_CHECK_LIB(
-    ssl,
-    ERR_error_string,
-    :,
-    [ 
-      enable_ssl=no;
-      AC_MSG_WARN(
-        ""
-        "**********************************************************************"
-        "* SSL/TLS will not be built"
-        "**********************************************************************"
-      ) ;\
-      sleep 5
-    ],
-    $ssl_libs
-  )
-fi
-
-if test "$enable_ssl" = "yes"; then
-  AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
-fi
 
 ######################################################################
 # PAM
@@ -590,8 +592,6 @@ AC_SUBST(mysql_includes)
 AC_SUBST(ldap_build_dir)
 AC_SUBST(ldap_libs)
 AC_SUBST(ldap_includes)
-AC_SUBST(ssl_libs)
-AC_SUBST(ssl_includes)
 AC_SUBST(posix_regex_libs)
 AC_SUBST(socket_lib)
 AC_SUBST(dl_lib)

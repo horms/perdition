@@ -66,7 +66,7 @@ Popmap. Will not take effect if \-c|\-\-client_server_specification
 is specified.
 .sp
 .B local_authentication:
-Strip fomain of username for use in local
+Strip domain of username for use in local
 authentication. Only has effect if \-a|\-\-authenticate_in is specified.
 .sp
 .B remote_login:
@@ -241,7 +241,7 @@ When listening for incoming connections they will be treated
 as SSL connections.
 .sp
 .B ssl_outoing:
-Use SSL to connect to real pop servers.
+Use SSL to connect to real pop/imap servers.
 .sp
 .B ssl_all:
 Short hand for ssl_listen,ssl_outoing.
@@ -251,6 +251,7 @@ When listening for incoming connections they will be treated
 as TLS connections.
 .sp
 .B tls_outgoing:
+Use TLS to connect to real pop/imap servers.
 .sp
 .B tls_all:
 Short hand for tls_listen,tls_all.
@@ -265,7 +266,7 @@ available if perdition is compiled with SSL support.
 Public key to use when listening for SSL or TLS connections. Only available
 if perdition is compiled with SSL support.
 .br
-(default "/tmp/supersparrow//etc/perdition/perdition.crt.pem")
+(default "/etc/perdition/perdition.crt.pem")
 .TP
 \fBNote:\fP Default value for binary flags is off.
 .SH USER DATABASE (POPMAP)
@@ -423,7 +424,7 @@ the command line override the options in this file.
 Example configuration File.
 .nf
 # perdition.conf
-l           110             #Sort option used as key
+l           110             #Short option used as key
 group       mail            #Long option used as key
 a                           #Option with no argument
 .fi

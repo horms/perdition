@@ -84,8 +84,8 @@ database stored in a PostgreSQL databse.
 %setup
 
 %build
-CFLAGS="${RPM_OPT_FLAGS}" ./configure --prefix=%prefix --sysconfdir=/etc
-make
+%configure
+CFLAGS="${RPM_OPT_FLAGS}" make
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -121,81 +121,81 @@ true
 %defattr(-,root,root)
 %doc %attr(-, root, root) README
 %doc %attr(-, root, root) ChangeLog NEWS CODING_LOCATIONS TODO
-%{prefix}/sbin/perdition
-%{prefix}/sbin/perdition.pop3
-%{prefix}/sbin/perdition.imap4
-%{prefix}/lib/libjain.so
-%{prefix}/lib/libjain.so.0
-%{prefix}/lib/libjain.so.0.0.0
+%{_sbindir}/perdition
+%{_sbindir}/perdition.pop3
+%{_sbindir}/perdition.imap4
+%{_libdir}/libjain.so
+%{_libdir}/libjain.so.0
+%{_libdir}/libjain.so.0.0.0
 /etc/pam.d/perdition
 /etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition
 %config /etc/perdition/perdition.conf
-%{prefix}/man/man8/perdition.*
-%{prefix}/man/man5/perditiondb.*
+%{_mandir}/man8/perdition.*
+%{_mandir}/man5/perditiondb.*
 
 # nis
-%{prefix}/lib/libperditiondb_nis.a
-%{prefix}/lib/libperditiondb_nis.la
-%{prefix}/lib/libperditiondb_nis.so
-%{prefix}/lib/libperditiondb_nis.so.0
-%{prefix}/lib/libperditiondb_nis.so.0.0.0
+%{_libdir}/libperditiondb_nis.a
+%{_libdir}/libperditiondb_nis.la
+%{_libdir}/libperditiondb_nis.so
+%{_libdir}/libperditiondb_nis.so.0
+%{_libdir}/libperditiondb_nis.so.0.0.0
 
 # posix_regex
-%{prefix}/lib/libperditiondb_posix_regex.a
-%{prefix}/lib/libperditiondb_posix_regex.la
-%{prefix}/lib/libperditiondb_posix_regex.so
-%{prefix}/lib/libperditiondb_posix_regex.so.0
-%{prefix}/lib/libperditiondb_posix_regex.so.0.0.0
+%{_libdir}/libperditiondb_posix_regex.a
+%{_libdir}/libperditiondb_posix_regex.la
+%{_libdir}/libperditiondb_posix_regex.so
+%{_libdir}/perditiondb_posix_regex.so.0
+%{_libdir}/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
 # gdbm
-%{prefix}/lib/libperditiondb_gdbm.a
-%{prefix}/lib/libperditiondb_gdbm.la
-%{prefix}/lib/libperditiondb_gdbm.so
-%{prefix}/lib/libperditiondb_gdbm.so.0
-%{prefix}/lib/libperditiondb_gdbm.so.0.0.0
-%{prefix}/bin/makegdbm
+%{_libdir}/libperditiondb_gdbm.a
+%{_libdir}/libperditiondb_gdbm.la
+%{_libdir}/libperditiondb_gdbm.so
+%{_libdir}/libperditiondb_gdbm.so.0
+%{_libdir}/libperditiondb_gdbm.so.0.0.0
+%{_bindir}/makegdbm
 /etc/perdition/Makefile
 /etc/perdition/Makefile.popmap
-%{prefix}/man/man1/makegdbm.*
+%{_mandir}/man1/makegdbm.*
 %config /etc/perdition/popmap
 
 %files ldap
 %defattr(-,root,root)
-%{prefix}/lib/libperditiondb_ldap.a
-%{prefix}/lib/libperditiondb_ldap.la
-%{prefix}/lib/libperditiondb_ldap.so
-%{prefix}/lib/libperditiondb_ldap.so.0
-%{prefix}/lib/libperditiondb_ldap.so.0.0.0
-%{prefix}/bin/perditiondb_ldap_makedb
-%{prefix}/man/man8/perditiondb_ldap_makedb.*
+%{_libdir}/libperditiondb_ldap.a
+%{_libdir}/libperditiondb_ldap.la
+%{_libdir}/libperditiondb_ldap.so
+%{_libdir}/libperditiondb_ldap.so.0
+%{_libdir}/libperditiondb_ldap.so.0.0.0
+%{_bindir}/perditiondb_ldap_makedb
+%{_mandir}/man8/perditiondb_ldap_makedb.*
 
 %files mysql
 %defattr(-,root,root)
-%{prefix}/lib/libperditiondb_mysql.a
-%{prefix}/lib/libperditiondb_mysql.la
-%{prefix}/lib/libperditiondb_mysql.so
-%{prefix}/lib/libperditiondb_mysql.so.0
-%{prefix}/lib/libperditiondb_mysql.so.0.0.0
-%{prefix}/bin/perditiondb_mysql_makedb
-%{prefix}/man/man8/perditiondb_mysql_makedb.*
+%{_libdir}/libperditiondb_mysql.a
+%{_libdir}/libperditiondb_mysql.la
+%{_libdir}/libperditiondb_mysql.so
+%{_libdir}/libperditiondb_mysql.so.0
+%{_libdir}/libperditiondb_mysql.so.0.0.0
+%{_bindir}/perditiondb_mysql_makedb
+%{_mandir}/man8/perditiondb_mysql_makedb.*
 
 %files postgresql
 %defattr(-,root,root)
-%{prefix}/lib/libperditiondb_postgresql.a
-%{prefix}/lib/libperditiondb_postgresql.la
-%{prefix}/lib/libperditiondb_postgresql.so
-%{prefix}/lib/libperditiondb_postgresql.so.0
-%{prefix}/lib/libperditiondb_postgresql.so.0.0.0
-%{prefix}/bin/perditiondb_postgresql_makedb
-%{prefix}/man/man8/perditiondb_postgresql_makedb.*
+%{_libdir}/libperditiondb_postgresql.a
+%{_libdir}/libperditiondb_postgresql.la
+%{_libdir}/libperditiondb_postgresql.so
+%{_libdir}/libperditiondb_postgresql.so.0
+%{_libdir}/libperditiondb_postgresql.so.0.0.0
+%{_bindir}/perditiondb_postgresql_makedb
+%{_mandir}/man8/perditiondb_postgresql_makedb.*
 
 %files devel
 %defattr(-,root,root)
-%{prefix}/include/jain.h
-%{prefix}/lib/libjain.a
-%{prefix}/lib/libjain.la
+%{_includedir}/jain.h
+%{_libdir}/libjain.a
+%{_libdir}/libjain.la
 
 
 %changelog
