@@ -88,9 +88,21 @@ int dbserver_init(char *options_str) {
   }
 
   /*
+   * Some checks to see if the URL is sane in LDAP terms
+   */
+  if (ldap_is_ldap_url(options_str) == 0) {
+    PERDITION_DEBUG("not an LDAP URL");
+    return(-1);
+  }
+  if (ldap_url_parse(options_str, &ludp) != 0) {
+    PERDITION_DEBUG("ldap_url_parse");
+    return(-1);
+  }
+
+  /*
    * Some checks to protect against format problems
    */
-  if(parse_printf_format(options_str, 1, &arg_type) != 1){
+  if(parse_printf_format(ludp->lud_filter, 1, &arg_type) != 1){
     PERDITION_DEBUG("LDAP URL has more than one format flag");
     return(-1);
   }
@@ -100,18 +112,6 @@ int dbserver_init(char *options_str) {
   }
   if((arg_type & PA_FLAG_MASK)){
     PERDITION_DEBUG("LDAP URL has a modifier on format flag");
-    return(-1);
-  }
-
-  /*
-   * Some checks to see if the URL is sane in LDAP terms
-   */
-  if (ldap_is_ldap_url(options_str) == 0) {
-    PERDITION_DEBUG("not an LDAP URL");
-    return(-1);
-  }
-  if (ldap_url_parse(options_str, &ludp) != 0) {
-    PERDITION_DEBUG("ldap_url_parse");
     return(-1);
   }
 
@@ -171,17 +171,62 @@ int dbserver_get(
   char **bv_val=NULL;
   char *filter;
   char **ldap_returns;
+  char critical;
+  char *binddn=NULL;
+  char *bindpw=NULL;
 
   extern options_t opt;
 
   *len_return = 0;
+
+#ifdef WITH_LDAP_LUD_EXTS
+  /* Scan through the extension list for anything interesting */
+  count = 0;
+
+  if (ludp->lud_exts != NULL) {
+    while ((pstr = ludp->lud_exts[count]) != '\0')
+    {
+      /* Check critical status */
+      if (*pstr == '!') {
+        critical = 1;
+        pstr++;
+      }
+      else {
+        critical = 0;
+      }
+
+      /* Check for extensions */
+      if (strncasecmp(pstr, "BINDNAME", 8) == 0) {
+        binddn = pstr + 9;
+      }
+      else if (strncasecmp(pstr, "X-BINDPW", 8) == 0) {
+        bindpw = pstr + 9;
+      }
+      else {
+        /* Unknown extension */
+        if (critical) {
+          /* If critical RFC2255 says we have to abort */
+          PERDITION_INFO_UNSAFE("Critical extension, %s unsupported", pstr);
+          return(-1);
+        }
+        else {
+          /* Not critical, we just ignore it */
+        }
+      }
+
+      count++;
+    }
+  }
+#else /* WITH_LDAP_LUD_EXTS */
+  critical = 0; /* Keep the compiler quiet */
+#endif /* WITH_LDAP_LUD_EXTS */
 
   /* Open LDAP connection */
   if ((connection = ldap_open(ludp->lud_host, ludp->lud_port)) == NULL){
     PERDITION_DEBUG("ldap_open");
     return(-1);
   }
-  if ((msgid = ldap_bind_s(connection, NULL, NULL,
+  if ((msgid = ldap_bind_s(connection, binddn, bindpw,
        LDAP_AUTH_SIMPLE)) != LDAP_SUCCESS){
     PERDITION_DEBUG("ldap_bind");
     return(-1);

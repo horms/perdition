@@ -49,56 +49,56 @@ AC_CHECK_LIB(
   popt,
   poptGetContext,
   :,
-  AC_MSG_ERROR(
-    ""
-    "**********************************************************************"
-    "* perdition requires the popt options parsing library available from"
-    "* ftp://ftp.redhat.com/pub/redhat/code/popt/ and mirrors."
-    "**********************************************************************"
-  ) ;\
+AC_MSG_ERROR(
+""
+"**********************************************************************"
+"* perdition requires the popt options parsing library available from"
+"* ftp://ftp.redhat.com/pub/redhat/code/popt/ and mirrors."
+"**********************************************************************"
+) ;\
 )
 AC_CHECK_LIB(
   vanessa_logger,
   vanessa_logger_closelog,
   :,
-  AC_MSG_ERROR(
-    ""
-    "**********************************************************************"
-    "* perdition requires the vanessa_logger generic logging library"
-    "* available from"
-    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_logger/"
-    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
-    "**********************************************************************"
-  )
+AC_MSG_ERROR(
+""
+"**********************************************************************"
+"* perdition requires the vanessa_logger generic logging library"
+"* available from"
+"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_logger/"
+"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_logger/ and mirrors."
+"**********************************************************************"
+)
 )
 AC_CHECK_LIB(
   vanessa_adt,
   vanessa_queue_create,
   :,
-  AC_MSG_ERROR(
-    ""
-    "**********************************************************************"
-    "* perdition requires the vanessa_adt abstract data type library"
-    "* available from"
-    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_adt/"
-    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
-    "**********************************************************************"
-  ),
+AC_MSG_ERROR(
+""
+"**********************************************************************"
+"* perdition requires the vanessa_adt abstract data type library"
+"* available from"
+"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_adt/"
+"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_adt/ and mirrors."
+"**********************************************************************"
+),
   -lvanessa_logger
 )
 AC_CHECK_LIB(
   vanessa_socket,
   vanessa_socket_client_open,
   :,
-  AC_MSG_ERROR(
-    ""
-    "**********************************************************************"
-    "* perdition requires the vanessa_socket TCP socket interface library"
-    "* available from"
-    "* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_socket/"
-    "* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
-    "**********************************************************************"
-  ),
+AC_MSG_ERROR(
+""
+"**********************************************************************"
+"* perdition requires the vanessa_socket TCP socket interface library"
+"* available from"
+"* ftp://vanessa.sourceforge.net/pub/vanessa/vanessa_socket/"
+"* ftp://ftp.vergenet.net/pub/vanessa/vanessa_socket/ and mirrors."
+"**********************************************************************"
+),
   -lvanessa_logger
 )
 
@@ -175,12 +175,12 @@ AC_CHECK_FILE(
   [ 
     enable_ssl=no;
     if test "$enable_ssl" = "yes"; then
-      AC_MSG_WARN(
-        ""
-        "**********************************************************************"
-        "* SSL/TLS will not be built"
-        "**********************************************************************"
-      ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* SSL/TLS will not be built"
+"**********************************************************************"
+) ;\
       sleep 5
     fi
   ]
@@ -193,12 +193,12 @@ AC_CHECK_LIB(
   [ 
     enable_ssl=no;
     if test "$enable_ssl" = "yes"; then
-      AC_MSG_WARN(
-        ""
-        "**********************************************************************"
-        "* SSL/TLS will not be built"
-        "**********************************************************************"
-      ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* SSL/TLS will not be built"
+"**********************************************************************"
+) ;\
       sleep 5
     fi
   ],
@@ -260,12 +260,12 @@ AC_CHECK_FILE(
   [ mysql_build_dir="mysql" ],
   [ 
     mysql_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_mysql will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_mysql will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
@@ -277,12 +277,12 @@ AC_CHECK_LIB(
   [ mysql_build_dir="mysql" ],
   [ 
     mysql_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_mysql will not be built: $mysql_libraries"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_mysql will not be built: $mysql_libraries"
+"**********************************************************************"
+) ;\
     sleep 5
   ],
   $mysql_libs
@@ -340,12 +340,12 @@ AC_CHECK_FILE(
   [ pg_build_dir="postgresql" ],
   [ 
     pg_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_postgresql will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_postgresql will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
@@ -357,12 +357,12 @@ AC_CHECK_LIB(
   [ pg_build_dir="postgresql" ],
   [ 
     postgresql_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_postgresql will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_postgresql will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ],
   $pg_libs
@@ -383,11 +383,11 @@ AC_CHECK_HEADERS(
     gdbm_build_dir="" 
     makegdbm_build_dir="" 
     AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_gdbm and makegdbm will not be built"
-      "**********************************************************************"
-    ) ;\
+""
+"**********************************************************************"
+"* perditiondb_gdbm and makegdbm will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
@@ -403,12 +403,12 @@ AC_CHECK_LIB(
   [ 
     gdbm_build_dir="" 
     makegdbm_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_gdbm and makegdbm will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_gdbm and makegdbm will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
@@ -465,17 +465,17 @@ AC_CHECK_FILE(
   ],
   [ 
     ldap_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_ldap will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_ldap will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
 
-if [ test -n "$ldap_build_dir" ]; then
+if test -n "$ldap_build_dir"; then
 AC_CHECK_LIB(
   ldap,
   ldap_url_parse,
@@ -484,16 +484,36 @@ AC_CHECK_LIB(
   ],
   [ 
     ldap_build_dir="" 
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* perditiondb_ldap will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_ldap will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ],
   $ldap_libs
 )
+fi
+
+if test -n "$ldap_build_dir"; then
+        AC_MSG_CHECKING(OpenLDAP lud_exts in LDAPURLDesc)
+	AC_TRY_COMPILE([#include <stdlib.h>
+			#include <lber.h>
+			#include <ldap.h>],
+		[LDAPURLDesc ludp; 
+		 ludp.lud_exts[0] = NULL;],
+		AC_MSG_RESULT("yes"); AC_DEFINE(WITH_LDAP_LUD_EXTS),
+		AC_MSG_RESULT("no")
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Password and Username support will not be build in the"
+"* LDAP module. For Password and Username support compile"
+"* openldap2. Available from openldap.org"
+"************************************************************"
+)
+	)
 fi
 
 
@@ -506,12 +526,12 @@ AC_CHECK_HEADERS(
   true,
   [
     pam=no
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* pam support will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* pam support will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ]
 )
@@ -525,14 +545,15 @@ AC_CHECK_LIB(
   true,
   [ 
     pam=no
-    AC_MSG_WARN(
-      ""
-      "**********************************************************************"
-      "* pam support will not be built"
-      "**********************************************************************"
-    ) ;\
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* pam support will not be built"
+"**********************************************************************"
+) ;\
     sleep 5
   ],
+  -ldl
 )
 fi
 

@@ -6,3 +6,6 @@
 
 /* Group to run perdition as */
 /* #define WITH_GROUP "nobody" */
+
+/* Group to run perdition as */
+/* #define WITH_LDAP_LUD_EXTS 1 */

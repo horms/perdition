@@ -9,8 +9,6 @@ xxx
 (Horms)
 
   * xxx
-  - Fixed minor .spec file and documentaion errors
-    Scot W. Hetzel <scot@genroco.com>
   - Fixed problem with setting ssl_key_file.
   - Brief documentation for how to generate .pem files for SSL/TLS
   - Handle systems that don't have socklen_t
@@ -25,6 +23,10 @@ xxx
   - Fix doble frees relating to username_mangle.
   - PostgreSQL module now has the same alternate column name support
     as the MySQL module. Matt Prigge
+  - Fixed minor .spec file and documentaion errors
+    Scot W. Hetzel <scot@genroco.com>
+  - Added support for Username and Password in LDAP URL
+    Chris Stratford <Chris.Stratford@uk.uu.net>
 
 
 
