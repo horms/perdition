@@ -38,6 +38,3 @@ INCLUDES=\
   -I$(top_srcdir)/perdition \
   -I$(top_srcdir)/libjain \
   -DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"
-
-
-
