@@ -36,11 +36,6 @@ From Jure Pecar and others
 * pop-before-smtp support
 * drac support http://mail.cc.umanitoba.ca/drac/
 
-From Chris Stratford
-* Resolve Solaris (2.6) compile problems for perdition 0.1.9
-  - There is no soclken_t. Use size_t instead ?
-  - printf.h doesn't exist. No format string checking on Solaris ?
-
 From Matt Prigge
 * Modify the necessary Makefiles (etc/perdition/Makefile?) to keep 'make
   install' from overwriting the current configuration.
