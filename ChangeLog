@@ -13,6 +13,8 @@ XXX
   - Fixed problem with pid file creation on FreeBSD (and others)?
     zh Jay
   - Fixed minor memory leak in pid file creation
+  - Fixed segmentation fault in ldap module if the zeroth atribute
+    returned was NULL. Jay Zh
 
 ----------------------------------------------------------------------
 

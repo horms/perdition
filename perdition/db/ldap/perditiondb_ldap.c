@@ -458,27 +458,25 @@ int dbserver_get(const char *key_str,
 	/* Add in some extra for the separators and terminating NULL */
 	*len_return += attrcount;
 
-	if ((*str_return = (char *) malloc(*len_return)) == NULL) {
-		VANESSA_LOGGER_DEBUG_ERRNO("str_return malloc");
+	if ((*str_return = (char *) calloc(1, *len_return)) == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("str_return calloc");
 		status = -3;
 		goto leave;
 	}
 
 	/* Build the return string */
-	strcpy(*str_return, returns[0]);
-	free(returns[0]);
-	returns[0] = NULL;
-	for (count = 1; count < attrcount; count++) {
-		if (returns[count] != NULL) {
-			if (vanessa_socket_str_is_digit(returns[count])) {
-				strcat(*str_return, ":");
-			} else {
-				strcat(*str_return, opt.domain_delimiter);
-			}
-			strcat(*str_return, returns[count]);
-			free(returns[count]);
-			returns[count] = NULL;
+	for (count = 0; count < attrcount; count++) {
+		if (!returns[count]) {
+			continue;
 		}
+		if (vanessa_socket_str_is_digit(returns[count])) {
+			strcat(*str_return, ":");
+		} else {
+				strcat(*str_return, opt.domain_delimiter);
+		}
+		strcat(*str_return, returns[count]);
+		free(returns[count]);
+		returns[count] = NULL;
 	}
 
 	status = 0;
