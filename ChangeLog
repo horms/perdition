@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+18th April 2003
 (Horms)
-   * XXX
+   * 1.11beta8
    - Fixed capability command for POP3S
    - Minor updates to databse documentation for MySQL and ODBC
    - Flags should now work correcly in the debian init script.

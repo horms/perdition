@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 1.11beta7.stephanie)
+AM_INIT_AUTOMAKE(perdition, 1.11beta8)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL

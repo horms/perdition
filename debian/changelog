@@ -1,3 +1,15 @@
+perdition (1.11beta8-1) unstable; urgency=low
+
+  * Imap subfolders should work correctly. Actually this
+    was fixed a long time ago. (closes: Bug#171558)
+  * Not a bug. Use the domain delimiter configuration parameter.
+    (closes: #171080)
+  * Compile aggainst mysqlclient12. Oooh, I so love changing crap like that.
+  * Moved back out of non-US. Where is the smart money on when
+    it will have move yet again because of some dependancy? I say 2 years.
+
+ -- Simon Horman <horms@vergenet.net>  Fri, 18 Apr 2003 17:25:00 +0900
+
 perdition (1.11beta7-1) unstable; urgency=low
 
   * Bew Yostream
