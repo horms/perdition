@@ -1100,7 +1100,7 @@ void usage(int exit_status){
     " -f|--config_file filename:\n"
     "    Name of config file to read. If set to \"\" no config file will be\n"
     "    used. Command line options override options set in config file.\n"
-    "    See the manpage for details of how the default is derived\n"
+    "    (default \"%s\")\n"
     " -g|--group group:\n"
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
@@ -1120,8 +1120,8 @@ void usage(int exit_status){
     " --lower_case state[,state...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). State may be one of servername_lookup, \n"
-    "    local_authentication, remote_login and all see the manpage for\n"
-    "    details of states.\n"
+    "    local_authentication, remote_login and all See manpage for details\n"
+    "    of states.\n"
     "    (default \"(null)\")\n"
     " -M|--map_library filename:\n"
     "    Library to open that provides functions to look up the server for a\n"
@@ -1210,6 +1210,7 @@ void usage(int exit_status){
     DEFAULT_CONNECT_RELOG,
     str_null_safe(DEFAULT_DOMAIN_DELIMITER),
     str_null_safe(DEFAULT_LOG_FACILITY),
+    str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     str_null_safe(DEFAULT_GROUP),
     str_null_safe(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,
