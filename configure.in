@@ -646,6 +646,21 @@ AC_CHECK_HEADERS(
 #  ]
 #)
 #fi
+
+# More BDB Stupidity.
+# It seems that function call arguments actually vary between versions.
+# Why do we use this crap anyway?
+
+AC_MSG_CHECKING("For Bergley DB Version 4.1 and above");
+AC_TRY_RUN(
+	[ #include <db.h>
+	  int main(int arc, char **argv) { 
+	  exit((DB_VERSION_MAJOR>=4 && DB_VERSION_MINOR>=1)?0:1);} ],
+        [ AC_DEFINE(HAVE_BDB_4_1, 1, Berkely DB Version 4.1 and above)
+          AC_MSG_RESULT("yes") ],
+        [ AC_MSG_RESULT("no") ]
+)
+
 fi
 
 
@@ -802,7 +817,8 @@ if test "$ldap_build_dir" = "ldap"; then
 			#include <ldap.h>],
 		[LDAPURLDesc ludp; 
 		 ludp.lud_exts[0] = NULL;],
-		AC_MSG_RESULT("yes"); AC_DEFINE(WITH_LDAP_LUD_EXTS),
+		AC_MSG_RESULT("yes") 
+		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts),
 		AC_MSG_RESULT("no")
 AC_MSG_WARN(
 ""
@@ -816,7 +832,8 @@ AC_MSG_WARN(
 fi
 
 if test "$ldap_build_dir" = "ldap"; then
-        AC_CHECK_LIB(ldap, ldap_set_option, AC_DEFINE(WITH_LDAP_LUD_EXTS),
+        AC_CHECK_LIB(ldap, ldap_set_option, 
+	AC_DEFINE(WITH_LDAP_SET_OPTION, 1, Compile with LDAP set_option),
 AC_MSG_WARN(
 ""
 "************************************************************"
@@ -997,11 +1014,11 @@ fi
 AC_CHECK_FUNCS(setproctitle)
 AC_CHECK_HEADERS(libutil.h)
 AC_CHECK_LIB(util, setproctitle,
-	[AC_DEFINE(HAVE_SETPROCTITLE)
+	[AC_DEFINE(HAVE_SETPROCTITLE, 1, Have setproctiltle)
 		ac_cv_func_setproctitle="yes" ; LIBS="$LIBS -lutil"])
 
 if test "$ac_cv_func_setproctitle" = "yes"; then
-  AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_NONE)
+  AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_NONE, Argv Type)
 else
   pf_argv_set="no"
 
@@ -1010,9 +1027,9 @@ else
     AC_CHECK_FUNCS(pstat)
     
     if test "$ac_cv_func_pstat" = "yes"; then
-	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_PSTAT)
+	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_PSTAT, Argv Type)
     else
-	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_WRITABLE)
+	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_WRITABLE, Argv Type)
     fi
 
     pf_argv_set="yes"
@@ -1022,7 +1039,7 @@ else
     AC_EGREP_HEADER([#define.*PS_STRINGS.*],sys/exec.h,
 			have_psstrings="yes",have_psstrings="no")
     if test "$have_psstrings" = "yes"; then
-	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_PSSTRINGS)
+	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_PSSTRINGS, Argv Type)
 	pf_argv_set="yes"
     fi
   fi
@@ -1035,7 +1052,7 @@ else
 			pf_cv_var_progname="yes", pf_cv_var_progname="no"))
 
     if test "$pf_cv_var_progname" = "yes"; then
-	AC_DEFINE(HAVE___PROGNAME)
+	AC_DEFINE(HAVE___PROGNAME, 1, Have __progname)
     fi
 
     AC_CACHE_CHECK(which argv replacement method to use,
@@ -1047,12 +1064,12 @@ else
   ],pf_cv_argv_type="new", pf_cv_argv_type="writeable"))
 
     if test "$pf_cv_argv_type" = "new"; then
-	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_NEW)
+	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_NEW, Argv Type)
 	pf_argv_set="yes"
     fi
 
     if test "$pf_argv_set" = "no"; then
-	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_WRITEABLE)
+	AC_DEFINE(PF_ARGV_TYPE, PF_ARGV_WRITEABLE, Argv Type)
     fi
   fi
 fi

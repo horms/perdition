@@ -5,6 +5,16 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
+XXX
+(Horms)
+   * XXX
+   - Test for Berkely DB >= 4.1. It seems that they
+     interface to db->open() is different as of that
+     version (fools!). 
+   - Removed acconfig.h as it is no longer needed
+
+----------------------------------------------------------------------
+
 18th April 2003
 (Horms)
    * 1.11beta8

@@ -34,7 +34,6 @@ TODO \
 INSTALL.in \
 CODING_LOCATIONS.in\
 CODING_LOCATIONS \
-acconfig.h \
 autogen.sh
 
 clean-local:
