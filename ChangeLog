@@ -24,6 +24,7 @@ XXX
      Jeremy Rumpf
    - Make popmap Makefile more portable. Pascal Schumacher and Horms
    - Clarify the way that multiple LDAP servers works. Jeremy Rumpf
+   - Removed line from man page stating that TLS isn't supported - it is.
 
 ----------------------------------------------------------------------
 
