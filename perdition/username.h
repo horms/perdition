@@ -30,10 +30,13 @@
 #define USERNAME_BERT
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
 
 /**********************************************************************
- n.h* username_add_domain
+ * username_add_domain
  * Append the domain part of the address connected to after
  * the domain delimiter if not already present.
  * pre: username: username to strip domain from
