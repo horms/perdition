@@ -57,12 +57,13 @@ protocol_t *imap4s_initialise_protocol(protocol_t *protocol){
   protocol->quit_string = IMAP4_QUIT;
   protocol->one_time_tag = IMAP4_ONE_TIME_TAG;
   protocol->in_get_pw= imap4_in_get_pw;
-  protocol->out_authenticate=imap4_out_authenticate;
 #ifdef WITH_PAM_SUPPORT
   protocol->in_authenticate= imap4_in_authenticate;
 #else
   protocol->in_authenticate= NULL;
 #endif
+  protocol->out_setup=imap4_out_setup;
+  protocol->out_authenticate=imap4_out_authenticate;
   protocol->out_response=imap4_out_response;
   protocol->destroy = imap4s_destroy_protocol;
   protocol->port = imap4s_port;

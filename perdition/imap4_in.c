@@ -159,7 +159,7 @@ static token_t *imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 			VANESSA_LOGGER_DEBUG("token_create");
 			return(NULL);
 		}
-		token_assign(tag, strdup("+"), 1, 0);
+		token_assign(tag, strdup(IMAP4_CONT_TAG), 1, 0);
 		imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 
 				"ready for additional input");
 		token_destroy(&tag);
@@ -268,7 +268,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
   return_pw->pw_name=NULL;
 
   while(1){
-    if((q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0))==NULL){
+    q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0, PERDITION_LOG_STR_CLIENT);
+    if(!q) {
       VANESSA_LOGGER_DEBUG("read_imap4_line 1");
       break;
     }
@@ -379,7 +380,9 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
 	if(t != tmp_t) {
 	  /* Read again to get the space password */
 	  vanessa_queue_destroy(q);
-          if((q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0))==NULL){
+          q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0, 
+			  PERDITION_LOG_STR_CLIENT);
+          if(!q) {
             VANESSA_LOGGER_DEBUG("read_imap4_line 2");
             break;
           }

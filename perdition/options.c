@@ -224,10 +224,11 @@ int options(int argc, char **argv, flag_t f){
   char *optarg_copy;
   char *end;
   poptContext context;
+  const char **trailing_argv;
 
   static struct poptOption options[] =
   {
-    {"add_domain",                  'A',  POPT_ARG_STRING, NULL,  'A'},
+    {"add_domain",                  'A',  POPT_ARG_STRING, NULL, 'A'},
     {"authenticate_in",             'a',  POPT_ARG_NONE,   NULL, 'a'},
     {"no_bind_banner",              'B',  POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b',  POPT_ARG_STRING, NULL, 'b'},
@@ -598,6 +599,16 @@ int options(int argc, char **argv, flag_t f){
       return(-1);
     }
   }
+
+  trailing_argv = poptGetArgs(context);
+  if(trailing_argv && *trailing_argv) {
+    while(*trailing_argv) {
+      VANESSA_LOGGER_DEBUG_UNSAFE("options: trailing argument: %s", 
+          *trailing_argv);
+      trailing_argv++;
+    }
+    usage(-1);
+  }
   
   opt.domain_delimiter_length=strlen(opt.domain_delimiter);
   poptFreeContext(context);
@@ -679,7 +690,6 @@ int log_options(void){
 
   extern options_t opt;
   extern struct utsname *system_uname;
-  extern vanessa_logger_t *perdition_vl;
 
   if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL){
     VANESSA_LOGGER_DEBUG("protocol_list");
@@ -746,8 +756,8 @@ int log_options(void){
 #endif /* WITH_SSL_SUPPORT */
 
   vanessa_logger_log(
-    perdition_vl,
-    LOG_INFO, 
+    vanessa_logger_get(),
+    LOG_INFO,
     "add_domain=\"%s\", "
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
@@ -966,7 +976,7 @@ void usage(int exit_status){
     "    Do not detach from terminal. Makes no sense if -i|--inetd_mode\n"
     "    is in opperation.\n"
     " -n|--no_lookup:\n"
-    "    Disable host and port lookup Implies -B|--no_bind_banner\n"
+    "    Disable host and port lookup. Implies -B|--no_bind_banner\n"
     " -o|--server_ok_line:\n"
     "    If authentication with the back-end server is successful then send\n"
     "    the servers +OK line to the client, instead of generting one.\n"

@@ -37,31 +37,27 @@
 
 
 /**********************************************************************
- * imap4_authenticate
- * Authenticate user with backend imap4 server
+ * imap4_out_setup
+ * Begin interaction with real server by checking that
+ * the connection is ok and doing TLS if neccessary.
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structiure for imap4
- *      buf:    buffer to return response from server in
- *      n:      size of buf in bytes
  * post: 1: on success
  *       0: on failure
  *       -1 on error
  **********************************************************************/
 
-int imap4_out_authenticate(
+int imap4_out_setup(
   io_t *io,
   const struct passwd *pw,
   const token_t *tag,
-  const protocol_t *protocol,
-  unsigned char *buf,
-  size_t *n
+  const protocol_t *protocol
 ){
   token_t *ok;
-  vanessa_queue_t *q;
-  char *tag_string=NULL;
-  char *read_string=NULL;
+  vanessa_queue_t *q = NULL;
+  char *read_string = NULL;
   char *greeting_string=NULL;
   int status=-1;
 
@@ -69,7 +65,8 @@ int imap4_out_authenticate(
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(ok,(PERDITION_USTRING)IMAP4_OK,strlen(IMAP4_OK),TOKEN_DONT_CARE);
+  token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
+      TOKEN_DONT_CARE);
 
   if((status=imap4_out_response(io, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
     VANESSA_LOGGER_DEBUG("imap4_out_response");
@@ -99,35 +96,95 @@ int imap4_out_authenticate(
     VANESSA_LOGGER_DEBUG("Loop detected, abandoning connection");
     goto leave;
   }
+  vanessa_queue_destroy(q);
+  q = NULL;
+
+  /* XXX: TLS Stuff should go here */
+
+  leave:
+  str_free(greeting_string);
+  token_unassign(ok);
+  token_destroy(&ok);
+  if(q) {
+    vanessa_queue_destroy(q);
+  }
+  return(status);
+}
+  
+
+/**********************************************************************
+ * imap4_authenticate
+ * Authenticate user with backend imap4 server
+ * You should call imap4_setup first
+ * pre: io: io_t to read from and write to
+ *      pw:     structure with username and passwd
+ *      tag:    tag to use when authenticating with back-end server
+ *      protocol: protocol structiure for imap4
+ *      buf:    buffer to return response from server in
+ *      n:      size of buf in bytes
+ * post: 1: on success
+ *       0: on failure
+ *       -1 on error
+ **********************************************************************/
+
+int imap4_out_authenticate(
+  io_t *io,
+  const struct passwd *pw,
+  const token_t *tag,
+  const protocol_t *protocol,
+  unsigned char *buf,
+  size_t *n
+){
+  token_t *ok;
+  vanessa_queue_t *q;
+  char *tag_string=NULL;
+  int status=-1;
+
+  if((ok=token_create())==NULL){
+    VANESSA_LOGGER_DEBUG("token_create");
+    goto leave;
+  }
+  token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
+      TOKEN_DONT_CARE);
 
   if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
     VANESSA_LOGGER_DEBUG("token_to_string");
     return(-1);
   }
 
-  if(str_write(
-    io, 
-    NULL_FLAG,
-    3,
-    "%s LOGIN \"%s\" \"%s\"", 
-    tag_string, 
-    pw->pw_name,
-    pw->pw_passwd
-  )<0){
-    VANESSA_LOGGER_DEBUG("imap4_write");
+  if(str_write(io, NULL_FLAG, 2, "%s LOGIN {%d}", tag_string, 
+      strlen(pw->pw_name))<0){
+    VANESSA_LOGGER_DEBUG("str_write 1");
     status=-1;
     goto leave;
   }
-
-
-  if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
+  if((status=imap4_out_response(io, IMAP4_CONT_TAG, ok, &q, buf, n))<0){
     VANESSA_LOGGER_DEBUG("imap4_out_response 2");
   }
+
+  if(str_write(io, NULL_FLAG, 2, "%s {%d}", pw->pw_name, 
+      strlen(pw->pw_passwd))<0){
+    VANESSA_LOGGER_DEBUG("str_write 2");
+    status=-1;
+    goto leave;
+  }
+  if((status=imap4_out_response(io, IMAP4_CONT_TAG, ok, &q, buf, n))<0){
+    VANESSA_LOGGER_DEBUG("imap4_out_response 2");
+  }
+
+  if(str_write(io, NULL_FLAG, 1, "%s", pw->pw_passwd)<0){
+    VANESSA_LOGGER_DEBUG("str_write 3");
+    status=-1;
+    goto leave;
+  }
+  if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
+    VANESSA_LOGGER_DEBUG("imap4_out_response 3");
+  }
+
   vanessa_queue_destroy(q);
 
   leave:
   str_free(tag_string);
-  str_free(greeting_string);
   token_unassign(ok);
   token_destroy(&ok);
   return(status);
@@ -174,7 +231,8 @@ int imap4_out_response(
 
   /*Check tag*/
   while(1){
-    if((*q=read_line(io, buf, n, TOKEN_IMAP4, 0))==NULL){
+    *q=read_line(io, buf, n, TOKEN_IMAP4, 0, PERDITION_LOG_STR_REAL);
+    if(!*q){
       VANESSA_LOGGER_DEBUG("read_line");
       return(-1);
     }
@@ -220,3 +278,5 @@ int imap4_out_response(
   str_free(server_tag_string);
   return(status);
 }
+
+

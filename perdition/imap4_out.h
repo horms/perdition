@@ -25,8 +25,8 @@
  *
  **********************************************************************/
 
-#ifndef IMAP4_OUT_BLUM
-#define IMAP4_OUT_BLUM
+#ifndef _IMAP4_OUT_H
+#define _IMAP4_OUT_H
 
 #include <pwd.h>
 #include <sys/types.h>
@@ -42,8 +42,30 @@
 
 
 /**********************************************************************
+ * imap4_out_setup
+ * Begin interaction with real server by checking that
+ * the connection is ok and doing TLS if neccessary.
+ * pre: io: io_t to read from and write to
+ *      pw:     structure with username and passwd
+ *      tag:    tag to use when authenticating with back-end server
+ *      protocol: protocol structiure for imap4
+ * post: 1: on success
+ *       0: on failure
+ *       -1 on error
+ **********************************************************************/
+
+int imap4_out_setup(
+  io_t *io,
+  const struct passwd *pw,
+  const token_t *tag,
+  const protocol_t *protocol
+);
+
+
+/**********************************************************************
  * imap4_authenticate
  * Authenticate user with backend imap4 server
+ * You should call imap4_setup first
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
@@ -88,4 +110,4 @@ int imap4_out_response(
   size_t *n
 );
 
-#endif
+#endif /* _IMAP4_OUT_H */
