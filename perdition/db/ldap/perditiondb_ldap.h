@@ -52,7 +52,8 @@ int dbserver_get(const char *key_str,
   "ldap://localhost/" \
   "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%s)"
 
-#define PERDITIONDB_LDAP_VERSION LDAP_VERSION3
+/* #define PERDITIONDB_LDAP_VERSION LDAP_VERSION3 */
+#define PERDITIONDB_LDAP_VERSION LDAP_VERSION
 
 #define PERDITIONDB_LDAP_NETWORK_TIMEOUT 10
 

@@ -10,6 +10,9 @@
 /* Do we have LDAP LUD extentions */
 #undef WITH_LDAP_LUD_EXTS
 
+/* Do we have ldap_set_option() */
+#undef WITH_LDAP_SET_IPTION
+
 /* Should we use DMALLOC */
 #undef WITH_DMALLOC
 

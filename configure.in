@@ -630,6 +630,18 @@ AC_MSG_WARN(
 fi
 
 if test "$ldap_build_dir" = "ldap"; then
+        AC_CHECK_LIB(ldap, ldap_set_option, AC_DEFINE(WITH_LDAP_LUD_EXTS),
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Cannot expicitly set network timeout or ldap protocol"
+"* version. For ldap_set_option support please use openlap2."
+"* Available from openldap.org"
+"************************************************************"
+),)
+fi
+
+if test "$ldap_build_dir" = "ldap"; then
 AC_ARG_WITH(
   ldap-schema-directory,
   [  --with-ldap-schema-directory=DIR 

@@ -42,7 +42,8 @@
 
 
 static LDAPURLDesc *ludp;
-static int ldap_version=PERDITIONDB_LDAP_VERSION;
+
+static int ldap_version = PERDITIONDB_LDAP_VERSION;
 
 /**********************************************************************
  * dbserver_init
@@ -198,7 +199,6 @@ invalid:
 
 static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
 {
-#ifdef WITH_LDAP_LUD_EXTS
 	size_t count;
 	int critical;
 	char *pstr;
@@ -246,9 +246,6 @@ static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
 	}
 
 	return(0);
-#else				/* WITH_LDAP_LUD_EXTS */
-	return(0);
-#endif				/* WITH_LDAP_LUD_EXTS */
 }
 
 
@@ -299,12 +296,15 @@ int dbserver_get(const char *key_str,
 		goto leave;
 	}
 
+#ifdef WITH_LDAP_LUD_EXTS
 	/* Check extensions */
 	if(pldap_scan_exts(ludp->lud_exts, &binddn, &bindpw)) {
 		VANESSA_LOGGER_DEBUG("ldap_scan_exts");
 		goto leave;
 	}
+#endif /* WITH_LDAP_LUD_EXTS */
 
+#ifdef LDAP_SET_OPTION
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
 	{
 		struct timeval mytimeval;
@@ -316,13 +316,16 @@ int dbserver_get(const char *key_str,
 			return (-1);
 		}
 	}
-#endif /*LDAP_OPT_NETWORK_TIMEOUT */
+#endif /* LDAP_OPT_NETWORK_TIMEOUT */
+#endif /* LDAP_SET_OPTION */
 
+#ifdef LDAP_SET_OPTION
 	if(ldap_set_option(connection, LDAP_OPT_PROTOCOL_VERSION, 
 				&ldap_version) != LDAP_OPT_SUCCESS ) {
 		VANESSA_LOGGER_DEBUG("ldap_protocol_version");
 		return(-1);
 	}
+#endif /* LDAP_SET_OPTION */
 
 	if (ldap_bind_s(connection, binddn, bindpw, LDAP_AUTH_SIMPLE)
 	    != LDAP_SUCCESS) {

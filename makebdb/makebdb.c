@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <db.h>
 
 #include "options.h"
 
