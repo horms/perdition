@@ -74,26 +74,31 @@ fail to stop perdition correctly.
 .TP
 .B \-A|\-\-add_domain:
 Appends a domain to the USER based on the IP address connected to
-in given state(s). State may be one of servername_lookup,
-local_authentication, remote_login and all.
-.br
-(default "(null)")
+in given state(s). The domain name to append will be the reverse-lookup
+of the IP address connected to. If there is no reverse lookup for
+this IP address, then a domain will not be appended. Probably the easiest
+way to enforce this mapping is to add entries to /etc/hosts.
+.sp
+State may be one of servername_lookup, local_authentication, 
+remote_login and all.
 .sp
 .B servername_lookup:
-strip domain of username for lookup of username in
+Append the domain to the username for lookup of username in
 Popmap. Will not take effect if \-c|\-\-client_server_specification
 is specified.
 .sp
 .B local_authentication:
-Strip domain of username for use in local
+Append the domain to the username for use in local
 authentication. Only has effect if \-a|\-\-authenticate_in is specified.
 .sp
 .B remote_login:
-Send a stripped version of the username to the back-end
+Send the username with the domain appended to the back-end
 server for authentication.
 .sp
 .B all:
 Shorthand for all of above states.
+.sp
+(default "(null)")
 .TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end
@@ -402,9 +407,9 @@ mode perdition will fork to manage clients.
 In the RPM distribution perdition can be started and 
 stopped in stand\-alone mode using:
 .PP
-/etc/rc.d/perdition start
+/etc/init.d/perdition start
 .br
-/etc/rc.d/perdition stop
+/etc/init.d/perdition stop
 .PP
 Editing /etc/sysconfig/perdition allows control of whether perdition
 will be started in POP3 mode, IMAP4 mode or both (or neither).
