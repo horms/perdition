@@ -271,7 +271,7 @@ int imap4_in_authenticate(
 #define __IMAP4_IN_CHECK_NO_ARG(_cmd)                                       \
 	if(vanessa_queue_length(q)) {                                       \
 		sleep(VANESSA_LOGGER_ERR_SLEEP);                            \
-		if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,               \
+		if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO,                \
 					0, "Argument given to " _cmd        \
 					" but there shouldn't be one")<0){  \
 			VANESSA_LOGGER_DEBUG("imap4_write syntax error");   \
