@@ -52,6 +52,7 @@ XXX
      was in effect, such that configure would fail
      if openssl libraries were not installed.
    - Fixed handling of '#' within regular expression in popmap.re
+   - Fixed potential buffer overflow in token_read()
 
 ----------------------------------------------------------------------
 
