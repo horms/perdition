@@ -5,18 +5,16 @@ Mail retrieval proxy server
 Copyright (C) 1999-2003  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+10th January 2003
 (Horms)
-   * 1.11beta3 unreleased
-   - Added option to limit the chain length used when verifying certificates
+   * 1.11beta3
+   - Improved handling of real-server certificate validation.
+     Don Kozlowski and Myself
    - Cleaned up build when compiled without SSL
-   - Options to Handle self-signed and non-current certificates
-   - Use SSL_CTX_use_certificate_chain_file(3) instead of 
-     SSL_CTX_use_certificate_file() to load certificates. Don Kozlowski
 
 ----------------------------------------------------------------------
 
-8th January 2002
+8th January 2003
 (Horms)
    * 1.11beta2
    - Fixed handling of POP3 CAPA command
