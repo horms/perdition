@@ -475,7 +475,7 @@ int main (int argc, char **argv, char **envp){
           sockname, 0);
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
-      VANESSA_LOGGER_ERR("Fatal error accepting child connecion. Exiting.");
+      VANESSA_LOGGER_ERR("Fatal error accepting child connection. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
 
