@@ -119,24 +119,11 @@ static void perdition_reread_handler(int sig);
     &(opt.mangled_capability), opt.ssl_mode, tls_state);
 
 /* Macro to set the uid and gid */
-#ifdef WITH_PAM_SUPPORT 
-#define PERDITION_SET_UID_AND_GID \
-  if(opt.debug && geteuid() && opt.authenticate_in){ \
-    VANESSA_LOGGER_INFO( \
-      "Warning: not invoked as root, local authentication may fail" \
-    ); \
-  } \
-  if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
-    VANESSA_LOGGER_ERR("Fatal error setting group and userid. Exiting.");\
-    vanessa_socket_daemon_exit_cleanly(-1); \
-  }
-#else
 #define PERDITION_SET_UID_AND_GID \
   if(!geteuid() && vanessa_socket_daemon_setid(opt.username, opt.group)){ \
     VANESSA_LOGGER_ERR("Fatal error setting group and userid. Exiting.");\
     vanessa_socket_daemon_exit_cleanly(-1); \
   }
-#endif
 
 /* Macro to log session just after Authentication */
 #define VANESSA_LOGGER_LOG_AUTH(_auth_log, _from_to_str,                   \
@@ -453,7 +440,13 @@ int main (int argc, char **argv, char **envp){
    * NB: We do this later if we are going to authenticate locally 
    */
 #ifdef WITH_PAM_SUPPORT
-  if(!opt.authenticate_in)
+  if(opt.authenticate_in) {
+    if(geteuid()){
+      VANESSA_LOGGER_INFO("Warning: not invoked as root, "
+		      "local authentication may fail");
+    }
+  }
+  else
 #endif
     PERDITION_SET_UID_AND_GID;
 
