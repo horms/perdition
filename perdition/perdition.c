@@ -231,8 +231,6 @@ int main (int argc, char **argv, char **envp){
 
   /*Open the dbserver_get library, if we have a library*/
   if(
-    opt.map_library!=NULL && 
-    *(opt.map_library)!='\0' && 
     getserver_openlib(
       opt.map_library,
       opt.map_library_opt,
@@ -272,10 +270,10 @@ int main (int argc, char **argv, char **envp){
   /* Set file descriptor to log to, if any */
   fh = NULL;
   if(opt.log_facility!=NULL) {
-    if(strcmp(opt.log_facility, "-")) {
+    if(strcmp(opt.log_facility, "-") == 0) {
       fh = stdout;
     }
-    else if(strcmp(opt.log_facility, "+")) {
+    else if(strcmp(opt.log_facility, "+") == 0) {
       fh = stderr;
     }
   }
@@ -562,7 +560,7 @@ int main (int argc, char **argv, char **envp){
 
     /*Read the server from the map, if we have a map*/
     if(
-      opt.map_library != NULL && *(opt.map_library) != '\0' &&
+      dbserver_get != NULL &&
       (server_port = getserver(username, from_str, to_str, 
 			       sockname==NULL?0:ntohs(sockname->sin_port), 
 			       dbserver_get)) != NULL

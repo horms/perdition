@@ -256,6 +256,10 @@ server_port_t *getserver(
  
   extern options_t opt;
 
+  if(dbserver_get == NULL) {
+    return(NULL);
+  }
+
   /* If the user specified a server, and it is allowed then use it */
   if(
     opt.client_server_specification &&
@@ -362,6 +366,12 @@ int getserver_openlib(
   char *error;
   int *(*dbserver_init)(char *);
 
+  if(libname == NULL || *libname == '\0') {
+    *handle_return = NULL;
+    *dbserver_get_return = NULL;
+    return(0);
+  }
+
   *handle_return=dlopen(libname, RTLD_LAZY);
   if(!*handle_return) {
     error=dlerror();
@@ -403,6 +413,10 @@ int getserver_closelib(void *handle){
   int status=0;
   int *(*dbserver_fini)(void);
   char *error;
+
+  if(handle == NULL) {
+    return(0);
+  }
 
   dbserver_fini=dlsym(handle, "dbserver_fini");
   if((error=dlerror())==NULL){
