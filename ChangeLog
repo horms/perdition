@@ -5,10 +5,10 @@ Mail retrieval proxy server
 Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+29th April 2001
 (Horms)
 
-  * Version xxx
+  * Version 0.1.9
   - Added SSL Support
   - Modified logging semantics to have Connect, Auth, and Close logs
     suitable for pop/imap-before-smtp. Carlos Canau & Matt Prigge
@@ -25,6 +25,14 @@ xxx
     maps.
   - Added -X|--lower_case option to convert usernames given by
     end users to lowercase.
+
+
+----------------------------------------------------------------------
+xxx
+(Horms)
+
+  * xxx
+  - Fixed problem with setting ssl_key_file.
 
 
 ----------------------------------------------------------------------

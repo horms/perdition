@@ -34,8 +34,17 @@
  *
  **********************************************************************/
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <grp.h>
+#include <pwd.h>
+#include <fcntl.h>
+
+#include <vanessa_socket.h>
+
 #include "daemon.h"
-#include "options.h"
+#include "log.h"
 
 
 /**********************************************************************

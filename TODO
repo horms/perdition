@@ -23,8 +23,6 @@ From Mikolaj J. Habryn
   and using the first to respond
 
 * Add TLS IMAP and POP support
-* Document how to create certificate and key files
-* Update debian/ and perdition.spec.in to reflect SSL changes
 
 
 From Stephen Lombard

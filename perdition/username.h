@@ -29,10 +29,10 @@
 #ifndef USERNAME_BERT
 #define USERNAME_BERT
 
-#include<netdb.h>
+#include <netinet/in.h>
 
 /**********************************************************************
- * username_add_domain
+ n.h* username_add_domain
  * Append the domain part of the address connected to after
  * the domain delimiter if not already present.
  * pre: username: username to strip domain from

@@ -1,11 +1,21 @@
-perdition (0.1.9pre1-1) unstable; urgency=low
+perdition (0.1.9-1) unstable; urgency=low
 
   * Fixed gramatical error in control file. closes: Bug#99764.
 
   * Moved from main/mail to non-US/main/mail becase PostgreSQL
     is in non-US. closes: Bug#97121
 
- -- Simon Horman <horms@vergenet.net>  Sun, 20 May 2001 11:08:56 +1000
+  * Changed build dependancy libmysqlclient6-dev | libmysqlclient10-dev 
+    to libmysqlclient10-dev | libmysqlclient6-dev as libmysqlclient6-dev
+    is no longer in debian unstable. closes: Bug#102325
+
+  * Added build dependancy for libtool. closes: Bug#102325
+
+  * Changed build dependancy libopenldap-dev | libldap2-dev to
+    libldap2-dev | libopenldap-dev as libopenldap-dev is
+    not in debian unstable. closes: Bug#102710
+
+ -- Simon Horman <horms@vergenet.net>  Fri, 29 Jun 2001 13:39:34 +1000
 
 perdition (0.1.8-1) unstable; urgency=low
 
