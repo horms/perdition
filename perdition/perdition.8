@@ -170,7 +170,10 @@ may contain single spaces. The default is: "UIDL  USER".
 When using an IMAP4 based protocol, this string is taken as a string
 literal that will be returned when a client issues the CAPABILITY
 command. As such the capabilities should be space delimited.
-The default is: "IMAP4 IMAP4REV1 LITERAL+"
+The default is: "IMAP4 IMAP4REV1". However perdition does
+support RFC 2088 non-synchronising string literals, if the real
+servers also support this then the capability may be set to
+"IMAP4 IMAP4REV1 LITERAL+".
 .sp
 If perdition is listening for TLS connections then the
 capability STLS for POP3 or STARTTLS for IMAP4 will be
