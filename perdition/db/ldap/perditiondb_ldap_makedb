@@ -27,24 +27,37 @@
 ######################################################################
 
 
-#Edit this to reflect your ldap setup
-DC="cn=Manager, dc=my-domain, dc=com"
+DEFAULT_DC="cn=Manager, dc=my-domain, dc=com"
+
+if [ -z "$(type -path ldapadd)" ]; then
+  echo "Could not find ldapadd command. Bailing" >&2
+  exit 1
+fi
 
 
-##########################################
-# No user servicable parts below this line
 
-cat << __EOF__
-Initialising LDAP popmap...
+echo
+echo "openldap requires a binddn to bind to the LDAP directory"
+echo "The default is \"$DEFAULT_DC\". To use this"
+echo "hit return, otherwise enter a host to connect to, it should be a"
+echo "should be a string-represented DN as defined in RFC 1779."
+echo -n "Enter binddn [$DEFAULT_DC]: " >&2
+read dc
+if [ -z "$dc" ]; then
+  dc="$DEFAULT_DC"
+fi
 
-You will need to enter the sevret for the
-binddn: "$DC".
-The default mau be "secret", you should change
-your ldap configuration if this is the case.
 
-__EOF__
+echo
+echo "Initialising LDAP popmap..."
+echo
+echo "You will need to enter the sevrer for the"
+echo "binddn: \"$dc\"."
+echo "The default mau be \"secret\", you should change"
+echo "your ldap configuration if this is the case."
+echo
 
-ldapadd -D "$DC" -W << __EOF__
+ldapadd -D "$dc" -W << __EOF__
 dn: dc=my-domain, dc=com
 dc: my-domain
 
@@ -62,3 +75,8 @@ uid: tymm
 username: tymm
 mailhost: localhost
 __EOF__
+
+if [ $? != 0 ]; then
+  echo "Error initialising LDAP popmap. Bailing" >&2
+  exit 1
+fi

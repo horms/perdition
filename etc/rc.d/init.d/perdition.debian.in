@@ -1,11 +1,3 @@
-#! /bin/sh
-# /etc/init.d/radiusd-lucent: to start and stop radiusd
-# based on /etc/init.d/skeleton
-#
-# Written by Miquel van Smoorenburg <miquels@drinkel.ow.org>.
-# Modified for Debian GNU/Linux by Ian Murdock <imurdock@gnu.ai.mit.edu>.
-# Modified for radiusd by Chris Fearnley <cjf@netaxs.com>.
-# Modified for radiusd-lucent by Horms <horms@vergenet.net>
 #!/bin/sh
 ######################################################################
 # Version:                                              September 1999
@@ -15,7 +7,7 @@
 # based on /etc/init.d/skeleton
 #
 # perdition
-# Mail retreival proxy server
+# Mail retrieval proxy server
 # Copyright (C) 1999  Horms
 # 
 # This program is free software; you can redistribute it and/or
@@ -48,16 +40,28 @@ test -f $DAEMON || exit 0
 
 case "$1" in
   start)
-    start-stop-daemon --start --verbose --exec perdition.pop3
-    start-stop-daemon --start --verbose --exec perdition.imap4
+    if [ "$POP3" = "yes" ]; then 	
+      start-stop-daemon --start --verbose --exec @prefix@/perdition.pop3
+    fi
+    if [ "$IMAP4" = "yes" ]; then 	
+      start-stop-daemon --start --verbose --exec @prefix@/perdition.imap4
+    fi
     ;;
   stop)
-    start-stop-daemon --stop --verbose --exec perdition.pop3
-    rm -f /var/run/perdition.pop3.pid
-    start-stop-daemon --stop --verbose --exec perdition.imap4
-    rm -f /var/run/perdition.imap4.pid
+    if [ "$POP3" = "yes" ]; then 	
+      start-stop-daemon --stop --verbose --exec @prefix@/perdition.pop3
+      rm -f /var/run/perdition.pop3.pid
+    fi
+    if [ "$IMAP4" = "yes" ]; then 	
+      start-stop-daemon --stop --verbose --exec @prefix@/perdition.imap4
+      rm -f /var/run/perdition.imap4.pid
+    fi
     ;;
-  reload)
+  restart)
+    $0 stop 
+    $0 start 
+    ;;
+  force-reload|reload)
     # echo "Reloading $NAME configuration files"
     # start-stop-daemon --stop --signal 1 --quiet --exec $DAEMON
     ;;

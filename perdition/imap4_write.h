@@ -5,7 +5,7 @@
  * Subroutines to write IMAP4 protocol output
  *
  * perdition
- * Mail retreival proxy server
+ * Mail retrieval proxy server
  * Copyright (C) 1999  Horms
  * 
  * This program is free software; you can redistribute it and/or

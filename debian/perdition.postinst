@@ -1,6 +1,8 @@
 #! /bin/sh
 # postinst script for perdition
 
+#DEBHELPER#
+
 update-rc.d perdition defaults >/dev/null
 
 exit 0

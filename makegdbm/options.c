@@ -7,7 +7,7 @@
  * Some code based on man popt(3)
  *
  * perdition
- * Mail retreival proxy server
+ * Mail retrieval proxy server
  * Copyright (C) 1999  Horms
  * 
  * This program is free software; you can redistribute it and/or
@@ -108,13 +108,8 @@ void usage(int exit_status){
   fprintf(
     stream, 
     "Usage: makegdbm [options] gdbmname\n"
-#ifdef HAVE_GETOPT_LONG
     "   options: -h, --help: print this message\n"
     "            -u, --undo: print content of database file, one entry a line\n"
-#else
-    "   options: -h: print this message\n"
-    "            -u: print content of database file, one entry a line\n"
-#endif
   );
 
   exit(exit_status);

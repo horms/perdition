@@ -51,7 +51,7 @@ echo "Perdition information will be sotored in a separeate"
 echo "database within the PostgreSQL RDBMS. The default name for"
 echo "this database is $DEFAULT_DBNAME. If you want to use this"
 echo "hit return, otherwise enter the name for the database."
-echo -n "Enter database name [$DEFAULT_DBNAME]: "
+echo -n "Enter database name [$DEFAULT_DBNAME]: " >&2
 read dbname
 if [ -z "$dbname" ]; then
   dbname="$DEFAULT_DBNAME"
@@ -62,7 +62,7 @@ echo "Perdition information will be stored in table in the"
 echo "$dbname database. The default name for this table is"
 echo "$DEFAULT_DBTABLE. If you want to use this hit return,"
 echo "otherwise enter the name for the table."
-echo -n "Enter table name [$DEFAULT_DBTABLE]: "
+echo -n "Enter table name [$DEFAULT_DBTABLE]: " >&2
 read dbtable
 if [ -z "$dbtable" ]; then
   dbtable="$DEFAULT_DBTABLE"
@@ -73,7 +73,7 @@ echo "A PostgreSQL user, other than root should be used to access"
 echo "the $dbname database. The default name for this user"
 echo "is $DEFAULT_DBUSER. If you want to use this name, hit return,"
 echo "otherwise enter the name for the user."
-echo -n "Enter database user [$DEFAULT_DBUSER]: "
+echo -n "Enter database user [$DEFAULT_DBUSER]: " >&2
 read dbuser
 if [ -z "$dbuser" ]; then
   dbuser="$DEFAULT_DBUSER"

@@ -3,7 +3,7 @@
 # Horms                                             horms@vergenet.net
 #
 # perdition
-# Mail retreival proxy server
+# Mail retrieval proxy server
 # Copyright (C) 1999  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or

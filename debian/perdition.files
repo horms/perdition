@@ -9,8 +9,6 @@ usr/share/doc/perdition/README.perditiondb
 usr/share/doc/perdition/TODO
 usr/lib/libjain.so
 usr/lib/libjain.so.0
-usr/lib/libjain.so.0.0.0
 usr/sbin/perdition
 usr/sbin/perdition.imap4
 usr/sbin/perdition.pop3
-
