@@ -39,3 +39,12 @@ Liu Jinhui
 
 Russell Corker
 * Round robin requests to LDAP servers.
+
+Mark D. Roth
+* Autodetect inetd mode
+     stat(fileno(stdin), &s);
+     if (S_ISSOCK(s.st_mode))
+     {
+       inetd_mode = TRUE;
+     }
+
