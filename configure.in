@@ -632,7 +632,7 @@ fi
 if test "$ldap_build_dir" = "ldap"; then
 AC_ARG_WITH(
   ldap-schema-directory,
-  [  --with-schema-directory=DIR 
+  [  --with-ldap-schema-directory=DIR 
                           Open LDAP schema files are in DIR.  ],
   [ 
     if test "$withval" = "no"; then 

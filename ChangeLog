@@ -11,6 +11,8 @@ XXX
    - Added Berkely DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
    - Added the beginings of TLS support. Thanks to Wolfgang Breyha
+   - Fixed error in help and invocation in .spec file of
+     the with-ldap-schema-directory configure option
 
 ----------------------------------------------------------------------
 

@@ -156,7 +156,7 @@ fi
        --sharedstatedir=%{_sharedstatedir} \
        --mandir=%{_mandir} \
        --infodir=%{_infodir} \
-       --with-schema-directory=/etc/openldap/schema
+       --with-ldap-schema-directory=/etc/openldap/schema
 
 make
 
