@@ -7,18 +7,18 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 
 From Horms
 +  Make TLS IMAP and POP Server support RFC 2595 compliant
-      - Option to only use tls if advertised by server
-        - On a global and per-user basis
-      - Client checks
-        - Copmare server hostname used to connect with that in certificate
-	- Hostname must not be derived from an insecure source such as DNS
-	- Matching is case sensitive
-	- * wildcard for before first . is acceptable in certificate
-	- Match any name in the certificate if there is more than one
-	- If chack fails terminate
-     - honour LOGINDISABLED capability for IMAP
-+ Fix up LDAP Bind Credentials
-+ Fix up LDAP configuration options
+      + Option to only use tls if advertised by server
+        + On a global and per-user basis
+      + Client checks
+        + Copmare server hostname used to connect with that in certificate
+	+ Hostname must not be derived from an insecure source such as DNS
+	+ Matching is case sensitive
+	+ * wildcard for before first . is acceptable in certificate
+	+ Match any name in the certificate if there is more than one
+	+ If chack fails terminate
+     + honour LOGINDISABLED capability for IMAP
+* Fix up LDAP Bind Credentials
+* Fix up LDAP configuration options
 + Config files for different protocols
 
 From Rob Wyn Jones
