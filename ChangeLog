@@ -12,7 +12,7 @@ XXX
    - Updated debian dependancies
    - Updated man page dates
    - Handle empty map library better
-
+   - Fixed redhat packaging
 
 ----------------------------------------------------------------------
 

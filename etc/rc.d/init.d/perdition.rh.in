@@ -52,28 +52,28 @@ case "$1" in
   start)
 	if [ "$POP3" = "yes" ]; then
         	echo -n "Starting perdition services (POP3): "
-		daemon @prefix@/sbin/perdition.pop3 $FLAGS
+		daemon @prefix@/sbin/perdition.pop3 $FLAGS $POP3_FLAGS
 		touch /var/lock/subsys/perdition.pop3
         	echo
 	fi
 
 	if [ "$POP3S" = "yes" ]; then
         	echo -n "Starting perdition services (POP3S): "
-		daemon @prefix@/sbin/perdition.pop3s $FLAGS
+		daemon @prefix@/sbin/perdition.pop3s $FLAGS $POP3S_FLAGS
 		touch /var/lock/subsys/perdition.pop3s
         	echo
 	fi
 
 	if [ "$IMAP4" = "yes" ]; then
         	echo -n "Starting perdition services (IMAP4): "
-		daemon @prefix@/sbin/perdition.imap4 $FLAGS
+		daemon @prefix@/sbin/perdition.imap4 $FLAGS $IMAP4_FLAGS
 		touch /var/lock/subsys/perdition.imap4
 		echo
 	fi
 
 	if [ "$IMAP4S" = "yes" ]; then
         	echo -n "Starting perdition services (IMAP4S): "
-		daemon @prefix@/sbin/perdition.imaps $FLAGS
+		daemon @prefix@/sbin/perdition.imaps $FLAGS $IMAP4S_FLAGS
 		touch /var/lock/subsys/perdition.imaps
 		echo
 	fi
