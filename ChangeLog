@@ -21,6 +21,8 @@ xxx
      runs perdition in POP3 or IMAP4 mode respectively
    - Added connection loging to interaction between perdition
      and clients may be logged for debugging purposes
+   - UID in LDAP URL now specified using %s instead of %25s
+     (Chris Stratford)
 
 ----------------------------------------------------------------------
 

@@ -53,6 +53,6 @@ int dbserver_get(
 
 #define PERDITIONDB_LDAP_DEFAULT_URL \
   "ldap://localhost/" \
-  "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%25s)"
+  "ou=mailbox,dc=my-domain,dc=com?username,mailhost,port?one?(uid=%s)"
 
 #endif

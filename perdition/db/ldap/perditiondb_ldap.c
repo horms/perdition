@@ -80,26 +80,64 @@ static int perditiondb_ldap_vanessa_socket_str_is_digit(const char *str){
 
 int dbserver_init(char *options_str) {
   extern options_t opt;
+  char *tmpstr;
+  char *ptr;
+  int count;
+  int found;
 
   if (options_str == NULL) {
     options_str=PERDITIONDB_LDAP_DEFAULT_URL;
   }
+
+  /* Convert "%" to "%25" to keep the ldap_url_parse code happy */
+  found = 0;
+
+  /* See how many % characters there are */
+  /* (hopefully only 1, but we might as well do this properly) */
+  for (count = 0; count < strlen(options_str); count++) {
+    if (options_str[count] == '%') {
+      found++;
+    }
+  }
+
+  if ((tmpstr = malloc(strlen(options_str) + (found * 2) + 1)) == NULL) {
+    if (opt.debug) {
+      fprintf(stderr, "dbserver_init: malloc\n");
+    }
+    PERDITION_LOG(LOG_DEBUG, "dbserver_init: malloc");
+    return(-1);
+  }
+
+  ptr = tmpstr;
+  /* Copy the string, expanding as we go */
+  for (count = 0; count < strlen(options_str); count++) {
+    *ptr++ = options_str[count];
+    if (options_str[count] == '%') {
+      *ptr++ = '2';
+      *ptr++ = '5';
+    }
+  }
+  *ptr = '\0';
 
   if (ldap_is_ldap_url(options_str) == 0) {
     if(opt.debug){
       fprintf(stderr, "dbserver_init: not an LDAP URL\n");
     }
     PERDITION_LOG(LOG_DEBUG, "dbserver_init: not an LDAP URL");
+    free(tmpstr);
+    return(-1);
   }
 
-  if (ldap_url_parse(options_str, &ludp) != 0) {
+  if (ldap_url_parse(tmpstr, &ludp) != 0) {
     if(opt.debug){
       fprintf(stderr, "dbserver_init: ldap_url_parse\n");
     }
     PERDITION_LOG(LOG_DEBUG, "dbserver_init: ldap_url_parse");
+    free(tmpstr);
     return(-1);
   }
 
+  free(tmpstr);
   return(0);
 }
 
