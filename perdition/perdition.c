@@ -162,7 +162,7 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
  * Muriel the main function
  **********************************************************************/
 
-int main (int argc, char **argv){
+int main (int argc, char **argv, char **envp){
   struct passwd pw = {NULL, NULL};
   struct passwd pw2 = {NULL, NULL};
   struct in_addr *to_addr;
@@ -185,7 +185,8 @@ int main (int argc, char **argv){
   int status;
   int round_robin_server=0;
   int rnd;
-  int s;
+  int s=-1;
+  int g=-1;
 
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
@@ -268,6 +269,7 @@ int main (int argc, char **argv){
   signal(SIGPIPE,   SIG_IGN);
   signal(SIGALRM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGTERM,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
+  signal(SIGCHLD,   vanessa_socket_handler_reaper);
   signal(SIGURG,    (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGXCPU,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
   signal(SIGXFSZ,   (void(*)(int))vanessa_socket_daemon_exit_cleanly);
@@ -404,6 +406,26 @@ int main (int argc, char **argv){
   
 
   /*Open incoming socket as required*/
+  if(!opt.inetd_mode) {
+    g = vanessa_socket_server_bind(opt.listen_port, opt.bind_address, 
+ 		    		   opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);
+    if(g < 0) {
+      PERDITION_DEBUG("vanessa_socket_server_bind");
+      PERDITION_ERR("Fatal error listening for connections. Exiting.");
+      vanessa_socket_daemon_exit_cleanly(-1);
+    }
+  }
+
+  /*
+   * Become someone else
+   * NB: We do this later if we are going to authenticate locally 
+   */
+#ifdef WITH_PAM_SUPPORT
+  if(!opt.authenticate_in)
+#endif
+    PERDITION_SET_UID_AND_GID;
+
+  /* Get an incoming connection */
   if(opt.inetd_mode){
     int namelen;
 
@@ -424,15 +446,10 @@ int main (int argc, char **argv){
     }
   }
   else{
-    if((s=vanessa_socket_server_connect(
-      opt.listen_port, 
-      opt.bind_address,
-      opt.connection_limit, 
-      peername,
-      sockname,
-      0
-    ))<0){
-      PERDITION_DEBUG("vanessa_socket_server_connect");
+    s=vanessa_socket_server_accept(g, opt.connection_limit, peername, sockname,
+      				   0);
+    if(s < 0){
+      PERDITION_DEBUG("vanessa_socket_server_accept");
       PERDITION_ERR("Fatal error accepting child connecion. Exiting.");
       vanessa_socket_daemon_exit_cleanly(-1);
     }
@@ -464,13 +481,6 @@ int main (int argc, char **argv){
   else{
     *from_to_str='\0';
   }
-
-  /*Become someone else*/
-  /*NB: We do this later if we are going to authenticate locally*/
-#ifdef WITH_PAM_SUPPORT
-  if(!opt.authenticate_in)
-#endif /* WITH_PAM_SUPPORT */
-    PERDITION_SET_UID_AND_GID;
 
   /*Seed rand*/
   srand(time(NULL)*getpid());

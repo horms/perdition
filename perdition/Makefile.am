@@ -61,6 +61,7 @@ perdition_SOURCES = \
         protocol_t.h \
         queue_func.c        queue_func.h \
         quit.c              quit.h \
+        setproctitle.c      setproctitle.h \
         token.c             token.h \
         server_port.c       server_port.h \
         str.c               str.h \
