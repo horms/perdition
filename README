@@ -33,9 +33,15 @@ may be stored on one of several hosts.  Integrate different mail systems
 together. Migrate between different email infastructure. And in firewall
 applications.
 
+The primary source of documentation for Perdition is its man
+pages.
+
 perdition(8) perditiondb(7) perditiondb_mysql_makedb(8)
 perditiondb_ldap_makedb(8) perditiondb_postgresql_makedb(8)
 perditiondb_odbc_makedb(8)
+
+Other useful information, including suplementry documentation 
+can be found on the web site, http://www.vergenet.net/linux/perdition/
 
 
 LIBRARY REQUIREMENTS
