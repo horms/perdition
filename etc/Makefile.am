@@ -1,11 +1,10 @@
-#!/bin/bash
 ######################################################################
-# makedb                                                      May 2000
+# Makefile.am                                            November 2000
 # Horms                                             horms@vergenet.net
 #
 # perdition
 # Mail retreival proxy server
-# Copyright (C) 1999  Horms
+# Copyright (C) 1999  Horms <horms@vergenet.net>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -24,22 +23,8 @@
 #
 ######################################################################
 
+SUBDIRS = perdition @pam_dir@ rc.d sysconfig
 
-#Edit this to reflect your ldap setup
-DC="cn=Manager, dc=my-domain, dc=com"
+EXTRA_DIST = 
 
-
-##########################################
-# No user servicable parts below this line
-
-cat << __EOF__
-Initialising LDAP popmap...
-
-You will need to enter the sevret for the
-binddn: "$DC".
-The default mau be "secret", you should change
-your ldap configuration if this is the case.
-
-__EOF__
-
-ldapadd -D "$DC" -W < popmap.ldif
+m4datadir = $(datadir)/aclocal
