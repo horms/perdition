@@ -89,7 +89,7 @@ int dbserver_get(
     return(-3);
   }
   *len_return=value.size;
-  strcpy(*str_return, value.data);
+  memcpy(*str_return, value.data, value.size);
 
   dbp->close(dbp, 0);
 

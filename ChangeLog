@@ -12,6 +12,8 @@ XXX
  - Make sure all source files are inculded in tar ball,
    regardless of what parts of the code are excluded from the build
    by configure.
+ - Fixed possible buffer overflow in berkely db module
+   Chris Stratford
 
 ----------------------------------------------------------------------
 
