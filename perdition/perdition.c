@@ -510,6 +510,9 @@ int main (int argc, char **argv, char **envp){
       perdition_exit_cleanly(-1);
     }
 
+    /* Child processes don't clean up the pid file */
+    pid_file = NULL;
+
     if((client_io=io_create_fd(s, s, PERDITION_LOG_STR_CLIENT))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 2");
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
@@ -1188,6 +1191,9 @@ unlink:
 
 /*
  * $Log$
+ * Revision 1.81  2003/12/01 02:31:37  horms
+ * Child Processes don't delete the PID file
+ *
  * Revision 1.80  2003/11/20 06:17:37  horms
  * Added pid file support. Roland Rosenfeld and Horms
  *
