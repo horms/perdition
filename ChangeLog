@@ -31,6 +31,8 @@ xxx
    - Added NIS map, thanks to Nathan Neulinger
    - Removed uneccessary macros in config parsing code
    - Fixed freeing of sturcture for default server 
+   - Tidied up build and added debian directory so debian packages can
+     be build.
 
 ----------------------------------------------------------------------
 
