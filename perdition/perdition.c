@@ -269,6 +269,7 @@ int main (int argc, char **argv, char **envp){
   signal(SIGWINCH,  vanessa_socket_daemon_exit_cleanly);
   signal(SIGIO,     vanessa_socket_daemon_exit_cleanly);
 
+  /* Set file descriptor to log to, if any */
   fh = NULL;
   if(opt.log_facility!=NULL) {
     if(strcmp(opt.log_facility, "-")) {
@@ -293,41 +294,35 @@ int main (int argc, char **argv, char **envp){
    */
   vanessa_logger_closelog(perdition_vl);
   if(fh != NULL) {
-    if((perdition_vl=vanessa_logger_openlog_filehandle(
+    perdition_vl=vanessa_logger_openlog_filehandle(
       fh,
       LOG_IDENT,
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
       LOG_CONS
-    ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_filehandle\n"
-                      "Fatal error opening logger. Exiting.\n");
-      vanessa_socket_daemon_exit_cleanly(-1);
-    }
+    );
   }
   else if(opt.log_facility!=NULL && *(opt.log_facility)=='/'){
-    if((perdition_vl=vanessa_logger_openlog_filename(
+    perdition_vl=vanessa_logger_openlog_filename(
       opt.log_facility,
       LOG_IDENT,
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
       LOG_CONS
-    ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_filename\n"
-                      "Fatal error opening logger. Exiting.\n");
-      vanessa_socket_daemon_exit_cleanly(-1);
-    }
+    );
   }
   else {
-    if((perdition_vl=vanessa_logger_openlog_syslog_byname(
+    perdition_vl=vanessa_logger_openlog_syslog_byname(
       opt.log_facility,
       LOG_IDENT,
       opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
       LOG_CONS
-    ))==NULL){
-      fprintf(stderr, "main: vanessa_logger_openlog_syslog 2\n"
-                      "Fatal error opening logger. Exiting.\n");
-      vanessa_socket_daemon_exit_cleanly(-1);
-    }
+    );
   }
+  if(perdition_vl == NULL) {
+    fprintf(stderr, "main: vanessa_logger_openlog\n"
+                    "Fatal error opening logger. Exiting.\n");
+    vanessa_socket_daemon_exit_cleanly(-1);
+  }
+ 
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
