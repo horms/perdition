@@ -453,7 +453,7 @@ int dbserver_get(const char *key_str,
 			}
 			returns[count] = (char *) malloc(strlen(*bv_val) + 1);
 			if(!returns[count]) {
-				VANESSA_LOGGER_DEBUG_ERRNO("malloc")
+				VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 				ldap_value_free(bv_val);
 				ldap_memfree(pstr);
 				status = -3;
