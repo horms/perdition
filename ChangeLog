@@ -19,6 +19,9 @@ XXX
    - bdb module no longer appends a spurious "\0" to keys
    - Better logging of failed gethopstbyname() and gethostbyaddr() calls
    - Strip trailing whitespace from configuration parameters
+   - Mysql module now works with multiple query keys.
+     Previously it would only ever try the first query key.
+     Jeremy Rumpf
 
 ----------------------------------------------------------------------
 
