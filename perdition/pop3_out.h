@@ -48,6 +48,11 @@
  *      pw:     structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
+ * post: Read the vreeting string from the server
+ *       It tls_outgoing is set then issue the CAPA command
+ *       and check for STLS capability.
+ *       Note, that as many POP3 daemons do not impliment the CAPA
+ *       command, the failure of this is not considered an error
  * return: Logical or of PROTOCOL_S_OK and
  *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
  *         and the STARTTLS capability was reported by the server
@@ -72,9 +77,10 @@ int pop3_out_setup(
  *      protocol: protocol structure for POP3
  *      buf: buffer to return server response in
  *      n: size of buffer
- * post: 1: on success
- *       0: on failure
- *       -1 on error
+ * post: The USER and PASS commands are sent to the server
+ * return: 1: on success
+ *         0: on failure
+ *        -1: on error
  **********************************************************************/
 
 int pop3_out_authenticate(
@@ -95,11 +101,11 @@ int pop3_out_authenticate(
  *      desired_token: token expected from server
  *      buf: buffer to return server response in
  *      n: size of buffer
- * post: 1 : tag and desired token found
- *       0: tag and desired token not found
- *       -1: on error
+ * post: Response is read from the server
+ * return: 1: tag and desired token found
+ *         0: tag and desired token not found
+ *        -1: on error
  **********************************************************************/
-
 
 int pop3_out_response(
   io_t *io,

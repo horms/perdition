@@ -38,6 +38,28 @@
 #endif
 
 
+/**********************************************************************
+ * imap4_out_get_capability
+ * Read a capability from the server
+ * pre: io: io to use to communicate to the server
+ *      ok: token containing IMAP4_OK.
+ *          Used to compare results from the server
+ *      tag: tag to use when communicating with the server
+ *           may be incremented using imap4_tag_inc()
+ *      q: queue of data read from the server
+ *         will be modified
+ *      buf: buffer to read server response in to
+ *      buf_n: size of buf in bytes
+ *      str: capability to find as a string
+ *      str_n: length of str in bytes (not including trailing '\0',
+ *             which may be omitted)
+ * post: CAPABILITY command is sent to the server
+ *       the result is checked to see if str is present
+ * return: 0: if str is not found
+ *         1: if str is found
+ *        -1: on error
+ **********************************************************************/
+
 static int imap4_out_get_capability(io_t *io, token_t *ok, token_t *tag, 
 		vanessa_queue_t **q, char *buf, size_t *buf_n,
 		char *str, size_t str_n)
@@ -115,6 +137,9 @@ leave:
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structiure for imap4
+ * post: Read the greeting string from the server
+ *       If tls_outgoing is set issue the CAPABILITY command and check
+ *       for the STARTTLS capability.
  * return: Logical or of PROTOCOL_S_OK and
  *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
  *         and the STARTTLS capability was reported by the server
@@ -244,17 +269,20 @@ leave:
 /**********************************************************************
  * imap4_authenticate
  * Authenticate user with backend imap4 server
- * You should call imap4_setup first
+ * You should call imap4_setup() first
  * pre: io: io_t to read from and write to
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structiure for imap4
  *      buf:    buffer to return response from server in
  *      n:      size of buf in bytes
- * post: 2: if the server has the LOGINDISABLED capability set
- *       1: on success
- *       0: on failure
- *       -1 on error
+ * post: The CAPABILITY command is sent to the server and the result is read
+ *       If the LOGINDISABLED capability is set porocessing stops
+ *       Otherwise the LOGIN command is sent and the result is checked
+ * return: 2: if the server has the LOGINDISABLED capability set
+ *         1: on success
+ *         0: on failure
+ *        -1: on error
  **********************************************************************/
 
 int imap4_out_authenticate(
@@ -343,9 +371,10 @@ int imap4_out_authenticate(
  *      q: resulting queue is stored here
  *      buf: buffer to read server response in to
  *      n: size of buf
- * post: 1 : tag and desired token found
- *       0: tag and desired token not found
- *       -1: on error
+ * post: Response is read from the server
+ * return: 1 : tag and desired token found
+ *         0: tag and desired token not found
+ *         -1: on error
  **********************************************************************/
 
 int imap4_out_response(
