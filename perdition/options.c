@@ -176,7 +176,7 @@ int options(int argc, char **argv, flag_t f){
     {NULL,                           0,   0,               NULL, 0 }
   };
 
-  basename=basename_str(argv[0]);
+  basename=str_basename(argv[0]);
 
   if(argc==0 || argv==NULL) return(0);
 

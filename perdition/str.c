@@ -56,7 +56,7 @@ char *strn_to_str(const char *string, const size_t n){
 
 
 /**********************************************************************
- * write_str
+ * str_write
  * write strings to fd by puting them into tokens and
  * printing the tokens
  * if !(flag&WRITE_STR_NO_CLLF)
@@ -74,7 +74,7 @@ char *strn_to_str(const char *string, const size_t n){
  **********************************************************************/
 
 
-int write_str(const int fd, flag_t flag, int nostring, ...){
+int str_write(const int fd, flag_t flag, int nostring, ...){
   struct iovec *list=NULL;
   va_list ap;
   char *string;
@@ -93,14 +93,14 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
 
   /* Allocate iovec structure. */
   if((list=(struct iovec *)malloc((nostring+1)*sizeof(struct iovec)))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "write_str: malloc: %s", strerror(errno));
+    PERDITION_LOG(LOG_DEBUG, "str_write: malloc: %s", strerror(errno));
     return(-1);
   }
 
   /* Allocate iovec structure. */
   if(opt.connection_logging){
     if((dbg_fmt=(char *)malloc((nostring+2)*2*sizeof(char)))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "write_str: malloc 2: %s", strerror(errno));
+      PERDITION_LOG(LOG_DEBUG, "str_write: malloc 2: %s", strerror(errno));
       free(list);
       return(-1);
     }
@@ -148,7 +148,7 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
   /* Attempt one writev system call and return an error if it
      doesn't write all the bytes. */
   if(writev(fd,list,section) != bytes){
-    PERDITION_LOG(LOG_ERR, "write_str: writev: %s", strerror(errno));
+    PERDITION_LOG(LOG_ERR, "str_write: writev: %s", strerror(errno));
     free(list);
     return(-1);
   }
@@ -159,7 +159,7 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
 
 
 /**********************************************************************
- * cat_str
+ * str_cat
  * 
  * pre: nostring: number of strings
  *      ...: strings
@@ -170,7 +170,7 @@ int write_str(const int fd, flag_t flag, int nostring, ...){
  * Not 8 bit clean
  **********************************************************************/
 
-char *cat_str(int nostring, ...){
+char *str_cat(int nostring, ...){
   va_list ap;
   char **string;
   char **current_string;
@@ -183,7 +183,7 @@ char *cat_str(int nostring, ...){
   }
 
   if((string=(char **)malloc(sizeof(char *)*nostring))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "cat_str: malloc 1");
+    PERDITION_LOG(LOG_DEBUG, "str_cat: malloc 1");
     return(NULL);
   }
 
@@ -194,7 +194,7 @@ char *cat_str(int nostring, ...){
   for(i=0;i<nostring;i++){
     *current_string=va_arg(ap, char*);
     if(*current_string==NULL){
-      PERDITION_LOG(LOG_DEBUG, "write_str: null string");
+      PERDITION_LOG(LOG_DEBUG, "str_write: null string");
       free(string);
       return(NULL);
     }
@@ -204,7 +204,7 @@ char *cat_str(int nostring, ...){
   va_end(ap);
 
   if((dest=(char *)malloc(sizeof(char)*length))==NULL){
-    PERDITION_LOG(LOG_DEBUG, "cat_str: malloc 2");
+    PERDITION_LOG(LOG_DEBUG, "str_cat: malloc 2");
     free(string);
     return(NULL);
   }
@@ -221,7 +221,7 @@ char *cat_str(int nostring, ...){
 }
 
 /**********************************************************************
- * basename_str
+ * str_basename
  * 
  * pre: filename: name of file to find basename of
  * post: basename of filename is returned
@@ -231,7 +231,7 @@ char *cat_str(int nostring, ...){
  * Not 8 bit clean
  **********************************************************************/
 
-char *basename_str(char *filename){
+char *str_basename(char *filename){
     char *result;
 
     if(filename==NULL){
@@ -242,4 +242,3 @@ char *basename_str(char *filename){
 
     return((result==NULL)?filename:result+1);
 }
-

@@ -41,14 +41,14 @@ int quit(const int out_fd, const int in_fd, protocol_t *protocol){
   vanessa_queue_t *q;
   int status;
 
-  if(write_str(out_fd,
+  if(str_write(out_fd,
     NULL_FLAG,
     3,
     protocol->one_time_tag,
     protocol->one_time_tag==NULL?"":" ",
     protocol->quit_string
   )<0){
-    PERDITION_LOG(LOG_DEBUG, "quit: write_str");
+    PERDITION_LOG(LOG_DEBUG, "quit: str_write");
     return(-1);
   }
  

@@ -110,8 +110,8 @@ char * greeting_str(char *message, const protocol_t *protocol, flag_t flag){
     else{
       host=system_uname->nodename;
     }
-    if((message=cat_str(3, protocol->greeting_string, " ", host))==NULL){
-      PERDITION_LOG(LOG_DEBUG, "greeting_str: cat_str");
+    if((message=str_cat(3, protocol->greeting_string, " ", host))==NULL){
+      PERDITION_LOG(LOG_DEBUG, "greeting_str: str_cat");
       return(NULL);
     }
   }

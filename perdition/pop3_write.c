@@ -31,7 +31,7 @@
  * pop3_write
  * Write a message of the form [<type> ]<string>
  * Pre: fd: file descriptor to write to
- *      flag: flag to pass to write_str, as per str.h
+ *      flag: flag to pass to str_write, as per str.h
  *      tag: ignored
  *      type: type of message, POP3_OK or POP3_ERR
  *            if NULL then only string is written
@@ -48,14 +48,14 @@ int pop3_write(
   const char *string
 ){
   if(type==NULL){
-    if(write_str(fd, flag, 1, string)<0){
-      PERDITION_LOG(LOG_DEBUG, "pop3_write: write_str");
+    if(str_write(fd, flag, 1, string)<0){
+      PERDITION_LOG(LOG_DEBUG, "pop3_write: str_write");
       return(-1);
     }   
   }
   else {
-    if(write_str(fd, flag, 3, type, " ", string)<0){
-      PERDITION_LOG(LOG_DEBUG, "pop3_write: write_str");
+    if(str_write(fd, flag, 3, type, " ", string)<0){
+      PERDITION_LOG(LOG_DEBUG, "pop3_write: str_write");
       return(-1);
     }   
   }

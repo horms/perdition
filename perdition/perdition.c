@@ -387,6 +387,8 @@ int main (int argc, char **argv){
       *(opt.map_library)!='\0' &&
       (server_port=getserver(username, dbserver_get))!=NULL
     ){
+
+    if(server_port!=NULL){
       char *host;
 
       port=server_port_get_port(server_port);

@@ -31,7 +31,7 @@
  * imap4_write
  * Display an message of the form [<tag> <type> ]<string>
  * Pre: fd: file descriptor to write to
- *      flag: flag to pass to write_str as per str.h
+ *      flag: flag to pass to str_write as per str.h
  *      tag: tag to display
  *           if NULL, then IMAP4_UNTAGED is used
  *      type: type of message, IMAP4_OK, IMAP4_NO or IMAP4_BAD
@@ -52,8 +52,8 @@ int imap4_write(
   int free_tag_string=0;
 
   if(type==NULL){
-    if(write_str(fd, flag, 1, string)<0){
-      PERDITION_LOG(LOG_DEBUG, "imap4_write: write_strings");
+    if(str_write(fd, flag, 1, string)<0){
+      PERDITION_LOG(LOG_DEBUG, "imap4_write: str_writeings");
       return(-1);
     }
   }
@@ -68,8 +68,8 @@ int imap4_write(
       }
       free_tag_string=1;
     }
-    if(write_str(fd, flag, 5, tag_string, " ", type, " ", string)<0){
-      PERDITION_LOG(LOG_DEBUG, "imap4_write: write_strings");
+    if(str_write(fd, flag, 5, tag_string, " ", type, " ", string)<0){
+      PERDITION_LOG(LOG_DEBUG, "imap4_write: str_writeings");
       return(-1);
     }
   }

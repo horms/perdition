@@ -98,7 +98,7 @@ int imap4_out_authenticate(
     return(-1);
   }
 
-  if(write_str(
+  if(str_write(
     out_fd, 
     NULL_FLAG,
     6, 

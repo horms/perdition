@@ -40,16 +40,16 @@
 
 #define STR_NULL "(null)"
 
-/*Flags for write_str */
+/*Flags for str_write */
 #define WRITE_STR_NO_CLLF     0x1     /*Append a CLLF*/
 
 int vanessa_socket_str_is_digit(const char *str);
 
 char *strn_to_str(const char *string, const size_t n);
 
-int write_str(const int fd, flag_t flag, int nostring, ...);
+int str_write(const int fd, flag_t flag, int nostring, ...);
 
-char *cat_str(int nostring, ...);
+char *str_cat(int nostring, ...);
 
 /**********************************************************************
  * str_free
@@ -84,7 +84,7 @@ char *cat_str(int nostring, ...);
 
 
 /**********************************************************************
- * basename_str
+ * str_basename
  * 
  * pre: filename: name of file to find basename of
  * post: basename of filename is returned
@@ -94,6 +94,6 @@ char *cat_str(int nostring, ...);
  * Not 8 bit clean
  **********************************************************************/
 
-char *basename_str(char *filename);
+char *str_basename(char *filename);
 
 #endif

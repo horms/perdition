@@ -154,8 +154,8 @@ int pop3_in_get_pw(
       }
       token_destroy(&t);
       
-      if((message=cat_str(3, "USER ", return_pw->pw_name, " set"))<0){
-        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: cat_str");
+      if((message=str_cat(3, "USER ", return_pw->pw_name, " set"))<0){
+        PERDITION_LOG(LOG_DEBUG, "pop3_in_get_pw: str_cat");
         goto loop;
       }
       if(pop3_write(out_fd, NULL_FLAG, NULL, POP3_OK, message)<0){
