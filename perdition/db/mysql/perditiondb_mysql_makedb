@@ -1,6 +1,6 @@
 #!/bin/bash
 ######################################################################
-# makedb                                                  January 2000
+# makedb                                                 December 2000
 # Horms                                             horms@vergenet.net
 #
 # Frederic Delchambre                                     October 1999
@@ -76,7 +76,7 @@ if [ $? != 0 ]; then
 fi
 
 echo
-echo "Perdition information will be sotored in a separeate."
+echo "Perdition information will be sotored in a separeate"
 echo "database within the MySQL RDBMS. The default name for"
 echo "this database is $DEFAULT_DBNAME. If you want to use this"
 echo "hit return, otherwise enter the name for the database."
@@ -123,10 +123,11 @@ while [ 1 ]; do
   read dbpw2
   stty echo
   echo
-  if [ "$dbpw" == "$dbpw2" ]; then
-    break
+  if [ "$dbpw" != "$dbpw2" ]; then
+    echo "Passwords do not match, please try again." >& 2
+    continue
   fi
-  echo "Passwords do not match, please try again." >& 2
+  break
 done
 
 echo
@@ -192,7 +193,7 @@ fi
 echo " Done"
 
 
-echo -n "Creating to $dbtable in $dbname..."
+echo -n "Creating table $dbtable in database $dbname..."
 #Seed table with data as user perdition
 mysql --user="$dbuser" --password="$dbpw" "$dbname" --host="$dbserver" << _EOF_
 drop table if exists $dbtable;
