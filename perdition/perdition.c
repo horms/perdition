@@ -53,6 +53,7 @@
 #include "username.h"
 #include "ssl.h"
 #include "setproctitle.h"
+#include "imap4_tag.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -112,7 +113,7 @@ static void perdition_reread_handler(int sig);
   } \
   server_io=NULL; \
   server_port=NULL; \
-  token_destroy(&tag); 
+  token_destroy(&client_tag);
 
 /* Macro to set the uid and gid */
 #ifdef WITH_PAM_SUPPORT 
@@ -160,7 +161,8 @@ int main (int argc, char **argv, char **envp){
   unsigned char *buffer;
   server_port_t *server_port=NULL;
   protocol_t *protocol=NULL;
-  token_t *tag=NULL;
+  token_t *our_tag=NULL;
+  token_t *client_tag=NULL;
   size_t server_ok_buf_size=0;
   timed_log_t auth_log;
   char from_to_str[36];
@@ -331,6 +333,18 @@ int main (int argc, char **argv, char **envp){
     VANESSA_LOGGER_DEBUG("protocol->port 2");
     VANESSA_LOGGER_ERR("Fatal error finding port to connect to. Exiting.");
     vanessa_socket_daemon_exit_cleanly(-1);
+  }
+
+  /* 
+   * Set up a tag to use. 
+   * Only used for IMAP based protocols, but it is harmless to have it
+   * lying about
+   */
+  our_tag = imap4_tag_create();
+  if(!our_tag) {
+	  VANESSA_LOGGER_DEBUG("imap4_tag_create");
+	  VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
+	  vanessa_socket_daemon_exit_cleanly(-1);
   }
 
 #ifdef WITH_SSL_SUPPORT
@@ -517,7 +531,7 @@ int main (int argc, char **argv, char **envp){
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
-    status=(*(protocol->in_get_pw))(client_io, &pw, &tag);
+    status=(*(protocol->in_get_pw))(client_io, &pw, &client_tag);
     token_flush();
     if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
@@ -614,7 +628,7 @@ int main (int argc, char **argv, char **envp){
       if((*(protocol->write))(
         client_io, 
         NULL_FLAG,
-	tag,
+	client_tag,
 	protocol->type[PROTOCOL_ERR], 
 	"Could not determine server"
       )<0){
@@ -641,7 +655,7 @@ int main (int argc, char **argv, char **envp){
       }
       pw2.pw_passwd=pw.pw_passwd;
 
-      if((status=protocol->in_authenticate(&pw2, client_io, tag))==0){
+      if((status=protocol->in_authenticate(&pw2, client_io, client_tag))==0){
         VANESSA_LOGGER_DEBUG("protocol->in_authenticate");
         VANESSA_LOGGER_INFO(
 	  "Local authentication failure for client: Allowing retry."
@@ -682,7 +696,7 @@ int main (int argc, char **argv, char **envp){
       if((*(protocol->write))(
         client_io,
         NULL_FLAG,
-	tag,
+	client_tag,
 	protocol->type[PROTOCOL_ERR], 
 	"Could not connect to server"
       )<0){
@@ -727,11 +741,11 @@ int main (int argc, char **argv, char **envp){
     }
     pw2.pw_passwd=pw.pw_passwd;
 
-    status = (*(protocol->out_setup))(server_io, &pw2, tag, protocol);
+    status = (*(protocol->out_setup))(server_io, &pw2, our_tag, protocol);
     if(status==0){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
-      quit(server_io, protocol);
-      if(protocol->write(client_io, NULL_FLAG, tag, 
+      quit(server_io, protocol, our_tag);
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
           protocol->type[PROTOCOL_NO], "Connection Negotiation Failure")<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
@@ -764,13 +778,13 @@ int main (int argc, char **argv, char **envp){
       server_ok_buf_size=MAX_LINE_LENGTH-1;
     }
     token_flush();
-    status = (*(protocol->out_authenticate))(server_io, &pw2, tag, protocol,
+    status = (*(protocol->out_authenticate))(server_io, &pw2, our_tag, protocol,
       server_ok_buf, &server_ok_buf_size);
 
     if(status==0){
       sleep(VANESSA_LOGGER_ERR_SLEEP);
-      quit(server_io, protocol);
-      if(protocol->write(client_io, NULL_FLAG, tag, 
+      quit(server_io, protocol, our_tag);
+      if(protocol->write(client_io, NULL_FLAG, client_tag, 
           protocol->type[PROTOCOL_NO], "Re-Authentication Failure")<0){
         VANESSA_LOGGER_DEBUG("protocol->write");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
@@ -794,7 +808,7 @@ int main (int argc, char **argv, char **envp){
       if(protocol->write(
         client_io, 
         WRITE_STR_NO_CLLF,
-        tag, 
+        client_tag, 
         NULL,
         server_ok_buf
       )<0){
@@ -807,7 +821,7 @@ int main (int argc, char **argv, char **envp){
       if(protocol->write(
         client_io, 
         NULL_FLAG,
-        tag, 
+        client_tag, 
         protocol->type[PROTOCOL_OK],
         "You are so in"
       )<0){

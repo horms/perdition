@@ -46,7 +46,6 @@
 #define IMAP4_TLS_CAPABILITY "STARTTLS"
 #define IMAP4_CAPABILITY_DELIMITER " "
 #define IMAP4S_DEFAULT_PORT "993"
-#define IMAP4_ONE_TIME_TAG "flim7"
 
 /**********************************************************************
  * imap4_write

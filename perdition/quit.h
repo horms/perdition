@@ -44,6 +44,6 @@
 #include "queue_func.h"
 #include "token.h"
 
-int quit(io_t *io, const protocol_t *protocol);
+int quit(io_t *io, const protocol_t *protocol, token_t *tag);
 
 #endif

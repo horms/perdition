@@ -54,7 +54,6 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
   protocol->write = pop3_write;
   protocol->greeting_string = POP3_GREETING;
   protocol->quit_string = POP3_QUIT;
-  protocol->one_time_tag = NULL;
   protocol->in_get_pw= pop3_in_get_pw;
 #ifdef WITH_PAM_SUPPORT
   protocol->in_authenticate= pop3_in_authenticate;

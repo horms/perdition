@@ -89,6 +89,10 @@ void imap4_tag_inc(token_t *tag)
 	int c;
 	int last;
 
+	if(!tag) {
+		return;
+	}
+
 	buf = token_buf(tag);
 	len = token_len(tag);
 

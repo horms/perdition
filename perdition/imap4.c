@@ -54,7 +54,6 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->write = imap4_write;
   protocol->greeting_string = IMAP4_GREETING;
   protocol->quit_string = IMAP4_QUIT;
-  protocol->one_time_tag = IMAP4_ONE_TIME_TAG;
   protocol->in_get_pw= imap4_in_get_pw;
 #ifdef WITH_PAM_SUPPORT
   protocol->in_authenticate= imap4_in_authenticate;

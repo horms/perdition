@@ -30,6 +30,7 @@
 #endif
 
 #include "quit.h"
+#include "imap4_tag.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -45,50 +46,53 @@
  *        -1 on error
  **********************************************************************/
 
-int quit(io_t *io, const protocol_t *protocol){
-  token_t *t;
-  vanessa_queue_t *q;
-  int status;
+int quit(io_t * io, const protocol_t * protocol, token_t * tag)
+{
+	token_t *t;
+	vanessa_queue_t *q;
+	int status = -1;
+	char *tag_str;
 
-  if(str_write(io, 
-      NULL_FLAG, 
-      3, 
-      "%s%s%s", 
-      protocol->one_time_tag==NULL?"":protocol->one_time_tag,
-      protocol->one_time_tag==NULL?"":" ", 
-      protocol->quit_string
-    )<0){
-    VANESSA_LOGGER_DEBUG("str_write");
-    return(-1);
-  }
- 
-  /* We need to read the response, even though we don't
-   * care about it
-   */
+	if (tag) {
+		tag_str = token_to_string(tag, TOKEN_NO_STRIP);
+		if (!tag_str) {
+			VANESSA_LOGGER_DEBUG("token_to_string");
+			goto leave;
+		}
+	} else {
+		tag_str = "";
+	}
 
-  status=-1;
+	if (str_write(io, NULL_FLAG, 3, "%s%s%s", tag_str,
+		      tag?" ":"", protocol->quit_string) < 0) {
+		VANESSA_LOGGER_DEBUG("str_write");
+		return (-1);
+	}
 
-  if((t=token_create())==NULL){
-    VANESSA_LOGGER_DEBUG("token_create");
-    goto leave;
-  }
-  token_assign(
-    t, 
-    (PERDITION_USTRING) protocol->type[PROTOCOL_OK], 
-    strlen(protocol->type[PROTOCOL_OK]), 
-    TOKEN_DONT_CARE
-  );
+	/* We need to read the response, even though we don't
+	 * care about it
+	 */
 
-  if((protocol->out_response(io, protocol->one_time_tag, t, &q, NULL, NULL))<0){
-    VANESSA_LOGGER_DEBUG("out_response");
-    goto leave;
-  }
+	if ((t = token_create()) == NULL) {
+		VANESSA_LOGGER_DEBUG("token_create");
+		goto leave;
+	}
+	token_assign(t, (PERDITION_USTRING) protocol->type[PROTOCOL_OK],
+		     strlen(protocol->type[PROTOCOL_OK]), TOKEN_DONT_CARE);
 
-  status=0;
+	if ((protocol->out_response(io, tag_str, t, &q, NULL, NULL)) < 0) {
+		VANESSA_LOGGER_DEBUG("out_response");
+		goto leave;
+	}
 
-  leave:
-  token_unassign(t);
-  token_destroy(&t);
-  vanessa_queue_destroy(q);
-  return(status);
+	status = 0;
+      leave:
+	imap4_tag_inc(tag);
+	token_unassign(t);
+	token_destroy(&t);
+	vanessa_queue_destroy(q);
+	if(tag && tag_str) {
+		free(tag_str);
+	}
+	return (status);
 }

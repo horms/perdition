@@ -267,10 +267,11 @@ int imap4_out_authenticate(
   if((status=imap4_out_response(io, tag_string, ok, &q, buf, n))<0){
     VANESSA_LOGGER_DEBUG("imap4_out_response 3");
   }
-
+  
   vanessa_queue_destroy(q);
 
   leave:
+  imap4_tag_inc(tag);
   str_free(tag_string);
   token_unassign(ok);
   token_destroy(&ok);

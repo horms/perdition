@@ -52,7 +52,6 @@ struct protocol_t_struct {
 			const char *type, const char *string);
 	char *greeting_string;
 	char *quit_string;
-	char *one_time_tag;
 	int (*in_get_pw) (io_t *io, struct passwd *return_pw,
 			  token_t **return_tag);
 	int (*out_setup) (io_t *io, const struct passwd *pw,
