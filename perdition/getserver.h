@@ -7,7 +7,7 @@
  * The database is accessed using the dlopen mechanism on a library.
  * See getserver.c for API details.
  *
- * Client server specification code courtesy of Daniel Rosen,
+ * Client server specification code courtesy of Daniel Roesen,
  * <droesen@entire-systems.com>. 
  *
  * perdition

@@ -69,7 +69,7 @@
  * dbserver_init if it is defined. Note: dbserver_init will be 
  * called if defined, even if dbserver_fini id not defoned.
  *
- * Client server specification code courtesy of Daniel Rosen,
+ * Client server specification code courtesy of Daniel Roesen,
  * <droesen@entire-systems.com>. 
  *
  * perdition

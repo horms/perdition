@@ -31,7 +31,7 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
      Thanks to Arvid Requate
    - Added NIS map, thanks to Nathan Neulinger
    - Removed uneccessary macros in config parsing code
-   - Fixed freeing of sturcture for default server 
+   - Fixed freeing of structure for default server 
    - Tidied up build and added debian directory so debian packages can
      be build.
    - Bind Address now dictates source address for conections to real
@@ -163,7 +163,7 @@ Copyright (C) 1999  Horms <horms@vergenet.net>
       - Fixed bug where perdition would loop if client died unexpectedly
       - Idle timeout, default 1800 seconds
       - Support for user host and port specification using user@host[:port]
-        patch courtesy of  Daniel Rosen
+        patch courtesy of  Daniel Roesen
       - Detects if connection is from itself and closes connection
       - Beginings of test suite written
       - Fixed bug that caused init script to report failure under RH6.0

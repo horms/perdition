@@ -526,7 +526,7 @@ void usage(int exit_status){
     "    a source address. The address may be an IP address or a hostname.\n"
     "    (default \"%s\")\n"
     " -c|--client_server_specification:\n"
-    "    Allow USER of the form ser<delimiter>server[:port] to specify the\n"
+    "    Allow USER of the form user<delimiter>server[:port] to specify the\n"
     "    server and port for a user. Note: over-rides -s|--strip_domain.\n"
     " -D|--domain_delimiter:\n"
     "    Delimiter used for -c|--client_server_specification and\n"
