@@ -293,7 +293,7 @@ token_t *token_read(
   token_t *t;
   size_t literal_offset=0;
   size_t len=0;
-  int bytes_read;
+  int bytes_read = 0;
   int do_literal;
   flag_t save_flag=TOKEN_NONE;
   flag_t quoted=0;
@@ -347,6 +347,7 @@ end_while:
     return(NULL);
   }
   if((assign_buffer=(unsigned char*)malloc(len))==NULL){
+    token_destroy(&t);
     PERDITION_DEBUG_ERRNO("malloc");
     return(NULL);
   }

@@ -17,6 +17,7 @@ xxx
   - Fixed error in perditiondb_mysql_makedb whereby privelages were
     always granted to dbPerdition regarless of the requested
     name of the database.
+  - Free internally allocated memory if something goes wrong in token_read()
 
 
 ----------------------------------------------------------------------
