@@ -32,6 +32,9 @@
 #include "imap4_in.h"
 #include "options.h"
 
+#include <stdlib.h>
+#include <limits.h>
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
