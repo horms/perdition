@@ -131,7 +131,7 @@ authentication phase.
 Allow USER of the form user<delimiter>server[:port] to specify the
 server and port for a user.
 .TP
-.B \-D, \-\-domain_delimiter string:
+.B \-D, \-\-domain_delimiter STRING:
 Delimiter used for \-c|\-\-client_server_specification and
 \-S|\-\-strip_domain options. Multi\-character delimiters are permitted.
 .br
@@ -140,7 +140,7 @@ Delimiter used for \-c|\-\-client_server_specification and
 .B \-d, \-\-debug:
 Turn on verbose debugging.
 .TP
-.B \-F, \-\-log_facility facility:
+.B \-F, \-\-log_facility FACILITY:
 Syslog facility to log to. If the facility has a leading '/' then it will
 be treated as a file. If is "-" or "+" then log to stdout or stderr 
 respectivley.
@@ -151,13 +151,13 @@ Notes: If an error occurs before options are read it may be logged to
 stdout. If stdout or stderr are used, then the process will not fork
 and detach from the terminal.
 .TP
-.B \-f, \-\-config_file filename:
+.B \-f, \-\-config_file FILENAME:
 Name of config file to read. If set to "" no config file will be
 used. Command line options override options set in config file.
 .br
 (default "/etc/perdition/perdition.conf")
 .TP
-.B \-g, \-\-group group:
+.B \-g, \-\-group GROUP:
 Group to run as.
 .br
 (default "nobody")
@@ -165,7 +165,7 @@ Group to run as.
 .B \-h, \-\-help:
 Display this message
 .TP
-.B \-I, \-\-capability, \-\-pop_capability, \-\-imap_capability:
+.B \-I, \-\-capability, \-\-pop_capability, \-\-imap_capability STRING:
 Capabilities for the protocol.
 .sp
 When using a POP3 based protocol, the capabilities should be
@@ -190,7 +190,7 @@ listening for TLS connections.
 .B \-i, \-\-inetd_mode:
 Run in inetd mode
 .TP
-.B \-L, \-\-connection_limit:
+.B \-L, \-\-connection_limit LIMIT:
 Maximum number of connections to accept simultaneously. A value of
 zero sets no limit on the number of simultaneous connections.
 .br
@@ -208,14 +208,14 @@ servers to be defined for different domains. Overriden by
 .br
 (default "protocol dependent")
 .TP
-.B \-M, \-\-map_library filename:
+.B \-M, \-\-map_library FILENAME:
 Library to open that provides functions to look up the server for a
 user. A null library mean no library will be accessed and hence, no
 lookup will take place.
 .br
 (default "/usr/lib/libperditiondb_gdbm.so.0")
 .TP
-.B \-m, \-\-map_library_opt string:
+.B \-m, \-\-map_library_opt STRING:
 String option to pass to database access function provided by the
 library specified by the \-M|\-\-map_library option. The treatment of
 this string is up to the library, in the case of perditiondb_gdbm
@@ -237,13 +237,13 @@ must return ip addresses instead.
 If authentication with the back\-end server is successful then send
 the servers +OK line to the client, instead of generating one.
 .TP
-.B \-P, \-\-protocol protocol:
+.B \-P, \-\-protocol PROTOCOL:
 Protocol to use.
 .br
 (default "POP3")
 available protocols: "POP3, IMAP4"
 .TP
-.B \-p, \-\-outgoing_port port:
+.B \-p, \-\-outgoing_port PORT:
 Define a port to use if a port is not defined for a user in popmap,
 or a default server if it is used.
 .br
@@ -256,18 +256,18 @@ multiple servers are specified then they are used in a round robin.
 .br
 (default "(null)")
 .TP
-.B \-S, \-\-strip_domain state[,state]:
+.B \-S, \-\-strip_domain STATE[,STATE]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain
 will be striped off in given state(s). State may be one of servername_lookup,
 local_authentication, remote_login and all. See \-A|\-\-add_domain for a
 description of the states.
 .TP
-.B \-t, \-\-timeout:
+.B \-t, \-\-timeout TIMEOUT:
 Idle timeout in seconds. Value of zero sets infinite timeout.
 .br
 (default 1800)
 .TP
-.B \-u, \-\-username username:
+.B \-u, \-\-username USERNAME:
 Username to run as.
 .br
 (default "nobody")
@@ -290,7 +290,7 @@ description of the states.
 .br
 (default "(null)")
 .TP
-.B \-\-query_key format[,format...]:
+.B \-\-query_key FORMAT[,FORMAT...]:
 Instead of using the username as supplied by the end user, possibly
 modified by \-\-strip_domain, use the formats specified. The formats
 will be used in order to querey the popmap. The result from the first 
@@ -343,7 +343,7 @@ Escape codes interspersed with literals
 .br
 \\u\\da_domain,\\da_domain
 .TP
-.B \-\-ssl_mode:
+.B \-\-ssl_mode MODE:
 Use SSL and or TLS for the listening and/or outgoing connections.
 A comma delimited list of: none, ssl_listen, ssl_outgoing,
 ssl_all, tls_listen, tls_outgoing, tls_all. TLS is defined
@@ -375,17 +375,29 @@ Use TLS to connect to real pop/imap servers.
 .B tls_all:
 Short hand for tls_listen,tls_all.
 .TP
-.B \-\-ssl_cert_file:
+.B \-\-ssl_cert_file FILENAME:
 Certificate to use when listening for SSL or TLS connections. Only
 available if perdition is compiled with SSL support.
 .br
 (default "/etc/perdition/perdition.key.pem")
 .TP
-.B \-\-ssl_key_file:
+.B \-\-ssl_key_file FILENAME:
 Public key to use when listening for SSL or TLS connections. Only available
 if perdition is compiled with SSL support.
 .br
 (default "/etc/perdition/perdition.crt.pem")
+.TP
+.B \-\-ssl_listen_ciphers CIPHERS:
+Cipher list when listening for SSL or TLS connections as per
+\fBciphers\fP(1). If null then openssl's default will be used.
+.br
+(default "(null)")
+.TP
+\-\-ssl_outgoing_ciphers CIPHERS:
+Cipher list when making outgoing SSL or TLS connections as per 
+\fBciphers\fP(1). If null then openssl's default will be used.
+.br
+(default "(null)")
 .TP
 \fBNote:\fP Default value for binary flags is off.
 .SH USER DATABASE (POPMAP)

@@ -278,10 +278,6 @@ static int __token_fill_buffer(io_t *io, const options_t *opt){
       return(-1);
     }
 
-    if(bytes_read==0){
-      VANESSA_LOGGER_DEBUG_ERRNO("zero bytes read");
-    }
-
     token_read_offset=0;
     token_read_bytes=bytes_read;
     return(bytes_read);
@@ -349,9 +345,12 @@ token_t *token_read(
 
   do_literal=(literal_buf!=NULL && n!=NULL && *n!=0)?1:0;
   while(!(do_literal && literal_offset>=*n) && len < MAX_LINE_LENGTH){
-    if((bytes_read=token_fill_buffer(io, &opt))<=0){
+    if((bytes_read=token_fill_buffer(io, &opt))<0){
       VANESSA_LOGGER_DEBUG("token_fill_buffer");
       return(NULL);
+    }
+    else if(!bytes_read){
+      break;
     }
 
     c=token_read_buffer[token_read_offset++];
@@ -364,7 +363,7 @@ token_t *token_read(
     if(flag&TOKEN_IMAP4_LITERAL) {
       buffer[len++]=c;
       if(len >= m) {
-	      goto end_while;
+         break;
       }
       continue;
     }

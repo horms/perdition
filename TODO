@@ -6,14 +6,9 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
 From Horms
-*  Make TLS IMAP and POP Server support RFC 2595 compliant
-   - Option to require TLS to be started before authentication
-     - On a global and per-user basis
-     - Option for LOGINDISABLED capability for IMAP
-   + Option to require specific cipher suites before authentication
-*  Add TLS IMAP and POP Client support
-   RFC:
++  Make TLS IMAP and POP Server support RFC 2595 compliant
       - Option to only use tls if advertised by server
+        - On a global and per-user basis
       - Client checks
         - Copmare server hostname used to connect with that in certificate
 	- Hostname must not be derived from an insecure source such as DNS
@@ -21,11 +16,10 @@ From Horms
 	- * wildcard for before first . is acceptable in certificate
 	- Match any name in the certificate if there is more than one
 	- If chack fails terminate
-     - reissue CAPABILITY/CAPA command after intiating tls
      - honour LOGINDISABLED capability for IMAP
 + Fix up LDAP Bind Credentials
 + Fix up LDAP configuration options
-+ More specific config files for different protocols
++ Config files for different protocols
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series

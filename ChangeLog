@@ -7,7 +7,7 @@ Copyright (C) 1999-2002  Horms <horms@vergenet.net>
 
 XXX
 (Horms)
-   * XXX
+   * 1.11unreleased
    - Added Berkely DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
    - Added the beginings of TLS support. Thanks to Wolfgang Breyha
@@ -55,8 +55,9 @@ XXX
    - Fixed potential buffer overflow in token_read()
    - Tided up perditiondb_ldap_makedb
    - In debug mode, log the name of the configuration file being used
-   - Added infomration on how to use bind passwords to LDAP documentation
+   - Added infomration on how to use bind passwords to LDAP documentation.
      Russell Corker
+   - Allow cipher suite list to be set
 
 ----------------------------------------------------------------------
 

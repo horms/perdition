@@ -64,7 +64,6 @@
 
 char *strrstr(const char *haystack, const char *needle)
 {
-	char c;
 	size_t haystack_len;
 	size_t needle_len;
 	const char *p;

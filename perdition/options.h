@@ -132,6 +132,8 @@
 #define DEFAULT_SSL_KEY_FILE                 \
   PERDITION_SYSCONFDIR "/perdition.key.pem"
 #define DEFAULT_SSL_MODE                     SSL_MODE_EMPTY
+#define DEFAULT_SSL_LISTEN_CIPHERS           NULL
+#define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -176,6 +178,8 @@ typedef struct {
   char            *ssl_cert_file;
   char            *ssl_key_file;
   int             ssl_mode;
+  char            *ssl_listen_ciphers;
+  char            *ssl_outgoing_ciphers;
   flag_t          ssl_mask;
 #endif /* WITH_SSL_SUPPORT */
 } options_t;
@@ -219,6 +223,8 @@ typedef struct {
 #define MASK_SSL_CERT_FILE               (flag_t) 0x00000001
 #define MASK_SSL_KEY_FILE                (flag_t) 0x00000002
 #define MASK_SSL_MODE                    (flag_t) 0x00000004
+#define MASK_SSL_LISTEN_CIPHERS          (flag_t) 0x00000008
+#define MASK_SSL_OUTGOING_CIPHERS        (flag_t) 0x00000010
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -233,6 +239,8 @@ typedef struct {
 #define TAG_SSL_CERT_FILE              (int) 131
 #define TAG_SSL_KEY_FILE               (int) 132
 #define TAG_SSL_MODE                   (int) 133
+#define TAG_SSL_LISTEN_CIPHERS         (int) 134
+#define TAG_SSL_OUTGOING_CIPHERS       (int) 135
 
 
 /*Flag values for options()*/

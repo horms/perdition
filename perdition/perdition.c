@@ -338,7 +338,8 @@ int main (int argc, char **argv, char **envp){
 		  &(opt.mangled_capability), opt.ssl_mode);
 
   if(opt.ssl_mode & SSL_LISTEN_MASK) {
-    ssl_ctx = perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file);
+    ssl_ctx = perdition_ssl_ctx(opt.ssl_cert_file, opt.ssl_key_file,
+		    opt.ssl_listen_ciphers);
     if(!ssl_ctx) {
       VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
       VANESSA_LOGGER_ERR("Fatal error establishing SSL context for listening");
@@ -695,7 +696,8 @@ int main (int argc, char **argv, char **envp){
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_SSL_OUTGOING) {
-      server_io=perdition_ssl_client_connection(server_io);
+      server_io=perdition_ssl_client_connection(server_io,
+		      opt.ssl_outgoing_ciphers);
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
@@ -738,7 +740,8 @@ int main (int argc, char **argv, char **envp){
     }
 #ifdef WITH_SSL_SUPPORT
     else if(status==2 && opt.ssl_mode & SSL_MODE_TLS_OUTGOING){
-      server_io=perdition_ssl_client_connection(server_io);
+      server_io=perdition_ssl_client_connection(server_io,
+		      opt.ssl_listen_ciphers);
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");

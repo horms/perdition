@@ -49,6 +49,8 @@
  *               Should the path to a PEM file if non-NULL and the
  *               first item in the PEM file will be used as the 
  *               private key.
+ *      ciphers: cipher list to use. May be NULL in which case
+ *               openssl's default is used.
  * post: If SSL is initiated and a context is created
  *       If cert is non-NULL then this certificate file is loaded
  *       If privkey is non-NULL then this private key file is loaded
@@ -58,22 +60,25 @@
  *       be non-NULL.
  **********************************************************************/
 
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey);
+SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
+		const char *ciphers);
 
 
 /**********************************************************************
  * perdition_ssl_client_connection
  * Change a stdio bassed connection to a remote server, into an SSL 
  * connection.
- * io: io_t to change. A client that has connected to
- *       a server, SSL_connect() will be called.
+ * pre: io: io_t to change. A client that has connected to a server, 
+ *          SSL_connect() will be called.
+ *      ciphers: cipher list to use as per ciphers(1). 
+ *               May be NULL in which case openssl's default is used.
  * post: io_t has an ssl object associated with it and SSL is intiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io);
+io_t *perdition_ssl_client_connection(io_t * io, const char *ciphers);
 
 
 /**********************************************************************

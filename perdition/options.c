@@ -274,6 +274,10 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_CERT_FILE },
     {"ssl_key_file",                '\0', POPT_ARG_STRING, NULL, 
       TAG_SSL_KEY_FILE },
+    {"ssl_listen_ciphers",          '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_LISTEN_CIPHERS },
+    {"ssl_outgoing_ciphers",        '\0', POPT_ARG_STRING, NULL, 
+      TAG_SSL_OUTGOING_CIPHERS },
     {NULL,                           0,   0,               NULL, 0 }
   };
 
@@ -339,6 +343,10 @@ int options(int argc, char **argv, flag_t f){
     opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
     opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
+		                                            i, 0, OPT_NOT_SET);
+    opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
+		                                            i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -578,6 +586,40 @@ int options(int argc, char **argv, flag_t f){
       }
 #endif /* WITH_SSL_SUPPORT */
         break; 
+      case TAG_SSL_LISTEN_CIPHERS:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_listen_ciphers,optarg,opt.ssl_mask,
+			MASK_SSL_LISTEN_CIPHERS,f);
+#else /* WITH_SSL_SUPPORT */
+      VANESSA_LOGGER_DEBUG(
+	"--ssl_listen_ciphers is only supported when "
+	"ssl support is compiled in");
+      if(f&OPT_ERR){
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      case TAG_SSL_OUTGOING_CIPHERS:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(opt.ssl_outgoing_ciphers,optarg,opt.ssl_mask,
+			MASK_SSL_OUTGOING_CIPHERS,f);
+#else /* WITH_SSL_SUPPORT */
+      VANESSA_LOGGER_DEBUG(
+	"--ssl_outgoing_ciphers is only supported when "
+	"ssl support is compiled in");
+      if(f&OPT_ERR){
+        usage(-1);
+      }
+      else{
+        poptFreeContext(context);
+        return(-1);
+      }
+#endif /* WITH_SSL_SUPPORT */
+        break; 
       default:
         VANESSA_LOGGER_DEBUG("Unknown Option");
         exit;
@@ -795,6 +837,8 @@ int log_options(void){
     "ssl_mode=\"%s\", "
     "ssl_cert_file=\"%s\", "
     "ssl_key_file=\"%s\", "
+    "ssl_listen_ciphers=\"%s\", "
+    "ssl_outgoing_ciphers=\"%s\", "
     "(ssl_mask=0x%x) "
 #endif /* WITH_SSL_SUPPORT */
     "(mask=0x%x)\n",
@@ -835,6 +879,8 @@ int log_options(void){
     ssl_mode,
     str_null_safe(opt.ssl_cert_file),
     str_null_safe(opt.ssl_key_file),
+    str_null_safe(opt.ssl_listen_ciphers),
+    str_null_safe(opt.ssl_outgoing_ciphers),
     opt.ssl_mask,
 #endif /* WITH_SSL_SUPPORT */
     opt.mask
@@ -1027,6 +1073,12 @@ void usage(int exit_status){
     " --ssl_key_file:\n"
     "    Public key to use when listening for SSL or TLS connections.\n"
     "    (default \"%s\")\n"
+    " --ssl_listen_ciphers:\n"
+    "    Cipher list when listening for SSL or TLS connections.\n"
+    "    (default \"%s\")\n"
+    " --ssl_outgoing_ciphers:\n"
+    "    Cipher list when making outgoing SSL or TLS connections.\n"
+    "    (default \"%s\")\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Note: default value for binary flags is off\n",
@@ -1051,7 +1103,9 @@ void usage(int exit_status){
     ,
     str_null_safe(NULL),
     str_null_safe(DEFAULT_SSL_KEY_FILE),
-    str_null_safe(DEFAULT_SSL_CERT_FILE)
+    str_null_safe(DEFAULT_SSL_CERT_FILE),
+    str_null_safe(DEFAULT_SSL_LISTEN_CIPHERS),
+    str_null_safe(DEFAULT_SSL_OUTGOING_CIPHERS)
 #endif /* WITH_SSL_SUPPORT */
   );
 

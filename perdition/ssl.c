@@ -56,6 +56,8 @@
  *               Should the path to a PEM file if non-NULL and the
  *               first item in the PEM file will be used as the 
  *               private key.
+ *      ciphers: cipher list to use as per ciphers(1). 
+ *               May be NULL in which case openssl's default is used.
  * post: If SSL is initiated and a context is created
  *       If cert is non-NULL then this certificate file is loaded
  *       If privkey is non-NULL then this private key file is loaded
@@ -65,7 +67,8 @@
  *       be non-NULL.
  **********************************************************************/
 
-SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey)
+SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey,
+		const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx;
@@ -96,6 +99,18 @@ SSL_CTX *perdition_ssl_ctx(const char *cert, const char *privkey)
 	if ((ssl_ctx = SSL_CTX_new(ssl_method)) == NULL) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("SSL_CTX_new");
 		return (NULL);
+	}
+
+	/*
+	 * Set the available ciphers
+	 */
+	if(ciphers) {
+		if(SSL_CTX_set_cipher_list(ssl_ctx, ciphers) < 0) {
+			VANESSA_LOGGER_DEBUG_UNSAFE(
+					"Cipher string supplied (%s) "
+					"results in no available ciphers",
+					ciphers);
+		}
 	}
 
 	/*
@@ -205,13 +220,13 @@ static int __perdition_ssl_log_certificate(io_t * io)
 /**********************************************************************
  * __perdition_ssl_connection
  * Change a stdio bassed connection into an SSL connection
- * io: io_t to change
- * ssl_cts: SSL Context to use
- * flag: If PERDITION_SSL_CLIENT the io is a client that has connected to
- *       a server and SSL_connect() will be called. If PERDITION_SSL_SERVER
- *       then the io is a server that has accepted a connection and
- *       SSL_accept will be called. There are no other valid values
- *       for flag.
+ * pre: io: io_t to change
+ *      ssl_ctx: SSL Context to use
+ *      flag: If PERDITION_SSL_CLIENT the io is a client that has 
+ *            connected to a server and SSL_connect() will be called. 
+ *            If PERDITION_SSL_SERVER then the io is a server that 
+ *            has accepted a connection and SSL_accept will be called.
+ *            There are no other valid values for flag.
  * post: io_t has an ssl object associated with it and SSL is intiated
  *       for the connection.
  * return: io_t with ssl object associated with it
@@ -232,8 +247,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 	}
 
 	/* Set up io object that will use SSL */
-	new_io =
-	    io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io),
+	new_io = io_create_ssl(ssl, io_get_rfd(io), io_get_wfd(io),
 			  io_get_name(io));
 	if (!new_io) {
 		VANESSA_LOGGER_DEBUG("io_create_ssl");
@@ -258,6 +272,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		if (ret <= 0) {
 			VANESSA_LOGGER_DEBUG_SSL_IO_ERR("SSL_accept",
 					io_get_ssl(new_io), ret);
+			VANESSA_LOGGER_DEBUG("no shared ciphers?");
 			goto bail;
 		}
 	}
@@ -266,8 +281,9 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 
       bail:
 	if (new_io) {
+		io_close(new_io);
 		io_destroy(new_io);
-	} else {
+	} else if(ssl) {
 		SSL_free(ssl);
 	}
 	if (io) {
@@ -281,20 +297,22 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
  * perdition_ssl_client_connection
  * Change a stdio bassed connection to a remote server, into an SSL 
  * connection.
- * io: io_t to change. A client that has connected to
- *       a server, SSL_connect() will be called.
+ * pre: io: io_t to change. A client that has connected to a server, 
+ *          SSL_connect() will be called.
+ *      ciphers: cipher list to use as per ciphers(1). 
+ *               May be NULL in which case openssl's default is used.
  * post: io_t has an ssl object associated with it and SSL is intiated
  *       for the connection.
  * return: io_t with ssl object associated with it
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io)
+io_t *perdition_ssl_client_connection(io_t * io, const char *ciphers)
 {
 	SSL_CTX *ssl_ctx;
 	io_t *new_io;
 
-	ssl_ctx = perdition_ssl_ctx(NULL, NULL);
+	ssl_ctx = perdition_ssl_ctx(NULL, NULL, ciphers);
 	if (!ssl_ctx) {
 		VANESSA_LOGGER_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
@@ -319,10 +337,10 @@ io_t *perdition_ssl_client_connection(io_t * io)
 
 /**********************************************************************
  * perdition_ssl_server_connection
- * Change a stdio bassed connection that revieves client connections,
+ * Change a stdio bassed connection that recieves client connections,
  * into an SSL connection
- * io: io_t to change
- * ssl_ctx: SSL Context to use
+ * pre: io: io_t to change
+ *      ssl_ctx: SSL Context to use
  * post: io_t has an ssl object associated with it and SSL is intiated
  *       for the connection.
  * return: io_t with ssl object associated with it
