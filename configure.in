@@ -134,9 +134,7 @@ AC_ARG_WITH(
     for mysql_libraries in /usr/mysql/lib /usr/local/mysql/lib \
         /usr/lib/mysql /usr/local/lib/mysql \
     	/usr/lib /usr/local/lib; do
-      AC_MSG_WARN("Checking ${mysql_libraries}/libmysqlclient.a");
       if [ test -f "${mysql_libraries}/libmysqlclient.a" ]; then
-        AC_MSG_WARN("Found ${mysql_libraries}/libmysqlclient.a");
         break
       fi
     done
