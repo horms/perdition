@@ -784,7 +784,7 @@ void usage(int exit_status){
     "    (default \"%s\")\n"
     " -d|--debug:\n"
     "    Turn on verbose debuging.\n"
-    " -F|--logging_facility facility:\n"
+    " -F|--log_facility facility:\n"
     "    Syslog facility to log to. If the faclilty has a leading '/' then it\n"
     "    will be treated as a file to log to. (default \"%s\")\n"
     "    Note: If an error occurs before options are read it may be logged\n"

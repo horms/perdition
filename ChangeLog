@@ -15,6 +15,8 @@ xxx
   - Removed code that expands % to %25 in LDAP urls as it
     handles some RFC 1959 compliant URLS incorrectly by expanding
     out % that shouldn't be expanded. Erik R. Leo
+  - Fixed typo in documentation that refered to log_facility
+    as logging_facility. Matt Prigge
 
 ----------------------------------------------------------------------
 
