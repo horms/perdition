@@ -37,7 +37,6 @@ AC_PROG_MAKE_SET
 
 # Checks for libraries.
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
-AC_CHECK_LIB(gdbm, gdbm_open, true, true)
 AC_CHECK_LIB(db, db_create, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
@@ -299,7 +298,7 @@ if test "$enable_mysql" = "yes"; then
 AC_CHECK_LIB(
   mysqlclient,
   mysql_real_connect,
-  ,
+  true,
   [ 
     enable_mysql="no" 
 AC_MSG_WARN(
@@ -388,7 +387,8 @@ AC_CHECK_FILES(
 fi
 
 if test "$enable_odbc" = "yes"; then
-	AC_CHECK_LIB(odbc, SQLSetEnvAttr, , [ enable_odbc="yes" ], $odbc_libs)
+	AC_CHECK_LIB(odbc, SQLSetEnvAttr, true, 
+		[ enable_odbc="yes" ], $odbc_libs)
 fi
 
 if test "$enable_odbc" != "yes"; then
@@ -490,7 +490,8 @@ fi
 if test "$enable_pg" = "yes"; then
 AC_CHECK_LIB(
   pq,
-  PQstatus, ,
+  PQstatus, 
+  true,
   [ 
     enable_pg="no" 
 AC_MSG_WARN(
@@ -546,7 +547,9 @@ fi
 
 if test "$enable_gdbm" = "yes"; then
 AC_CHECK_LIB(
-  gdbm, gdbm_fetch, ,
+  gdbm, 
+  gdbm_fetch, 
+  true,
   [ 
     enable_gdbm="no",
     AC_MSG_WARN(
@@ -764,7 +767,8 @@ if test "$enable_ldap" = "yes"; then
 fi
 
 if test "$enable_ldap" = "yes"; then
-	AC_CHECK_LIB(ldap, ldap_url_parse, , [ enable_ldap="no" ], $ldap_libs)
+	AC_CHECK_LIB(ldap, ldap_url_parse, true, 
+		[ enable_ldap="no" ], $ldap_libs)
 fi
 
 if test "$enable_ldap" = "yes"; then
