@@ -20,6 +20,8 @@ XXX
   - The query_key option was documented as query_str (and refered
     to as query_string in this ChangeLog). The docuentation has been
     fixed. Rayed Alrashed
+  - Changed ordering of table names in documentation to match the code
+    for the MySQL, PostgreSQL and ODBC modules. Rayed Alrashed
 
 ----------------------------------------------------------------------
 

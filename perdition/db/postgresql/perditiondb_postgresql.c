@@ -92,7 +92,7 @@ int dbserver_fini(void){
  * dbserver_init
  * Parse options string.
  * pre: options_str: Options string. Sting is of the form
- * [dbhost[:dbport[:dbname[:dbtable[:dbuser[:dbpwd]]]]]]
+ * [dbhost[:port[:dbname[:dbtable[:dbuser[:dbpwd[:dbsrvcol[:dbusercol[:dbportcol]]]]]]]]]
  * post: Options string is parsed if not null into 
  *       static vanessa_dynamic_array_t a and 
  *       static char *dbhost, *dbname, *dbtable, *dbuser, *dbpwd are
