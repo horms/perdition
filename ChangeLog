@@ -5,15 +5,6 @@ Mail retrieval proxy server
 Copyright (C) 1999-2001  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
-(Horms)
-
-  * xxx
-  - Fixed problem with setting ssl_key_file.
-
-
-----------------------------------------------------------------------
-
 29th April 2001
 (Horms)
 
@@ -34,7 +25,6 @@ xxx
     maps.
   - Added -X|--lower_case option to convert usernames given by
     end users to lowercase.
-
 
 
 ----------------------------------------------------------------------

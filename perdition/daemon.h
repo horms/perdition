@@ -37,70 +37,26 @@
 #ifndef DAEMON_FRUB
 #define DAEMON_FRUB
 
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <pwd.h>
+#include <grp.h>
+#include <signal.h>
 
-/**********************************************************************
- * daemon_process
- * Close and fork to become a daemon.
- * Note: daemon_inetd_process should be called if the process is being
- * run from inetd.
- **********************************************************************/
+#include "log.h"
+#include "str.h"
+
 
 void daemon_process(void);
-
-
-/**********************************************************************
- * daemon_inetd_process
- * Chdir to and umask
- * This is all we really need to do if our process is run from
- * inetd
- **********************************************************************/
-
 void daemon_inetd_process(void);
-
-
-/**********************************************************************
- * daemon_become_child
- * Fork and exit from parent process. When we return 
- * we are our own clild. Very incestuous.
- **********************************************************************/
-
 void daemon_become_child(void);
-
-
-/**********************************************************************
- * daemon_close_fd
- * Close all the file descriptots a process has
- **********************************************************************/
-
 void daemon_close_fd(void);
-
-
-/**********************************************************************
- * daemon_setid
- * Set the userid and groupid of the process.
- * Arguments are the username or the userid as a string and 
- * the group or the groupid as a string.
- **********************************************************************/
-
 int daemon_setid(const char *user, const char *group);
-
-
-/**********************************************************************
- * daemon_exit_cleanly
- * If we get a sinal then close everthing, log it and quit
- **********************************************************************/
-
 void daemon_exit_cleanly(int i);
-
-
-/**********************************************************************
- * daemon_noop_handler
- * A signal handler that does nothing but reinstall itself
- * as the signal handler for the signal.
- * pre: sig: signal recieved by the process
- * post: signal handler reset for signal
- **********************************************************************/
-
 void daemon_noop_handler(int sig);
 
 
