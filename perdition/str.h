@@ -315,4 +315,24 @@ char *str_append_substring_if_missing(const char *haystack,
 uint32 str_rolling32(unsigned char *buf, size_t len);
 
 
+/**********************************************************************
+ * str_replace
+ * Replace elements of a string
+ * pre: str: strung to make subsitutions in
+ *      n: number of strings following
+ *      ...: Pairs of strings. The first is the string to match.
+ *           The second is the string to substitue it with
+ * post: All instances of the match strings are replaced with 
+ *       their corresponding substution.
+ *       The match/substiture pairs are processed in order.
+ *       Str is processed from begining to end for each match/subsitute
+ *       pair.
+ *       str may be realloced if more space is needed
+ * return: New string. May be the same as the str parameter.
+ *         If not str will have been freed.
+ *         NULL on error, in which case str is freed.
+ **********************************************************************/
+
+char *str_replace(char *str, size_t n, ...);
+
 #endif				/* _PERDITION_STR_H */

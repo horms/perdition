@@ -633,3 +633,75 @@ uint32 str_rolling32(unsigned char *buf, size_t len) {
 
 	return(csum);
 }
+
+
+/**********************************************************************
+ * str_replace
+ * Replace elements of a string
+ * pre: str: strung to make subsitutions in
+ *      n: number of strings following
+ *      ...: Pairs of strings. The first is the string to match.
+ *           The second is the string to substitue it with
+ * post: All instances of the match strings are replaced with 
+ *       their corresponding substution.
+ *       The match/substiture pairs are processed in order.
+ *       Str is processed from begining to end for each match/subsitute
+ *       pair.
+ *       str may be realloced if more space is needed
+ * return: New string. May be the same as the str parameter.
+ *         If not str will have been freed.
+ *         NULL on error, in which case str is freed.
+ **********************************************************************/
+
+char *str_replace(char *str, size_t n, ...) 
+{
+	va_list ap;
+	const char *match;
+	const char *subst;
+	size_t match_len;
+	size_t subst_len;
+	char *p;
+	size_t offset;
+
+	if(!n || n & 0x1) {
+		VANESSA_LOGGER_DEBUG("Invalid n");
+		return(NULL);
+	}
+
+	va_start(ap, n);
+	while(n) {
+		match = va_arg(ap, char *);
+		subst = va_arg(ap, char *);
+
+		match_len = strlen(match);
+		subst_len = strlen(subst);
+
+		p = str;
+		while((p=strstr(p, match))) {
+			if(subst_len > match_len) {
+				offset = p - str;
+				p = realloc(str, strlen(str) + 
+						subst_len-match_len);
+				if(!p) {
+					VANESSA_LOGGER_DEBUG_ERRNO("realloc");
+					free(str);
+				}
+				str = p;
+				p = str + offset;
+				memmove(p, p+match_len-subst_len,
+					strlen(p+match_len-subst_len)+1);
+			}
+			else if (subst_len < match_len) {
+				memmove(p, p+match_len-subst_len,
+					strlen(p+match_len-subst_len)+1);
+			}
+			memcpy(p, subst, subst_len);
+			p+=subst_len;
+		}
+		n-=2;
+	}
+	va_end(ap);
+
+	return(str);
+}
+

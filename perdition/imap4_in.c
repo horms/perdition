@@ -40,7 +40,7 @@
 #endif
 
 
-#define IMAP4_NON_LITERAL             0x1
+#define IMAP4_QUOTED_STRING             0x1
 #define IMAP4_SYNCHRONISING_TOKEN     0x2
 #define IMAP4_NON_SYNCHRONISING_TOKEN 0x3
 
@@ -55,7 +55,7 @@
  * return: IMAP4_NON_SYNCHRONISING_TOKEN if token is 
  *           a non-synchronising litereal
  *         IMAP4_SYNCHRONISING_TOKEN if token is a sunchronising literal
- *         IMAP4_NON_LITERAL if token is not a literal
+ *         IMAP4_QUOTED_STRING if token is not a literal
  *         -1 on error
  **********************************************************************/
 
@@ -66,7 +66,7 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 	int non_synchronising = IMAP4_SYNCHRONISING_TOKEN;
 
 	if(!token_is_eol(token)) {
-		return(IMAP4_NON_LITERAL);
+		return(IMAP4_QUOTED_STRING);
 	}
 
 	/* Get the string out of the token */
@@ -77,7 +77,7 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 
 	/* Check for surrounding {} */
 	if(*str != '{' || *(str+strlen(str)-1) != '}') {
-		return(IMAP4_NON_LITERAL);
+		return(IMAP4_QUOTED_STRING);
 	}
 	*(str+strlen(str)-1) = '\0';
 
@@ -91,7 +91,7 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 
 	/* Check that what is left is only digits */
 	if(!vanessa_socket_str_is_digit(str+1)) {
-		return(IMAP4_NON_LITERAL);
+		return(IMAP4_QUOTED_STRING);
 	}
 
 	/* Convert it into binary */
@@ -145,7 +145,7 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 		token_destroy(input_token);
 	  	return(-1);
 	}
-	if(status == IMAP4_NON_LITERAL) {
+	if(status == IMAP4_QUOTED_STRING) {
 		return(status);
 	}
   
@@ -180,6 +180,35 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 
 	return(status);
 }
+
+
+static char *imap4_token_to_string(token_t *t, int type)
+{
+	char *str;
+
+	if(type == IMAP4_QUOTED_STRING) {
+		str=token_to_string(t, '\"');
+		if(!str) {
+			VANESSA_LOGGER_DEBUG("token_to_string 1");
+			return(NULL);
+		}
+		str=str_replace(str, 4, "\\\"", "\"", "\\\\", "\\");
+		if(!str) {
+			VANESSA_LOGGER_DEBUG("str_replace");
+			return(NULL);
+		}
+	}
+	else {
+		str=token_to_string(t, TOKEN_NO_STRIP);
+		if(!str) {
+			VANESSA_LOGGER_DEBUG("token_to_string 2");
+			return(NULL);
+		}
+	}
+
+	return(str);
+}
+
 
 #ifdef WITH_PAM_SUPPORT
 
@@ -383,13 +412,12 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         break;
       }
 
-
       status = imap4_token_wrapper(io, q, &t);
       if(status < 0) {
         __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
         goto loop;
       }
-      else if(status != IMAP4_NON_LITERAL) {
+      else if(status != IMAP4_QUOTED_STRING) {
 	token_t *tmp_t;
 
         /* Read again to get the space and litereal */
@@ -420,8 +448,10 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
         goto loop;
       }
-      if((return_pw->pw_name=token_to_string(t, '\"'))==NULL){
-        VANESSA_LOGGER_DEBUG("token_to_string");
+
+      return_pw->pw_name=imap4_token_to_string(t, status);
+      if(!return_pw->pw_name) {
+        VANESSA_LOGGER_DEBUG("imap4_token_to_string");
         break;
       }
       token_destroy(&t);
@@ -445,9 +475,9 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
 	  goto loop;
 	}
 
-        if((return_pw->pw_passwd=token_to_string(t, '\"'))==NULL){
-          VANESSA_LOGGER_DEBUG("token_to_string");
-          free(return_pw->pw_name);
+        return_pw->pw_name=imap4_token_to_string(t, status);
+        if(!return_pw->pw_name) {
+          VANESSA_LOGGER_DEBUG("imap4_token_to_string");
           break;
         }
       }
