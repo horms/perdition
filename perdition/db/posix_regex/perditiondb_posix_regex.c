@@ -383,7 +383,7 @@ int dbserver_fini(void){
 
 /**********************************************************************
  * dummy_dup_regex
- * Dummy funtion to duplicate a regex.
+ * Dummy function to duplicate a regex.
  * Does nothing, returns preg, not a copy
  * pre: preg: regex to copy
  * post: nothing

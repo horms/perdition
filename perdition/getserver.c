@@ -103,7 +103,7 @@
  * Read the server information for a given key using * the function 
  * dbserver_get. 
  * pre: key_str: key to lookup
- *      dbserver_get: funtion to do the lookup
+ *      dbserver_get: function to do the lookup
  * return: server_port_t stucture containing server and port.
  *         NULL on error
  **********************************************************************/
@@ -226,7 +226,7 @@ int getserver_openlib(
 
 /**********************************************************************
  * getserver_closelib
- * Close library for funtion to access user db (popmap)
+ * Close library for function to access user db (popmap)
  * pre: handle: library handle to close
  * post: If the symbol dbserver_fini is defined then it is run
  *       Library is closed

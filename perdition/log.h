@@ -2,7 +2,7 @@
  * log.h                                                 September 2000
  * Horms                                             horms@vergenet.net
  *
- * Defines for loging
+ * Defines for logging
  *
  * perdition
  * Mail retreival proxy server

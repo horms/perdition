@@ -49,7 +49,7 @@ int dbserver_get(
 
 /*
  * #defines to destroy and dupilcate regex
- * Funtions that are not possible are substituted with noop funtions
+ * Funtions that are not possible are substituted with noop functions
  */
 #define DESTROY_REGEX (void (*)(void *s))destroy_regex
 #define DUPLICATE_REGEX (void *(*)(void *s))dummy_dup_regex

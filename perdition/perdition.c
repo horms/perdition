@@ -81,7 +81,7 @@ static void perdition_reread_handler(int sig);
 #endif
 
 /**********************************************************************
- * Muriel the main funtion
+ * Muriel the main function
  **********************************************************************/
 
 int main (int argc, char **argv){
