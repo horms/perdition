@@ -444,8 +444,9 @@ char *token_to_string(const token_t *t, const unsigned char strip){
   size_t n;
 
   if(t==NULL || t->buf == NULL) {
-	  PERDITION_DEBUG("empty token");
-	  return(NULL);
+	  string=malloc(1);
+	  *string='\0';
+	  return(string);
   }
 
   buf=t->buf;

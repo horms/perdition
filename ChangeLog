@@ -19,6 +19,7 @@ XXX
   - Document that if no_lookup is used then popmaps must
     not contain hostnames
   - Better logging of SSL I/O problems
+  - Fixed handling of empty tags
 
 
 

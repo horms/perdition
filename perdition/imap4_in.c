@@ -41,6 +41,18 @@
 
 
 
+/**********************************************************************
+ * imap4_token_is_literal
+ * Determine if a token is a literal as defined in RFC 1730
+ * That is a string of the form "{n}" where n is a positive integral 
+ * value. The quotes may be ommitted.
+ * pre: token: token to examine
+ *      i: will be seeded with the value of n if token is a literal
+ * post: i is seeded with the value of n if token is a literal
+ * return: 0 if token is a literal
+ *         -1 if token is not a literal
+ *         -2 on error
+ **********************************************************************/
 
 static int imap4_token_is_literal(const token_t *token, unsigned long *i) 
 {
@@ -74,6 +86,33 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 	return(0);
 }
 
+
+/**********************************************************************
+ * imap4_token_wrapper
+ * Inteprate a token.
+ * If the token is not a literal, as defined in RFC 1930 then the
+ * token is returned verbatim. Else the number of bytes specified in
+ * the literal token are returned as a new token and the
+ * original token is destroyed.
+ * Either way, the token return can be used as an 8bit clean value.
+ * pre: io: IO to read from if neccessary
+ *      q: Queue of pending tokens, not including input_token
+ *      input_token: token to examine.
+ * post: If input_token is a literal
+ *         inteprate the litereal as a byte-count using
+ *             imap4_token_is_literal
+ *         Destroy input_token
+ *         Make sure the q is empty, else there is a syntax error
+ *         Return "+ OK" to the client by writing to io
+ *         Read bytes from io, as specifed by input_token
+ *         Place these bytes in a new token
+ *         Return token
+ *      Else
+ *         Return input_token
+ * return: Token to read data from
+ *         NULL on error
+ **********************************************************************/
+
 static token_t *imap4_token_wrapper(io_t *io, vanessa_queue_t *q, 
 		token_t *input_token) 
 {
@@ -105,6 +144,12 @@ static token_t *imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 	token_assign(tag, strdup("+"), 1, 0);
 	imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 
 			"ready for additional input");
+
+	if(i == 0) {
+		token_unassign(tag);
+		return(tag);
+	}
+
 	token_destroy(&tag);
 
 	if((tag=token_read(io, NULL, NULL, TOKEN_IMAP4_LITERAL, i))==NULL){
@@ -192,7 +237,7 @@ int imap4_in_authenticate(
           IMAP4_BAD, \
           "Try LOGIN <username> <passwd>" \
         )<0){ \
-          PERDITION_DEBUG("imap4_write"); \
+          PERDITION_DEBUG("imap4_write syntax error"); \
           break; \
         }
 
@@ -353,7 +398,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
     else {
       sleep(PERDITION_ERR_SLEEP);
       if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD, "Unrecognised command")<0){
-        PERDITION_DEBUG("imap4_write");
+        PERDITION_DEBUG("imap4_write 3");
         break;
       }
     }
@@ -365,7 +410,6 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
     str_free(command_string);
     vanessa_queue_destroy(q);
   }
-
 
   /*If we get here clean up and bail*/
   token_destroy(&t);
