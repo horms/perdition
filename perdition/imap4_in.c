@@ -250,6 +250,14 @@ int imap4_in_authenticate(
  **********************************************************************/
 
 #define __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR \
+        if(return_pw->pw_name) { \
+	  free(return_pw->pw_name); \
+          return_pw->pw_name=NULL; \
+	} \
+        if(return_pw->pw_passwd) { \
+	  free(return_pw->pw_passwd); \
+          return_pw->pw_passwd=NULL; \
+	} \
         sleep(VANESSA_LOGGER_ERR_SLEEP); \
         if(imap4_write( \
           io, \
@@ -405,6 +413,11 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
 	}
       }
 
+      /* Check for empty user */
+      if(!token_len(t)) {
+        __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
+        goto loop;
+      }
       if((return_pw->pw_name=token_to_string(t, '\"'))==NULL){
         VANESSA_LOGGER_DEBUG("token_to_string");
         break;
@@ -412,7 +425,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
       token_destroy(&t);
 
       if(vanessa_queue_length(q)==1){
-        if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
+        if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
           VANESSA_LOGGER_DEBUG("vanessa_queue_pop 5");
 	  tag=NULL;
           break;
@@ -424,6 +437,12 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
 	  goto loop;
 	}
 
+	/* Check for empty password */
+	if(!token_len(t)) {
+	  __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
+	  goto loop;
+	}
+
         if((return_pw->pw_passwd=token_to_string(t, '\"'))==NULL){
           VANESSA_LOGGER_DEBUG("token_to_string");
           free(return_pw->pw_name);
@@ -431,7 +450,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
         }
       }
       else {
-	return_pw->pw_passwd=NULL;
+	__IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
+	goto loop;
       }
  
       token_destroy(&t);

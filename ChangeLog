@@ -74,6 +74,8 @@ XXX
    - Fixed some problems in handling IMAP string literals if they are
      used for both the the username and password for LOGIN
    - Log initial errors / logs to stderr not stdout.
+   - Fixed handling of a client not supplying a password to
+     the IMAP4 LOGIN Command
 
 ----------------------------------------------------------------------
 
