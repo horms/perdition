@@ -175,6 +175,8 @@ true
 %{prefix}/sbin/perdition.pop3
 %{prefix}/sbin/perdition.imap4
 %{prefix}/lib/libjain.so
+%{prefix}/lib/libjain.so.0
+%{prefix}/lib/libjain.so.0.0.0
 /etc/pam.d/perdition
 /etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition

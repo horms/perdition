@@ -5,6 +5,17 @@ Mail retrieval proxy server
 Copyright (C) 1999  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
+xxx
+(Horms)
+
+   * Version xxx
+   - Fixed minor spelling errors in documentation
+   - Added missing library symlings to spec file
+   - Server ok line option fixed. Was expecting arguments when it
+     has none.
+
+----------------------------------------------------------------------
+
 9th January 2001
 (Horms)
 
