@@ -23,7 +23,9 @@
 #
 ######################################################################
 
-EXTRA_DIST = perditiondb_ldap_makedb
+man_MANS = perditiondb_ldap_makedb.8
+
+EXTRA_DIST = perditiondb_ldap_makedb perditiondb_ldap_makedb.8
 
 bin_SCRIPTS = perditiondb_ldap_makedb
 
