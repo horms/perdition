@@ -57,7 +57,7 @@
 int imap4_out_setup(
   io_t *io,
   const struct passwd *pw,
-  const token_t *tag,
+  token_t *tag,
   const protocol_t *protocol
 );
 

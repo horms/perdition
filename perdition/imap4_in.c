@@ -40,9 +40,9 @@
 #endif
 
 
-#define IMAP_NON_LITERAL             0x1
-#define IMAP_SYNCHRONISING_TOKEN     0x2
-#define IMAP_NON_SYNCHRONISING_TOKEN 0x3
+#define IMAP4_NON_LITERAL             0x1
+#define IMAP4_SYNCHRONISING_TOKEN     0x2
+#define IMAP4_NON_SYNCHRONISING_TOKEN 0x3
 
 /**********************************************************************
  * imap4_token_is_literal
@@ -52,10 +52,10 @@
  * pre: token: token to examine
  *      i: will be seeded with the value of n if token is a literal
  * post: i is seeded with the value of n if token is a literal
- * return: IMAP_NON_SYNCHRONISING_TOKEN if token is 
+ * return: IMAP4_NON_SYNCHRONISING_TOKEN if token is 
  *           a non-synchronising litereal
- *         IMAP_SYNCHRONISING_TOKEN if token is a sunchronising literal
- *         IMAP_NON_LITERAL if token is not a literal
+ *         IMAP4_SYNCHRONISING_TOKEN if token is a sunchronising literal
+ *         IMAP4_NON_LITERAL if token is not a literal
  *         -1 on error
  **********************************************************************/
 
@@ -63,10 +63,10 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 {
 	char *str;
 	char *str2;
-	int non_synchronising = IMAP_SYNCHRONISING_TOKEN;
+	int non_synchronising = IMAP4_SYNCHRONISING_TOKEN;
 
 	if(!token_is_eol(token)) {
-		return(IMAP_NON_LITERAL);
+		return(IMAP4_NON_LITERAL);
 	}
 
 	/* Get the string out of the token */
@@ -77,7 +77,7 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 
 	/* Check for surrounding {} */
 	if(*str != '{' || *(str+strlen(str)-1) != '}') {
-		return(IMAP_NON_LITERAL);
+		return(IMAP4_NON_LITERAL);
 	}
 	*(str+strlen(str)-1) = '\0';
 
@@ -85,13 +85,13 @@ static int imap4_token_is_literal(const token_t *token, unsigned long *i)
 	 * non_synchronising literal */
 
 	if(*(str+strlen(str)-1) == '+') {
-		non_synchronising = IMAP_NON_SYNCHRONISING_TOKEN;
+		non_synchronising = IMAP4_NON_SYNCHRONISING_TOKEN;
 		*(str+strlen(str)-1) = '\0';
 	}
 
 	/* Check that what is left is only digits */
 	if(!vanessa_socket_str_is_digit(str+1)) {
-		return(IMAP_NON_LITERAL);
+		return(IMAP4_NON_LITERAL);
 	}
 
 	/* Convert it into binary */
@@ -145,7 +145,7 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 		token_destroy(input_token);
 	  	return(-1);
 	}
-	if(status == IMAP_NON_LITERAL) {
+	if(status == IMAP4_NON_LITERAL) {
 		return(status);
 	}
   
@@ -155,7 +155,7 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 		return(-1);
 	}
 
-	if(status == IMAP_SYNCHRONISING_TOKEN) {
+	if(status == IMAP4_SYNCHRONISING_TOKEN) {
 		*input_token=token_create();
 		if(*input_token == NULL) {
 			VANESSA_LOGGER_DEBUG("token_create");
@@ -379,7 +379,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
           __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
           goto loop;
         }
-	else if(status != IMAP_NON_LITERAL) {
+	else if(status != IMAP4_NON_LITERAL) {
 	  /* Read again to get the space and litereal */
 	  vanessa_queue_destroy(q);
           q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0, 
@@ -412,8 +412,6 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag){
       }
       token_destroy(&t);
 
-      VANESSA_LOGGER_DEBUG_UNSAFE("B: vanessa_queue_length()=%d", 
-		      vanessa_queue_length(q));
       if(vanessa_queue_length(q)==1){
         if((q=vanessa_queue_pop( q, (void **)&t))==NULL){
           VANESSA_LOGGER_DEBUG("vanessa_queue_pop 5");

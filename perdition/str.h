@@ -279,4 +279,16 @@ char *str_append_substring_if_missing(const char *haystack,
 				      const char *delimiter);
 
 
+/**********************************************************************
+ * str_rolling32
+ * Produce a rolling 32 bit checksum for a buffer
+ * pre: buf: buffer to checksum
+ *      len: number of bytes to checksum
+ * post: Rolling 32 bit checksum is calculated
+ * return: checksum
+ **********************************************************************/
+
+uint32 str_rolling32(unsigned char *buf, size_t len);
+
+
 #endif				/* _PERDITION_STR_H */

@@ -727,8 +727,14 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
 #define BIN_OPT_STR(opt) ((opt)?"on":"off")
 
 /**********************************************************************
- * log_options
- * Log options
+ * log_options_str
+ * Log options to a string
+ * pre: str: string to log options to
+ *      len: number of bytes in str
+ *      global opt is set
+ * post: options are logged to str
+ * return: 0 on success
+ *         1 on error
  **********************************************************************/
 
 #define LOG_OPTIONS_ADD_STR(str, dest, start) \
@@ -765,7 +771,7 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
 }
 
 
-int log_options(void){
+int log_options_str(char *str, size_t n){
   char *protocol=NULL;
   char *outgoing_server=NULL;
   char *query_key=NULL;
@@ -844,9 +850,9 @@ int log_options(void){
   }
 #endif /* WITH_SSL_SUPPORT */
 
-  vanessa_logger_log(
-    vanessa_logger_get(),
-    LOG_INFO,
+  snprintf(
+    str,
+    n -1,
     "add_domain=\"%s\", "
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
@@ -938,10 +944,37 @@ int log_options(void){
 #endif /* WITH_SSL_SUPPORT */
     opt.mask
   );
+  *(str+n-1) = '\0';
 
   str_free(protocol);
   str_free(outgoing_server);
   str_free(query_key);
+  return(0);
+}
+
+
+/**********************************************************************
+ * log_options
+ * Log options to the active vanessa logger
+ * pre: str: string to log options to
+ *      len: number of bytes in str
+ *      global opt is set
+ *      vanessa logger has been set (else nothing will happen)
+ * post: options are logged to the active vanessa logger
+ * return: 0 on success
+ *         1 on error
+ **********************************************************************/
+
+int log_options(void){
+  char buf[MAX_LINE_LENGTH];
+
+  if(log_options_str(buf, sizeof(buf))<0) {
+    VANESSA_LOGGER_DEBUG("log_options_str");
+    return(-1);
+  }
+
+  VANESSA_LOGGER_INFO(buf);
+
   return(0);
 }
 

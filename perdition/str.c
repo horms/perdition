@@ -551,3 +551,25 @@ char *str_append_substring_if_missing(const char *haystack,
 
 	return (new_haystack);
 }
+
+
+/**********************************************************************
+ * str_rolling32
+ * Produce a rolling 32 bit checksum for a buffer
+ * pre: buf: buffer to checksum
+ *      len: number of bytes to checksum
+ * post: Rolling 32 bit checksum is calculated
+ * return: checksum
+ **********************************************************************/
+
+uint32 str_rolling32(unsigned char *buf, size_t len) {
+	size_t i;
+	uint32 csum;
+
+	csum = 0;
+	for(i = 0; i < len - 1; i++) {
+		csum += *(buf+i);
+	}
+
+	return(csum);
+}

@@ -30,6 +30,8 @@
 #endif
 
 #include "imap4_out.h"
+#include "imap4_tag.h"
+#include "options.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -52,24 +54,36 @@
 int imap4_out_setup(
   io_t *io,
   const struct passwd *pw,
-  const token_t *tag,
+  token_t *tag,
   const protocol_t *protocol
 ){
-  token_t *ok;
+  token_t *ok = NULL;
+  token_t *t = NULL;
+  token_t *check_t = NULL;
   vanessa_queue_t *q = NULL;
   char *read_string = NULL;
   char *greeting_string=NULL;
+  char *tag_string=NULL;
   int status=-1;
+  int do_tls = 0;
+  char buf[MAX_LINE_LENGTH];
+  size_t n = MAX_LINE_LENGTH;
 
+  extern options_t opt;
+
+  if((check_t=token_create())==NULL){
+    VANESSA_LOGGER_DEBUG("token_create 1");
+    goto leave;
+  }
   if((ok=token_create())==NULL){
-    VANESSA_LOGGER_DEBUG("token_create");
+    VANESSA_LOGGER_DEBUG("token_create 2");
     goto leave;
   }
   token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
       TOKEN_DONT_CARE);
 
   if((status=imap4_out_response(io, IMAP4_UNTAGED, ok, &q, NULL, NULL))<0){
-    VANESSA_LOGGER_DEBUG("imap4_out_response");
+    VANESSA_LOGGER_DEBUG("imap4_out_response 1");
     goto leave;
   }
   else if(!status){
@@ -100,16 +114,86 @@ int imap4_out_setup(
   }
 
   /* Ok to go */
-  status=1;
 
-  /* XXX: TLS Stuff should go here */
+#ifdef WITH_SSL_SUPPORT
+  if(!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
+    status = 1;
+    goto leave;
+  }
 
-  leave:
+  if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
+    VANESSA_LOGGER_DEBUG("token_to_string 1");
+    goto leave;
+  }
+  if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, "CAPABILITY")<0){
+    VANESSA_LOGGER_DEBUG("str_write 1");
+    goto leave;
+  }
+  token_assign(check_t, "CAPABILITY", strlen("CAPABILITY"), TOKEN_NONE);
+  status=imap4_out_response(io, IMAP4_UNTAGED, check_t, &q, buf, &n);
+  if(status<0) {
+    VANESSA_LOGGER_DEBUG("imap4_out_response 2");
+    goto leave;
+  }
+
+  token_assign(check_t, "STARTTLS", strlen("STARTTLS"), TOKEN_DONT_CARE);
+  while(vanessa_queue_length(q)) {
+    if((q=vanessa_queue_pop(q, (void **)&t))==NULL){
+      VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
+      goto leave;
+    }
+    if(!do_tls && token_cmp(t, check_t)) {
+      do_tls = 1;
+    }
+    if(token_is_eol(t)) {
+      break;
+    }
+    token_destroy(&t);
+  }
+  token_destroy(&t);
+
+  status=imap4_out_response(io, tag_string, ok, &q, buf, &n);
+  if(status<0) {
+    VANESSA_LOGGER_DEBUG("imap4_out_response 3");
+    goto leave;
+  }
+  imap4_tag_inc(tag);
+  free(tag_string);
+  tag_string = NULL;
+
+  if(do_tls) {
+    if((tag_string=token_to_string(tag, TOKEN_NO_STRIP))==NULL){
+      VANESSA_LOGGER_DEBUG("token_to_string 3");
+      goto leave;
+    }
+    if(str_write(io, NULL_FLAG, 2, "%s %s", tag_string, "STARTTLS")<0){
+      VANESSA_LOGGER_DEBUG("str_write 2");
+      goto leave;
+    }
+    if((status=imap4_out_response(io, tag_string, ok, &q, buf, &n))<0) {
+      VANESSA_LOGGER_DEBUG("imap4_out_response 4");
+      goto leave;
+    }
+    free(tag_string);
+    tag_string = NULL;
+    imap4_tag_inc(tag);
+  }
+
+#endif /* WITH_SSL_SUPPORT */
+
+  status=do_tls?2:1;
+leave:
   str_free(greeting_string);
+  token_unassign(check_t);
+  token_destroy(&check_t);
   token_unassign(ok);
   token_destroy(&ok);
+  token_destroy(&t);
   if(q) {
     vanessa_queue_destroy(q);
+  }
+  if(tag_string) {
+    free(tag_string);
   }
   return(status);
 }
@@ -224,7 +308,7 @@ int imap4_out_response(
   *q=NULL;
   server_tag_string=NULL;
   t=NULL;
-  status=0;
+  status=-1;
 
   /*
    * tagged set to 0 if an untagged message is expected
@@ -257,7 +341,9 @@ int imap4_out_response(
     }
   
     if(strcmp(server_tag_string, tag_string)){
-      VANESSA_LOGGER_DEBUG("invalid tag from server");
+      VANESSA_LOGGER_DEBUG_UNSAFE("invalid tag from server "
+		      "got:\"%s\" expected:\"%s\"",
+		      server_tag_string, tag_string);
       goto leave;
     }
   

@@ -72,6 +72,31 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
 
 
 /**********************************************************************
+ * greeting_checksum
+ * Produce a checksum for greeting string
+ * pre: csum: checksum will be returned here
+ * post: Checksum of the output of log_options_str() is checksumed
+ *       using str_rolling32() and stored in csum.
+ * return: 0 on success
+ *         -1 on error
+ **********************************************************************/
+
+static int greeting_checksum(uint32 *csum)
+{
+	char buf[MAX_LINE_LENGTH];
+
+	if(log_options_str(buf, sizeof(buf)) < 0) {
+		VANESSA_LOGGER_DEBUG("log_options_str");
+		return(-1);
+	}
+
+	*csum = str_rolling32(buf, strlen(buf));
+
+	return(0);
+}
+	
+
+/**********************************************************************
  * greeting_str
  * Produce greeting string
  * pre: message: unallocated ponter to put greeting string in
@@ -86,10 +111,19 @@ char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
   char *host;
   struct hostent *hp;
   struct in_addr in;
+  uint32 csum;
+  char csum_str[10];
 
   extern struct utsname *system_uname;
   extern options_t opt;
   extern int h_errno;
+
+  if(greeting_checksum(&csum) < 0) {
+	  VANESSA_LOGGER_DEBUG("greeting_checksum");
+	  return(NULL);
+  }
+  snprintf(csum_str, sizeof(csum_str) - 1, "%08x", csum);
+  csum_str[sizeof(csum_str)-1] = '\0';
 
   if(flag&GREETING_ADD_NODENAME){
     if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
@@ -113,7 +147,8 @@ char *greeting_str(char *message, const protocol_t *protocol, flag_t flag){
     else{
       host=system_uname->nodename;
     }
-    if((message=str_cat(3, protocol->greeting_string, " ", host))==NULL){
+    if((message=str_cat(5, protocol->greeting_string, " ", host, " ",
+				    csum_str))==NULL){
       VANESSA_LOGGER_DEBUG("str_cat");
       return(NULL);
     }

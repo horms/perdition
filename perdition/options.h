@@ -299,9 +299,31 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag);
 
 
 /**********************************************************************
- * log_options
- * Log options
+ * log_options_str
+ * Log options to a string
+ * pre: str: string to log options to
+ *      len: number of bytes in str
+ *      global opt is set
+ * post: options are logged to str
+ * return: 0 on success
+ *         1 on error
  **********************************************************************/
+
+int log_options_str(char *str, size_t n);
+
+
+/**********************************************************************
+ * log_options
+ * Log options to the active vanessa logger
+ * pre: str: string to log options to
+ *      len: number of bytes in str
+ *      global opt is set
+ *      vanessa logger has been set (else nothing will happen)
+ * post: options are logged to the active vanessa logger
+ * return: 0 on success
+ *         1 on error
+ **********************************************************************/
+
 int log_options(void);
 
 

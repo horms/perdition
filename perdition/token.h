@@ -47,7 +47,7 @@
   
 typedef struct{
   ssize_t n;
-  unsigned char * buf;
+  unsigned char *buf;
   flag_t flag;
 }token_t;
 
@@ -70,13 +70,6 @@ typedef struct{
 #define TOKEN_NO_STRIP    (unsigned char) '\0'
 
 token_t *create_token(void);
-
-void assign_token(
-  token_t *t, 
-  unsigned char * buf, 
-  const ssize_t n, 
-  const int eol
-);
 
 
 /**********************************************************************
@@ -225,7 +218,29 @@ token_t *token_read(
  *        0 otherwise
  **********************************************************************/
 
-#define token_is_eol(_t) (_t->flag&TOKEN_EOL?1:0)
+#define token_is_eol(_t) ((_t)->flag&TOKEN_EOL?1:0)
+
+
+/**********************************************************************
+ * token_buf
+ * Get the buffer of a token
+ * pre: t: token to get the buffer of
+ * post: none
+ * return: buffer of the token
+ **********************************************************************/
+
+#define token_buf(_t) ((_t)->buf)
+
+
+/**********************************************************************
+ * token_len
+ * Get the length of a token
+ * pre: t: token to get the length of
+ * post: none
+ * return: length of the token
+ **********************************************************************/
+
+#define token_len(_t) ((_t)->n)
 
 
 /**********************************************************************
@@ -256,7 +271,7 @@ int token_cmp(const token_t *a, const token_t *b);
  * 8 bit clean
  **********************************************************************/
 
-#define token_is_null(_t) (_t->n?1:0)
+#define token_is_null(_t) ((_t)->n?1:0)
 
 
 /**********************************************************************
