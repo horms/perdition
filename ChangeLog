@@ -5,11 +5,11 @@ Mail retrieval proxy server
 Copyright (C) 1999  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-xxx
+9th January 2000
 (Horms)
 
-   * Version xxx
-   - Fixed Bux in specifying port of PostgreSQL server.
+   * Version 0.1.6
+   - Fixed Bug in specifying port of PostgreSQL server.
      Thanks to Michael J. Maravillo.
    - Fixed Bug in reporting of reauthenication failures in IMAP4 mode
      Thanks to Mike Shirobokov
