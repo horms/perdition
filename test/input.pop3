@@ -1,21 +1,25 @@
 0 NULL
+1
+1 \r\n
 1 Flim
-1 pass
-1 pass 
-1 pass john
+1 capa 1
+0 capa
+1 stls 1
+0 stls
+0 NULL
+1 pass flym
 1 user
 1 user 
-1 user john
-1 user
-1 user 
+1 user 1 1
+0 user john
 1 user john
 1 pass
 1 pass 
+1 pass 1 1
+1 pass flym
 1 pass john
-0 user horms
-1 pass flym7
+1 pass john
 0 user tymm
-1 pass flym8
-0 user tymm@localhost:110
 0 pass flym
+1 quit 1
 0 quit

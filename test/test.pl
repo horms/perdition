@@ -37,8 +37,10 @@ my $DEFAULT_HOST="$STDIN_HOST";
 
 my $POP3_PROTOCOL_STRING=["^\\\+OK", "^-ERR", "^-ERR"];
 my $POP3_UNTAGGED="^NULL\$";
+my $POP3_CONT="^S: ";
 my $IMAP4_PROTOCOL_STRING=["^\\\S+ OK", "^\\\S+ NO", "^\\\S+ BAD"];
 my $IMAP4_UNTAGGED="^\\\* ";
+my $IMAP4_CONT="^\\\+ ";
 
 { #Denise's main
   my (
@@ -56,16 +58,19 @@ my $IMAP4_UNTAGGED="^\\\* ";
     $protocol,
     $protocol_string,
     $untagged,
+    $cont,
   );
 
   unless($protocol = $ARGV[0]){ &usage(); }
   if($protocol=~/^imap4$/i){
     $protocol_string=$IMAP4_PROTOCOL_STRING;
     $untagged=$IMAP4_UNTAGGED;
+    $cont=$IMAP4_CONT;
   }
   elsif($protocol=~/^pop3$/i){
     $protocol_string=$POP3_PROTOCOL_STRING;
     $untagged=$POP3_UNTAGGED;
+    $cont=$POP3_CONT;
   }
   else{
     &usage();
@@ -89,13 +94,6 @@ Test Results
 ============
 __EOF__
 
-  if("$host" eq "$STDIN_HOST"){
-    ($client_in, $client_out)=&stdio_handle(); 
-  }
-  else {
-    $client_in = $client_out = &client_socket_open($host, $port);
-  }
-
   $tests=&read_test_file($filename);
   if($tests==-1){
     exit(-1);
@@ -103,7 +101,24 @@ __EOF__
 
   $succede=0;
   $fail=0;
+  $client_in = -1;
+  $client_out = -1;
   foreach (@$tests){
+    if(@$_[1] eq "NULL") {
+      if($client_in >= 0) {
+        close($client_in);
+      }
+      if($client_out >= 0) {
+        close($client_out);
+      }
+      if("$host" eq "$STDIN_HOST"){
+        ($client_in, $client_out)=&stdio_handle(); 
+      }
+      else {
+        $client_in = $client_out = &client_socket_open($host, $port);
+      }
+    }
+
     if((&do_test(
       $client_in,
       $client_out,
@@ -111,7 +126,8 @@ __EOF__
       @$_[0],
       1,
       $protocol_string,
-      $untagged
+      $untagged,
+      $cont
     ))==1){
       $succede++;
     }
@@ -230,6 +246,7 @@ sub show_error {
 #                               2 is error response
 #                       Strings are perl regular expressions
 #      untagged: lines matching this regex are skipped
+#      cont lines matching this regex are skipped
 # post: index of element of array found as first white space
 #       delimited token
 #       -1 if token is not found
@@ -240,14 +257,18 @@ sub show_error {
 ######################################################################
 
 sub read_response {
-  my ($fh, $verbose, $protocol_string, $untagged)=(@_);
+  my ($fh, $verbose, $protocol_string, $untagged, $cont)=(@_);
   
   my($line, $i);
 
-  do{
+  while(1){
     $line=$fh->getline;
     if($verbose==1){
       print "<$line";
+    }
+
+    if($line=~/$cont/) {
+      next;
     }
   
     $i=0;
@@ -257,7 +278,11 @@ sub read_response {
       }
       $i++;
     }
-  }while($line=~/$untagged/);
+
+    unless($line=~/$untagged/) {
+       last;
+    }
+  }
 
   return(-1);
 }  
@@ -274,6 +299,7 @@ sub read_response {
 #               else no results are displayed
 #      protocol_string: protocol strings to be passwd to read_response
 #      untagged: Lines that match this regex are skipped
+#      cont: Lines that match this regex are skipped
 # post: 1 if response matches expected_response
 #       0 if response does not match expected response
 ######################################################################
@@ -286,21 +312,25 @@ sub do_test {
     $expected_response, 
     $verbose, 
     $protocol_string,
-    $untagged
+    $untagged,
+    $cont
   )=(@_);
 
   my ($response, $status, $status_string);
 
   if($input ne "NULL"){
     local $/='\n';
-    chomp $input;
-    $out_fh->print("$input\n");
+    unless($input =~ m/\r\n$/) {
+      $input .= "\r\n";
+    }
+    $out_fh->print("$input");
     if($verbose==1){
-      print ">$input\n";
+      print ">$input";
     }
   }
 
-  $response=&read_response($in_fh, $verbose, $protocol_string, $untagged);
+  $response=&read_response($in_fh, $verbose, $protocol_string, $untagged,
+  	$cont);
   if($expected_response>0){
      sleep 10;
   }
@@ -345,8 +375,15 @@ sub read_test_file {
   }
 
   while(<FLIM>){
-    next unless /^(\S+)\s(.*)/;
-    push @result, [$1, $2];
+    my $one;
+    my $two;
+    next if(/^#/);
+    /^(\S*)\s(.*)/;
+    $one = $1;
+    $two = $2;
+    $one =~ s/\\r\\n/\r\n/g;
+    $two =~ s/\\r\\n/\r\n/g;
+    push @result, [$one, $two];
   }
 
   return \@result;

@@ -1,15 +1,49 @@
 0 NULL
-2 flim jim
-0 flim capability
-1 flim authenticate
-1 flim authenticate 7
-2 flim login
-2 flim login jim
-1 flim login jim jam
-1 flim login tymm flymm
-1 flim login tymm flym
-0 flim login tymm@localhost:143 flym
+2 nym0000 login
+2 nym0001 login 
+2 nym0002 login jim
+1 nym0003 login jim jam
+0 nym0004 login tymm flym
+0 nym0005 logout
+0 NULL
+2 nym1000 login {3}\r\njim
+1 nym1001 login {3}\r\njim {3}\r\njam
+0 nym1002 login {4}\r\ntymm {4}\r\nflym
+0 nym1003 logout
+0 NULL
+2 nym2000 login {3}\r\njim
+1 nym2001 login {3}\r\njim jam
+0 nym2002 login {4}\r\ntymm flym
+0 nym2003 logout
+0 NULL
+2 nym3000 login {3+}\r\njim
+1 nym3001 login {3+}\r\njim {3+}\r\njam
+0 nym3002 login {4+}\r\ntymm {4+}\r\nflym
+0 nym3003 logout
+0 NULL
+2 nym4000 login {3+}\r\njim
+1 nym4001 login {3+}\r\njim {3}\r\njam
+1 nym4002 login {3}\r\njim {3+}\r\njam
+0 nym4003 login {4+}\r\ntymm {4}\r\nflym
+0 nym4004 logout
+0 NULL
+0 nym5000 login {4}\r\ntymm {4+}\r\nflym
+0 nym5001 logout
+0 NULL
 2
-
-0 flim noop
-0 flim logout
+2 \r\n
+2 jim
+2 nym6001 
+2 nym6002 jim
+0 nym6003 capability
+2 nym6004 capability 7
+2 nym6005 authenticate
+1 nym6006 authenticate 7
+2 nym6007 authenticate 7 7
+2 nym6008 noop 7
+0 nym6009 noop
+2 nym6010 logout 7
+0 nym6011 logout
+0 NULL
+0 nym7000 capability
+0 nym7001 starttls
