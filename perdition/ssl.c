@@ -67,23 +67,23 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		flag_t flag);
 
 
-static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, 
-		void *data)
+static int 
+__perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
 {
 	ssize_t nbytes;
 	struct termios new;
 	struct termios old;
 
 	/* Turn echoing off */
-	if(tcgetattr(0, &old) < 0) {
+	if (tcgetattr(0, &old) < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
-		return(-1);
+		return -1;
 	}
 	new = old;
 	new.c_lflag &= (~ECHO);
 	if(tcsetattr(0, TCSANOW, &new) < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("tcsetattr");
-		return(-1);
+		return -1;
 	}
 
 	/* Read Bytes */
@@ -92,12 +92,12 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
 	/* Turn echoing on */
 	if(tcsetattr(0, TCSANOW, &old) < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
-		return(-1);
+		return -1;
 	}
 
 	if(nbytes < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("read");
-		return(-1);
+		return -1;
 	}
 
 	/* Make sure the result is null terminated */
@@ -113,7 +113,7 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
 		}
 	}
 
-	return(nbytes);
+	return nbytes;
 }
 
 
@@ -154,14 +154,15 @@ static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag,
  *
  **********************************************************************/
 
-static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
+static int 
+__perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
 	X509 *cert;
 
 	extern options_t opt;
 
 	cert = X509_STORE_CTX_get_current_cert(ctx);
-	if(opt.debug) {
+	if (opt.debug) {
 		char buf[MAX_LINE_LENGTH];
 		X509_NAME_oneline(X509_get_subject_name(cert),
 				buf, MAX_LINE_LENGTH);
@@ -169,21 +170,21 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 				X509_STORE_CTX_get_error_depth(ctx), buf);
 	}
 
-	if(opt.ssl_cert_verify_depth < X509_STORE_CTX_get_error_depth(ctx)) {
+	if (opt.ssl_cert_verify_depth < X509_STORE_CTX_get_error_depth(ctx)) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Chain too long, try adjusting "
 				"ssl_cert_verify_depth: %d > %d",
 				X509_STORE_CTX_get_error_depth(ctx), 
 				opt.ssl_cert_verify_depth);
 		X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_CHAIN_TOO_LONG);
-		return(0);
+		return 0;
 	}
 
-	if(__perdition_verify_result(ctx->error, cert) 
+	if (__perdition_verify_result(ctx->error, cert) 
 			== X509_V_OK) {
-		return(1);
+		return 1;
 	}
 
-	return(ok);
+	return ok;
 }
 
 
@@ -196,14 +197,14 @@ static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 	BIO *tmp_bio;                                                       \
 	char *tmp_str;                                                      \
 	tmp_bio = BIO_new(BIO_s_mem());                                     \
-	if(!tmp_bio) {                                                      \
+	if (!tmp_bio) {                                                     \
 		VANESSA_LOGGER_DEBUG("BIO_new");                            \
 		verify = (_err);                                            \
 	}                                                                   \
 	ASN1_TIME_print(tmp_bio, (_time));                                  \
 	BIO_get_mem_data(tmp_bio, &tmp_str);                                \
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), tmp_str);      \
-	if(!BIO_free(tmp_bio)) {                                            \
+	if (!BIO_free(tmp_bio)) {                                           \
 		VANESSA_LOGGER_DEBUG("BIO_free");                           \
 		verify = (_err);                                            \
 	}                                                                   \
@@ -260,7 +261,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 					"CRL signature failure");
 			break;
 		case X509_V_ERR_CERT_NOT_YET_VALID:
-			if(opt.ssl_cert_accept_not_yet_valid) {
+			if (opt.ssl_cert_accept_not_yet_valid) {
 				__PERDITION_VERIFY_RESULT_WARN(
 						"signature not yet valid");
 				verify = X509_V_OK;
@@ -278,7 +279,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 				X509_V_ERR_CRL_NOT_YET_VALID);
 			break;
 		case X509_V_ERR_CERT_HAS_EXPIRED:
-			if(opt.ssl_cert_accept_expired) {
+			if (opt.ssl_cert_accept_expired) {
 				__PERDITION_VERIFY_RESULT_WARN(
 						"certificate has expired");
 				verify = X509_V_OK;
@@ -321,7 +322,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 			__PERDITION_VERIFY_RESULT_ERROR("out of memory");
 			break;
 		case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-			if(opt.ssl_cert_accept_self_signed) {
+			if (opt.ssl_cert_accept_self_signed) {
 				__PERDITION_VERIFY_RESULT_WARN(
 						"self signed certificate");
 				verify = X509_V_OK;
@@ -332,7 +333,7 @@ static long __perdition_verify_result(long verify, X509 *cert)
 			}
 			break;
 		case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-			if(opt.ssl_ca_accept_self_signed) {
+			if (opt.ssl_ca_accept_self_signed) {
 				__PERDITION_VERIFY_RESULT_WARN("self signed "
 						"certificate in chain");
 				verify = X509_V_OK;
@@ -414,16 +415,16 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	 * If either the certificate or private key is non-NULL the
 	 * other should be too
 	 */
-	if (cert == NULL && privkey != NULL) {
+	if (!cert && privkey) {
 		VANESSA_LOGGER_DEBUG("Certificate is NULL but "
 				"private key is non-NULL");
-		return (NULL);
+		return NULL;
 	}
 
-	if (privkey == NULL && cert != NULL) {
+	if (!privkey && cert) {
 		VANESSA_LOGGER_DEBUG ("Private key is NULL but "
 				"certificate is non-NULL");
-		return (NULL);
+		return NULL;
 	}
 
 	/*
@@ -433,9 +434,10 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	ssl_method = SSLv23_method();
 	SSL_load_error_strings();
 
-	if ((ssl_ctx = SSL_CTX_new(ssl_method)) == NULL) {
+	ssl_ctx = SSL_CTX_new(ssl_method);
+	if (!ssl_ctx) {
 		PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
-		return (NULL);
+		return NULL;
 	}
 
 	/*
@@ -457,7 +459,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		VANESSA_LOGGER_ERR_UNSAFE
 		    ("Error loading certificate chain file \"%s\"", cert);
 		SSL_CTX_free(ssl_ctx);
-		return (NULL);
+		return NULL;
 	}
 
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
@@ -468,19 +470,18 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		VANESSA_LOGGER_ERR_UNSAFE
 		    ("Error loading pricvate key file \"%s\"", privkey);
 		SSL_CTX_free(ssl_ctx);
-		return (NULL);
+		return NULL;
 	}
 
-	if(opt.ssl_no_cert_verify) {
-		return(ssl_ctx);
-	}
+	if (opt.ssl_no_cert_verify)
+		return ssl_ctx;
 
 	/* 
 	 * Load the Certificate Authorities 
 	 */
 	use_ca_file = (ca_file && *ca_file) ? ca_file : NULL;
 	use_ca_path = (ca_path && *ca_path) ? ca_path : NULL;
-	if((use_ca_file || use_ca_path) &&
+	if ((use_ca_file || use_ca_path) &&
 			!SSL_CTX_load_verify_locations(ssl_ctx, use_ca_file, 
 				use_ca_path)) {
 		PERDITION_DEBUG_SSL_ERR_UNSAFE(
@@ -493,7 +494,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		     "file=\"%s\" path=\"%s\"", str_null_safe(use_ca_file),
 		     str_null_safe(use_ca_path)); 
 		SSL_CTX_free(ssl_ctx);
-		return (NULL);
+		return NULL;
 	}
 	SSL_CTX_set_verify_depth(ssl_ctx, opt.ssl_cert_verify_depth + 1);
 
@@ -511,11 +512,11 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 					"could not load CA file %s", 
 					chain_file);
 			SSL_CTX_free(ssl_ctx);
-			return(NULL);
+			return NULL;
 		}
 	}
 
-	return (ssl_ctx);
+	return ssl_ctx;
 }
 
 
@@ -531,43 +532,43 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
  *            not exist
  **********************************************************************/
 
-static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
+static int 
+__perdition_ssl_check_common_name(X509 *cert, const char *server)
 {
 	char *domain;
 	char common_name[MAX_LINE_LENGTH];
 
 	extern options_t opt;
 
-	if(opt.ssl_no_cn_verify || !server) {
-		return(0);
-	}
+	if (opt.ssl_no_cn_verify || !server)
+		return 0;
 
-	if(!cert) {
+	if (!cert) {
 		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
-		return(-2);
+		return -2;
 	}
 	
-	if(X509_NAME_get_text_by_NID(X509_get_subject_name(cert), 
+	if (X509_NAME_get_text_by_NID(X509_get_subject_name(cert), 
 			NID_commonName, common_name, MAX_LINE_LENGTH) < 0) {
 		PERDITION_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
-		return(-1);
+		return -1;
 	}
 	common_name[MAX_LINE_LENGTH -1] = '\0';
 
-	if(!strcmp(server, common_name)) {
-		return(0);
-	}
+	if(!strcmp(server, common_name))
+		return 0;
+
 	/* A wild card common name is allowed 
 	 * It should be of the form *.domain */
-	if(*common_name == '*' && *(common_name+1) == '.') {
+	if (*common_name == '*' && *(common_name+1) == '.') {
 		domain = strchr(server, '.');
-		if(domain && !strcmp(common_name+2, domain+1)) {
-			return(0);
+		if (domain && !strcmp(common_name+2, domain+1)) {
+			return 0;
 		}
 	}
 
 	VANESSA_LOGGER_DEBUG_RAW("error: common name missmatch");
-	return(-2);
+	return -2;
 }
 
 
@@ -582,27 +583,26 @@ static int __perdition_ssl_check_common_name(X509 *cert, const char *server)
  **********************************************************************/
 
 
-static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
+static int 
+__perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 {
 	char *str = NULL;
 
 	extern options_t opt;
 
-	if(!opt.debug) {
-		return(0);
-	}
+	if (!opt.debug)
+		return 0;
 
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("SSL connection using %s",
 				    SSL_get_cipher(ssl));
 
-	if (!cert) {
-		return(0);
-	}
+	if (!cert)
+		return 0;
 	
 	str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 	if (!str) {
 		PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
-		return(1);
+		return 1;
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("subject: %s", str);
 	free(str);
@@ -610,12 +610,12 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 	str = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
 	if (!str) {
 		PERDITION_DEBUG_SSL_ERR("X509_NAME_oneline");
-		return(-1);
+		return -1;
 	}
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("issuer: %s", str);
 
 	free(str);
-	return(0);
+	return 0;
 }
 
 
@@ -637,7 +637,8 @@ static int __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
  **********************************************************************/
 
 
-static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
+static int 
+__perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 		const char *ca_path, const char *server)
 {
 	X509 *cert = NULL;
@@ -655,12 +656,12 @@ static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 	cert = SSL_get_peer_certificate(ssl);
 
 	status = __perdition_ssl_log_certificate(ssl, cert);
-	if(status < 0) {
+	if (status < 0) {
 		VANESSA_LOGGER_DEBUG("__perdition_ssl_log_certificate");
 		goto leave;
 	}
 
-	if(!opt.ssl_no_cert_verify &&
+	if (!opt.ssl_no_cert_verify &&
 			((ca_file && *ca_file) || (ca_path && *ca_path)) &&
 			__perdition_verify_result(SSL_get_verify_result(ssl),
 				cert) != X509_V_OK) {
@@ -671,17 +672,16 @@ static int __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 	}
 
 	status = __perdition_ssl_check_common_name(cert, server);
-	if(status < 0) {
+	if (status < 0) {
 		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_common_name");
 		goto leave;
 	}
 
 leave:
-	if(cert) {
+	if(cert)
 		X509_free(cert);
-	}
 
-	return (status);
+	return status;
 }
 
 
@@ -734,7 +734,8 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 					io_get_ssl(new_io), ret);
 			goto bail;
 		}
-	} else {
+	} 
+	else {
 		SSL_set_accept_state(ssl);
 		ret = SSL_accept(ssl);
 		if (ret <= 0) {
@@ -747,17 +748,17 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 
 	return (new_io);
 
-      bail:
+bail:
 	if (new_io) {
 		io_close(new_io);
 		io_destroy(new_io);
-	} else if(ssl) {
+	} 
+	else if (ssl) {
 		SSL_free(ssl);
 	}
-	if (io) {
+	if (io)
 		io_destroy(io);
-	}
-	return (NULL);
+	return NULL;
 }
 
 
@@ -781,7 +782,8 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
+io_t *
+perdition_ssl_client_connection(io_t * io, const char *ca_file,
 		const char *ca_path, const char *ciphers, const char *server)
 {
 	SSL_CTX *ssl_ctx;
@@ -792,23 +794,23 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
 	if (!ssl_ctx) {
 		PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
-		return(NULL);
+		return NULL;
 	}
 
 	new_io = __perdition_ssl_connection(io, ssl_ctx, PERDITION_SSL_CLIENT);
 	if (!new_io) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_connection");
-		return(NULL);
+		return NULL;
 	}
 
 	if (__perdition_ssl_check_certificate(new_io, ca_file, ca_path,
 				server) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
-		return(NULL);
+		return NULL;
 	}
 
-	return(new_io);
+	return new_io;
 }
 
 
@@ -824,23 +826,24 @@ io_t *perdition_ssl_client_connection(io_t * io, const char *ca_file,
  *         NULL on error
  **********************************************************************/
 
-io_t *perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx)
+io_t *
+perdition_ssl_server_connection(io_t * io, SSL_CTX * ssl_ctx)
 {
 	io_t *new_io;
 
 	new_io = __perdition_ssl_connection(io, ssl_ctx, PERDITION_SSL_SERVER);
 	if (!new_io) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_connection");
-		return (NULL);
+		return NULL;
 	}
 
 	if (__perdition_ssl_check_certificate(new_io, NULL, NULL, NULL) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_ssl_check_certificate");
 		io_destroy(new_io);
-		return(NULL);
+		return NULL;
 	}
 
-	return (new_io);
+	return new_io;
 }
 
 #endif				/* WITH_SSL_SUPPORT */
