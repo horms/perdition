@@ -1,4 +1,0 @@
-libvanessa_logger 0 libvanessa-logger0 (>= 0.0.4)
-libvanessa_adt    0 libvanessa-adt0    (>= 0.0.4)
-libvanessa_socket 0 libvanessa-socket0 (>= 0.0.5)
-peridtion         0 perdition-socket0  (= 1.11beta8-4)

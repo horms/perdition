@@ -4,7 +4,7 @@
 #
 # perdition
 # Mail retrieval proxy server
-# Copyright (C) 1999-2003  Horms <horms@verge.net.au>
+# Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -48,8 +48,8 @@ perdition.postinst \
 perdition.postrm \
 perdition.preinst \
 perdition.prerm \
+perdition.shlibs \
 rules \
-shlibs.local \
 dpkg-checkbuild
 
 clean-local:

@@ -6,7 +6,7 @@
  *
  * perdition
  * Mail retrieval proxy server
- * Copyright (C) 1999-2003  Horms
+ * Copyright (C) 1999-2004  Horms
  *
  * With assistance from:
  * Eric Rescorla, SSL and TLS - Designing and Building Secure Systems,

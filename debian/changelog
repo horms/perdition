@@ -1,3 +1,10 @@
+perdition (1.14beta1-1) unstable; urgency=low
+
+  * New Upstream
+  * Fixed handling of shlibs
+
+ -- Simon Horman <horms@debian.org>  Mon, 22 Mar 2004 19:07:49 +0900
+
 perdition (1.13-1) unstable; urgency=low
 
   * New Upstream
