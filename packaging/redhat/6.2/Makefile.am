@@ -1,5 +1,5 @@
 ######################################################################
-# Makefile.am                                            February 2000
+# Makefile.am                                            December 2001
 # Horms                                             horms@vergenet.net
 #
 # perdition
@@ -23,15 +23,6 @@
 #
 ######################################################################
 
-SUBDIRS = libjain @makegdbm_build_dir@ perdition debian etc packaging
-
 EXTRA_DIST = \
-configure \
-configure.in \
-README \
-TODO \
-INSTALL.in \
-CODING_LOCATIONS.in\
-CODING_LOCATIONS \
-acconfig.h \
-autogen.sh
+perdition.spec.in \
+perdition.spec

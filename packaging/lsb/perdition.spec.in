@@ -1,0 +1,293 @@
+%define ver      @VERSION@
+%define rel      1
+%define prefix   /usr
+
+#Uncomment these if they are not defined by your rpm macros file
+#%define _prefix                /usr
+#%define _exec_prefix           %{_prefix}
+#%define _bindir                %{_exec_prefix}/bin
+#%define _sbindir               %{_exec_prefix}/sbin
+#%define _libexecdir            %{_exec_prefix}/libexec
+#%define _datadir               %{_prefix}/share
+#%define _sysconfdir            %{_prefix}/etc
+#%define _sharedstatedir        %{_prefix}/com
+#%define _localstatedir         %{_prefix}/var
+#%define _lib                   lib
+#%define _libdir                %{_exec_prefix}/%{_lib}
+#%define _includedir            %{_prefix}/include
+#%define _oldincludedir         /usr/include
+#%define _infodir               %{_prefix}/info
+#%define _mandir                %{_prefix}/man
+
+Summary: Mail Retrieval Proxy
+Name: perdition
+Version: %ver
+Release: %rel
+Copyright: GPL
+Group: Applications/Internet
+Source: ftp://ftp.vergenet.net/pub/perdition/perdition-%{ver}.tar.gz
+BuildRoot: /var/tmp/perdition-%{PACKAGE_VERSION}-root
+Packager: Horms <horms@vergenet.net>
+URL: http://vergenet.net/linux/perdition/
+Docdir: %{prefix}/doc
+Provides: perdition-%{ver}-%{rel}
+BuildPrereq: automake autoconf libtool vanessa_logger-devel vanessa_adt-devel vanessa_socket-devel gdbm-devel mysqL-devel mysql-shared postgresql-devel openldap2-devel popt pam libz openssl-devel
+
+%description
+Perdition is allows users to connect to a content-free POP3 or IMAP4 server
+that will redirect them to their real POP3 or IMAP4 server. This enables
+mail retrieval for a domain to be split across multiple backend servers on
+a per user basis. This can also be used to as a POP3 or IMAP4 proxy
+especially in firewall applications. Perdition supports arbitrary library
+based map access to determine the server for a user. POSIX Regular
+Expression, GDBM, MySQL, PostgreSQL and LDAP libraries ship with the
+distribution. 
+
+%package devel
+Summary: Headers and static libraries for perditiondb library development
+Group: Development/Libraries
+Requires: perdition-%{ver}-%{rel}
+
+%description devel
+Perdition allows for arbitrary user database access through
+shared libraries much in the manner of NSS in glibc. This package
+provides headers and libraries that may be useful in the development
+of perditiondb libraries.
+
+
+%package ldap
+Summary: Library to allow perdition to access LDAP based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-ldap-%{ver}-%{rel}
+
+%description ldap
+Perdition allows for arbitrary user database access through shared
+libraries much in the manner of NSS in glibc. This package allows a user
+database to be sourced from LDAP.
+
+
+%package mysql
+Summary: Library to allow perdition to access MySQL based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel} mysql-shared libz
+Provides: perdition-mysql-%{ver}-%{rel}
+
+%description mysql
+Perdition allows for arbitrary user database access through shared
+libraries much in the manner of NSS in glibc. This package allows a user
+database stored in a MySQL database.
+
+
+%package postgresql
+Summary: Library to allow perdition to access PostgreSQL based pop maps.
+Group: Applications/Internet
+Copyright: GPL
+Requires: perdition-%{ver}-%{rel}
+Provides: perdition-postgresql-%{ver}-%{rel}
+
+%description postgresql
+Perdition allows for arbitrary user database access through shared
+libraries much in the manner of NSS in glibc. This package allows a user
+database stored in a PostgreSQL database.
+
+
+
+
+
+%prep
+%setup
+
+%build
+
+# I am providing my own configure macro replacement. Hopefully this
+# will result in fewer portability problems than using the one supplied
+# by various vendours. I fear that I hope in vein.
+CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS
+if [ -f confgure.in ]; then
+	aclocal
+	libtoolize --force --copy
+	autoheader
+	automake
+	autoconf
+fi
+./configure %{_target_platform} \
+       --prefix=%{_prefix} \
+       --exec-prefix=%{_exec_prefix} \
+       --bindir=%{_bindir} \
+       --sbindir=%{_sbindir} \
+       --sysconfdir=/etc \
+       --datadir=%{_datadir} \
+       --includedir=%{_includedir} \
+       --libdir=%{_libdir} \
+       --libexecdir=%{_libexecdir} \
+       --localstatedir=%{_localstatedir} \
+       --sharedstatedir=%{_sharedstatedir} \
+       --mandir=%{_mandir} \
+       --infodir=%{_infodir}
+
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p ${RPM_BUILD_ROOT}/etc/{rc.d/init.d,sysconfig}
+
+make DESTDIR=$RPM_BUILD_ROOT install-strip
+
+install -m755 \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \
+  ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
+install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
+  ${RPM_BUILD_ROOT}/etc/sysconfig/perdition
+  
+
+%clean
+rm -rf $RPM_BUILD_DIR/perdition-%{ver}
+rm -rf $RPM_BUILD_ROOT
+
+%post
+/sbin/chkconfig --add perdition
+make -q -C /etc/perdition/
+true
+
+%postun
+
+%preun
+/sbin/chkconfig --del perdition
+make -q -C /etc/perdition/ clean
+true
+
+
+%files
+%defattr(-,root,root)
+%doc %attr(-, root, root) README
+%doc %attr(-, root, root) ChangeLog NEWS CODING_LOCATIONS TODO
+%{_sbindir}/perdition
+%{_sbindir}/perdition.pop3
+%{_sbindir}/perdition.imap4
+%{_libdir}/libjain.so
+%{_libdir}/libjain.so.0
+%{_libdir}/libjain.so.0.0.0
+/etc/pam.d/perdition
+/etc/rc.d/init.d/perdition
+%config /etc/sysconfig/perdition
+%config /etc/perdition/perdition.conf
+%{_mandir}/man8/perdition.*
+%{_mandir}/man5/perditiondb.*
+
+# nis
+%{_libdir}/libperditiondb_nis.a
+%{_libdir}/libperditiondb_nis.la
+%{_libdir}/libperditiondb_nis.so
+%{_libdir}/libperditiondb_nis.so.0
+%{_libdir}/libperditiondb_nis.so.0.0.0
+
+# posix_regex
+%{_libdir}/libperditiondb_posix_regex.a
+%{_libdir}/libperditiondb_posix_regex.la
+%{_libdir}/libperditiondb_posix_regex.so
+%{_libdir}/libperditiondb_posix_regex.so.0
+%{_libdir}/libperditiondb_posix_regex.so.0.0.0
+%config /etc/perdition/popmap.re
+
+# gdbm
+%{_libdir}/libperditiondb_gdbm.a
+%{_libdir}/libperditiondb_gdbm.la
+%{_libdir}/libperditiondb_gdbm.so
+%{_libdir}/libperditiondb_gdbm.so.0
+%{_libdir}/libperditiondb_gdbm.so.0.0.0
+%{_bindir}/makegdbm
+/etc/perdition/Makefile
+/etc/perdition/Makefile.popmap
+%{_mandir}/man1/makegdbm.*
+%config /etc/perdition/popmap
+
+%files ldap
+%defattr(-,root,root)
+%{_libdir}/libperditiondb_ldap.a
+%{_libdir}/libperditiondb_ldap.la
+%{_libdir}/libperditiondb_ldap.so
+%{_libdir}/libperditiondb_ldap.so.0
+%{_libdir}/libperditiondb_ldap.so.0.0.0
+%{_bindir}/perditiondb_ldap_makedb
+%{_mandir}/man8/perditiondb_ldap_makedb.*
+
+%files mysql
+%defattr(-,root,root)
+%{_libdir}/libperditiondb_mysql.a
+%{_libdir}/libperditiondb_mysql.la
+%{_libdir}/libperditiondb_mysql.so
+%{_libdir}/libperditiondb_mysql.so.0
+%{_libdir}/libperditiondb_mysql.so.0.0.0
+%{_bindir}/perditiondb_mysql_makedb
+%{_mandir}/man8/perditiondb_mysql_makedb.*
+
+%files postgresql
+%defattr(-,root,root)
+%{_libdir}/libperditiondb_postgresql.a
+%{_libdir}/libperditiondb_postgresql.la
+%{_libdir}/libperditiondb_postgresql.so
+%{_libdir}/libperditiondb_postgresql.so.0
+%{_libdir}/libperditiondb_postgresql.so.0.0.0
+%{_bindir}/perditiondb_postgresql_makedb
+%{_mandir}/man8/perditiondb_postgresql_makedb.*
+
+%files devel
+%defattr(-,root,root)
+%{_includedir}/jain.h
+%{_libdir}/libjain.a
+%{_libdir}/libjain.la
+
+
+%changelog
+* Sat Dec 29 2001 Horms <horms@vergenet.net>
+- Forked SuSE (lsb) spec file
+
+* Fri Dec 14 2001 Horms <horms@vergenet.net>
+- Revamped configure to use %{_libdir} and friends. This should be more
+  distribution indepentant. With thanks to Scot W. Hetzel <scot@genroco.com>
+
+* Wed Apr 18 2001 Horms <horms@vergenet.net>
+- Broke MySQL, PostgreSQL and LDAP back out into separate packages
+
+* Wed Apr 18 2001 Horms <horms@vergenet.net>
+- Merged db packages into main package
+
+* Mon Nov 27 2000 Horms <horms@vergenet.net>
+- Modified to reflect build process handling instalation of config files
+- Split GDBM and Posix_Regex into separate packages
+
+* Mon Oct 16 2000 Horms <horms@vergenet.net>
+- added NIS library
+
+* Mon May 15 2000 Horms <horms@vergenet.net>
+- added sysconfig file
+- split libraries into separate packages so that packages such
+  as postgress and mysql don't have to be installed for perdition
+  to install cleanly.
+- added sample ldap server configuration
+
+* Thu May  4 2000 Horms <horms@vergenet.net>
+- added perditiondb_ldap files
+- added missing perditiondb_postgresql devel files
+
+* Thu Apr 20 2000 Horms <horms@vergenet.net>
+- added perditiondb_postgresql files
+
+* Tue Jan  4 2000 Horms <horms@vergenet.net>
+- added libraries
+- added headers
+- made devel package
+- made libtcp_socket and libtcp_socket-devel package
+- Included mysql and posix_regex stuff in /etc
+
+* Mon Nov 29 1999 Horms <horms@vergenet.net>
+- Added perdition.conf
+
+* Sat Sep 18 1999 Horms <horms@vergenet.net>
+- updated for 0.1.0
+
+* Sat May 29 1999 Horms <horms@vergenet.net>
+- inital release

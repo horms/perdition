@@ -25,7 +25,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 0.1.10test1)
+AM_INIT_AUTOMAKE(perdition, 0.1.10test2)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
@@ -625,7 +625,12 @@ AC_SUBST(pam_lib)
 AC_SUBST(pam_source)
 
 AC_OUTPUT(
-perdition.spec
+packaging/Makefile
+packaging/redhat/Makefile
+packaging/redhat/6.2/Makefile
+packaging/redhat/6.2/perdition.spec
+packaging/lsb/Makefile
+packaging/lsb/perdition.spec
 libjain/Makefile 
 debian/Makefile 
 perdition/Makefile 

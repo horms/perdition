@@ -31,6 +31,7 @@ xxx
   - makegdbm now compiles with --disable-static. Vyt <vyt@vzljot.ru>
   - compatibility for systems without parse_printf_format()
     Ronny Cook <ronny@ronnycook.org>
+  - Separate .spec files for Redhat and LSB (SuSE)
 
 
 
