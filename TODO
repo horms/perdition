@@ -5,13 +5,10 @@ Mail retreival proxy server
 Copyright (C) 1999  Horms <horms@vergenet.net>
 ----------------------------------------------------------------------
 
-*  Make man page (from infromation in README)
+*  Make man page (from information in README)
 *  Option to force lowercase before map lookup
 *  Support for a backup MySQL server
 *  tdb module
-
-From Daniel Rosen
-* Enable specification of non-sylog logging.
 
 From Rob Wyn Jones
 * Allow multiple servers for a user (or default) are connect to in series
@@ -20,3 +17,7 @@ From Rob Wyn Jones
 From Krzysztof Sierota
 * Method of evaluating if mailboxes are empty to avoid have to
   authenticate with the backend server. Method is yet to be determined :)
+
+From Mikolaj J. Habryn
+* Support for non-blocking connects to multiple back end servers
+  and using the first to respond

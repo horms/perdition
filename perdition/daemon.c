@@ -174,6 +174,8 @@ void daemon_close_fd(void){
   int fd;
   long max_fd;
 
+  fflush(NULL);
+
   if((max_fd=sysconf(_SC_OPEN_MAX))<2){
     PERDITION_LOG(LOG_DEBUG, "daemon_close_fd: sysconf: %s", strerror(errno));
     PERDITION_LOG(

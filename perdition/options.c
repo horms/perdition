@@ -537,6 +537,8 @@ void usage(int exit_status){
     " -F|--logging_facility:\n"
     "    Syslog facility to log to. If the faclilty has a leading '/' then it\n"
     "    will be treated as a file to log to. (default \"%s\")\n"
+    "    Note: If an error occurs before options are read it may be loged\n"
+    "    to syslog faclilty mail\n"
     " -f|--config_file:\n"
     "    Name of config file to read. If set to \"\" no config file will be\n"
     "    used. Command line options override options set in config file.\n"
