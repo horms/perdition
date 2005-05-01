@@ -529,6 +529,9 @@ int main (int argc, char **argv, char **envp){
     /* Child processes don't clean up the pid file */
     pid_file = NULL;
 
+    /* Reopen the logger, the child gets its own FDs */
+    vanessa_logger_reopen(vanessa_logger_get());
+
     if((client_io=io_create_fd(s, s, PERDITION_LOG_STR_CLIENT))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 2");
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");

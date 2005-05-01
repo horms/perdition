@@ -28,6 +28,7 @@ XXX
  - Removed bogus loging that occurs before the logger is
    fully intialised when debug is enabled. Roberto Suarez Soto
  - Add link daemon module against socket libraries
+ - Reopen logger so child processes get their own file descriptors
 
 ----------------------------------------------------------------------
 
