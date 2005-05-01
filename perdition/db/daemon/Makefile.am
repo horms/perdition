@@ -37,10 +37,10 @@ libperditiondb_daemon_la_LIBADD = -ldb -L. -lperditiondb_daemon_packet
 noinst_PROGRAMS = client server
 
 client_SOURCES = client.c unix_socket.c unix_socket.h
-client_LDADD = -lvanessa_logger -L. -lperditiondb_daemon_packet
+client_LDADD = @socket_lib@ -lvanessa_logger -L. -lperditiondb_daemon_packet 
 
 server_SOURCES = server.c unix_socket.c unix_socket.h
-server_LDADD = -lvanessa_logger -L. -lperditiondb_daemon_packet
+server_LDADD = @socket_lib@ -lvanessa_logger -L. -lperditiondb_daemon_packet
 
 INCLUDES=\
 -I$(top_srcdir)/ \
