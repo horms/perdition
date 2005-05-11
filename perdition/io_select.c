@@ -344,8 +344,10 @@ int io_select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 		}
 	}
 
-	timeout->tv_sec += internal_timeout.tv_sec;
-	timeout->tv_usec += internal_timeout.tv_usec;
+	if (timeout) {
+		timeout->tv_sec += internal_timeout.tv_sec;
+		timeout->tv_usec += internal_timeout.tv_usec;
+	}
 
 	return(status);
 }
