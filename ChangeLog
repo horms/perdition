@@ -30,6 +30,7 @@ XXX
  - Add link daemon module against socket libraries
  - Reopen logger so child processes get their own file descriptors
  - Fix segmentation fault when timeout is set to 0. John Capo
+ - Fix ODBC library detection
 
 ----------------------------------------------------------------------
 

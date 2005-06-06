@@ -388,7 +388,7 @@ fi
 
 if test "$enable_odbc" = "yes"; then
 	AC_CHECK_LIB(odbc, SQLSetEnvAttr, true, 
-		[ enable_odbc="yes" ], $odbc_libs)
+		[ enable_odbc="no" ], $odbc_libs)
 fi
 
 if test "$enable_odbc" != "yes"; then
