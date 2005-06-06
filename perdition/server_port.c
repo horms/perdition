@@ -286,13 +286,18 @@ user_server_port_display(char *str, const user_server_port_t *usp)
 
 	if(!usp)
 		return;
-
-	sprintf(str, "%s%s%s%c%s",
-			usp->user ? usp->user : "",
-			usp->user ? opt.domain_delimiter : "",
-			usp->server ? opt.domain_delimiter : "",
-			usp->port ? SERVER_PORT_DELIMITER : '\0',
-			usp->port ? usp->port : "");
+	
+	*str = '\0';
+	if (usp->user) {
+		strcat(str, usp->user);
+		strcat(str, opt.domain_delimiter);
+	}
+	strcat(str, usp->server);
+	if (usp->port) {
+		*(str + strlen(str) + 1) = '\0';
+		*(str + strlen(str)) = SERVER_PORT_DELIMITER;
+		strcat(str, usp->port);
+	}
 }
 
 

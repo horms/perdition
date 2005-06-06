@@ -31,6 +31,8 @@ XXX
  - Reopen logger so child processes get their own file descriptors
  - Fix segmentation fault when timeout is set to 0. John Capo
  - Fix ODBC library detection
+ - Fix printing of server_port ojects (in particular the logging
+   of the outgoing_server option)
 
 ----------------------------------------------------------------------
 
