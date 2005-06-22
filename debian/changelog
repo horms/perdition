@@ -1,6 +1,7 @@
-perdition (1.15-6) UNRELEASED; urgency=low
+perdition (1.17-1) unstable; urgency=low
 
   * Update postgresql-dev build dependancy to libpq-dev
+  * New Upstream
 
  -- Simon Horman <horms@debian.org>  Wed, 22 Jun 2005 14:43:32 +0900
 

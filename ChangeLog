@@ -5,9 +5,9 @@ Mail retrieval proxy server
 Copyright (C) 1999-2004  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
+22nd June 2005
 (Horms)
- * XXX
+ * 1.17
  - Added explicit domain option. Brendan O'Dea
  - Make sure all source files are inculded in tar ball,
    regardless of what parts of the code are excluded from the build
