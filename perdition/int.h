@@ -4,7 +4,7 @@
  *
  * perdition
  * Mail retrieval proxy server 
- * Copyright (C) 1999-2004  Horms
+ * Copyright (C) 1999-2005  Horms
  * 
  * Code largely borrowed from the Samba Project
  * Copyright (C) 2001 Andrew Tridgell
