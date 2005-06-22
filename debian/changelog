@@ -1,3 +1,9 @@
+perdition (1.15-5) UNRELEASED; urgency=low
+
+  * Update postgresql-dev build dependancy to libpq-dev
+
+ -- Simon Horman <horms@debian.org>  Wed, 22 Jun 2005 14:39:34 +0900
+
 perdition (1.15-4) unstable; urgency=low
 
   * Rebuilt with correct libary dependancies.

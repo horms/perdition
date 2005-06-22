@@ -37,11 +37,16 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_postgresql_la_LIBADD = @ssl_lib@ @pg_libs@
+PG_LIBPATH	:= $(shell pg_config --libdir)
+PG_INCLUDEPATH	:= $(shell pg_config --includedir)
+
+libperditiondb_postgresql_la_LIBADD	= @ssl_lib@ \
+@socket_lib@ @nsl_lib@ @crypt_lib@ -lvanessa_logger -lvanessa_adt \
+-L$(PG_LIBPATH) -lpq
 
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
 -I$(top_srcdir)/libjain \
 @ssl_includes@ \
-@pg_includes@
+-I$(PG_INCLUDEPATH)

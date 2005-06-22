@@ -33,6 +33,7 @@ XXX
  - Fix ODBC library detection
  - Fix printing of server_port ojects (in particular the logging
    of the outgoing_server option)
+ - Use pg_config for Postgress library detection
 
 ----------------------------------------------------------------------
 
