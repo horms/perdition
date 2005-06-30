@@ -46,8 +46,8 @@
 #include <vanessa_adt.h>
 
 #include "options.h"
-#include "packet.h"
-#include "unix_socket.h"
+#include "lib/packet.h"
+#include "lib/unix_socket.h"
 
 #define DIR_TEMPLATE "/tmp/perdition-map-XXXXXX"
 #define SOCK_BASE "map"

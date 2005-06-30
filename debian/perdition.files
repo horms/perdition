@@ -45,6 +45,10 @@ usr/lib/libperditiondb_daemon.a
 usr/lib/libperditiondb_daemon.la
 usr/lib/libperditiondb_daemon.so.0
 usr/lib/libperditiondb_daemon.so.0.0.0
+usr/lib/libperditiondb_daemon_base.a
+usr/lib/libperditiondb_daemon_base.la
+usr/lib/libperditiondb_daemon_base.so.0
+usr/lib/libperditiondb_daemon_base.so.0.0.0
 usr/share/man/man1/makebdb.1
 usr/lib/libperditiondb_bdb.a
 usr/lib/libperditiondb_bdb.la

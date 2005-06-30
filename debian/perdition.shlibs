@@ -4,3 +4,4 @@ libperditiondb_gdbm        0 perdition
 libperditiondb_bdb         0 perdition
 libperditiondb_posix_regex 0 perdition
 libperditiondb_daemon      0 perdition
+libperditiondb_daemon_base 0 perdition

@@ -9,8 +9,8 @@
 #include <vanessa_logger.h>
 #include <signal.h>
 
-#include "packet.h"
-#include "unix_socket.h"
+#include "lib/packet.h"
+#include "lib/unix_socket.h"
 
 #define STR_LEN 108
 #define BUF_LEN 1024

@@ -1067,6 +1067,7 @@ perdition/db/ldap/Makefile
 perdition/db/ldap/doc/Makefile 
 perdition/db/odbc/Makefile 
 perdition/db/daemon/Makefile 
+perdition/db/daemon/lib/Makefile 
 makegdbm/Makefile 
 makebdb/Makefile 
 etc/Makefile 

@@ -9,8 +9,8 @@
 #include <unistd.h>
 #include <vanessa_logger.h>
 
-#include "packet.h"
-#include "unix_socket.h"
+#include "lib/packet.h"
+#include "lib/unix_socket.h"
 
 #define BUF_LEN 1024
 #define DIR_TEMPLATE "/tmp/perdition-map-XXXXXX"

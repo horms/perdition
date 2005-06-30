@@ -3,7 +3,7 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 pwd:=$(shell pwd)
-cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=/etc/ldap/schema --enable-shared
+cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=/etc/ldap/schema --disable-ldap-doc --enable-shared
 
 build: checkbuild build-stamp
 build-stamp:

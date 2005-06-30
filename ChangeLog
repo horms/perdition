@@ -5,6 +5,14 @@ Mail retrieval proxy server
 Copyright (C) 1999-2005  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
+XXX
+ * XXX
+ - Make packet and socket handling code in daemon module
+   a separate shared library so its code can be used in
+   daemons written to work with it.
+
+----------------------------------------------------------------------
+
 22nd June 2005
 (Horms)
  * 1.17

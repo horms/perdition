@@ -23,29 +23,10 @@
 #
 ######################################################################
 
-SUBDIRS = lib
+lib_LTLIBRARIES = libperditiondb_daemon_base.la
 
-lib_LTLIBRARIES = libperditiondb_daemon.la
-
-COMMON_LIBRARY_ADD :=  @socket_lib@ -lvanessa_logger \
-        -lvanessa_socket -L./lib -lperditiondb_daemon_base
-
-libperditiondb_daemon_la_SOURCES = perditiondb_daemon.c perditiondb_daemon.h 
-libperditiondb_daemon_la_LDFLAGS    = -version-info 0:0:0
-libperditiondb_daemon_la_LIBADD = $(COMMON_LIBRARY_ADD)
-
-noinst_PROGRAMS = client server
-
-client_SOURCES = client.c 
-client_LDADD = $(COMMON_LIBRARY_ADD)
-
-server_SOURCES = server.c
-server_LDADD = $(COMMON_LIBRARY_ADD)
-
-INCLUDES=\
--I./lib \
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
--DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"
-
+libperditiondb_daemon_base_la_SOURCES = packet.c packet.h \
+	unix_socket.c unix_socket.h
+libperditiondb_daemon_base_la_LDFLAGS    = -version-info 0:0:0
+libperditiondb_daemon_base_la_LIBADD = @socket_lib@ -lvanessa_logger \
+	-lvanessa_socket
