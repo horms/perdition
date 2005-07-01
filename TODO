@@ -60,3 +60,10 @@ Leen Besselink
 
 "-G.-"
 * Allow SSL key with pashphrase
+
+Cami
+* Allow restriction of access to a set of known source ip addresses
+  on a per-user basis.
+  - This would probably best added as a generalised set of restrictions
+    that can be dictated by the popmap and would likely involve expanding
+    the popmap api.
