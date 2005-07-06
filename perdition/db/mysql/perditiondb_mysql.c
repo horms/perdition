@@ -149,16 +149,14 @@ int dbserver_init(char *options_str){
    if(count>PERDITIONDB_MYSQL_DBPWD){ 
      dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBPWD); 
    }
-   if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
-     db_user_col=vanessa_dynamic_array_get_element(
-	 a, 
-	 PERDITIONDB_MYSQL_DBUSERCOL
+   if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
+     db_srv_col=vanessa_dynamic_array_get_element(a, 
+	 PERDITIONDB_MYSQL_DBSRVCOL
      ); 
    }
-   if(count>PERDITIONDB_MYSQL_DBSRVCOL){ 
-     db_srv_col=vanessa_dynamic_array_get_element(
-	 a, 
-	 PERDITIONDB_MYSQL_DBSRVCOL
+   if(count>PERDITIONDB_MYSQL_DBUSERCOL){ 
+     db_user_col=vanessa_dynamic_array_get_element(a, 
+	 PERDITIONDB_MYSQL_DBUSERCOL
      ); 
    }
    if(count>PERDITIONDB_MYSQL_DBPORTCOL){ 

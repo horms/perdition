@@ -147,16 +147,14 @@ int dbserver_init(char *options_str){
    if(count>PERDITIONDB_PGSQL_DBPWD){ 
      dbpwd=vanessa_dynamic_array_get_element(a, PERDITIONDB_PGSQL_DBPWD); 
    }
-   if(count>PERDITIONDB_PGSQL_DBUSERCOL){
-     db_user_col=vanessa_dynamic_array_get_element(
-         a,
-         PERDITIONDB_PGSQL_DBUSERCOL
+   if(count>PERDITIONDB_PGSQL_DBSRVCOL){
+     db_srv_col=vanessa_dynamic_array_get_element(a, 
+         PERDITIONDB_PGSQL_DBSRVCOL
      );
    }
-   if(count>PERDITIONDB_PGSQL_DBSRVCOL){
-     db_srv_col=vanessa_dynamic_array_get_element(
-         a, 
-         PERDITIONDB_PGSQL_DBSRVCOL
+   if(count>PERDITIONDB_PGSQL_DBUSERCOL){
+     db_user_col=vanessa_dynamic_array_get_element(a,
+         PERDITIONDB_PGSQL_DBUSERCOL
      );
    }
    if(count>PERDITIONDB_PGSQL_DBPORTCOL){
