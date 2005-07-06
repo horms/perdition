@@ -1,3 +1,12 @@
+perdition (1.17-3) unstable; urgency=low
+
+  * Revert to using ldap_init() instead of ldap_initialize()
+    which seems to be broken on debian's ldap, 2.1.30.
+    I am not sure what version it works for, if any.
+    http://www.openldap.org/lists/openldap-software/200406/msg00688.html
+
+ -- Simon Horman <horms@debian.org>  Mon,  4 Jul 2005 21:29:28 +0900
+
 perdition (1.17-2) unstable; urgency=low
 
   * Build packet code for daemon modules as a shared module,

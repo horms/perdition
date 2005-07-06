@@ -10,6 +10,9 @@ XXX
  - Make packet and socket handling code in daemon module
    a separate shared library so its code can be used in
    daemons written to work with it.
+ - Diable use of ldap_initialise() as it seems broken on some
+   OpenLdap releases. Hopefully we can make a check for this 
+   that works in the futrure.
 
 ----------------------------------------------------------------------
 
