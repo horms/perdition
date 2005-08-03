@@ -40,6 +40,7 @@ xlc )
     am_opt=--include-deps;;
 esac
 
+libtoolize --force --copy
 aclocal $ACLOCAL_FLAGS
 (autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
 automake --add-missing $am_opt

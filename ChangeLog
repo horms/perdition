@@ -17,6 +17,7 @@ XXX
    had the order of the dbsrvcol and dbsrvcol parameters inverted.
    This has been fixed, and the code has been reordered to reflect this
    - although the reordering does not affect the functionality.
+ - Add libtoolize to autogen.sh. Thanks to Andreas Sartori
 
 ----------------------------------------------------------------------
 
