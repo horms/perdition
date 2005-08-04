@@ -208,6 +208,7 @@ int dbserver_get(
    MYSQL_RES *res;
    MYSQL_ROW row;
    char sqlstr[PERDITIONDB_MYSQL_QUERY_LENGTH];
+   char key_str_escaped[2*PERDITIONDB_MYSQL_QUERY_LENGTH+1];
    size_t servername_len;
 
    rc = mysql_init(&db);
@@ -224,6 +225,8 @@ int dbserver_get(
      return(-1);
    }
 
+   mysql_real_escape_string(&db,key_str_escaped,key_str,strlen(key_str));
+
    if (db_port_col && db_port_col[0]) {
      if(snprintf(
        sqlstr, 
@@ -234,7 +237,7 @@ int dbserver_get(
        db_port_col,
        dbtable, 
        db_user_col,
-       key_str
+       key_str_escaped
      )<0){
        VANESSA_LOGGER_DEBUG("query truncated, aborting");
        return(-3);
@@ -247,7 +250,7 @@ int dbserver_get(
        "select %s,%s from %s where %s='%s';",
        db_user_col, db_srv_col,
        dbtable, db_user_col,
-       key_str
+       key_str_escaped
      )<0){
        VANESSA_LOGGER_DEBUG("query truncated, aborting");
        return(-3);

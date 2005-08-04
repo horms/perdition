@@ -18,6 +18,9 @@ XXX
    This has been fixed, and the code has been reordered to reflect this
    - although the reordering does not affect the functionality.
  - Add libtoolize to autogen.sh. Thanks to Andreas Sartori
+ - Escape data fed into mysql queries. Probably needed for other
+   modules too, but its likely to be module-specific.
+   Thanks to Farzad FARID
 
 ----------------------------------------------------------------------
 
