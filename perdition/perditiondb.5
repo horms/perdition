@@ -401,9 +401,22 @@ perdition \-M /usr/lib/libperditiondb_ldap.so.0
 Where /usr/lib is the directory in which the perdition libraries
 were installed.
 .P
-The search is done using an LDAP URL.
-An alternate URL can be set using the
+Options are parsed to this module using the 
 \-m|\--map_library_opt command line option or configuration file option.
+It has the form:
+.P
+[ldap_version:][ldap_url]
+.P
+The ldap_version is the version of the ldap procotol used.
+It should be a numeric value.
+At the time of writing, OpenLdap supports 2 or 3,
+and defaults to 2. This may vary between different
+ldap implementations. If you inspect the local ldap.h
+file, the values of LDAP_VERSION_MIN, LDAP_VERSION_MAX and
+LDAP_VERSION should reflect the minimum, maximum and default
+ldap protocol versions respectively.
+.P
+The ldap_url is the query made to the ldap server.
 The default URL is as follows. Note that this has been split onto
 multiple lines for ease of reading.
 .P

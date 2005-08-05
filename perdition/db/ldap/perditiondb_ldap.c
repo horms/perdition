@@ -43,9 +43,7 @@
 
 static char *pldap_filter = NULL;
 
-#ifdef WITH_LDAP_SET_OPTION
 static int pldap_version = PERDITIONDB_LDAP_VERSION;
-#endif /* WITH_LDAP_SET_OPTION */
 
 /**********************************************************************
  * dbserver_init
@@ -63,19 +61,51 @@ static int pldap_version = PERDITIONDB_LDAP_VERSION;
 
 int dbserver_init(char *options_str)
 {
-	if (options_str == NULL) {
-		options_str = PERDITIONDB_LDAP_DEFAULT_URL;
+	char *str = options_str;
+
+	if (str && *str) {
+		if (*(str+1) == '\0') {
+			pldap_version = (int) *str - '0';
+			str++;
+		}
+		else if (*(str+1) == ':') {
+			pldap_version = (int) *str - '0';
+			str += 2;
+		}
+	}
+
+	if (pldap_version < LDAP_VERSION_MIN || 
+			pldap_version > LDAP_VERSION_MAX) {
+		VANESSA_LOGGER_DEBUG_RAW_UNSAFE("Requested ldap version (%c): "
+				"is out of range. Must be a numeric value "
+				"between %d and %d", *options_str, 
+				LDAP_VERSION_MIN, LDAP_VERSION_MAX);
+		return -1;
+	}
+
+#ifdef WITH_LDAP_SET_OPTION
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("Using LDAP version: %d", 
+			pldap_version);
+#else
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE(
+			"The ldap library perdition was compiled against "
+			"does not support setting of the ldap version. "
+			"Using the default version: %d", LDAP_VERSION);
+#endif
+
+	if (!str || !*str) {
+		str = PERDITIONDB_LDAP_DEFAULT_URL;
 	}
 
 	/*
 	 * Some checks to see if the URL is sane in LDAP terms
 	 */
-	if (ldap_is_ldap_url(options_str) == 0) {
+	if (ldap_is_ldap_url(str) == 0) {
 		VANESSA_LOGGER_DEBUG("ldap_is_ldap_url: not an LDAP URL");
 		return (-1);
 	}
 
-	pldap_filter = strdup(options_str);
+	pldap_filter = strdup(str);
 	if(!pldap_filter) {
 		VANESSA_LOGGER_DEBUG_ERRNO("pldap_filter");
 	}

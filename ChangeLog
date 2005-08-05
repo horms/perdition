@@ -21,6 +21,7 @@ XXX
  - Escape data fed into mysql queries. Probably needed for other
    modules too, but its likely to be module-specific.
    Thanks to Farzad FARID
+ - Allow the LDAP protocol version to be specified
 
 ----------------------------------------------------------------------
 
