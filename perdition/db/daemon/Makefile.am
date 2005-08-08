@@ -42,10 +42,4 @@ client_LDADD = $(COMMON_LIBRARY_ADD)
 server_SOURCES = server.c
 server_LDADD = $(COMMON_LIBRARY_ADD)
 
-INCLUDES=\
--I./lib \
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
--DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"
-
+INCLUDES = -I$(top_srcdir)/perdition
