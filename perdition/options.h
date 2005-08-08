@@ -98,6 +98,15 @@
 #define SSL_SSL_MASK           SSL_MODE_SSL_ALL
 #define SSL_TLS_MASK           SSL_MODE_TLS_ALL
 
+#define LOG_PASSWD_NEVER       0x00
+#define LOG_PASSWD_NEVER_STR   "never"
+#define LOG_PASSWD_FAIL        0x01
+#define LOG_PASSWD_FAIL_STR    "fail"
+#define LOG_PASSWD_OK          0x02
+#define LOG_PASSWD_OK_STR      "ok"
+#define LOG_PASSWD_ALWAYS      (LOG_PASSWD_FAIL|LOG_PASSWD_OK)
+#define LOG_PASSWD_ALWAYS_STR  "always"
+
 
 #define DEFAULT_ADD_DOMAIN                   STATE_NONE
 #define DEFAULT_ADD_DOMAIN_STRIP_DEPTH       1
@@ -140,6 +149,7 @@
 #define DEFAULT_USERNAME_FROM_DATABASE       0
 #define DEFAULT_QUERY_KEY                    NULL
 #define DEFAULT_QUIET                        0
+#define DEFAILT_LOG_PASSWD                   LOG_PASSWD_NEVER
 #ifdef WITH_SSL_SUPPORT
 #define DEFAULT_SSL_CA_CHAIN_FILE            NULL
 #define RECOMMENDED_SSL_CA_CHAIN_FILE         PERDITION_SYSCONFDIR \
@@ -189,6 +199,7 @@ typedef struct {
   char            *pop_capability;
   char            *listen_port;
   char            *log_facility;
+  int             log_passwd;
   int             login_disabled;
   int             lower_case;
   char            *map_library;
@@ -267,6 +278,7 @@ typedef struct {
 #define MASK2_OK_LINE                    (flag_t) 0x00000001
 #define MASK2_PID_FILE                   (flag_t) 0x00000002
 #define MASK2_EXPLICIT_DOMAIN            (flag_t) 0x00000004
+#define MASK2_LOG_PASSWD                 (flag_t) 0x00000008
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -297,23 +309,24 @@ typedef struct {
 #define TAG_LOGIN_DISABLED                     (int) 129
 #define TAG_LOWER_CASE                         (int) 130
 #define TAG_NO_DAEMON                          (int) 131
-#define TAG_PID_FILE                           (int) 132
-#define TAG_QUERY_KEY                          (int) 133
-#define TAG_SSL_CA_CHAIN_FILE                  (int) 134
-#define TAG_SSL_CA_FILE                        (int) 135
-#define TAG_SSL_CA_PATH                        (int) 136
-#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 137
-#define TAG_SSL_CERT_FILE                      (int) 138
-#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 139
-#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 140
-#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 141
-#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 142
-#define TAG_SSL_KEY_FILE                       (int) 143
-#define TAG_SSL_MODE                           (int) 144
-#define TAG_SSL_LISTEN_CIPHERS                 (int) 145
-#define TAG_SSL_OUTGOING_CIPHERS               (int) 146
-#define TAG_SSL_NO_CERT_VERIFY                 (int) 147
-#define TAG_SSL_NO_CN_VERIFY                   (int) 148
+#define TAG_QUERY_KEY                          (int) 132
+#define TAG_PID_FILE                           (int) 133
+#define TAG_LOG_PASSWD                         (int) 134
+#define TAG_SSL_CA_CHAIN_FILE                  (int) 135
+#define TAG_SSL_CA_FILE                        (int) 136
+#define TAG_SSL_CA_PATH                        (int) 137
+#define TAG_SSL_CA_ACCEPT_SELF_SIGNED          (int) 138
+#define TAG_SSL_CERT_FILE                      (int) 139
+#define TAG_SSL_CERT_ACCEPT_EXPIRED            (int) 140
+#define TAG_SSL_CERT_ACCEPT_SELF_SIGNED        (int) 141
+#define TAG_SSL_CERT_ACCEPT_NOT_YET_VALID      (int) 142
+#define TAG_SSL_CERT_VERIFY_DEPTH              (int) 143
+#define TAG_SSL_KEY_FILE                       (int) 144
+#define TAG_SSL_MODE                           (int) 145
+#define TAG_SSL_LISTEN_CIPHERS                 (int) 146
+#define TAG_SSL_OUTGOING_CIPHERS               (int) 147
+#define TAG_SSL_NO_CERT_VERIFY                 (int) 148
+#define TAG_SSL_NO_CN_VERIFY                   (int) 149
 
 
 /*Flag values for options()*/
@@ -342,20 +355,6 @@ typedef struct {
  **********************************************************************/
 
 int options(int argc, char **argv, flag_t f);
-
-
-/**********************************************************************
- * options_set_mask
- * Set the options mask
- * pre: mask: pointer to current mask that may be modified
- *      mask_entry: value to or with opt->mask
- *      flag: flags
- * post: mask is added if flags permit
- * return: 1 if mask is added
- *         0 otherwise
- **********************************************************************/
-
-int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag);
 
 
 /**********************************************************************

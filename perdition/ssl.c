@@ -52,6 +52,8 @@
 #include <dmalloc.h>
 #endif
 
+#include "perdition_globals.h"
+
 #define PERDITION_SSL_CLIENT (flag_t) 0x1
 #define PERDITION_SSL_SERVER (flag_t) 0x2
 
@@ -162,8 +164,6 @@ __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
 	X509 *cert;
 
-	extern options_t opt;
-
 	cert = X509_STORE_CTX_get_current_cert(ctx);
 	if (opt.debug) {
 		char buf[MAX_LINE_LENGTH];
@@ -222,8 +222,6 @@ __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 static long __perdition_verify_result(long verify, X509 *cert) 
 {
 	char buf[MAX_LINE_LENGTH];
-
-	extern options_t opt;
 
 	/*
 	 * Handle all error codes. See verify(1) 
@@ -412,8 +410,6 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
 
-	extern options_t opt;
-
 	/* 
 	 * If either the certificate or private key is non-NULL the
 	 * other should be too
@@ -542,8 +538,6 @@ __perdition_ssl_check_common_name(X509 *cert, const char *server)
 	char *domain;
 	char common_name[MAX_LINE_LENGTH];
 
-	extern options_t opt;
-
 	if (opt.ssl_no_cn_verify || !server)
 		return 0;
 
@@ -591,8 +585,6 @@ static int
 __perdition_ssl_log_certificate(SSL *ssl, X509 *cert)
 {
 	char *str = NULL;
-
-	extern options_t opt;
 
 	if (!opt.debug)
 		return 0;
@@ -648,8 +640,6 @@ __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 	X509 *cert = NULL;
 	SSL *ssl;
 	int status = 0;
-
-	extern options_t opt;
 
 	ssl = io_get_ssl(io);
 	if (!ssl) {

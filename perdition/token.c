@@ -33,6 +33,7 @@
 #include "io_select.h"
 #include "token.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -352,8 +353,6 @@ token_t *token_read(
   int do_literal;
   flag_t save_flag=TOKEN_NONE;
   flag_t quoted=0;
-
-  extern options_t opt;
 
   memset(buffer, 0, MAX_LINE_LENGTH);
 

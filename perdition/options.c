@@ -34,6 +34,7 @@
 
 #include "options.h"
 #include "config_file.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -43,6 +44,73 @@
 
 
 options_t opt;
+
+
+/**********************************************************************
+ * log_passwd_to_str
+ * Get the string value of a log_passwd mode
+ * pre: x: integer mode
+ * return: mode string
+ *         NULL on error
+ **********************************************************************/
+
+static const char *
+log_passwd_to_str(int x)
+{
+	switch(x){
+      		case LOG_PASSWD_NEVER:
+	      		return LOG_PASSWD_NEVER_STR;
+      		case LOG_PASSWD_OK:
+	      		return LOG_PASSWD_OK_STR;
+      		case LOG_PASSWD_FAIL:
+			return LOG_PASSWD_FAIL_STR;
+      		case LOG_PASSWD_ALWAYS:
+			return LOG_PASSWD_ALWAYS_STR;
+	}
+	return NULL;
+}
+
+
+/**********************************************************************
+ * log_passwd_from_str
+ * Get the integer value of a log_passwd mode
+ * pre: str: string mode
+ * return: mode integer
+ *         -1 on error
+ **********************************************************************/
+
+static int
+log_passwd_from_str(const char *str)
+{
+	if (!strcasecmp(str, LOG_PASSWD_NEVER_STR))
+		return LOG_PASSWD_NEVER;
+	else if (!strcasecmp(str, LOG_PASSWD_FAIL_STR))
+		return LOG_PASSWD_FAIL;
+	else if (!strcasecmp(str, LOG_PASSWD_OK_STR))
+		return LOG_PASSWD_OK;
+	else if (!strcasecmp(str, LOG_PASSWD_ALWAYS_STR))
+		return LOG_PASSWD_ALWAYS;
+	return -1;
+}
+
+/**********************************************************************
+ * options_set_mask
+ * Set the options mask
+ * pre: mask: pointer to current mask that may be modified
+ *      mask_entry: value to or with opt->mask
+ *      flag: flags
+ * post: mask is added if flags permit
+ * return: 1 if mask is added
+ *         0 otherwise
+ **********************************************************************/
+
+static int 
+options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag)
+{
+  if(flag&OPT_USE_MASK && (*mask)&mask_entry) return(0);
+  if(flag&OPT_SET_MASK) (*mask)|=mask_entry;
+  return(1);
+}
 
 
 /***********************************************************************
@@ -59,11 +127,16 @@ options_t opt;
  *       Else no change.
  ***********************************************************************/
 
-#define opt_p(opt, value, mask, mask_entry, flag) \
-  if(options_set_mask(&(mask), mask_entry, flag)){ \
-    if(!((flag)&OPT_NOT_SET) && opt!=NULL){ free(opt); } \
-    opt=(value==NULL)?NULL:strdup(value); \
-  }
+static void
+opt_p(char **opt, const char *value, 
+		flag_t *mask, flag_t mask_entry, flag_t flag)
+{
+      	if (!options_set_mask(mask, mask_entry, flag))
+      		return;
+  	if (!((flag)&OPT_NOT_SET) && *opt != NULL)
+		free(*opt); 
+	*opt = (!value) ? NULL : strdup(value);
+}
 
 
 /***********************************************************************
@@ -80,11 +153,35 @@ options_t opt;
  *       Else no change.
  ***********************************************************************/
 
-#define opt_i(opt, value, mask, mask_entry, flag) \
-  if(options_set_mask(&(mask), mask_entry, flag)){ \
-    opt=value; \
-  }
+static void
+opt_i(int *opt, int value, flag_t *mask, flag_t mask_entry, flag_t flag)
+{
+      	if (options_set_mask(mask, mask_entry, flag))
+		*opt = value;
+}
 
+
+/***********************************************************************
+ * opt_i_or
+ * Assign an option that is an int
+ * The value assigned will be the logical or of the current value 
+ * of the option, and the value paramater
+ * pre: opt: option to assign
+ *      value: value to assign to opt
+ *      mask:  current option mask
+ *      mask_entry: entry of this option in the option mask
+ *      flag:  flags as per options.h
+ * post: If the mask and options allow as per options_set_mask()
+ *       value is assigned to opt. 
+ *       The mask may also be altered as per options_set_mask()
+ *       Else no change.
+ ***********************************************************************/
+
+static void
+opt_i_or(int *opt, int value, flag_t *mask, flag_t mask_entry, flag_t flag)
+{
+	opt_i(opt, *opt|value, mask, mask_entry, flag);
+}
 
 /***********************************************************************
  * opt_da
@@ -100,36 +197,35 @@ options_t opt;
  *       Else no change.
  ***********************************************************************/
 
-#define opt_da(opt, value, mask, mask_entry, flag) \
-  if(options_set_mask(&(mask), mask_entry, flag)){ \
-    if(!((flag)&OPT_NOT_SET) && opt!=NULL){ \
-      vanessa_dynamic_array_destroy(opt); \
-    } \
-    opt=value; \
-  } \
-
-
-#define opt_i_or(opt, value, mask, mask_entry, flag) \
-  opt_i(opt, opt|value, mask, mask_entry, flag)
+static void
+opt_da(vanessa_dynamic_array_t **opt, vanessa_dynamic_array_t *value, 
+		flag_t *mask, flag_t mask_entry, flag_t flag)
+{
+	if (!options_set_mask(mask, mask_entry, flag))
+		return;
+	if (!((flag)&OPT_NOT_SET) && *opt != NULL)
+		vanessa_dynamic_array_destroy(*opt);
+	*opt = value;
+}
 
 #define OPT_MODIFY_USERNAME(opt, mask, mask_entry, flag, id_str) \
   if(strcasecmp(optarg_copy, "all")==0){ \
-    opt_i_or(opt, STATE_ALL, mask, mask_entry, flag); \
+    opt_i_or(&opt, STATE_ALL, &mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "servername_lookup")==0 || \
     strcasecmp(optarg_copy, "server_lookup")==0 \
   ){ \
-    opt_i_or(opt, STATE_GET_SERVER, mask, mask_entry, flag); \
+    opt_i_or(&opt, STATE_GET_SERVER, &mask, mask_entry, flag); \
   } \
   else if( \
     strcasecmp(optarg_copy, "local_authentication")==0 || \
     strcasecmp(optarg_copy, "local_auth")==0 \
   ){ \
-    opt_i_or(opt, STATE_LOCAL_AUTH, mask, mask_entry, flag); \
+    opt_i_or(&opt, STATE_LOCAL_AUTH, &mask, mask_entry, flag); \
   } \
   else if(strcasecmp(optarg_copy, "remote_login")==0){ \
-    opt_i_or(opt, STATE_REMOTE_LOGIN, mask, mask_entry, flag); \
+    opt_i_or(&opt, STATE_REMOTE_LOGIN, &mask, mask_entry, flag); \
   } \
   else { \
     VANESSA_LOGGER_ERR_UNSAFE("unknown state for %s: %s", id_str, optarg_copy); \
@@ -218,7 +314,7 @@ options_t opt;
       VANESSA_LOGGER_DEBUG_RAW("invalid ssl_mode combination"); \
       if(f&OPT_ERR) vanessa_socket_daemon_exit_cleanly(-1); \
     } \
-    opt_i_or(opt.ssl_mode, new, opt.ssl_mask, MASK_SSL_MODE, f); \
+    opt_i_or(&(opt.ssl_mode), new, &(opt.ssl_mask), MASK_SSL_MODE, f); \
   }
 #else /* WITH_SSL_SUPPORT */
 #define NO_SSL_OPT(_opt)                                                     \
@@ -282,6 +378,8 @@ int options(int argc, char **argv, flag_t f){
     {"jayne",                       'j',  POPT_ARG_NONE,   NULL, 'j'},
     {"connection_limit",            'L',  POPT_ARG_STRING, NULL, 'L'},
     {"listen_port",                 'l',  POPT_ARG_STRING, NULL, 'l'},
+    {"log_passwd",                  '\0', POPT_ARG_STRING, NULL, 
+      TAG_LOG_PASSWD},
     {"map_library",                 'M',  POPT_ARG_STRING, NULL, 'M'},
     {"map_library_opt",             'm',  POPT_ARG_STRING, NULL, 'm'},
     {"no_lookup",                   'n',  POPT_ARG_NONE,   NULL, 'n'},
@@ -345,68 +443,76 @@ int options(int argc, char **argv, flag_t f){
 
   /* i is used as a dummy variable */
   if(f&OPT_SET_DEFAULT){
-    opt_i(opt.add_domain,      DEFAULT_ADD_DOMAIN,          i, 0, OPT_NOT_SET);
+    opt_i(&(opt.add_domain), DEFAULT_ADD_DOMAIN, &i, 0, OPT_NOT_SET);
     opt.add_domain_strip_depth = DEFAULT_ADD_DOMAIN_STRIP_DEPTH;
 #ifdef WITH_PAM_SUPPORT
-    opt_i(opt.authenticate_in, DEFAULT_AUTHENTICATE_IN,     i, 0, OPT_NOT_SET);
+    opt_i(&(opt.authenticate_in), DEFAULT_AUTHENTICATE_IN, &i, 0, OPT_NOT_SET);
 #endif /* WITH_PAM_SUPPORT */
-    opt_i(opt.no_bind_banner,  DEFAULT_NO_BIND_BANNER,      i, 0, OPT_NOT_SET);
-    opt_i(opt.client_server_specification, DEFAULT_CLIENT_SERVER_SPECIFICATION,
-                                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.connection_limit,DEFAULT_CONNECTION_LIMIT,    i, 0, OPT_NOT_SET);
-    opt_i(opt.connection_logging,DEFAULT_CONNECTION_LOGGING,i, 0, OPT_NOT_SET);
-    opt_i(opt.debug,           DEFAULT_DEBUG,               i, 0, OPT_NOT_SET);
-    opt_i(opt.inetd_mode,      DEFAULT_INETD_MODE,          i, 0, OPT_NOT_SET);
+    opt_i(&(opt.no_bind_banner), DEFAULT_NO_BIND_BANNER,
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.client_server_specification), 
+		    DEFAULT_CLIENT_SERVER_SPECIFICATION, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.connection_limit), DEFAULT_CONNECTION_LIMIT, 
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.connection_logging), DEFAULT_CONNECTION_LOGGING,
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.debug), DEFAULT_DEBUG, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.inetd_mode), DEFAULT_INETD_MODE, &i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE) && !strcmp("perdition.imap4", basename)){
-      opt_i(opt.protocol,      PROTOCOL_IMAP4,              i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), PROTOCOL_IMAP4, &i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.imap4s", basename)){
-      opt_i(opt.protocol,      PROTOCOL_IMAP4S,             i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), PROTOCOL_IMAP4S, &i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.imaps", basename)){
-      opt_i(opt.protocol,      PROTOCOL_IMAP4S,             i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), PROTOCOL_IMAP4S, &i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3", basename)){
-      opt_i(opt.protocol,      PROTOCOL_POP3,               i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), PROTOCOL_POP3, &i, 0, OPT_NOT_SET);
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3s", basename)){
-      opt_i(opt.protocol,      PROTOCOL_POP3S,              i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), PROTOCOL_POP3S, &i, 0, OPT_NOT_SET);
     }
     else {
-      opt_i(opt.protocol,      DEFAULT_PROTOCOL,            i, 0, OPT_NOT_SET);
+      opt_i(&(opt.protocol), DEFAULT_PROTOCOL, &i, 0, OPT_NOT_SET);
     }
-    opt_i(opt.no_daemon,       DEFAULT_NO_DAEMON,           i, 0, OPT_NOT_SET);
-    opt_i(opt.no_lookup,       DEFAULT_NO_LOOKUP,           i, 0, OPT_NOT_SET);
-    opt_i(opt.login_disabled,  DEFAULT_LOGIN_DISABLED,      i, 0, OPT_NOT_SET);
-    opt_i(opt.lower_case,      DEFAULT_LOWER_CASE,          i, 0, OPT_NOT_SET);
-    opt_i(opt.server_resp_line,DEFAULT_SERVER_RESP_LINE,    i, 0, OPT_NOT_SET);
-    opt_i(opt.strip_domain,    DEFAULT_STRIP_DOMAIN,        i, 0, OPT_NOT_SET);
-    opt_i(opt.timeout,         DEFAULT_TIMEOUT,             i, 0, OPT_NOT_SET);
-    opt_i(opt.username_from_database, DEFAULT_USERNAME_FROM_DATABASE, 
-                                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.quiet,           DEFAULT_QUIET,               i, 0, OPT_NOT_SET);
-    opt_i(opt.connect_relog,   DEFAULT_CONNECT_RELOG,       i, 0, OPT_NOT_SET);
-    opt_p(opt.capability,      PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
-    opt_p(opt.mangled_capability, NULL,                     i, 0, OPT_NOT_SET);
-    opt_p(opt.bind_address,    DEFAULT_BIND_ADDRESS,        i, 0, OPT_NOT_SET);
-    opt_p(opt.log_facility,    DEFAULT_LOG_FACILITY,        i, 0, OPT_NOT_SET);
+    opt_i(&(opt.no_daemon), DEFAULT_NO_DAEMON, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.no_lookup), DEFAULT_NO_LOOKUP, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.login_disabled), DEFAULT_LOGIN_DISABLED, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.lower_case), DEFAULT_LOWER_CASE, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.server_resp_line), DEFAULT_SERVER_RESP_LINE, 
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.strip_domain), DEFAULT_STRIP_DOMAIN, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.timeout), DEFAULT_TIMEOUT, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.username_from_database), DEFAULT_USERNAME_FROM_DATABASE, 
+   		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.quiet), DEFAULT_QUIET, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.connect_relog), DEFAULT_CONNECT_RELOG, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.capability), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.mangled_capability), NULL, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.bind_address), DEFAULT_BIND_ADDRESS, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.log_facility), DEFAULT_LOG_FACILITY, &i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE)) {
       char *filename;
       filename = config_file_name(basename, opt.protocol);
-      opt_p(opt.config_file,   filename,                    i, 0, OPT_NOT_SET);
+      opt_p(&(opt.config_file), filename, &i, 0, OPT_NOT_SET);
     }
-    opt_p(opt.domain_delimiter,DEFAULT_DOMAIN_DELIMITER,    i, 0, OPT_NOT_SET);
-    opt_p(opt.explicit_domain, NULL,                        i, 0, OPT_NOT_SET);
-    opt_p(opt.group,           DEFAULT_GROUP,               i, 0, OPT_NOT_SET);
-    opt_p(opt.listen_port,     PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
-    opt_p(opt.map_library,     DEFAULT_MAP_LIB,             i, 0, OPT_NOT_SET);
-    opt_p(opt.map_library_opt, DEFAULT_MAP_LIB_OPT,         i, 0, OPT_NOT_SET);
-    opt_p(opt.outgoing_port,   PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
-    opt_p(opt.ok_line,         DEFAULT_OK_LINE             ,i, 0, OPT_NOT_SET);
+    opt_p(&(opt.domain_delimiter), DEFAULT_DOMAIN_DELIMITER, 
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.explicit_domain), NULL, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.group), DEFAULT_GROUP, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.listen_port), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.log_passwd), DEFAILT_LOG_PASSWD, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.map_library), DEFAULT_MAP_LIB, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.map_library_opt), DEFAULT_MAP_LIB_OPT, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.outgoing_port), PERDITION_PROTOCOL_DEPENDANT, 
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ok_line), DEFAULT_OK_LINE, &i, 0, OPT_NOT_SET);
 
-    opt_p(opt.username,        DEFAULT_USERNAME,            i, 0, OPT_NOT_SET);
-    opt_da(opt.outgoing_server,DEFAULT_OUTGOING_SERVER,     i, 0, OPT_NOT_SET);
-    opt_p(opt.pid_file,        PERDITION_PROTOCOL_DEPENDANT,i, 0, OPT_NOT_SET);
+    opt_p(&(opt.username), DEFAULT_USERNAME, &i, 0, OPT_NOT_SET);
+    opt_da(&(opt.outgoing_server), DEFAULT_OUTGOING_SERVER, 
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.pid_file), PERDITION_PROTOCOL_DEPENDANT,&i, 0, OPT_NOT_SET);
     {
       char *filename;
       filename = malloc(strlen(PERDITION_PID_DIR) + (2*strlen(basename)) + 7);
@@ -416,35 +522,35 @@ int options(int argc, char **argv, flag_t f){
       }
       sprintf(filename, "%s/%s/%s.pid", PERDITION_PID_DIR, basename,
 		      basename);
-      opt_p(opt.pid_file,        filename,                  i, 0, OPT_NOT_SET);
+      opt_p(&(opt.pid_file), filename, &i, 0, OPT_NOT_SET);
       free(filename);
     }
-    opt_da(opt.query_key,      DEFAULT_QUERY_KEY,           i, 0, OPT_NOT_SET);
+    opt_da(&(opt.query_key), DEFAULT_QUERY_KEY, &i, 0, OPT_NOT_SET);
 #ifdef WITH_SSL_SUPPORT
-    opt_i(opt.ssl_mode,        DEFAULT_SSL_MODE,            i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_ca_file,     DEFAULT_SSL_CA_FILE,         i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_ca_path,     DEFAULT_SSL_CA_PATH,         i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_ca_accept_self_signed, DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED, 
-		                                            i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_cert_file,   DEFAULT_SSL_CERT_FILE,       i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_cert_accept_expired, DEFAULT_SSL_CERT_ACCEPT_EXPIRED, 
-		                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_cert_accept_not_yet_valid, 
-		               DEFAULT_SSL_CERT_ACCEPT_NOT_YET_VALID, 
-		                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_cert_accept_self_signed, DEFAULT_SSL_CERT_ACCEPT_SELF_SIGNED, 
-		                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_cert_verify_depth, DEFAULT_SSL_CERT_VERIFY_DEPTH,
-		                                            i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_key_file,    DEFAULT_SSL_KEY_FILE,        i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_ca_chain_file, DEFAULT_SSL_CA_CHAIN_FILE, i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_listen_ciphers, DEFAULT_SSL_LISTEN_CIPHERS,
-		                                            i, 0, OPT_NOT_SET);
-    opt_p(opt.ssl_outgoing_ciphers, DEFAULT_SSL_OUTGOING_CIPHERS,
-		                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_no_cert_verify, DEFAULT_SSL_NO_CERT_VERIFY,
-		                                            i, 0, OPT_NOT_SET);
-    opt_i(opt.ssl_no_cn_verify,DEFAULT_SSL_NO_CN_VERIFY,    i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_mode), DEFAULT_SSL_MODE, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_ca_file), DEFAULT_SSL_CA_FILE, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_ca_path), DEFAULT_SSL_CA_PATH, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_ca_accept_self_signed), DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED, 
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_cert_file), DEFAULT_SSL_CERT_FILE, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_cert_accept_expired), DEFAULT_SSL_CERT_ACCEPT_EXPIRED, 
+	       	    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_cert_accept_not_yet_valid), 
+		    DEFAULT_SSL_CERT_ACCEPT_NOT_YET_VALID, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_cert_accept_self_signed), 
+		    DEFAULT_SSL_CERT_ACCEPT_SELF_SIGNED, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_cert_verify_depth), DEFAULT_SSL_CERT_VERIFY_DEPTH,
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_key_file), DEFAULT_SSL_KEY_FILE, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_ca_chain_file), DEFAULT_SSL_CA_CHAIN_FILE,
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_listen_ciphers), DEFAULT_SSL_LISTEN_CIPHERS,
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_outgoing_ciphers), DEFAULT_SSL_OUTGOING_CIPHERS,
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_no_cert_verify), DEFAULT_SSL_NO_CERT_VERIFY,
+		    &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_no_cn_verify),DEFAULT_SSL_NO_CN_VERIFY, &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -472,7 +578,7 @@ int options(int argc, char **argv, flag_t f){
         break;
       case 'a':
 #ifdef WITH_PAM_SUPPORT
-        opt_i(opt.authenticate_in,1,opt.mask,MASK_AUTHENTICATE_IN,f); \
+        opt_i(&(opt.authenticate_in), 1, &(opt.mask), MASK_AUTHENTICATE_IN, f);
         break;
 #else
       VANESSA_LOGGER_DEBUG_RAW(
@@ -486,48 +592,46 @@ int options(int argc, char **argv, flag_t f){
       }
 #endif /* WITH_PAM_SUPPORT */
       case 'B':
-        opt_i(opt.no_bind_banner,1,opt.mask,MASK_NO_BIND_BANNER,f);
+        opt_i(&(opt.no_bind_banner), 1, &(opt.mask), MASK_NO_BIND_BANNER, f);
         break;
       case 'b':
-        opt_p(opt.bind_address,optarg,opt.mask,MASK_BIND_ADDRESS,f);
+        opt_p(&(opt.bind_address), optarg, &(opt.mask), MASK_BIND_ADDRESS, f);
         break;
       case TAG_CONNECT_RELOG:
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
 	  usage(-1); 
 	}
-        opt_i(opt.connect_relog,atoi(optarg),opt.mask,MASK_CONNECT_RELOG,f);
+        opt_i(&(opt.connect_relog), atoi(optarg), &(opt.mask), 
+			MASK_CONNECT_RELOG, f);
         break;
       case 'C':
-        opt_i(opt.connection_logging,1,opt.mask,MASK_DEBUG,f);
+        opt_i(&(opt.connection_logging), 1, &(opt.mask), MASK_DEBUG, f);
         break;
       case 'c':
-        opt_i(
-          opt.client_server_specification,
-          1,
-          opt.mask,
-          MASK_CLIENT_SERVER_SPECIFICATION,
-          f
-        );
+        opt_i(&(opt.client_server_specification), 1, &(opt.mask),
+			MASK_CLIENT_SERVER_SPECIFICATION, f);
         break;
       case 'D':
-        opt_p(opt.domain_delimiter,optarg,opt.mask,MASK_DOMAIN_DELIMITER,f);
+        opt_p(&(opt.domain_delimiter), optarg, &(opt.mask), 
+			MASK_DOMAIN_DELIMITER, f);
         break;
       case 'd':
-        opt_i(opt.debug,1,opt.mask,MASK_DEBUG,f);
+        opt_i(&(opt.debug), 1, &(opt.mask), MASK_DEBUG, f);
         break;
       case 'e':
-	opt_p(opt.explicit_domain,optarg,opt.mask2,MASK2_EXPLICIT_DOMAIN,f);
+	opt_p(&(opt.explicit_domain), optarg, &(opt.mask2),
+			MASK2_EXPLICIT_DOMAIN, f);
 	break;
       case 'f':
         if(!(f&OPT_FILE)){
-          opt_p(opt.config_file,optarg,opt.mask,MASK_CONFIG_FILE,f);
+          opt_p(&(opt.config_file), optarg, &(opt.mask), MASK_CONFIG_FILE, f);
         }
         break;
       case 'F':
-        opt_p(opt.log_facility,optarg,opt.mask,MASK_LOG_FACILITY,f);
+        opt_p(&(opt.log_facility), optarg, &(opt.mask), MASK_LOG_FACILITY, f);
         break;
       case 'g':
-        opt_p(opt.group,optarg,opt.mask,MASK_GROUP,f);
+        opt_p(&(opt.group), optarg, &(opt.mask), MASK_GROUP, f);
         break;
       case 'h':
         if(f&OPT_ERR && !(f&OPT_FILE)){ 
@@ -535,10 +639,10 @@ int options(int argc, char **argv, flag_t f){
 	}
 	break;
       case 'I':
-	opt_p(opt.capability,optarg,opt.mask,MASK_CAPABILITY,f);
+	opt_p(&(opt.capability), optarg, &(opt.mask), MASK_CAPABILITY, f);
 	break;
       case 'i':
-        opt_i(opt.inetd_mode,1,opt.mask,MASK_INETD_MODE,f);
+        opt_i(&(opt.inetd_mode), 1, &(opt.mask), MASK_INETD_MODE, f);
         break;
       case 'j':
 	VANESSA_LOGGER_DEBUG( "Jain, Oath\n"); 
@@ -547,31 +651,27 @@ int options(int argc, char **argv, flag_t f){
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
 	  usage(-1); 
 	}
-        opt_i(
-	  opt.connection_limit,
-	  atoi(optarg),
-	  opt.mask,
-	  MASK_CONNECTION_LIMIT,
-	  f
-	); \
+        opt_i(&(opt.connection_limit), atoi(optarg), &(opt.mask),
+			MASK_CONNECTION_LIMIT, f);
         break;
       case 'l':
-        opt_p(opt.listen_port,optarg,opt.mask,MASK_LISTEN_PORT,f);
+        opt_p(&(opt.listen_port), optarg, &(opt.mask), MASK_LISTEN_PORT, f);
         break;
       case 'M':
-        opt_p(opt.map_library,optarg,opt.mask,MASK_MAP_LIB,f);
+        opt_p(&(opt.map_library), optarg, &(opt.mask), MASK_MAP_LIB, f);
         break;
       case 'm':
-        opt_p(opt.map_library_opt,optarg,opt.mask,MASK_MAP_LIB_OPT,f);
+        opt_p(&(opt.map_library_opt), optarg, &(opt.mask), MASK_MAP_LIB_OPT, f);
         break;
       case 'n':
-        opt_i(opt.no_lookup,1,opt.mask,MASK_NO_LOOKUP,f);
+        opt_i(&(opt.no_lookup), 1, &(opt.mask), MASK_NO_LOOKUP, f);
         break;
       case 'O':
-        opt_p(opt.ok_line,optarg,opt.mask2,MASK2_OK_LINE,f);
+        opt_p(&(opt.ok_line), optarg, &(opt.mask2), MASK2_OK_LINE, f);
         break;
       case 'o':
-        opt_i(opt.server_resp_line,1,opt.mask,MASK_SERVER_RESP_LINE,f);
+        opt_i(&(opt.server_resp_line), 1, &(opt.mask),
+			MASK_SERVER_RESP_LINE, f);
         break;
       case 'P':
         if((index=protocol_index(optarg))<0){
@@ -579,11 +679,11 @@ int options(int argc, char **argv, flag_t f){
 		usage(-1);
         }
         else {
-          opt_i(opt.protocol,index,opt.mask,MASK_PROTOCOL,f);
+          opt_i(&(opt.protocol), index, &(opt.mask), MASK_PROTOCOL, f);
         }
         break;
       case 'p':
-        opt_p(opt.outgoing_port,optarg,opt.mask,MASK_OUTGOING_PORT,f);
+        opt_p(&(opt.outgoing_port), optarg, &(opt.mask), MASK_OUTGOING_PORT, f);
         break;
       case 'S':
         OPTARG_DUP;
@@ -610,23 +710,23 @@ int options(int argc, char **argv, flag_t f){
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
 	  usage(-1); 
 	}
-        opt_i(opt.timeout,atoi(optarg),opt.mask,MASK_TIMEOUT,f);
+        opt_i(&(opt.timeout), atoi(optarg), &(opt.mask), MASK_TIMEOUT, f);
         break;
       case 'u':
-        opt_p(opt.username,optarg,opt.mask,MASK_USERNAME,f);
+        opt_p(&(opt.username), optarg, &(opt.mask), MASK_USERNAME, f);
         break;
       case 'U':
-        opt_i(opt.username_from_database,1,opt.mask,
-	  MASK_USERNAME_FROM_DATABASE,f);
+        opt_i(&(opt.username_from_database), 1, &(opt.mask), 
+			MASK_USERNAME_FROM_DATABASE, f);
         break;
       case 'q':
-        opt_i(opt.quiet,1,opt.mask,MASK_QUIET,f);
+        opt_i(&(opt.quiet), 1, &(opt.mask), MASK_QUIET, f);
         break;
       case TAG_NO_DAEMON:
-	opt_i(opt.no_daemon,1,opt.mask,MASK_NO_DAEMON,f);
+	opt_i(&(opt.no_daemon), 1, &(opt.mask), MASK_NO_DAEMON, f);
         break;
       case TAG_LOGIN_DISABLED:
-	opt_i(opt.login_disabled,1,opt.mask,MASK_LOGIN_DISABLED,f);
+	opt_i(&(opt.login_disabled), 1, &(opt.mask), MASK_LOGIN_DISABLED, f);
         break;
       case TAG_LOWER_CASE:
         OPTARG_DUP;
@@ -654,8 +754,17 @@ int options(int argc, char **argv, flag_t f){
 	  VANESSA_LOGGER_ERR_UNSAFE("Invalid pid file: \"%s\"", optarg);
 	  usage(-1);
 	}
-        opt_p(opt.pid_file,optarg,opt.mask2,MASK2_PID_FILE,f);
+        opt_p(&(opt.pid_file), optarg, &(opt.mask2), MASK2_PID_FILE, f);
         break;
+      case TAG_LOG_PASSWD:
+       	opt_i(&(opt.log_passwd), log_passwd_from_str(optarg), 
+			&(opt.mask2), MASK2_LOG_PASSWD, f);
+	if (opt.log_passwd < 0) {
+	       	VANESSA_LOGGER_ERR_UNSAFE("Invalid log_passwd mode: \"%s\"", 
+				optarg);
+		usage(-1);
+	}
+	break;
       case TAG_SSL_MODE:
 #ifdef WITH_SSL_SUPPORT
         OPTARG_DUP;
@@ -671,38 +780,38 @@ int options(int argc, char **argv, flag_t f){
       break;
       case TAG_SSL_CA_FILE:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_ca_file,optarg,opt.ssl_mask,MASK_SSL_CA_FILE,f);
+        opt_p(&(opt.ssl_ca_file), optarg, &(opt.ssl_mask), MASK_SSL_CA_FILE, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_ca_file");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CA_PATH:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_ca_path,optarg,opt.ssl_mask,MASK_SSL_CA_PATH,f);
+        opt_p(&(opt.ssl_ca_path), optarg, &(opt.ssl_mask), MASK_SSL_CA_PATH, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_ca_path");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CA_ACCEPT_SELF_SIGNED:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_ca_accept_self_signed,1,opt.ssl_mask,
-			MASK_SSL_CA_ACCEPT_SELF_SIGNED,f);
+        opt_i(&(opt.ssl_ca_accept_self_signed), 1, &(opt.ssl_mask),
+			MASK_SSL_CA_ACCEPT_SELF_SIGNED, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_ca_accept_self_signed");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CERT_VERIFY_DEPTH:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_cert_verify_depth,atoi(optarg),opt.ssl_mask,
-			MASK_SSL_CERT_VERIFY_DEPTH,f);
+        opt_i(&(opt.ssl_cert_verify_depth), atoi(optarg), &(opt.ssl_mask),
+			MASK_SSL_CERT_VERIFY_DEPTH, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_ca_verify_depth");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CA_CHAIN_FILE:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_ca_chain_file,optarg,opt.ssl_mask,
-			MASK_SSL_CA_CHAIN_FILE,f);
+        opt_p(&(opt.ssl_ca_chain_file), optarg, &(opt.ssl_mask),
+			MASK_SSL_CA_CHAIN_FILE, f);
 #else /* WITH_SSL_SUPPORT */
       VANESSA_LOGGER_DEBUG(
 	"--ssl_ca_chain_file is only supported when ssl support "
@@ -718,45 +827,47 @@ int options(int argc, char **argv, flag_t f){
         break; 
       case TAG_SSL_CERT_FILE:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_cert_file,optarg,opt.ssl_mask,MASK_SSL_CERT_FILE,f);
+        opt_p(&(opt.ssl_cert_file), optarg, &(opt.ssl_mask), 
+			MASK_SSL_CERT_FILE, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_cert_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_CERT_ACCEPT_EXPIRED:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_cert_accept_expired,1,opt.ssl_mask,
-			MASK_SSL_CERT_ACCEPT_EXPIRED,f);
+        opt_i(&(opt.ssl_cert_accept_expired), 1, &(opt.ssl_mask),
+			MASK_SSL_CERT_ACCEPT_EXPIRED, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_cert_accept_expired");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CERT_ACCEPT_NOT_YET_VALID:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_cert_accept_not_yet_valid,1,opt.ssl_mask,
-			MASK_SSL_CERT_ACCEPT_NOT_YET_VALID,f);
+        opt_i(&(opt.ssl_cert_accept_not_yet_valid), 1, &(opt.ssl_mask),
+			MASK_SSL_CERT_ACCEPT_NOT_YET_VALID, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_cert_accept_not_yet_valid");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_CERT_ACCEPT_SELF_SIGNED:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_cert_accept_self_signed,1,opt.ssl_mask,
-			MASK_SSL_CERT_ACCEPT_SELF_SIGNED,f);
+        opt_i(&(opt.ssl_cert_accept_self_signed), 1, &(opt.ssl_mask),
+			MASK_SSL_CERT_ACCEPT_SELF_SIGNED, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_cert_accept_self_signed");
 #endif /* WITH_SSL_SUPPORT */
       break;
       case TAG_SSL_KEY_FILE:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_key_file,optarg,opt.ssl_mask,MASK_SSL_KEY_FILE,f);
+        opt_p(&(opt.ssl_key_file), optarg, &(opt.ssl_mask), 
+			MASK_SSL_KEY_FILE, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_key_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_LISTEN_CIPHERS:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_listen_ciphers,optarg,opt.ssl_mask,
+        opt_p(&(opt.ssl_listen_ciphers), optarg, &(opt.ssl_mask),
 			MASK_SSL_LISTEN_CIPHERS,f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_listen_ciphers");
@@ -764,22 +875,24 @@ int options(int argc, char **argv, flag_t f){
         break; 
       case TAG_SSL_OUTGOING_CIPHERS:
 #ifdef WITH_SSL_SUPPORT
-        opt_p(opt.ssl_outgoing_ciphers,optarg,opt.ssl_mask,
-			MASK_SSL_OUTGOING_CIPHERS,f);
+        opt_p(&(opt.ssl_outgoing_ciphers), optarg, &(opt.ssl_mask),
+			MASK_SSL_OUTGOING_CIPHERS, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_outgoing_ciphers");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_NO_CERT_VERIFY:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_no_cert_verify,1,opt.ssl_mask, MASK_SSL_NO_CERT_VERIFY,f);
+        opt_i(&(opt.ssl_no_cert_verify), 1, &(opt.ssl_mask), 
+			MASK_SSL_NO_CERT_VERIFY, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_no_cert_verify");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_NO_CN_VERIFY:
 #ifdef WITH_SSL_SUPPORT
-        opt_i(opt.ssl_no_cn_verify,1,opt.ssl_mask, MASK_SSL_NO_CN_VERIFY,f);
+        opt_i(&(opt.ssl_no_cn_verify), 1, &(opt.ssl_mask),
+			MASK_SSL_NO_CN_VERIFY, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_no_cn_verify");
 #endif /* WITH_SSL_SUPPORT */
@@ -816,24 +929,6 @@ int options(int argc, char **argv, flag_t f){
   poptFreeContext(context);
 
   return(0);
-}
-
-
-/**********************************************************************
- * options_set_mask
- * Set the options mask
- * pre: mask: pointer to current mask that may be modified
- *      mask_entry: value to or with opt->mask
- *      flag: flags
- * post: mask is added if flags permit
- * return: 1 if mask is added
- *         0 otherwise
- **********************************************************************/
-
-int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
-  if(flag&OPT_USE_MASK && (*mask)&mask_entry) return(0);
-  if(flag&OPT_SET_MASK) (*mask)|=mask_entry;
-  return(1);
 }
 
 
@@ -885,7 +980,6 @@ int options_set_mask(flag_t *mask, flag_t mask_entry, flag_t flag){
   } \
 }
 
-
 int log_options_str(char *str, size_t n){
   char *protocol=NULL;
   char *outgoing_server=NULL;
@@ -897,9 +991,6 @@ int log_options_str(char *str, size_t n){
   char ssl_mode[26];
   char *ssl_mode_p = NULL;
 #endif /* WITH_SSL_SUPPORT */
-
-  extern options_t opt;
-  extern struct utsname *system_uname;
 
   if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL){
     VANESSA_LOGGER_DEBUG("protocol_list");
@@ -1003,6 +1094,7 @@ int log_options_str(char *str, size_t n){
     "inetd_mode=%s, "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
+    "log_passwd=\"%s\", "
     "login_disabled=%s, "
     "lower_case=\"%s\", "
     "map_library=\"%s\", "
@@ -1059,6 +1151,7 @@ int log_options_str(char *str, size_t n){
     BIN_OPT_STR(opt.inetd_mode),
     OPT_STR(opt.listen_port),
     OPT_STR(opt.log_facility),
+    OPT_STR(log_passwd_to_str(opt.log_passwd)),
     BIN_OPT_STR(opt.login_disabled),
     OPT_STR(lower_case),
     OPT_STR(opt.map_library),
@@ -1230,6 +1323,9 @@ void usage(int exit_status){
     "    Port to listen on. (default \"%s\")\n"
     " --login_disabled:\n"
     "    Do not allow users to log in.\n"
+    " --log_passwd STATE:\n"
+    "    Log the users password, otherwise just report it as \"XXXXXX\".\n"
+    "    (default \"%s\")\n"
     " --lower_case STATE[,STATE...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). (default \"\")\n"
@@ -1346,6 +1442,7 @@ void usage(int exit_status){
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
+    OPT_STR(log_passwd_to_str(DEFAILT_LOG_PASSWD)),
     OPT_STR(DEFAULT_MAP_LIB),
     OPT_STR(DEFAULT_MAP_LIB_OPT),
     OPT_STR(DEFAULT_OK_LINE),

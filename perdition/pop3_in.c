@@ -31,6 +31,7 @@
 
 #include "pop3_in.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -61,9 +62,6 @@ int pop3_in_authenticate(
   const token_t *tag
 ){
   pam_handle_t *pamh=NULL;
-
-  extern int pam_retval;
-  extern struct pam_conv conv_struct;
 
   if((
      pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
@@ -124,8 +122,6 @@ int pop3_in_get_pw(
   token_t *t = NULL;
   char *message=NULL;
 
-  extern options_t opt;
-
   return_pw->pw_name=NULL;
 
   while(1){
@@ -151,7 +147,7 @@ int pop3_in_get_pw(
 			    POP3_CMD_PASS " or " POP3_CMD_QUIT);
     }
 
-    if(strncasecmp(token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
+    if(strncasecmp((char *)token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
       if(vanessa_queue_length(q)!=0){
 	    __POP3_IN_ERR("Mate, try: " POP3_CMD_CAPA);
       }
@@ -164,7 +160,7 @@ int pop3_in_get_pw(
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
-        !strncasecmp(token_buf(t), POP3_CMD_STLS, token_len(t))){
+        !strncasecmp((char *)token_buf(t), POP3_CMD_STLS, token_len(t))){
       if(vanessa_queue_length(q)!=0){
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_STLS);
       }
@@ -182,7 +178,7 @@ int pop3_in_get_pw(
     } 
 #endif /* WITH_SSL_SUPPORT */
 
-    if(strncasecmp(token_buf(t), POP3_CMD_USER, token_len(t))==0){
+    if(strncasecmp((char *)token_buf(t), POP3_CMD_USER, token_len(t))==0){
       if(return_pw->pw_name!=NULL){
 	      __POP3_IN_ERR(POP3_CMD_USER " is already set, mate");
       }
@@ -215,7 +211,7 @@ int pop3_in_get_pw(
         goto loop;
       }
     }
-    else if(strncasecmp(token_buf(t), POP3_CMD_PASS, token_len(t))==0){
+    else if(strncasecmp((char *)token_buf(t), POP3_CMD_PASS, token_len(t))==0){
       if(return_pw->pw_name==NULL){
 	      __POP3_IN_ERR(POP3_CMD_USER " not yet set, mate");
       }
@@ -229,7 +225,7 @@ int pop3_in_get_pw(
       }
       return(0);
     }
-    else if(strncasecmp(token_buf(t), POP3_CMD_QUIT, token_len(t))==0){
+    else if(strncasecmp((char *)token_buf(t), POP3_CMD_QUIT, token_len(t))==0){
       if(vanessa_queue_length(q)) {
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_QUIT);
       }

@@ -31,6 +31,7 @@
 
 #include "server_port.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -119,7 +120,6 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str,
 		size_t str_len)
 {
 	int alloced = 0;
-	extern options_t opt;
 
 	if(!*usp) {
 		*usp = user_server_port_create();
@@ -282,8 +282,6 @@ user_server_port_get_user(const user_server_port_t *usp){
 void
 user_server_port_display(char *str, const user_server_port_t *usp)
 {
-	extern options_t opt;
-
 	if(!usp)
 		return;
 	
@@ -329,8 +327,6 @@ size_t
 user_server_port_length(const user_server_port_t *src)
 {
 	size_t len = 0;
-
-	extern options_t opt;
 
 	if(!src){
 		return(0);

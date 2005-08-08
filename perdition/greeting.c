@@ -31,6 +31,7 @@
 
 #include "greeting.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -86,7 +87,7 @@ static int greeting_checksum(uint32 *csum)
 		return(-1);
 	}
 
-	*csum = str_rolling32(buf, strlen(buf));
+	*csum = str_rolling32((unsigned char *)buf, strlen(buf));
 
 	return(0);
 }
@@ -109,9 +110,6 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
   struct in_addr in;
   uint32 csum;
   char csum_str[10];
-
-  extern struct utsname *system_uname;
-  extern options_t opt;
 
   if(greeting_checksum(&csum) < 0) {
 	  VANESSA_LOGGER_DEBUG("greeting_checksum");

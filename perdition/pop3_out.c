@@ -31,6 +31,7 @@
 
 #include "options.h"
 #include "pop3_out.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -72,14 +73,13 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
 	int tmp_status = -1;
 	int protocol_status = PROTOCOL_S_OK;
 
-      	extern options_t opt;
-
 	ok = token_create();
 	if(!ok){
 		VANESSA_LOGGER_DEBUG("token_create ok");
 		goto leave;
 	}
-	token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
+	token_assign(ok, (unsigned char *)POP3_OK, strlen(POP3_OK), 
+			TOKEN_DONT_CARE);
 
 	status = pop3_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL);
 	if(status<0){
@@ -149,7 +149,7 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
 		VANESSA_LOGGER_DEBUG("token_create capa_end");
 		goto leave;
 	}
-	token_assign(capa_end, POP3_CAPA_END, 
+	token_assign(capa_end, (unsigned char *)POP3_CAPA_END, 
 			strlen(POP3_CAPA_END), TOKEN_EOL);
 	
 	stls=token_create();
@@ -157,7 +157,8 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
 		VANESSA_LOGGER_DEBUG("token_create stls");
 		goto leave;
 	}
-	token_assign(stls, POP3_CMD_STLS, strlen(POP3_CMD_STLS), TOKEN_EOL);
+	token_assign(stls, (unsigned char *)POP3_CMD_STLS, 
+			strlen(POP3_CMD_STLS), TOKEN_EOL);
 
 	/* Loop through  lines */
 	while(1) {
@@ -282,7 +283,7 @@ int pop3_out_authenticate(
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
+  token_assign(ok, (unsigned char *)POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
   /* Send USER command */
   if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_USER, 1, "%s", pw->pw_name)<0){

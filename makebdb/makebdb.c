@@ -44,8 +44,6 @@
 #endif
 
 
-extern int errno;
-
 #define MAX_LINE_LENGTH 4096
 #define FIELD_DELIMITER ':'
 

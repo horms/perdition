@@ -60,6 +60,7 @@
 #include "ssl.h"
 #include "setproctitle.h"
 #include "imap4_tag.h"
+#include "perdition_globals.h"
 
 /* limits.h should be sufficient on most systems 
  * http://www.opengroup.org/onlinepubs/007908799/headix.html */
@@ -91,7 +92,7 @@ struct sockaddr_in *peername;
 struct sockaddr_in *sockname;
 
 /* PID file that has been created */
-char *pid_file;
+static char *pid_file;
 
 /*
  * Used for opening dynamic server lookup library
@@ -158,35 +159,72 @@ static int perdition_chown(const char *path, const char *username,
     perdition_exit_cleanly(-1); \
   }
 
-/* Macro to log session just after Authentication */
-#define VANESSA_LOGGER_LOG_AUTH(_auth_log, _from_to_str,                   \
-			_user, _servername, _port, _status)                \
-	memset(_auth_log.log_str, 0, sizeof(_auth_log.log_str));           \
-	snprintf(_auth_log.log_str, sizeof(_auth_log.log_str)-1,           \
-			"Auth: %suser=\"%s\" server=\"%s\" port=\"%s\" "   \
-			"status=\"%s\"",                                   \
-			from_to_str, str_null_safe(_user),                 \
-			str_null_safe(_servername),                        \
-			str_null_safe(_port), str_null_safe(_status));     \
-	VANESSA_LOGGER_LOG(LOG_NOTICE, _auth_log.log_str);                 \
-	_auth_log.log_time=time(NULL) + opt.connect_relog;                 \
-	set_proc_title("%s: auth %s", progname, str_null_safe(_status));
+static void 
+perdition_log_auth(timed_log_t *auth_log, const char *from_to_str, 
+		struct passwd *pw, const char *servername, const char *port, 
+		const char *progname, const char *reason)
+{
+	char *passwd;
 
-#define LOGIN_FAILED(_type, _reason)                                      \
-{                                                                         \
-	sleep(PERDITION_AUTH_FAIL_SLEEP);                                 \
-	if(protocol->write(client_io, NULL_FLAG, client_tag,              \
-				protocol->type[(_type)], 0,               \
-				(_reason))<0){                            \
-		VANESSA_LOGGER_DEBUG("protocol->write");                  \
-		VANESSA_LOGGER_ERR("Fatal error writing to client. "      \
-				"Exiting child.");                        \
-		perdition_exit_cleanly(-1);                   \
-	}                                                                 \
-	VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name,        \
-			servername, port,                                 \
-			"failed: " _reason);                              \
+	if (!strcmp(reason, "ok")) {
+		if (opt.log_passwd & LOG_PASSWD_OK)
+			passwd = pw->pw_passwd;
+		else 
+			passwd = "XXXXXX";
+	}
+	else {
+		if (opt.log_passwd & LOG_PASSWD_FAIL)
+			passwd = pw->pw_passwd;
+		else 
+			passwd = "XXXXXX";
+	}
+
+	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
+	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
+			"Auth: %suser=\"%s\" passwd=\"%s\" "
+			"server=\"%s\" port=\"%s\" status=\"%s\"",
+			from_to_str, str_null_safe(pw->pw_name),
+			str_null_safe(passwd), str_null_safe(servername),
+			str_null_safe(port), str_null_safe(reason));
+	auth_log->log_time = time(NULL) + opt.connect_relog;
+
+	VANESSA_LOGGER_LOG(LOG_NOTICE, auth_log->log_str);
+
+	set_proc_title("%s: auth %s", progname, str_null_safe(reason));
 }
+
+#define PERDITION_LOG_AUTH(_reason)                                        \
+do {                                                                       \
+	perdition_log_auth(&auth_log, from_to_str, &pw, servername,        \
+			port, progname, _reason);                          \
+} while(0)
+
+static void 
+login_failed_protocol(protocol_t *protocol, int protocol_type, 
+		io_t *io, token_t *tag, timed_log_t *auth_log, 
+		const char *from_to_str, struct passwd *pw, 
+		const char *servername, const char *port,
+		const char *progname, const char *reason)
+{
+	sleep(PERDITION_AUTH_FAIL_SLEEP);
+	if (protocol->write(io, NULL_FLAG, tag, protocol->type[protocol_type], 
+				0, reason) < 0) {
+		VANESSA_LOGGER_DEBUG("protocol->write");
+		VANESSA_LOGGER_ERR("Fatal error writing to client. "
+				"Exiting child.");
+		perdition_exit_cleanly(-1);
+	}
+
+	perdition_log_auth(auth_log, from_to_str, pw, servername, port, 
+			progname, reason);
+}
+
+#define LOGIN_FAILED_PROTOCOL(_type, _reason)                               \
+do {                                                                        \
+	login_failed_protocol(protocol, _type, client_io, client_tag,       \
+			&auth_log, from_to_str, &pw, servername,            \
+			port, progname, "failed: " _reason);                \
+} while(0)
 
 /**********************************************************************
  * Muriel the main function
@@ -227,11 +265,6 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
 #endif /* WITH_SSL_SUPPORT */
-
-  extern struct sockaddr_in *peername;
-  extern struct sockaddr_in *sockname;
-  extern struct utsname *system_uname;
-  extern options_t opt;
 
   /*
    * Create Logger
@@ -499,7 +532,7 @@ int main (int argc, char **argv, char **envp){
 
   /* Get an incoming connection */
   if(opt.inetd_mode){
-    int namelen;
+    socklen_t namelen;
 
     if((client_io=io_create_fd(0, 1, PERDITION_LOG_STR_CLIENT))==NULL){
       VANESSA_LOGGER_DEBUG("io_create_fd 1");
@@ -643,7 +676,7 @@ int main (int argc, char **argv, char **envp){
 		    ((status == 0) && (opt.ssl_mode & SSL_MODE_TLS_LISTEN) &&
 		    (opt.ssl_mode & SSL_MODE_TLS_LISTEN_FORCE) &&
 		    !(tls_state & SSL_MODE_TLS_LISTEN))) {
-	    LOGIN_FAILED(PROTOCOL_NO, "Login Disabled");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Login Disabled");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -702,7 +735,7 @@ int main (int argc, char **argv, char **envp){
 
     /*Try again if we didn't get anything useful*/
     if(!servername || !*servername) {
-	    LOGIN_FAILED(PROTOCOL_ERR, "Could not determine server");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_ERR, "Could not determine server");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -725,9 +758,7 @@ int main (int argc, char **argv, char **envp){
         VANESSA_LOGGER_INFO(
 	  "Local authentication failure for client: Allowing retry."
         );
-  	VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-			servername, port, 
-			"failed: local authentication failure");
+  	PERDITION_LOG_AUTH("failed: local authentication failure");
         PERDITION_CLEAN_UP_MAIN;
         continue;
       }
@@ -753,7 +784,7 @@ int main (int argc, char **argv, char **envp){
 				    (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0));
     if(s < 0) {
 	    VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
-	    LOGIN_FAILED(PROTOCOL_ERR, "Could not connect to server");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_ERR, "Could not connect to server");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -792,7 +823,7 @@ int main (int argc, char **argv, char **envp){
 		    protocol);
     if(status==0){
 	    quit(server_io, protocol, our_tag);
-	    LOGIN_FAILED(PROTOCOL_NO, "Connection Negotiation Failure");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Connection Negotiation Failure");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -817,7 +848,7 @@ int main (int argc, char **argv, char **envp){
 		    (opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE) &&
 		    !(status & PROTOCOL_S_STARTTLS)) {
 	    quit(server_io, protocol, our_tag);
-	    LOGIN_FAILED(PROTOCOL_NO, "TLS not present");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "TLS not present");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -840,18 +871,16 @@ int main (int argc, char **argv, char **envp){
                 VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
                 perdition_exit_cleanly(-1);
               }
-              VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name,
-                                      servername, port,
-                                      "failed: Re-Authentication Failure");
+              PERDITION_LOG_AUTH("failed: Re-Authentication Failure");
             }
             else
-              LOGIN_FAILED(PROTOCOL_NO, "Re-Authentication Failure");
+              LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Re-Authentication Failure");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
     if(status==2){
 	    sleep(VANESSA_LOGGER_ERR_SLEEP);
-	    LOGIN_FAILED(PROTOCOL_NO, "Login Disabled");
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Login Disabled");
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -882,8 +911,7 @@ int main (int argc, char **argv, char **envp){
     break;
   }
 
-  VANESSA_LOGGER_LOG_AUTH(auth_log, from_to_str, pw.pw_name, 
-		  servername, port, "ok");
+  PERDITION_LOG_AUTH("ok");
 
   if(opt.server_resp_line){
      free(server_resp_buf);
@@ -935,8 +963,6 @@ int main (int argc, char **argv, char **envp){
  **********************************************************************/
 
 static void perdition_reread_handler(int sig){
-  extern options_t opt;
-
   if(vanessa_logger_reopen(vanessa_logger_get()) < 0) {
     fprintf(stderr, "Fatal error reopening logger. Exiting.");
     perdition_exit_cleanly(-1);
@@ -977,8 +1003,6 @@ static void perdition_reread_handler(int sig){
 static void 
 perdition_exit_cleanly(int i) 
 {
-	extern options_t opt;
-
      	if (pid_file && (unlink(opt.pid_file) < 0)) {
 		VANESSA_LOGGER_INFO_UNSAFE("Could not remove pid file "
 				"[%s]: %s\n", opt.pid_file,

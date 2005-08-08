@@ -44,6 +44,7 @@
 #include "log.h"
 #include "options.h"
 #include "io_select.h"
+#include "perdition_globals.h"
 
 
 /**********************************************************************
@@ -288,8 +289,6 @@ int io_select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 	fd_set writefds_save;
 	fd_set exceptfds_save;
 	struct timeval internal_timeout;
-
-	extern options_t opt;
 
 	s = (io_select_t *)data;
 	relog = (s && s->log && opt.connect_relog) ? s->log->log_time : 0;

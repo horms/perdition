@@ -57,8 +57,6 @@ static flag_t pop3_encryption(flag_t ssl_flags);
 char *pop3_type[]={POP3_OK, POP3_ERR, POP3_ERR};
 
 protocol_t *pop3_initialise_protocol(protocol_t *protocol){
-  extern char *pop3_type[];
-
   protocol->type = pop3_type;
   protocol->write = pop3_write;
   protocol->greeting_string = POP3_GREETING;

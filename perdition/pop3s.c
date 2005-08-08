@@ -59,8 +59,6 @@ static char *pop3s_capability(char *capability, char **mangled_capability,
 char *pop3s_type[]={POP3_OK, POP3_ERR, POP3_ERR};
 
 protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
-  extern char *pop3s_type[];
-
   protocol->type = pop3s_type;
   protocol->write = pop3_write;
   protocol->greeting_string = POP3_GREETING;

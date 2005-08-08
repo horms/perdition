@@ -53,8 +53,6 @@ static flag_t imap4s_encryption(flag_t ssl_flags);
 char *imap4s_type[]={IMAP4_OK, IMAP4_NO, IMAP4_BAD};
 
 protocol_t *imap4s_initialise_protocol(protocol_t *protocol){
-  extern char *imap4s_type[];
-
   protocol->type = imap4s_type;
   protocol->write = imap4_write;
   protocol->greeting_string = IMAP4_GREETING;

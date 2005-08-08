@@ -247,6 +247,25 @@ IMAP4S mode respectively.
 Do not allow users to log in.
 Also adds LOGINDISABLED to capability list in IMAP4 and IMAP4S mode.
 .TP
+.B \-\-log_passwd STATE:
+Log the users password, otherwise just report it as "XXXXXX".
+.br
+(default "never")
+.sp
+.B fail: 
+log the password on failed connection attepmts.
+.sp
+.B ok:
+log the password on successful connection attepmts.
+.sp
+.B
+never:
+never log the password
+.sp
+.B
+always:
+always log the password
+.TP
 .B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
 state(s). See A|add_domain for a description of the states.
@@ -703,8 +722,8 @@ Connect: <source_ip_address>[inetd_pid=<pid>]
 .P
 When a user is authenticated
 .P
-Auth: <source_ip_address> user="<username>" server="<servername">
-port="<port>" status=failed|ok
+Auth: <source_ip_address> user="<username>" passwprd="<passwowd>" 
+server="<servername"> port="<port>" status=failed...|ok
 .P
 When a user disconnects
 .P

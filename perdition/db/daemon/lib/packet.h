@@ -28,6 +28,8 @@
 #ifndef PERDITION_PACKET_H
 #define PERDITION_PACKET_H
 
+#include "perdition_globals.h"
+
 #include <sys/types.h>
 #include <inttypes.h>
 #include <string.h>
@@ -96,7 +98,8 @@ typedef struct {
 } perdition_packet_str_t;
 
 #define PERDITION_PACKET_STR_PACK(p_str, str) \
-	do{ p_str.data = str; p_str.length = str ? strlen(str) : 0; }while(0)
+	do{ p_str.data = (unsigned char *)str; \
+		p_str.length = str ? strlen(str) : 0; }while(0)
 	
 
 

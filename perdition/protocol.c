@@ -131,8 +131,6 @@ void protocol_destroy(protocol_t *protocol){
 int protocol_index(const char *protocol_string){
   int i;
 
-  extern char *protocol_known[];
-
   for(i=atoi(protocol_known[0]);i>0;i--){
     if(strcasecmp(protocol_string, protocol_known[i])==0){
       return(i);
@@ -161,8 +159,6 @@ char *protocol_list(char *string, const char *delimiter, const int request){
   size_t length;
   char *pos;
   char l;
-
-  extern char *protocol_known[];
 
   noknown=atoi(protocol_known[0]);
   

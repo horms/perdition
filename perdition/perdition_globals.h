@@ -1,10 +1,6 @@
 /**********************************************************************
- * pam.h                                                     March 1999
+ * perdition_globals.h                                        July 2005
  * Horms                                             horms@verge.net.au
- *
- * Authenticate a user using pam
- *
- * Taken from the pam programming guide
  *
  * perdition
  * Mail retrieval proxy server
@@ -25,52 +21,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  * 02111-1307  USA
  *
+ *
  **********************************************************************/
 
-#ifndef DO_PAM
-#define DO_PAM
-
+#ifndef _PERDITION_GLOBALS_H
+#define _PERDITION_GLOBALS_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#ifdef WITH_PAM_SUPPORT
+#include "options.h"
 
-#ifdef HAVE_SECURITY_PAM_MISC_H
-#include <security/pam_misc.h>
-#endif /* HAVE_SECURITY_PAM_MISC_H */
+#include <sys/utsname.h>
+#include <sys/socket.h>
 
-#ifdef HAVE_SECURITY_PAM_APPL_H
-#include <security/pam_appl.h>
-#endif /* HAVE_SECURITY_PAM_APPL_H */
+extern struct utsname *system_uname;
+extern struct sockaddr_in *peername;
+extern struct sockaddr_in *sockname;
+extern options_t opt;
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#define SERVICE_NAME "perdition"
-#define EX_PAM_ERROR -1
-
-#include "log.h"
-
-extern int pam_retval;
-extern struct pam_conv conv_struct;
-
-int do_pam_authentication(
-  pam_handle_t *pamh,
-  const char *user,
-  const char *pass
-);
-
-int perdition_conv(
-  int num_msg,
-  const struct pam_message **msgm,
-  struct pam_response **response,
-  void *appdata_ptr
-);
-int do_pam_end(pam_handle_t *pamh, int default_return);
-
-#endif  /*DO_PAM*/
-
-#endif /* WITH_PAM_SUPPORT */
+#endif /* _PERDITION_GLOBALS_H */

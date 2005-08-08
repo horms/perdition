@@ -42,6 +42,8 @@
 #include <dmalloc.h>
 #endif
 
+#include "perdition_globals.h"
+
 
 /**********************************************************************
  * username_add_domain
@@ -67,8 +69,6 @@ username_add_domain(char *username, struct in_addr *to_addr, int state,
   struct hostent *hp;
   char *domainpart;
   char *new_str;
-
-  extern options_t opt;
 
   VANESSA_LOGGER_DEBUG_UNSAFE("username_add_domain %x %x %p", opt.add_domain, 
 		  state, to_addr);
@@ -147,8 +147,6 @@ char *username_strip(char *username, int state){
   char *new_str;
   size_t len;
 
-  extern options_t opt;
-
   if(!(opt.strip_domain&state))
     return(username);
 
@@ -190,7 +188,6 @@ char *username_strip(char *username, int state){
 
 char *username_lower_case(char *username, int state){
   char *new_str;
-  extern options_t opt;
 
   if(!(opt.lower_case&state))
     return(username);
@@ -224,8 +221,6 @@ char *username_mangle(char *username,
   char *result;
   char *old_result;
 
-  extern options_t opt;
-  
   if((result=username_strip(username, state))==NULL){
     VANESSA_LOGGER_DEBUG("username_strip");
     return(NULL);

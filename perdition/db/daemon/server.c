@@ -37,7 +37,7 @@ set_signal(int signum, void (*handler)(int))
 
 
 static void 
-usage(int exit_status)
+daemon_usage(int exit_status)
 {
 	fprintf(exit_status?stderr:stdout,
 			"perdition test-server version %s Copyright Horms\n"
@@ -71,8 +71,8 @@ main(int argc, char **argv)
 	perdition_packet_t *rsp_packet;
 	perdition_packet_str_t user;
 	perdition_packet_str_t server;
-	char *server_socket;
-	char *response;
+	char *server_socket = NULL;
+	char *response = NULL;
 
 	vl = vanessa_logger_openlog_filehandle(stderr, "test-server",
 			LOG_DEBUG, 0);
@@ -87,11 +87,11 @@ main(int argc, char **argv)
 		response = argv[2];
 	}
 	else {
-		usage(-1);
+		daemon_usage(-1);
 	}
 
 	if(!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		usage(0);
+		daemon_usage(0);
 	}
 
 	set_signal(SIGHUP,  SIG_IGN);

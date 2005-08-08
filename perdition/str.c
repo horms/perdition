@@ -49,6 +49,8 @@
 #include <dmalloc.h>
 #endif
 
+#include "perdition_globals.h"
+
 
 /**********************************************************************
  * strrstr
@@ -220,8 +222,6 @@ int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
 	const char *str;
 	int bytes = 0;
 
-	extern options_t opt;
-
 	str = __str_vwrite(io, flag, nargs, fmt, ap, &bytes);
 	if(!str) {
 		VANESSA_LOGGER_DEBUG("__str_vwrite");
@@ -231,7 +231,7 @@ int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
 	if (opt.connection_logging) {
 		char *dump_str;
 
-		dump_str = VANESSA_LOGGER_DUMP(str, bytes, 0);
+		dump_str = VANESSA_LOGGER_DUMP((unsigned char *)str, bytes, 0);
 		if (!dump_str) {
 			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
 			return (-1);

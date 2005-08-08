@@ -67,7 +67,7 @@ token_t *imap4_tag_create(void)
 		return(NULL);
 	}
 
-	token_assign(tag, buf, strlen(buf), TOKEN_NONE);
+	token_assign(tag, (unsigned char *)buf, strlen(buf), TOKEN_NONE);
 
 	return(tag);
 }
@@ -84,7 +84,7 @@ token_t *imap4_tag_create(void)
 
 void imap4_tag_inc(token_t *tag) 
 {
-	char *buf;
+	unsigned char *buf;
 	size_t len;
 	int c;
 	int last;

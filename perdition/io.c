@@ -38,6 +38,7 @@
 #include "log.h"
 #include "options.h"
 #include "perdition_types.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -521,8 +522,6 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
   io_t *io;
   io_select_t *s;
   ssize_t bytes;
-
-  extern options_t opt;
 
   s=(io_select_t *)data;
 

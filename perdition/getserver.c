@@ -100,6 +100,7 @@
 #endif
 
 #include "getserver.h"
+#include "perdition_globals.h"
 
 
 #ifdef DMALLOC
@@ -165,8 +166,6 @@ static char *getserver_key_str(const char *query_fmt,
 	size_t key_str_size=0;
 
         int have_escape = 0;
-
-	extern options_t opt;
 
         /* \U: Username
          * \u: Username (bit before domain delimiter)
@@ -268,8 +267,6 @@ do_getserver(
 	char *port_str = NULL;
 	int status = 0;
 
-	extern options_t opt;
-
 	*usp_ret = NULL;
 
 	if(dbserver_get) {
@@ -336,8 +333,6 @@ user_server_port_t
   char *popserver;
   int status = -1;
  
-  extern options_t opt;
-
   if(!dbserver_get && !dbserver_get2 && !opt.client_server_specification) {
     return(NULL);
   }

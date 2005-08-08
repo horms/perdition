@@ -195,6 +195,8 @@ perdition_packet_init_v1_head(perdition_packet_t **packet,
 {                                                                           \
 	perdition_packet_str_t str;                                         \
 	memcpy(&(str.length), buf, sizeof(str.length));                     \
+}
+	/*
 	buf += sizeof(str.length);                                          \
 	if (p_str) {                                                        \
 		p_str->length = ntohs(str.length);                          \
@@ -206,7 +208,7 @@ perdition_packet_init_v1_head(perdition_packet_t **packet,
 		}                                                           \
 	}                                                                   \
 	buf += ntohs(str.length);                                           \
-}
+	*/
 
 int
 perdition_packet_verify_v1_req(perdition_packet_t *packet,

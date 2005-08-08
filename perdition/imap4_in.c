@@ -31,6 +31,7 @@
 
 #include "imap4_in.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #include <stdlib.h>
 
@@ -175,7 +176,8 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 			VANESSA_LOGGER_DEBUG("token_create");
 			return(-1);
 		}
-		token_assign(*input_token, strdup(IMAP4_CONT_TAG), 1, 0);
+		token_assign(*input_token, 
+				(unsigned char *)strdup(IMAP4_CONT_TAG), 1, 0);
 		imap4_write(io, NULL_FLAG, *input_token, IMAP4_OK, 
 				0, "ready for additional input");
 		token_destroy(input_token);
@@ -248,9 +250,6 @@ int imap4_in_authenticate(
   const token_t *tag 
 ){
   pam_handle_t *pamh=NULL;
-
-  extern int pam_retval;
-  extern struct pam_conv conv_struct;
 
   if((
      pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
@@ -344,7 +343,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
 
     if(token_is_eol(tag)){
       if(token_is_null(tag)){
-	token_assign(tag, strdup(IMAP4_BAD), strlen(IMAP4_BAD), 0);
+	token_assign(tag, (unsigned char *)strdup(IMAP4_BAD), 
+			strlen(IMAP4_BAD), 0);
 	__IMAP4_IN_BAD("Null tag, mate");
       }
       else {
@@ -364,7 +364,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
 
     if (token_len(t) == IMAP4_CMD_NOOP_LEN && 
-			! strncasecmp(token_buf(t), IMAP4_CMD_NOOP, 
+			! strncasecmp((char *)token_buf(t), IMAP4_CMD_NOOP, 
 				token_len(t))) {
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_NOOP);
       if(imap4_in_noop_cmd(io, tag)){
@@ -374,7 +374,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
 #ifdef WITH_SSL_SUPPORT
     else if (token_len(t) == IMAP4_CMD_STARTTLS_LEN && 
-			! strncasecmp(token_buf(t), IMAP4_CMD_STARTTLS, 
+			! strncasecmp((char *)token_buf(t), IMAP4_CMD_STARTTLS, 
 				token_len(t))) {
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_STARTTLS);
       if(io_get_type(io) != io_type_ssl){
@@ -392,8 +392,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }    
 #endif /* WITH_SSL_SUPPORT */
     else if (token_len(t) == IMAP4_CMD_CAPABILITY_LEN && 
-			! strncasecmp(token_buf(t), IMAP4_CMD_CAPABILITY, 
-				token_len(t))){
+			! strncasecmp((char *)token_buf(t), 
+				IMAP4_CMD_CAPABILITY, token_len(t))){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_CAPABILITY);
       if(imap4_in_capability_cmd(io, tag)){
         VANESSA_LOGGER_DEBUG("imap4_in_capability");
@@ -401,8 +401,8 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       }
     }
     else if (token_len(t) == IMAP4_CMD_AUTHENTICATE_LEN &&
-			! strncasecmp(token_buf(t), IMAP4_CMD_AUTHENTICATE, 
-				token_len(t))){
+			! strncasecmp((char *)token_buf(t), 
+				IMAP4_CMD_AUTHENTICATE, token_len(t))){
       if(vanessa_queue_length(q) != 1) {
         __IMAP4_IN_BAD("Mate, try " IMAP4_CMD_AUTHENTICATE " <mechanism>");
       }
@@ -412,7 +412,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       }
     }
     else if (token_len(t) == IMAP4_CMD_LOGOUT_LEN && 
-    			! strncasecmp(token_buf(t), IMAP4_CMD_LOGOUT, 
+    			! strncasecmp((char *)token_buf(t), IMAP4_CMD_LOGOUT, 
     				token_len(t))) {
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_LOGOUT);
       if(imap4_in_logout_cmd(io, tag)){
@@ -423,7 +423,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
       return(1);
     }
     else if (token_len(t) == IMAP4_CMD_LOGIN_LEN &&
-			! strncasecmp(token_buf(t), IMAP4_CMD_LOGIN, 
+			! strncasecmp((char *)token_buf(t), IMAP4_CMD_LOGIN, 
 				token_len(t))) {
       if(vanessa_queue_length(q)!=2 && vanessa_queue_length(q)!=1){
 	__IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
@@ -592,8 +592,6 @@ int imap4_in_logout_cmd(io_t *io, const token_t *tag){
  **********************************************************************/
 
 int imap4_in_capability_cmd(io_t *io, const token_t *tag){
-  extern options_t opt;
-
   if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
 			  str_null_safe(opt.capability))<0){
     VANESSA_LOGGER_DEBUG("imap4_write untagged");

@@ -32,6 +32,7 @@
 #include "imap4.h"
 #include "protocol.h"
 #include "options.h"
+#include "perdition_globals.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -53,8 +54,6 @@ static flag_t imap4_encryption(flag_t ssl_flags);
 char *imap4_type[]={IMAP4_OK, IMAP4_NO, IMAP4_BAD};
 
 protocol_t *imap4_initialise_protocol(protocol_t *protocol){
-  extern char *imap4_type[];
-
   protocol->type = imap4_type;
   protocol->write = imap4_write;
   protocol->greeting_string = IMAP4_GREETING;
@@ -134,8 +133,6 @@ char *imap4_capability(char *capability, char **mangled_capability,
 		flag_t tls_flags, flag_t tls_state) 
 {
 	flag_t mode;
-
-	extern options_t opt;
 
 	if(!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
 		free(capability);

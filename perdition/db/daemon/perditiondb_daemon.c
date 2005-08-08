@@ -151,10 +151,6 @@ dbserver_get2(const char *key_str, const char *options_str,
 	perdition_packet_str_t server_pstr;
 	perdition_packet_str_t port_pstr;
 
-	extern options_t opt;
-	extern struct sockaddr_in *peername;
-	extern struct sockaddr_in *sockname;
-
 	packet = perdition_packet_create();
 	if(!packet) {
 		VANESSA_LOGGER_DEBUG("perdition_packet_create");

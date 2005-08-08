@@ -52,8 +52,6 @@ int perdition_conv(
 ){
   char *pass;
 
-  extern int errno;
-
   if((
     *response=(struct pam_response *)malloc(sizeof(struct pam_response))
   )==NULL){

@@ -34,6 +34,7 @@
 #include "config.h"
 #endif
 
+#include "perdition_globals.h"
 #include "perditiondb_ldap.h"
 
 #ifdef DMALLOC
@@ -350,10 +351,7 @@ int dbserver_get(const char *key_str,
 	char *binddn = NULL;
 	char *bindpw = NULL;
 
-	extern options_t opt;
-
 	*len_return = 0;
-
 
 	/* get filter string */
 	if (pldap_get_filter(key_str, pldap_filter, &lud) < 0) {

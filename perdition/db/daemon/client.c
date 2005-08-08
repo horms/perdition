@@ -21,11 +21,11 @@
 #define MAX_RETRY 5 
 
 
-static struct sockaddr_in *peername = NULL;
-static struct sockaddr_in *sockname = NULL;
+static struct sockaddr_in *daemon_peername = NULL;
+static struct sockaddr_in *daemon_sockname = NULL;
 
 static void 
-usage(int exit_status)
+daemon_usage(int exit_status)
 {
 	fprintf(exit_status?stderr:stdout,
 			"perdition test-client version %s Copyright Horms\n"
@@ -60,8 +60,8 @@ main(int argc, char **argv)
 	perdition_packet_str_t user;
 	perdition_packet_str_t server;
 	perdition_packet_str_t port;
-	char *server_socket;
-	char *query;
+	char *server_socket = NULL;
+	char *query = NULL;
 	int status = -1;
 
 	vl = vanessa_logger_openlog_filehandle(stderr, "test-client",
@@ -77,11 +77,11 @@ main(int argc, char **argv)
 		query = argv[2];
 	}
 	else {
-		usage(-1);
+		daemon_usage(-1);
 	}
 
 	if(!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		usage(0);
+		daemon_usage(0);
 	}
 
 	packet = perdition_packet_create();
@@ -94,10 +94,10 @@ main(int argc, char **argv)
 	PERDITION_PACKET_STR_PACK(domain_delimiter, "@");
 
 	if(perdition_packet_init_v1_req(&packet, 0,
-			peername?peername->sin_addr.s_addr:0UL,
-			peername?peername->sin_port:0U,
-			sockname?sockname->sin_addr.s_addr:0UL, 
-			sockname?sockname->sin_port:0U, 
+			daemon_peername?daemon_peername->sin_addr.s_addr:0UL,
+			daemon_peername?daemon_peername->sin_port:0U,
+			daemon_sockname?daemon_sockname->sin_addr.s_addr:0UL, 
+			daemon_sockname?daemon_sockname->sin_port:0U, 
 			&key, &domain_delimiter) < 0) {
 		VANESSA_LOGGER_DEBUG("perdition_packet_init_v1");
 		goto leave;
