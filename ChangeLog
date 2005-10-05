@@ -22,6 +22,8 @@ XXX
    modules too, but its likely to be module-specific.
    Thanks to Farzad FARID
  - Allow the LDAP protocol version to be specified
+ - tls_XXX_force now sets tls_XXX. Previously tls_XXX_force was
+   ignored if tls_XXX was not already set. This proved confusing.
 
 ----------------------------------------------------------------------
 

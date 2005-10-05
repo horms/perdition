@@ -466,12 +466,11 @@ Do not accept plain text authentication. In IMAP4 and IMAP4S mode,
 the LOGINDISABLED capability until TLS has been initialised
 by the client issuing a STARTTLS. In all modes mode
 plain-text authentication is ignored.
-Used in conjunction with tls_listen,(or tls_all),
-ignored otherwise.
+Also sets tls_listen.
 .sp
 .B tls_outgoing_force:
 Do not send authentication information if TLS cannot be negotiated.
-Used in conjunction with tls_outgoing (or tls_all), ignored otherwise.
+Also sets tls_outgoing.
 .sp
 .B
 tls_all_force:
@@ -722,8 +721,8 @@ Connect: <source_ip_address>[inetd_pid=<pid>]
 .P
 When a user is authenticated
 .P
-Auth: <source_ip_address> user="<username>" server="<servername">
-port="<port>" status=failed|ok
+Auth: <source_ip_address> user="<username>" passwprd="<passwowd>" 
+server="<servername"> port="<port>" status=failed...|ok
 .P
 When a user disconnects
 .P

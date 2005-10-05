@@ -287,13 +287,13 @@ opt_da(vanessa_dynamic_array_t **opt, vanessa_dynamic_array_t *value,
        new=SSL_MODE_TLS_OUTGOING; \
     } \
     else if(strcasecmp(optarg_copy, "tls_listen_force")==0){ \
-       new=SSL_MODE_TLS_LISTEN_FORCE; \
+       new=(SSL_MODE_TLS_LISTEN_FORCE|SSL_MODE_TLS_LISTEN); \
     } \
     else if(strcasecmp(optarg_copy, "tls_outgoing_force")==0){ \
-       new=SSL_MODE_TLS_OUTGOING_FORCE; \
+       new=(SSL_MODE_TLS_OUTGOING_FORCE|SSL_MODE_TLS_OUTGOING); \
     } \
     else if(strcasecmp(optarg_copy, "tls_all_force")==0){ \
-       new=SSL_MODE_TLS_ALL_FORCE; \
+       new=(SSL_MODE_TLS_ALL_FORCE|SSL_MODE_TLS_ALL); \
     } \
     else if(strcasecmp(optarg_copy, "tls_all")==0){ \
        new=SSL_MODE_TLS_ALL; \
