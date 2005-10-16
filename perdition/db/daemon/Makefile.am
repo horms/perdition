@@ -42,4 +42,4 @@ client_LDADD = $(COMMON_LIBRARY_ADD)
 server_SOURCES = server.c
 server_LDADD = $(COMMON_LIBRARY_ADD)
 
-INCLUDES = -I$(top_srcdir)/perdition
+INCLUDES = -I$(top_srcdir)/perdition -I$(top_srcdir)/libjain
