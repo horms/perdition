@@ -62,7 +62,7 @@ perdition_SOURCES = \
         options.c           options.h \
         pam.c               pam.h \
         perdition.c \
-        perdition_types.h \
+	perdition_globals.h perdition_types.h \
         pop3.c              pop3.h \
         pop3s.c             pop3s.h \
         pop3_in.c           pop3_in.h \
