@@ -24,6 +24,8 @@ XXX
  - Allow the LDAP protocol version to be specified
  - tls_XXX_force now sets tls_XXX. Previously tls_XXX_force was
    ignored if tls_XXX was not already set. This proved confusing.
+ - Don't build ldap documentation by default, it requres pslatex.sty
+   and we need a check for that.
 
 ----------------------------------------------------------------------
 

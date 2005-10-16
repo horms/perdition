@@ -897,23 +897,19 @@ AC_ARG_WITH(
   
 )
 
-
-######################################################################
-# Latex stuff
-
 AC_MSG_CHECKING([if ldap (latex) documentation is disabled]);
 AC_ARG_ENABLE(
   ldap_doc,
-  [  --disable-ldap-doc      DO not ldap (latex) documentation.  ],
+  [  --enable-ldap-doc       Create ldap (latex) documentation.  ],
   [ 
     if test "$enable_ldap_doc" = "no"; then
-      AC_MSG_RESULT("yes")
-    else
       AC_MSG_RESULT("no")
+    else
+      AC_MSG_RESULT("yes")
     fi
   ],
   [ 
-    enable_ldap_doc="yes";
+    enable_ldap_doc="no";
     AC_MSG_RESULT("no") 
   ]
 )
