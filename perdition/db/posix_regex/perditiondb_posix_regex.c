@@ -128,7 +128,7 @@ int dbserver_init(char *options_str){
 			VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 			goto leave; 
 		}
-		if(regcomp(preg, pattern, REG_EXTENDED|REG_NEWLINE)){
+		if(regcomp(preg, pattern, REG_EXTENDED|REG_NEWLINE|REG_ICASE)){
 			goto leave;
 		}
 

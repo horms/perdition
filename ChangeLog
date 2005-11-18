@@ -26,6 +26,7 @@ XXX
    ignored if tls_XXX was not already set. This proved confusing.
  - Don't build ldap documentation by default, it requres pslatex.sty
    and we need a check for that.
+ - Make regex matches case insensitive. Peter Mann
 
 ----------------------------------------------------------------------
 
