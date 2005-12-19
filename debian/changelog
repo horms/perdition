@@ -1,3 +1,10 @@
+perdition (1.17-4) unstable; urgency=low
+
+  * Update MySQL build dependancy to libmysqlclient15-dev
+    (closes: 343790)
+
+ -- Simon Horman <horms@verge.net.au>  Mon, 19 Dec 2005 10:24:15 +0900
+
 perdition (1.17-3) unstable; urgency=low
 
   * Revert to using ldap_init() instead of ldap_initialize()
