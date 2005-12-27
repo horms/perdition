@@ -1,3 +1,16 @@
+perdition (1.17-5) unstable; urgency=low
+
+  * Rebuild, as i386 upload was missing depenancies on vanessa libraries.
+    This was caused by a ~/.magic in the build environment that had very
+    unexpected side affects. Primarily causing file to return "data"
+    instead of "ELF" on ELF executables, and thus causing all executables
+    to be skipped by dh_shlibdeps.
+    (closes: #344797)
+  * Tell dh_shlibdeps that base libraries are in the perdition package
+    and found in debian/perdition/usr/lib
+
+ -- Simon Horman <horms@verge.net.au>  Tue, 27 Dec 2005 03:57:14 +0000
+
 perdition (1.17-4) unstable; urgency=low
 
   * Update MySQL build dependancy to libmysqlclient15-dev
