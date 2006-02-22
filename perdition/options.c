@@ -490,7 +490,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(&(opt.connect_relog), DEFAULT_CONNECT_RELOG, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.capability), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.mangled_capability), NULL, &i, 0, OPT_NOT_SET);
-    opt_p(&(opt.bind_address), DEFAULT_BIND_ADDRESS, &i, 0, OPT_NOT_SET);
+    opt_da(&(opt.bind_address), DEFAULT_BIND_ADDRESS, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.log_facility), DEFAULT_LOG_FACILITY, &i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE)) {
       char *filename;
@@ -595,7 +595,16 @@ int options(int argc, char **argv, flag_t f){
         opt_i(&(opt.no_bind_banner), 1, &(opt.mask), MASK_NO_BIND_BANNER, f);
         break;
       case 'b':
-        opt_p(&(opt.bind_address), optarg, &(opt.mask), MASK_BIND_ADDRESS, f);
+        if(options_set_mask(&(opt.mask), f, MASK_BIND_ADDRESS)){
+          if(!(f&OPT_NOT_SET) && opt.bind_address!=NULL) {
+            vanessa_dynamic_array_destroy(opt.bind_address);
+          }
+          OPTARG_DUP;
+          opt.bind_address=split_str_server_port(
+            optarg_copy,
+            OPT_SERVER_DELIMITER
+          );
+        }
         break;
       case TAG_CONNECT_RELOG:
         if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
@@ -981,8 +990,10 @@ int options(int argc, char **argv, flag_t f){
 }
 
 int log_options_str(char *str, size_t n){
+  int status = -1;
   char *protocol=NULL;
   char *outgoing_server=NULL;
+  char *bind_address=NULL;
   char *query_key=NULL;
   char add_domain[40];
   char lower_case[40];
@@ -1003,8 +1014,17 @@ int log_options_str(char *str, size_t n){
       OPT_SERVER_DELIMITER
     ))==NULL){
       VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_display");
-      free(protocol);
-      return(-1);
+      goto err;
+    }
+  }
+
+  if(opt.bind_address!=NULL){
+    if((bind_address=vanessa_dynamic_array_display(
+      opt.bind_address,
+      OPT_SERVER_DELIMITER
+    ))==NULL){
+      VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_display");
+      goto err;
     }
   }
 
@@ -1014,9 +1034,7 @@ int log_options_str(char *str, size_t n){
       OPT_SERVER_DELIMITER
     ))==NULL){
       VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_display");
-      free(outgoing_server);
-      free(protocol);
-      return(-1);
+      goto err;
     }
   }
 
@@ -1137,7 +1155,7 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
-    OPT_STR(opt.bind_address),
+    OPT_STR(bind_address),
     OPT_STR(opt.capability),
     BIN_OPT_STR(opt.client_server_specification),
     OPT_STR(opt.config_file),
@@ -1193,10 +1211,13 @@ int log_options_str(char *str, size_t n){
   );
   *(str+n-1) = '\0';
 
+  status = 0;
+err:
   str_free(protocol);
   str_free(outgoing_server);
+  str_free(bind_address);
   str_free(query_key);
-  return(0);
+  return status;
 }
 
 
@@ -1283,8 +1304,8 @@ void usage(int exit_status){
 #endif /* WITH_PAM_SUPPORT */
     " -B|--no_bind_banner:\n"
     "    Use uname to generate banner of even if bind_address is in effect.\n"
-    " -b|--bind_address IP_ADDRESS|HOSTNAME:\n"
-    "    Bind to this address.\n"
+    " -b|--bind_address SERVER[,SERVER...]:\n"
+    "    Bind to these addresses and ports.\n"
     "    (default \"%s\")\n"
     " -C|--connection_logging:\n"
     "    Log all communication received from end-users or real servers or\n"
