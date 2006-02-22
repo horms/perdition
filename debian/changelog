@@ -1,3 +1,10 @@
+perdition (1.18-1) unstable; urgency=low
+
+  * New Upstream
+  * Build Dependancy on automake1.9 | automaken instead of automake
+
+ -- Simon Horman <horms@debian.org>  Wed, 22 Feb 2006 12:37:57 +0900
+
 perdition (1.17-5) unstable; urgency=low
 
   * Rebuild, as i386 upload was missing depenancies on vanessa libraries.

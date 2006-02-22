@@ -260,7 +260,7 @@ int main (int argc, char **argv, char **envp){
   int round_robin_server=0;
   int rnd;
   int s=-1;
-  int g=-1;
+  int *g = NULL;
 
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
@@ -506,13 +506,48 @@ int main (int argc, char **argv, char **envp){
 
   /* Open incoming socket as required */
   if(!opt.inetd_mode) {
-    g = vanessa_socket_server_bind(opt.listen_port, opt.bind_address, 
- 		    		   opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);
-    if(g < 0) {
-      VANESSA_LOGGER_DEBUG("vanessa_socket_server_bind");
-      VANESSA_LOGGER_ERR("Fatal error listening for connections. Exiting.");
-      perdition_exit_cleanly(-1);
-    }
+	  size_t nfrom;
+	  char **fromv;
+	  
+  	  if (opt.bind_address) 
+		  nfrom = vanessa_dynamic_array_get_count(opt.bind_address);
+	  else 
+		  nfrom = 1;
+	  
+  	  fromv = (char **)malloc(((nfrom * 2) + 1) * sizeof(char *));
+	  if (!fromv) {
+		  VANESSA_LOGGER_DEBUG_ERRNO("malloc fromv");
+		  VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
+		  perdition_exit_cleanly(-1);
+	  }
+	  
+  	  if (opt.bind_address) {
+		  size_t i;
+		  user_server_port_t *from_usp;
+		  for (i = 0; i < nfrom; i++) {
+			  from_usp = vanessa_dynamic_array_get_element(
+						opt.bind_address, i);
+			  fromv[i * 2] = user_server_port_get_server(from_usp);
+			  fromv[(i * 2) + 1] = user_server_port_get_port(
+			  			from_usp);
+			  if (!fromv[(i * 2) + 1])
+				  fromv[(i * 2) + 1] = opt.listen_port;
+		  }
+	  }
+	  else {
+	  	  fromv[0] = "0.0.0.0";
+	  	  fromv[1] = opt.listen_port;
+	  }
+	  fromv[nfrom * 2] = NULL;
+	  g = vanessa_socket_server_bindv(fromv, 
+	  			opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);
+	  free(fromv);
+	  if(!g) {
+		  VANESSA_LOGGER_DEBUG("vanessa_socket_server_bindv");
+		  VANESSA_LOGGER_ERR("Fatal error listening for connections."
+				     "Exiting.");
+		  perdition_exit_cleanly(-1);
+	  }
   }
 
   /*
@@ -551,7 +586,7 @@ int main (int argc, char **argv, char **envp){
     }
   }
   else{
-    s = vanessa_socket_server_accept(g, opt.connection_limit, peername, 
+    s = vanessa_socket_server_acceptv(g, opt.connection_limit, peername, 
           sockname, 0);
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
@@ -779,8 +814,8 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    s = vanessa_socket_client_src_open(opt.bind_address, NULL, servername, 
-				    port, 
+    s = vanessa_socket_client_src_open(inet_ntoa(sockname->sin_addr), NULL, 
+				    servername, port, 
 				    (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0));
     if(s < 0) {
 	    VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
