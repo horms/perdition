@@ -115,15 +115,14 @@ and the reverse\-lookup of this will be used in the greeting. This
 option disables this behaviour an reverts to using the uname to
 derive the hostname for the greeting.
 .TP
-.B \-b, \-\-bind_address SERVER[,SERVER...]:
-Bind to these addresses and ports. interfaces with this address. 
-Format is as per the \-\-outgoing_server option. If the port is
-ommitted, then the listen_port will be used.
-.sp
-In non\-inetd mode, connections will only be accepted to the listed
-servers. If un-set connections will be accepted on all addresses on the
-listen_port.
-.sp
+.B \-b, \-\-bind_address IP_ADDRESS|HOSTNAME:
+Bind to interfaces with this address. In non\-inetd mode, connections
+will only be accepted on interfaces with this address. If NULL
+connections will be accepted from all interfaces. In inetd and
+non\-inetd mode the source address of connections to real servers
+will be this address, if NULL then the operating system will select
+a source address.
+.br
 (default "")
 .TP
 .B \-C|\-\-connection_logging:

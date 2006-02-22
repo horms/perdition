@@ -182,7 +182,7 @@ typedef struct {
 #ifdef WITH_PAM_SUPPORT
   int             authenticate_in;
 #endif /* WITH_PAM_SUPPORT */
-  vanessa_dynamic_array_t *bind_address;
+  char            *bind_address;
   char            *capability;
   char            *mangled_capability;
   int             client_server_specification;

@@ -26,10 +26,6 @@ XXX
    ignored if tls_XXX was not already set. This proved confusing.
  - Don't build ldap documentation by default, it requres pslatex.sty
    and we need a check for that.
- - Allow bind address to include a port
- - Allow multiple bind addresses
- - Derive source address from the address connected to,
-   rather than the configured bind address
 
 ----------------------------------------------------------------------
 
