@@ -4,6 +4,8 @@ perdition (1.18-1) unstable; urgency=low
   * Build Dependancy on automake1.9 | automaken instead of automake
   * Fix documentation of map_library. Thanks to Anand Kumria.
     (closes: #354527)
+  * add suggests perdition-ldap, perdition-mysql, perdition-odbc,
+    perdition-postgresql to perdition
 
  -- Simon Horman <horms@debian.org>  Mon, 27 Feb 2006 14:08:42 +0900
 

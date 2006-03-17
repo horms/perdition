@@ -11,6 +11,7 @@ Depends: ${shlibs:Depends}
 Conflicts: perdition-bdb
 Replaces: perdition-bdb
 Provides: perdition-bdb
+Suggests: perdition-ldap, perdition-mysql, perdition-odbc, perdition-postgresql
 Description: POP3 and IMAP4 Proxy server
  Perdition allows users to connect to a content-free POP3 or IMAP4
  server that will redirect them to their real POP3 or IMAP4 server. This
