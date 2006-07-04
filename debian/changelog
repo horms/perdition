@@ -1,14 +1,21 @@
 perdition (1.18-1) unstable; urgency=low
 
   * New Upstream
-  * Build Dependancy on automake1.9 | automaken instead of automake
+
+ -- Simon Horman <horms@debian.org>  Fri, 19 May 2006 10:32:39 +0900
+
+perdition (1.17-7) unstable; urgency=low
+
+  * Remove the unneccesary Build-Depends on automake as part of
+    automake transition. http://wiki.debian.org/AutomakeTransition
+    (closes: #376643)
   * Fix documentation of map_library. Thanks to Anand Kumria.
     (closes: #354527)
-  * add suggests perdition-ldap, perdition-mysql, perdition-odbc,
+  * Add suggests perdition-ldap, perdition-mysql, perdition-odbc,
     perdition-postgresql to perdition
   * Update from standards version 3.6.1 to 3.7.2
 
- -- Simon Horman <horms@debian.org>  Fri, 19 May 2006 10:32:39 +0900
+ -- Simon Horman <horms@debian.org>  Tue,  4 Jul 2006 15:31:02 +0900
 
 perdition (1.17-5) unstable; urgency=low
 
