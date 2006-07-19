@@ -190,18 +190,17 @@ are extended posix regular expressions. The last example illustrates the
 ability to expand backreferances.  Backreferences may be used by inserting
 $n in the substitution where n is in the range 1..9.
 The backreference substitution code in this library is courtesy
-of Wim Bonis <bonis@solution\-service.de> and in turn the PHP3
-project.
+of Wim Bonis and in turn the PHP3 project.
 .P
 E.g.
 .P
 For the regex (.*)@(.*): $1_$2@localhost
 .br
-bonis@solution\-service.de
+user@x.y.z.de
 .br
 would return
 .br
-bonis_solution\-service.de@localhost
+user_x.y.z.de@localhost
 .P
 Note that there is no implicit ^ or $
 around the regular expressions. The popmap entry "flim: localhost" will
