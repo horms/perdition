@@ -1,8 +1,11 @@
 perdition (1.18-1) unstable; urgency=low
 
   * New Upstream
+  * Use ca_path and ca_file for incoming connections
+    Thanks to Sven Hartge
+    (closes #380390)
 
- -- Simon Horman <horms@debian.org>  Fri, 19 May 2006 10:32:39 +0900
+ -- Simon Horman <horms@debian.org>  Mon, 31 Jul 2006 10:35:22 +0900
 
 perdition (1.17-7) unstable; urgency=low
 
