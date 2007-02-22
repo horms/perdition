@@ -70,3 +70,7 @@ Cami
 
 Paul Gamble
 * Allow a single process to listen on multiple ports.
+
+
+* Document how to ommit portion option for MySQL
+* Have a pre and post auth timeout
