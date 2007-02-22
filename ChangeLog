@@ -2,11 +2,12 @@ Change Log
 
 perdition
 Mail retrieval proxy server
-Copyright (C) 1999-2005  Horms <horms@verge.net.au>
+Copyright (C) 1999-2007  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
- * XXX
+22nd February 2007
+(Horms)
+ * 1.18-rc1
  - Make packet and socket handling code in daemon module
    a separate shared library so its code can be used in
    daemons written to work with it.
