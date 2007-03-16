@@ -11,6 +11,7 @@ XXX
  - Pass include '\0' in the length passed to yp_match() in the NIS module
    Thanks to Robert Edmonds
    (Debian Bug: #412151)
+ - Don't dereference sockname in main() if it isn't intialised
 
 22nd February 2007
 (Horms)

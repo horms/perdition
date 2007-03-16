@@ -814,9 +814,11 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    s = vanessa_socket_client_src_open(inet_ntoa(sockname->sin_addr), NULL, 
-				    servername, port, 
-				    (opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0));
+    s = vanessa_socket_client_src_open(sockname ? 
+				       inet_ntoa(sockname->sin_addr) : NULL,
+				       NULL, servername, port, 
+				       opt.no_lookup ? 
+				       VANESSA_SOCKET_NO_LOOKUP : 0);
     if(s < 0) {
 	    VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_ERR, "Could not connect to server");
