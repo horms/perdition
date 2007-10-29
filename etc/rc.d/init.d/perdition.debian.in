@@ -62,21 +62,35 @@ case "$1" in
       start-stop-daemon --start --verbose \
         --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
         --exec @prefix@/sbin/perdition.pop3 -- $FLAGS $POP3_FLAGS
+        if [ ! -e /var/run/perdition.pop3/perdition.pop3.pid ]; then
+                echo "Unable to start POP3 Daemon (maybe another process is listening to the same port?)"
+        fi
+
     fi
     if [ "$POP3S" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
         --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
         --exec @prefix@/sbin/perdition.pop3s -- $FLAGS $POP3S_FLAGS
+        if [ ! -e /var/run/perdition.pop3s/perdition.pop3s.pid ]; then
+                echo "Unable to start POP3S Daemon (maybe another process is listening to the same port?)"
+        fi
     fi
     if [ "$IMAP4" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
         --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
         --exec @prefix@/sbin/perdition.imap4 -- $FLAGS $IMAP4_FLAGS
+        if [ ! -e /var/run/perdition.imap4/perdition.imap4.pid ]; then
+                echo "Unable to start IMAP4 Daemon (maybe another process is listening to the same port?)"
+        fi
+
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
       start-stop-daemon --start --verbose \
         --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
+         if [ ! -e /var/run/perdition.imaps/perdition.imaps.pid ]; then
+                 echo "Unable to start IMAP4S Daemon (maybe another process is listening to the same port?)"
+         fi
     fi
     ;;
   stop)
