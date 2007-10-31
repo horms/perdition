@@ -8,7 +8,15 @@ perdition (1.18) UNRELEASED; urgency=low
       Thanks to Sven Hartge
       (closes: #380390)
 
- -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 14:45:41 +0900
+ -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 14:47:31 +0900
+
+perdition (1.17.1-1) unstable; urgency=high
+
+  * New Upstream
+    - Verify that tag read from end-users is valid
+    - Merged in all changes made between 1.17-1 and 1.17-8 inclusive
+
+ -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 11:44:22 +0900
 
 perdition (1.17-8) unstable; urgency=low
 
