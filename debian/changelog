@@ -1,20 +1,21 @@
-perdition (1.17+1.18-rc1-2) unstable; urgency=low
-
-  * Pass include '\0' in the length passed to yp_match() in the NIS module
-    Thanks to Robert Edmonds
-    (closes: #412151)
-  * 1.17+1.18-rc1-1 (closes: #380390)
-
- -- Simon Horman <horms@debian.org>  Tue, 27 Feb 2007 11:04:40 +0900
-
-perdition (1.17+1.18-rc1-1) unstable; urgency=low
+perdition (1.18) UNRELEASED; urgency=low
 
   * New Upstream
-  * Use ca_path and ca_file for incoming connections
-    Thanks to Sven Hartge
-    (closes #380390)
+    - Pass include '\0' in the length passed to yp_match() in the NIS module
+      Thanks to Robert Edmonds
+      (closes: #412151)
+    - Use ca_path and ca_file for incoming connections
+      Thanks to Sven Hartge
+      (closes: #380390)
 
- -- Simon Horman <horms@debian.org>  Thu, 22 Feb 2007 12:59:55 +0900
+ -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 14:45:41 +0900
+
+perdition (1.17-8) unstable; urgency=low
+
+  * Change build-dependancy from libdb4.3-dev to libdb-dev,
+    which currently depends on libdb4.6-dev. This is to allow
+    libdb4.3 to be removed from the archive.
+    (closes: #442663)
 
 perdition (1.17-7) unstable; urgency=low
 
