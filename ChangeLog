@@ -12,6 +12,9 @@ XXX
    Thanks to Robert Edmonds
    (Debian Bug: #412151)
  - Don't dereference sockname in main() if it isn't intialised
+ - Verify that tag read from end-users is valid
+ - Various Debian packaging updates
+ - Fixed documentation of map_library. Thanks to Anand Kumria.
 
 22nd February 2007
 (Horms)
