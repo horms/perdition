@@ -14,6 +14,11 @@ perdition (1.17.1-1) unstable; urgency=high
 
   * New Upstream
     - Verify that tag read from end-users is valid
+      + CVE-2007-5740
+        The format string protection mechanism in IMAPD for Perdition Mail
+        Retrieval Proxy 1.17 and earlier allows remote attackers to execute
+        arbitrary code via an IMAP tag with a null byte followed by a format
+        string specifier, which is not counted by the mechanism.
     - Merged in all changes made between 1.17-1 and 1.17-8 inclusive
 
  -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 11:44:22 +0900

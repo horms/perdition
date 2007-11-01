@@ -12,9 +12,15 @@ XXX
    Thanks to Robert Edmonds
    (Debian Bug: #412151)
  - Don't dereference sockname in main() if it isn't intialised
- - Verify that tag read from end-users is valid
- - Various Debian packaging updates
- - Fixed documentation of map_library. Thanks to Anand Kumria.
+ - The following changes are also included in 1.17.1
+   - Verify that tag read from end-users is valid
+     - CVE-2007-5740
+       The format string protection mechanism in IMAPD for Perdition Mail
+       Retrieval Proxy 1.17 and earlier allows remote attackers to execute
+       arbitrary code via an IMAP tag with a null byte followed by a format
+       string specifier, which is not counted by the mechanism.
+   - Various Debian packaging updates
+   - Fixed documentation of map_library. Thanks to Anand Kumria.
 
 22nd February 2007
 (Horms)
