@@ -13,6 +13,14 @@
  * Mail retrieval proxy server, LDAP support
  * Copyright (C) 1999-2005  ChrisS and Horms
  * 
+ * Contributions:
+ *
+ *
+ * 	Oct/2007: Confederacao SICREDI - www.sicredi.com.br
+ *                Felipe Damasio - felipe_damasio@sicredi.com.br
+ *                Tiago A. Wegner - tiago_wegner@sicredi.com.br
+ * 	- Fix the LDAP connection using the proper string for ldap_initialize
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -350,6 +358,7 @@ int dbserver_get(const char *key_str,
 	char **returns = NULL;
 	char *binddn = NULL;
 	char *bindpw = NULL;
+	char *ldap_connect = NULL;
 
 	*len_return = 0;
 
@@ -362,9 +371,22 @@ int dbserver_get(const char *key_str,
 	}
 
 	/* Open LDAP connection */
-#if 0
-//#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-	err = ldap_initialize(&connection, pldap_filter);
+#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
+	/*
+         * This '+6' on calloc is the worst case scenario of a non-default
+         * LDAP port: 65535 and such. The extra byte is for '\0'
+         */
+	ldap_connect = calloc(strlen (lud->lud_scheme) +
+			      strlen (lud->lud_host) + 6, sizeof (char));
+	if (!ldap_connect)
+		goto leave;
+	if (lud->lud_port != LDAP_PORT)
+		sprintf(ldap_connect, "%s://%s:%d", lud->lud_scheme,
+			lud->lud_host, lud->lud_port);
+	else
+		sprintf(ldap_connect, "%s://%s", lud->lud_scheme,
+			lud->lud_host);
+	err = ldap_initialize(&connection, ldap_connect);
 	if (err != LDAP_SUCCESS) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_initialize: %s",
 				ldap_err2string(err));
@@ -527,6 +549,8 @@ int dbserver_get(const char *key_str,
 	status = 0;
 
       leave:
+	if (ldap_connect)
+		free(ldap_connect);
 	if (returns) {
 		for (count = 0; count < attrcount; count++)
 			if (returns[count] != NULL)
