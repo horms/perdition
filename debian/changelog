@@ -7,8 +7,13 @@ perdition (1.18) UNRELEASED; urgency=low
     - Use ca_path and ca_file for incoming connections
       Thanks to Sven Hartge
       (closes: #380390)
+    - Fix buffer overflow in options logging code that caused
+      perdition to segfault on start-up if the ssl_mode string
+      supplied was greater than 26 characters long.
+      Thanks to Laurent Licour <laurent@licour.com> for the fix.
+      (closes: #395408)
 
- -- Simon Horman <horms@debian.org>  Wed, 31 Oct 2007 14:47:31 +0900
+ -- Simon Horman <horms@debian.org>  Fri, 23 Nov 2007 14:38:48 +0900
 
 perdition (1.17.1-1) unstable; urgency=high
 

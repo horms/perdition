@@ -996,7 +996,7 @@ int log_options_str(char *str, size_t n){
   char lower_case[40];
   char strip_domain[40];
 #ifdef WITH_SSL_SUPPORT
-  char ssl_mode[26];
+  char ssl_mode[40];
   char *ssl_mode_p = NULL;
 #endif /* WITH_SSL_SUPPORT */
 
