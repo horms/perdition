@@ -37,15 +37,18 @@ install: build
 	  DESTDIR=$(pwd)/debian/tmp \
   	  install
 
-	./mkinstalldirs $(pwd)/debian/tmp/etc/init.d
+	mkdir -p $(pwd)/debian/tmp/etc/init.d
+	chmod 755 $(pwd)/debian/tmp/etc/init.d
 	install -c -m 755 etc/rc.d/init.d/perdition.debian \
 	  $(pwd)/debian/tmp/etc/init.d/perdition
 
-	./mkinstalldirs $(pwd)/debian/tmp/etc/default
+	mkdir -p $(pwd)/debian/tmp/etc/default
+	chmod 755 $(pwd)/debian/tmp/etc/default
 	install -c -m 644 etc/sysconfig/perdition \
 	  $(pwd)/debian/tmp/etc/default/perdition
 
-	./mkinstalldirs $(pwd)/debian/tmp/usr/share/doc/perdition
+	mkdir -p $(pwd)/debian/tmp/usr/share/doc/perdition
+	chmod 755 $(pwd)/debian/tmp/usr/share/doc/perdition
 	install -c -m 644 perdition/db/nis/README.perditiondb_nis \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/README.perditiondb_nis
 	gzip --best \

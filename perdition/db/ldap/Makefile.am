@@ -40,8 +40,8 @@ install-data-hook: $(schema_sources)
 	if test -n "@ldap_schemadir@"; then \
 		if test -n "$(DESTDIR)" -a \
 				! -e "$(DESTDIR)@ldap_schemadir@"; then \
-			$(top_srcdir)/mkinstalldirs \
-				"$(DESTDIR)@ldap_schemadir@"; \
+			mkdir -p "$(DESTDIR)@ldap_schemadir@"; \
+			chmod 755 "$(DESTDIR)@ldap_schemadir@"; \
 		fi; \
 		if test -w "$(DESTDIR)@ldap_schemadir@"; then \
 			install -m644 $< \
