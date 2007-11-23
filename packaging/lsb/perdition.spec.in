@@ -201,9 +201,6 @@ true
 %{_sbindir}/perdition.imap4
 %{_sbindir}/perdition.imap4s
 %{_sbindir}/perdition.imaps
-%{_libdir}/libjain.so
-%{_libdir}/libjain.so.0
-%{_libdir}/libjain.so.0.0.0
 /etc/pam.d/perdition
 /etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition
@@ -296,13 +293,6 @@ true
 %{_libdir}/libperditiondb_odbc.so.0.0.0
 %{_sbindir}/perditiondb_odbc_makedb
 %{_mandir}/man8/perditiondb_odbc_makedb.*
-
-%files devel
-%defattr(-,root,root)
-%{_includedir}/jain.h
-%{_libdir}/libjain.a
-%{_libdir}/libjain.la
-
 
 %changelog
 * Fri Mar  1 2004 Horms <horms@verge.net.au>

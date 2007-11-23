@@ -35,7 +35,6 @@
 #include <sys/types.h>   /*For u_int32_t */
 #include <vanessa_adt.h>
 #include <popt.h>
-#include <jain.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

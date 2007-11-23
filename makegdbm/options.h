@@ -42,8 +42,6 @@
 extern gdbm_error gdbm_errno;
 extern char *gdbm_version;
 
-#include "jain.h"
-
 #define COPYRIGHT \
   "(c) 1999 Horms <horms@verge.net.au>\nReleased under the GNU GPL\n"
 

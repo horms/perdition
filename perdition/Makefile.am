@@ -81,7 +81,6 @@ perdition_SOURCES = \
 
 
 INCLUDES= \
--I$(top_srcdir)/libjain \
 -DPERDITION_LIBDIR=\"${libdir}\" \
 -DPERDITION_SYSCONFDIR=\"$(sysconfdir)/perdition\" \
 -DPERDITION_LOCALSTATEDIR=\"$(localstatedir)\" \
@@ -91,9 +90,6 @@ INCLUDES= \
 #LDFLAGS = -Wl,--rpath -Wl,@prefix@
 
 LDADD = \
--L../libjain \
--L../libjain/.libs/ \
--ljain \
 -lvanessa_adt \
 -lvanessa_socket \
 -lvanessa_logger \

@@ -39,8 +39,6 @@
 #include "config.h"
 #endif
 
-#include "jain.h"
-
 #define COPYRIGHT \
   "(c) 1999 Horms <horms@verge.net.au>\nReleased under the GNU GPL\n"
 

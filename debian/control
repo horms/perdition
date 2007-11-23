@@ -22,15 +22,6 @@ Description: POP3 and IMAP4 Proxy server
  Regular Expression, GDBM, Berkely DB, MySQL, PostgreSQL, ODBC and LDAP 
  libraries ship with the distribution.
 
-Package: perdition-dev
-Architecture: any
-Depends: perdition (= ${Source-Version}), libvanessa-logger-dev (>= 0.0.5), libvanessa-adt-dev (>= 0.0.5), libvanessa-socket-dev (>= 0.0.6), libc6-dev
-Description: Development libraries and headers for perdition
- Perdition allows for arbitrary user database access through
- shared libraries much in the manner of NSS in glibc. This package
- provides headers and libraries that may be useful in the development
- of perditiondb libraries.
-
 Package: perdition-ldap
 Architecture: any
 Depends: ${shlibs:Depends}, perdition (= ${Source-Version})

@@ -28,7 +28,6 @@ changelog \
 compat \
 control \
 copyright \
-perdition-dev.files \
 perdition-ldap.files \
 perdition-ldap.postinst \
 perdition-ldap.prerm \
@@ -53,5 +52,5 @@ dpkg-checkbuild
 
 clean-local:
 	rm -f *.substvars *.debhelper files
-	rm -r -f perdition perdition-dev perdition-ldap perdition-mysql \
+	rm -r -f perdition perdition-ldap perdition-mysql \
 		perdition-postgresql perdition-bdb perdition-odbc tmp

@@ -1049,7 +1049,6 @@ AC_OUTPUT(
 packaging/Makefile
 packaging/lsb/Makefile
 packaging/lsb/perdition.spec
-libjain/Makefile 
 debian/Makefile 
 perdition/Makefile 
 perdition/db/Makefile 

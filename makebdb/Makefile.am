@@ -34,7 +34,5 @@ makebdb_SOURCES = \
         options.c \
         options.h
 
-makebdb_LDADD = -L../libjain -L../libjain/.libs/ -ljain -ldb -lpopt \
+makebdb_LDADD = -ldb -lpopt \
 @dmalloc_lib@
-
-INCLUDES=-I$(top_srcdir)/libjain

@@ -30,7 +30,7 @@ if BDB_BUILD
 MAKEBDB_DIR = makebdb
 endif
 
-SUBDIRS = libjain $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
+SUBDIRS = $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
 	perdition debian etc packaging
 
 EXTRA_DIST = \
