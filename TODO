@@ -78,3 +78,5 @@ Paul Gamble
 * Custom login-disabled messages
   - input from query-key?
   - returned by pop-map?
+
+* Connection rate limiting
