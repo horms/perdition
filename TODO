@@ -74,3 +74,7 @@ Paul Gamble
 
 * Document how to ommit portion option for MySQL
 * Have a pre and post auth timeout
+
+* Custom login-disabled messages
+  - input from query-key?
+  - returned by pop-map?
