@@ -442,7 +442,11 @@ int dbserver_get2(const char *key_str, const char *options_str,
 	/* Perform the search */
 	err = ldap_search_s(connection, lud->lud_dn, lud->lud_scope,
 			   lud->lud_filter, lud->lud_attrs, 0, &res);
-	if (err != LDAP_SUCCESS) {
+        /* Simon Fraser has observed that when using openldap 2.4.11 on
+	 * Debian Etch (2.1.30) that ldap_search_s() may return
+	 * LDAP_SERVER_DOWN even if the search is successful.
+	 */
+	if (err != LDAP_SUCCESS && err != LDAP_SERVER_DOWN) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_search_s: %s",
 				ldap_err2string(err));
 		goto leave;
