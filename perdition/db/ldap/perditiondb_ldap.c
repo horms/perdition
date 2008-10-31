@@ -324,25 +324,26 @@ static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
 
 
 /**********************************************************************
- * dbserver_get
+ * dbserver_get2
  * Read the server (value) from an LDAP directory given the user (key)
  * pre: key_str: Key as a null terminated string
- *      options_str: Options string. 
+ *      options_str: Options string.
  *                   Ignored if NULL
  *                   Used as the map to open otherwise
- *      str_return: value is returned here
- *      len_return: length of value is returned here
- * post: The str_key is looked up in the gdbm map and the
- *       corresponding value is returned in str_return and len_return.
+ *      user_str: string for user is returned here
+ *      server_str: string for server is returned here
+ *      port_str: string for port is returned here
+ * post: The str_key is looked up in the ldap database and the
+ *       corresponding values are returned in user_str, server_str and
+ *       port_str.
  * return:  0 on success
  *         -1 on LDAP access error
  *         -2 if key cannot be found in map
  *         -3 on other error
  **********************************************************************/
 
-int dbserver_get(const char *key_str,
-		 const char *options_str,
-		 char **str_return, int *len_return)
+int dbserver_get2(const char *key_str, const char *options_str,
+		 char **user_str, char **server_str, char **port_str)
 {
 	LDAPURLDesc *lud = NULL;
 	LDAP *connection = NULL;
@@ -359,8 +360,6 @@ int dbserver_get(const char *key_str,
 	char *binddn = NULL;
 	char *bindpw = NULL;
 	char *ldap_connect = NULL;
-
-	*len_return = 0;
 
 	/* get filter string */
 	if (pldap_get_filter(key_str, pldap_filter, &lud) < 0) {
@@ -482,7 +481,6 @@ int dbserver_get(const char *key_str,
 		goto leave;
 	}
 
-	*len_return = 0;
 	for (pstr = ldap_first_attribute(connection, mptr, &ber);
 	     pstr != NULL;
 	     pstr = ldap_next_attribute(connection, mptr, ber)) {
@@ -492,7 +490,6 @@ int dbserver_get(const char *key_str,
 			if (strcasecmp(lud->lud_attrs[count], pstr) != 0) {
 				continue;
 			}
-			*len_return += strlen(*bv_val);
 			if (returns[count] != NULL) {
 				free(returns[count]);
 			}
@@ -515,43 +512,20 @@ int dbserver_get(const char *key_str,
 	ber_free(ber, 0);
 	ber = NULL;
 
-	/* Add in some extra for the separators and terminating NULL */
-	*len_return += 2 + strlen(opt.domain_delimiter);
-
-	if ((*str_return = (char *) calloc(1, *len_return)) == NULL) {
-		VANESSA_LOGGER_DEBUG_ERRNO("str_return calloc");
-		status = -3;
-		goto leave;
-	}
-
 	/* Build the return string */
-	if (attrcount > 0 && returns[0]) {
-		strcat(*str_return, returns[0]);
-	}
-	if (attrcount > 1 && returns[1]) {
-		if (returns[0]) {
-			strcat(*str_return, opt.domain_delimiter);
-		}
-		strcat(*str_return, returns[1]);
-	}
-	if (attrcount > 2 && returns[2] && returns[1]) {
-		strcat(*str_return, ":");
-		strcat(*str_return, returns[2]);
-	}
-	for (count = 0; count < attrcount; count++) {
-		if (!returns[count]) {
-			continue;
-		}
-		free(returns[count]);
-		returns[count] = NULL;
-	}
+	if (returns[0])
+		user_str = &returns[0];
+	if (returns[1])
+		server_str = &returns[1];
+	if (returns[2])
+		port_str = &returns[2];
 
 	status = 0;
 
       leave:
 	if (ldap_connect)
 		free(ldap_connect);
-	if (returns) {
+	if (returns && status) {
 		for (count = 0; count < attrcount; count++)
 			if (returns[count] != NULL)
 				free(returns[count]);

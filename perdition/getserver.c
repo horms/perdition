@@ -288,9 +288,21 @@ do_getserver(
 	}
 
 	/* Check for an empty result */
-	if(!server_str || *server_str=='\0') {
-		VANESSA_LOGGER_DEBUG("dbserver_get returned empty string");
-		goto fail;
+	if(dbserver_get) {
+		if(!server_str || *server_str=='\0') {
+			VANESSA_LOGGER_DEBUG("dbserver_get returned empty "
+					     "string");
+			goto fail;
+		}
+	}
+	else {
+		if((!user_str || *user_str=='\0') &&
+		   (!server_str || *server_str=='\0') &&
+		   (!port_str || *port_str=='\0')) {
+			VANESSA_LOGGER_DEBUG("dbserver_get returned empty "
+					     "string");
+			goto fail;
+		}
 	}
 
 	if(dbserver_get) {
