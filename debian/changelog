@@ -12,8 +12,10 @@ perdition (1.18) UNRELEASED; urgency=low
       supplied was greater than 26 characters long.
       Thanks to Laurent Licour <laurent@licour.com> for the fix.
       (closes: #395408)
+    - Refer to libperditiondb_postgresql.so.0 in POSTGRESQL of perditiondb(5)
+      (closes: #507414)
 
- -- Simon Horman <horms@debian.org>  Fri, 23 Nov 2007 14:38:48 +0900
+ -- Simon Horman <horms@debian.org>  Thu, 04 Dec 2008 18:54:48 +1100
 
 perdition (1.17.1-1) unstable; urgency=high
 
