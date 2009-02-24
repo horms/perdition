@@ -444,6 +444,63 @@ AM_CONDITIONAL(PG_BUILD, test "${enable_pg}" = "yes")
 
 
 ######################################################################
+# CDB
+
+AC_MSG_CHECKING([if CDB support has been disabled]);
+AC_ARG_ENABLE(
+  cdb,
+  [  --disable-cdb           DO not compile with CDB support.  ],
+  [
+    if test "$enable_cdb" = "no"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [
+    enable_cdb="yes";
+    AC_MSG_RESULT("no")
+  ]
+)
+
+if test "$enable_cdb" = "yes"; then
+AC_CHECK_HEADERS(
+  cdb.h, ,
+  [
+    enable_cdb="no",
+    AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_cdb will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+fi
+
+if test "$enable_cdb" = "yes"; then
+AC_CHECK_LIB(
+  cdb,
+  cdb_bread,
+  true,
+  [
+    enable_cdb="no",
+    AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_cdb will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+fi
+
+AM_CONDITIONAL(CDB_BUILD, test "${enable_cdb}" = "yes")
+
+
+######################################################################
 # GDBM
 
 AC_MSG_CHECKING([if GDBM support has been disabled]);
@@ -1052,6 +1109,7 @@ packaging/lsb/perdition.spec
 debian/Makefile 
 perdition/Makefile 
 perdition/db/Makefile 
+perdition/db/cdb/Makefile
 perdition/db/gdbm/Makefile 
 perdition/db/bdb/Makefile 
 perdition/db/posix_regex/Makefile 

@@ -1,0 +1,10 @@
+This module utilises TinyCDB to permit querying of constant database files with Perdition.
+
+TinyCDB is available from http://www.corpit.ru/mjt/tinycdb/
+
+When compiling and installing, remember to make and install the sharedlib:
+
+    make
+    make sharedlib
+    make install install-sharedlib
+
