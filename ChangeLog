@@ -223,7 +223,7 @@ XXX
    - New Debian standards version
    - Fixed debian init script so it can stop perdition correctly
    - Removed spurious multi line string literal in ssl.c
-   - Test for Berkely DB >= 4.1. It seems that they
+   - Test for Berkeley DB >= 4.1. It seems that they
      interface to db->open() is different as of that
      version (fools!). 
    - Removed acconfig.h as it is no longer needed
@@ -308,7 +308,7 @@ XXX
 27th December 2002
 (Horms)
    * 1.11beta1
-   - Added Berkely DB map library contributed by Chris Stratford
+   - Added Berkeley DB map library contributed by Chris Stratford
    - Default db file for GDBM libary is now perdition.gdbm.db
    - Added TLS support. Thanks to Wolfgang Breyha
    - Fixed error in help and invocation in .spec file of

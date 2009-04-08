@@ -2,7 +2,7 @@
 # Makefile.popmap                                        February 2000
 # Horms                                             horms@verge.net.au
 #
-# Make file to build a GDBM popmap.gdbm.db and a Berkely DB 
+# Make file to build a GDBM popmap.gdbm.db and a Berkeley DB 
 # popmap.bdb.db from an ASCII popmap using makegdbm and makebdm
 # respectivly.
 #

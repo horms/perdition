@@ -60,7 +60,7 @@ of perditiondb libraries.
 
 
 %package bdb
-Summary: Library to allow perdition to access Berkely DB based pop maps.
+Summary: Library to allow perdition to access Berkeley DB based pop maps.
 Group: Applications/Internet
 Copyright: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -69,7 +69,7 @@ Provides: perdition-ldap-%{ver}-%{rel}
 %description bdb
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
-database to be sourced from a Berkely DB.
+database to be sourced from a Berkeley DB.
 
 
 %package ldap

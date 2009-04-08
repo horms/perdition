@@ -1,6 +1,6 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
-/* Berkely DB Version 4.1 and above */
+/* Berkeley DB Version 4.1 and above */
 #undef HAVE_BDB_4_1
 
 /* Define to 1 if you have the <cdb.h> header file. */

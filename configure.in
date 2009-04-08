@@ -561,10 +561,10 @@ AM_CONDITIONAL(GDBM_BUILD, test "${enable_gdbm}" = "yes")
 # BerkeleyDB
 
 
-AC_MSG_CHECKING([if Berkely DB support has been disabled]);
+AC_MSG_CHECKING([if Berkeley DB support has been disabled]);
 AC_ARG_ENABLE(
   bdb,
-  [  --disable-bdb           DO not compile with Berkely DB support.  ],
+  [  --disable-bdb           DO not compile with Berkeley DB support.  ],
   [ 
     if test "$enable_bdb" = "no"; then
       AC_MSG_RESULT("yes")
@@ -620,12 +620,12 @@ AM_CONDITIONAL(BDB_BUILD, test "${enable_bdb}" = "yes")
 # Why do we use this crap anyway?
 
 if test "$enable_bdb" = "yes"; then
-	AC_MSG_CHECKING("For Berkley DB Version 4.1 and above");
+	AC_MSG_CHECKING("For Berkeley DB Version 4.1 and above");
 	AC_TRY_RUN(
 		[ #include <db.h>
 	  	int main(int arc, char **argv) { 
 	  	exit((DB_VERSION_MAJOR>=4 && DB_VERSION_MINOR>=1)?0:1);} ],
-        	[ AC_DEFINE(HAVE_BDB_4_1, 1, Berkely DB Version 4.1 and above)
+        	[ AC_DEFINE(HAVE_BDB_4_1, 1, Berkeley DB Version 4.1 and above)
           	AC_MSG_RESULT("yes") ],
         	[ AC_MSG_RESULT("no") ]
 	)

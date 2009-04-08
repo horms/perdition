@@ -19,7 +19,7 @@ Description: POP3 and IMAP4 Proxy server
  servers on a per user basis. This can also be used to as a POP3 or IMAP4
  proxy especially in firewall applications. Perdition supports arbitrary
  library based map access to determine the server for a user. POSIX
- Regular Expression, GDBM, Berkely DB, MySQL, PostgreSQL, ODBC and LDAP 
+ Regular Expression, GDBM, Berkeley DB, MySQL, PostgreSQL, ODBC and LDAP 
  libraries ship with the distribution.
 
 Package: perdition-ldap
