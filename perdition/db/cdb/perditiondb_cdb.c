@@ -56,43 +56,37 @@
 int dbserver_get(const char *key_str, const char *options_str, char **str_return, int *len_return) {
 
     int fd;
-    char *str_result;
-    int len_offset;
+    int ret = -2; /* Presume key not found */
 
-    // Open a file handle on the CDB file
+    /* Open a file handle on the CDB file */
     if((fd = open((options_str==NULL)?PERDITIONDB_CDB_DEFAULT_MAPNAME:(char *)options_str, O_RDONLY)) == -1) {
-        // File access error
+        /* File access error */
         return(-1);
     }
 
-    // Attempt to find the key in the file
-    if(cdb_seek(fd, (char *)key_str, strlen((char *)key_str), &len_offset) > 0) {
+    /* Attempt to find the key in the file */
+    if(cdb_seek(fd, (char *)key_str, strlen((char *)key_str), (int *)len_return) > 0) {
 
-        // Allocate memory for the result string and initialise it
-        str_result = memset(malloc(len_offset + 1), 0, len_offset + 1);
+        char * str_value;
 
-        //printf("str_result is '%s'\n", str_result);
+        /* Allocate memory for the result string and initialise it */
+        str_value = (char *)malloc((*len_return + 1));
+        memset(str_value, 0, (*len_return + 1));
 
-        // Read the value from the point found by seek.
-        cdb_bread(fd, str_result, len_offset);
+        /* Read the value from the point found by seek. */
+        cdb_bread(fd, str_value, *len_return);
 
-        // Stick a null terminator at the end of the string
-        str_result[len_offset + 1] = "\0";
+        /* Stick a null terminator at the end of the string */
+        str_value[*len_return] = '\0';
 
-        // Set return values
-        *str_return = str_result;
-        *len_return = len_offset;
+        /* Set string return value */
+        *str_return = str_value;
 
-        //printf("str_result is '%s'\n", str_result);
-
-    } else {
-        // Key not found
-        return(-2);
+        /* Set successful function return value */
+        ret = 0;
     }
 
-    // Close the file handle
+    /* Close and return */
     close(fd);
-
-    // Success
-    return(0);
+    return(ret);
 }
