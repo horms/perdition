@@ -42,5 +42,4 @@ libperditiondb_odbc_la_LIBADD =  @ssl_lib@ @odbc_libs@
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
 @ssl_includes@

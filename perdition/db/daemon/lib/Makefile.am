@@ -31,4 +31,4 @@ libperditiondb_daemon_base_la_LDFLAGS    = -version-info 0:0:0
 libperditiondb_daemon_base_la_LIBADD = @socket_lib@ -lvanessa_logger \
 	-lvanessa_socket
 
-INCLUDES = -I$(top_srcdir)/perdition -I$(top_srcdir)/libjain
+INCLUDES = -I$(top_srcdir)/perdition

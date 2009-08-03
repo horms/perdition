@@ -34,5 +34,5 @@ makegdbm_SOURCES = \
         options.c \
         options.h
 
-makegdbm_LDADD = -L../libjain/.libs/ -lgdbm -lpopt \
+makegdbm_LDADD = -lgdbm -lpopt \
 @dmalloc_lib@

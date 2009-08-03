@@ -47,6 +47,5 @@ libperditiondb_postgresql_la_LIBADD	= @ssl_lib@ \
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
 @ssl_includes@ \
 -I$(PG_INCLUDEPATH)

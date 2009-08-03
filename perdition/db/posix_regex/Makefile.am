@@ -42,6 +42,5 @@ libperditiondb_posix_regex_la_LIBADD = @ssl_lib@ @posix_regex_libs@
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  -I$(top_srcdir)/libjain \
   @ssl_includes@ \
   -DPERDITIONDB_POSIX_REGEX_SYSCONFDIR=\"$(sysconfdir)/perdition\"

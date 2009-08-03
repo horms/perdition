@@ -36,5 +36,4 @@ libperditiondb_cdb_la_LIBADD = -lcdb
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  -I$(top_srcdir)/libjain \
   -DPERDITIONDB_CDB_SYSCONFDIR=\"$(sysconfdir)/perdition\" @ssl_includes@

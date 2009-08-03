@@ -42,6 +42,5 @@ libperditiondb_mysql_la_LIBADD =  @ssl_lib@ @mysql_libs@
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
--I$(top_srcdir)/libjain \
 @ssl_includes@ \
 @mysql_includes@
