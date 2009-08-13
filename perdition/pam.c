@@ -26,6 +26,8 @@
  * 02111-1307  USA
  *
  **********************************************************************/
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,6 +53,8 @@ int perdition_conv(
   void *appdata_ptr
 ){
   char *pass;
+
+  extern int errno;
 
   if((
     *response=(struct pam_response *)malloc(sizeof(struct pam_response))
@@ -78,6 +82,10 @@ int do_pam_authentication(
   const char *user,
   const char *pass
 ){
+  char hostname[64];
+
+  extern struct sockaddr_in *peername;
+
   conv_struct.appdata_ptr=(void *)pass;
   pam_retval = pam_set_item(pamh, PAM_CONV, (void *) &conv_struct);
   if (pam_retval != PAM_SUCCESS) {
@@ -87,7 +95,17 @@ int do_pam_authentication(
     );
     return(-1);
   }
-
+  snprintf(hostname,64,"%s", inet_ntoa(peername->sin_addr));
+  pam_retval = pam_set_item(pamh, PAM_RHOST, hostname);
+  if (pam_retval != PAM_SUCCESS) {
+    VANESSA_LOGGER_DEBUG_UNSAFE("pam_set_item: %s", pam_strerror(pamh, pam_retval));
+    return(-1);
+  }
+  pam_retval = pam_set_item(pamh, PAM_RUSER, user);
+  if (pam_retval != PAM_SUCCESS) {
+    VANESSA_LOGGER_DEBUG_UNSAFE("pam_set_item: %s", pam_strerror(pamh, pam_retval));
+    return(-1);
+  }
   pam_retval = pam_set_item(pamh, PAM_USER, user);
   if (pam_retval != PAM_SUCCESS) {
     VANESSA_LOGGER_DEBUG_UNSAFE("pam_set_item: %s", pam_strerror(pamh, pam_retval));
