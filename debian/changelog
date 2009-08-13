@@ -14,8 +14,11 @@ perdition (1.18) UNRELEASED; urgency=low
       (closes: #395408)
     - Refer to libperditiondb_postgresql.so.0 in POSTGRESQL of perditiondb(5)
       (closes: #507414)
+    - Don't accept STARTTLS command in imap4 mode if it hasn't been
+      enabled in the configuration.
+      (closes: #500554)
 
- -- Simon Horman <horms@debian.org>  Thu, 04 Dec 2008 18:54:48 +1100
+ -- Simon Horman <horms@debian.org>  Thu, 13 Aug 2009 21:45:09 +1000
 
 perdition (1.17.1-1) unstable; urgency=high
 
