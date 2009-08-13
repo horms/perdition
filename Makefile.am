@@ -30,6 +30,8 @@ if BDB_BUILD
 MAKEBDB_DIR = makebdb
 endif
 
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
 	perdition debian etc packaging
 

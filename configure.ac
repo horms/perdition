@@ -34,6 +34,8 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+AC_CONFIG_MACRO_DIR([m4])
+
 
 # Checks for libraries.
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
