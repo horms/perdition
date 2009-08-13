@@ -45,11 +45,8 @@ dvi-local: perdition_ldap.dvi
 perdition_ldap.dvi: $(tex_sources) $(gzeps_sources:.eps.gz=.eps)
 	$(LATEX) $<
 
-%.ps: %.dvi
+.dvi.ps:
 	( unset LANG; $(DVIPS) $< -o $@ || { rm -f $@ ; false; }; )
 
-%.pdf: %.ps
+.ps.pdf:
 	( unset LANG; $(PS2PDF) $< $@ || { rm -f $@ ; false; } )
-
-%.eps: %.eps.gz
-	( unset LANG; $(GUNZIP) -c $< > $@ || { rm -f $@ ; false; }; )
