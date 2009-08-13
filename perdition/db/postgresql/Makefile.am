@@ -37,8 +37,8 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-PG_LIBPATH	:= $(shell pg_config --libdir)
-PG_INCLUDEPATH	:= $(shell pg_config --includedir)
+PG_LIBPATH	= $(shell pg_config --libdir)
+PG_INCLUDEPATH	= $(shell pg_config --includedir)
 
 libperditiondb_postgresql_la_LIBADD	= @ssl_lib@ \
 @socket_lib@ @nsl_lib@ @crypt_lib@ -lvanessa_logger -lvanessa_adt \

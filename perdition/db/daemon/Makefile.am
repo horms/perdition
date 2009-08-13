@@ -27,7 +27,7 @@ SUBDIRS = lib
 
 lib_LTLIBRARIES = libperditiondb_daemon.la
 
-COMMON_LIBRARY_ADD :=  @socket_lib@ -lvanessa_logger \
+COMMON_LIBRARY_ADD = @socket_lib@ -lvanessa_logger \
         -lvanessa_socket -L./lib -lperditiondb_daemon_base
 
 libperditiondb_daemon_la_SOURCES = perditiondb_daemon.c perditiondb_daemon.h 
