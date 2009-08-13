@@ -34,8 +34,6 @@ SUBDIRS = $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
 	perdition debian etc packaging
 
 EXTRA_DIST = \
-configure \
-configure.in \
 README \
 TODO \
 INSTALL.in \
