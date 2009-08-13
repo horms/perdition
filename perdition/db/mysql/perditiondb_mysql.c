@@ -42,7 +42,9 @@
 
 
 static vanessa_dynamic_array_t *a=NULL;
-static char *dbhost          = PERDITIONDB_MYSQL_DEFAULT_DBHOST;
+static vanessa_dynamic_array_t *dbhosts_array=NULL;
+static size_t dbhosts_count = 0;
+static char *dbhosts         = PERDITIONDB_MYSQL_DEFAULT_DBHOSTS;
 static char *dbname          = PERDITIONDB_MYSQL_DEFAULT_DBNAME;
 static unsigned int dbport   = PERDITIONDB_MYSQL_DEFAULT_DBPORT;
 static char *dbtable         = PERDITIONDB_MYSQL_DEFAULT_DBTABLE;
@@ -92,10 +94,10 @@ int dbserver_fini(void){
  * dbserver_init
  * Parse options string.
  * pre: options_str: Options string. String is of the form
- * [dbhost[:port[:dbname[:dbtable[:dbuser[:dbpwd[:dbsrvcol[:dbusercol[:dbportcol]]]]]]]]]
+ * [dbhost1[,dbhost2[,...]][:port[:dbname[:dbtable[:dbuser[:dbpwd[:dbsrvcol[:dbusercol[:dbportcol]]]]]]]]]
  * post: Options string is parsed if not null into 
  *       static vanessa_dynamic_array_t a and 
- *       static char *dbhost, *dbname, *dbtable, *dbuser, *dbpwd are
+ *       static char *dbhosts, *dbname, *dbtable, *dbuser, *dbpwd are
  *       set to pointers insiside a or defaults as neccesary.
  * return:  0 on success
  *         -1 on db access error
@@ -130,8 +132,16 @@ int dbserver_init(char *options_str){
    }
 
    count=vanessa_dynamic_array_get_count(a);
-   if(count>PERDITIONDB_MYSQL_DBHOST){ 
-     dbhost=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBHOST); 
+   if(count>PERDITIONDB_MYSQL_DBHOSTS){
+     dbhosts=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBHOSTS);
+     if ((dbhosts_array = vanessa_dynamic_array_split_str(dbhosts,
+			  PERDITIONDB_MYSQL_HOSTS_DELIMITER)) == NULL) {
+       VANESSA_LOGGER_DEBUG("vanessa_dynamic_array_split_str");
+       a=NULL;
+       free(tmp_str);
+       return(-1);
+     }
+     dbhosts_count = vanessa_dynamic_array_get_count(dbhosts_array);
    }
    if(count>PERDITIONDB_MYSQL_DBNAME){ 
      dbname=vanessa_dynamic_array_get_element(a, PERDITIONDB_MYSQL_DBNAME); 
@@ -210,6 +220,7 @@ int dbserver_get(
    char sqlstr[PERDITIONDB_MYSQL_QUERY_LENGTH];
    char key_str_escaped[2*PERDITIONDB_MYSQL_QUERY_LENGTH+1];
    size_t servername_len;
+   size_t hcnt = 0;
 
    rc = mysql_init(&db);
    if(!rc){  
@@ -218,7 +229,13 @@ int dbserver_get(
      return(-1);
    }
 
-   rc = mysql_real_connect(&db,dbhost,dbuser,dbpwd,dbname,dbport,NULL,0);
+   while (hcnt < dbhosts_count
+        && !(rc=mysql_real_connect(&db,
+                        vanessa_dynamic_array_get_element(dbhosts_array, hcnt),
+                        dbuser,dbpwd,dbname,dbport,NULL,0))) {
+     perditiondb_mysql_log("mysql_connect", &db);
+     hcnt++;
+   }
    if(!rc){  
      perditiondb_mysql_log("mysql_connect", &db);
      mysql_close(&db);

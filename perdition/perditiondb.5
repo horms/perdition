@@ -331,7 +331,14 @@ the arguments to avoid confusion.
 Database servers may be grouped together for higher performance
 or high availability by using ODBC and accessing
 them using the ODBC module.
-
+.P
+.B Multiple MySQL Servers
+.P
+It is possible to specify multiple MySQL servers by specifying them,
+comma separated (without any space), in the dbhost column.  In this
+case all MySQL servers need to have an identical configuration,
+because all other options are shared.  If the first server is not
+reachable, perdition will fall back to the second etc.
 .P
 .B
 POSTGRESQL
