@@ -1068,10 +1068,16 @@ perdition_chown(const char *path, const char *username, const char *group)
 			case ESRCH:
 			case EBADF:
 			case EPERM:
-				VANESSA_LOGGER_DEBUG("getgrnam: not found");
+				VANESSA_LOGGER_DEBUG_UNSAFE("getgrnam: "
+							    "\"%s\": "
+							    "not found",
+							    group);
 				break;
 			default:
-				VANESSA_LOGGER_DEBUG_ERRNO("getgrnam");
+				VANESSA_LOGGER_DEBUG_UNSAFE("getgrnam: "
+							    "\"%s\": %s",
+							    group,
+							    strerror(errno));
 				break;
 			}
 			return (-1);
