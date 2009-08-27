@@ -1062,7 +1062,18 @@ perdition_chown(const char *path, const char *username, const char *group)
 		gid = (gid_t) atoi(group);
 	} else {
 		if ((gr = getgrnam(group)) == NULL) {
-			VANESSA_LOGGER_DEBUG_ERRNO("getgrnam");
+			switch (errno) {
+			case 0:
+			case ENOENT:
+			case ESRCH:
+			case EBADF:
+			case EPERM:
+				VANESSA_LOGGER_DEBUG("getgrnam: not found");
+				break;
+			default:
+				VANESSA_LOGGER_DEBUG_ERRNO("getgrnam");
+				break;
+			}
 			return (-1);
 		}
 		gid = gr->gr_gid;
