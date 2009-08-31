@@ -159,21 +159,57 @@ __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
  *
  **********************************************************************/
 
+static int
+__perdition_verify_callback_debug(X509 *cert, int depth)
+{
+	char *tmp_str;
+	BIO *tmp_bio;
+	long len;
+	int status = 0;
+
+	if (!opt.debug)
+		return 1;
+
+	tmp_bio = BIO_new(BIO_s_mem());
+	if (!tmp_bio) {
+		VANESSA_LOGGER_DEBUG("BIO_new");
+		return 0;
+	}
+
+	X509_NAME_print_ex(tmp_bio, X509_get_subject_name(cert),
+			   3, XN_FLAG_ONELINE);
+	len = BIO_get_mem_data(tmp_bio, &tmp_str);
+
+	tmp_str = strn_to_str(tmp_str, len);
+	if (!tmp_str) {
+		VANESSA_LOGGER_DEBUG("BIO_new");
+		goto err;
+	}
+
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("depth:%d cert:\"%s\"", depth, tmp_str);
+
+	str_free(tmp_str);
+	status = 1;
+err:
+	if (!BIO_free(tmp_bio)) {
+		VANESSA_LOGGER_DEBUG("BIO_free");
+		return 0;
+	}
+	return status;
+}
+
 static int 
 __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 {
-	X509 *cert;
+	X509 *cert = X509_STORE_CTX_get_current_cert(ctx);
+	int depth = X509_STORE_CTX_get_error_depth(ctx);
 
-	cert = X509_STORE_CTX_get_current_cert(ctx);
-	if (opt.debug) {
-		char buf[MAX_LINE_LENGTH];
-		X509_NAME_oneline(X509_get_subject_name(cert),
-				buf, MAX_LINE_LENGTH);
-        	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("depth:%d cert:\"%s\"", 
-				X509_STORE_CTX_get_error_depth(ctx), buf);
+	if (!__perdition_verify_callback_debug(cert, depth)) {
+		VANESSA_LOGGER_DEBUG("__perdition_verify_callback_debug");
+		return 0;
 	}
 
-	if (opt.ssl_cert_verify_depth < X509_STORE_CTX_get_error_depth(ctx)) {
+	if (opt.ssl_cert_verify_depth < depth) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Chain too long, try adjusting "
 				"ssl_cert_verify_depth: %d > %d",
 				X509_STORE_CTX_get_error_depth(ctx), 
