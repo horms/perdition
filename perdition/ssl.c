@@ -586,10 +586,9 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 
 
 /**********************************************************************
- * __perdition_ssl_check_common_name
- * Log the details of a certificate
- * pre: cert: server certificate to check the common name of
- *      server: server name to match against the common name
+ * __perdition_ssl_check_name
+ * pre: cert: certificate to check the names of
+ *      key:  name to match
  * post: none
  * return: 0 on success
  *         -1 on error
@@ -598,35 +597,56 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
  **********************************************************************/
 
 static int 
-__perdition_ssl_check_common_name(X509 *cert, const char *server)
+__perdition_ssl_check_common_name(X509 *cert, const char *key)
 {
-	char *domain;
-	char common_name[MAX_LINE_LENGTH];
+	const char *domain;
+	int i;
+	size_t key_len;
+	X509_NAME_ENTRY *e;
+	X509_NAME *name;
 
-	if (opt.ssl_no_cn_verify || !server)
+	if (opt.ssl_no_cn_verify || !key)
 		return 0;
 
 	if (!cert) {
 		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
 		return -2;
 	}
-	
-	if (X509_NAME_get_text_by_NID(X509_get_subject_name(cert), 
-			NID_commonName, common_name, MAX_LINE_LENGTH) < 0) {
-		PERDITION_DEBUG_SSL_ERR("X509_NAME_get_text_by_OBJ");
-		return -1;
+
+	name = X509_get_subject_name(cert);
+	if (!name) {
+		VANESSA_LOGGER_DEBUG_RAW("warning: could not extract "
+					 "name from certificate");
+		return -2;
 	}
-	common_name[MAX_LINE_LENGTH -1] = '\0';
 
-	if(!strcmp(server, common_name))
-		return 0;
+	key_len = strlen(key);
 
-	/* A wild card common name is allowed 
-	 * It should be of the form *.domain */
-	if (*common_name == '*' && *(common_name+1) == '.') {
-		domain = strchr(server, '.');
-		if (domain && !strcmp(common_name+2, domain+1)) {
+	i = -1;
+	while (1) {
+		i = X509_NAME_get_index_by_NID(name, NID_commonName, i);
+		if (i == -1)
+			break;
+
+		e = X509_NAME_get_entry(name, i);
+		if (!e) {
+			VANESSA_LOGGER_DEBUG_RAW_UNSAFE("warning: could not "
+				"extract name entry %d from certificate", i);
+			return -2;
+		}
+
+		if(key_len == e->value->length &&
+		   !memcmp(key, e->value->data, e->value->length))
 			return 0;
+
+		/* A wild card common name is allowed
+		 * It should be of the form *.domain */
+		if (!memcmp(e->value->data, "*.", 2)) {
+		        domain = strchr(key, '.');
+			if (domain && strlen(domain) == e->value->length - 1 &&
+			    !memcmp(domain, e->value->data + 1,
+			             e->value->length - 1))
+				return 0;
 		}
 	}
 
