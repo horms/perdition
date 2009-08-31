@@ -195,23 +195,52 @@ __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 	X509_NAME_oneline((_value), buf, MAX_LINE_LENGTH);                  \
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), buf);
 
-#define __PERDITION_VERIFY_RESULT_TIME(_key, _time, _err)                   \
-{                                                                           \
-	BIO *tmp_bio;                                                       \
-	char *tmp_str;                                                      \
-	tmp_bio = BIO_new(BIO_s_mem());                                     \
-	if (!tmp_bio) {                                                     \
-		VANESSA_LOGGER_DEBUG("BIO_new");                            \
-		verify = (_err);                                            \
-	}                                                                   \
-	ASN1_TIME_print(tmp_bio, (_time));                                  \
-	BIO_get_mem_data(tmp_bio, &tmp_str);                                \
-	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", (_key), tmp_str);      \
-	if (!BIO_free(tmp_bio)) {                                           \
-		VANESSA_LOGGER_DEBUG("BIO_free");                           \
-		verify = (_err);                                            \
-	}                                                                   \
+static char *
+__perdition_verify_result_time(const char *key, ASN1_TIME *time)
+{
+	BIO *tmp_bio;
+	char *tmp_str;
+	long len;
+	int status = 0;
+
+	tmp_bio = BIO_new(BIO_s_mem());
+	if (!tmp_bio) {
+		VANESSA_LOGGER_DEBUG("BIO_new");
+		return NULL;
+	}
+
+	ASN1_TIME_print(tmp_bio, time);
+	len = BIO_get_mem_data(tmp_bio, &tmp_str);
+
+	tmp_str = strn_to_str(tmp_str, len);
+	if (!tmp_str) {
+		VANESSA_LOGGER_DEBUG("BIO_free");
+		goto err;
+	}
+
+
+	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", key, tmp_str);
+
+	status = 1;
+err:
+	if (!BIO_free(tmp_bio)) {
+		VANESSA_LOGGER_DEBUG("BIO_free");
+		str_free(tmp_str);
+		return NULL;
+	}
+	return tmp_str;
 }
+
+#define __PERDITION_VERIFY_RESULT_TIME(_key, _time, _err)		    \
+do {									    \
+	char *tmp_str = __perdition_verify_result_time(_key, _time);	    \
+	if (!tmp_str)							    \
+		verify = _err;						    \
+	else {								    \
+		VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", _key, tmp_str);\
+		str_free(tmp_str);					    \
+	}								    \
+} while (0)
 
 #define __PERDITION_VERIFY_RESULT_WARN(_msg)                                \
 	 VANESSA_LOGGER_DEBUG_RAW("warning: " _msg)
