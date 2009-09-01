@@ -17,8 +17,10 @@ perdition (1.18) UNRELEASED; urgency=low
     - Don't accept STARTTLS command in imap4 mode if it hasn't been
       enabled in the configuration.
       (closes: #500554)
+    - Proces subjectAltName fields
+      (closes: #513461)
 
- -- Simon Horman <horms@debian.org>  Thu, 13 Aug 2009 21:45:09 +1000
+ -- Simon Horman <horms@debian.org>  Tue, 01 Sep 2009 21:03:10 +1000
 
 perdition (1.17.1-1) unstable; urgency=high
 
