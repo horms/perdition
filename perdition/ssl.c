@@ -42,6 +42,7 @@
 #include <termios.h>
 #include <string.h>
 #include <openssl/bio.h>
+#include <openssl/x509v3.h>
 
 #include "ssl.h"
 #include "log.h"
@@ -586,38 +587,59 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 
 
 /**********************************************************************
- * __perdition_ssl_check_name
- * pre: cert: certificate to check the names of
+ * __perdition_ssl_compare
+ * pre: key:  name to match, null terminated
+ *      val: value to match against
+ *      val_len: length of value in bytes
+ * post: none
+ * return: 0 on success
+ *         -2 if the common key does not match
+ **********************************************************************/
+
+static int
+__perdition_ssl_compare_key(const char *key, const void *val, size_t val_len)
+{
+	const char *domain;
+
+	if(strlen(key) == val_len && !memcmp(key, val, val_len))
+		return 0;
+
+	/* A wild card common name is allowed
+	 * It should be of the form *.domain */
+	if (!memcmp(val, "*.", 2)) {
+	        domain = strchr(key, '.');
+		if (domain && strlen(domain) == val_len - 1 &&
+		    !memcmp(domain, val + 1, val_len - 1))
+			return 0;
+	}
+
+	return -2;
+}
+
+
+/**********************************************************************
+ * __perdition_ssl_check_common_name
+ * pre: cert: certificate to check the common names of
  *      key:  name to match
  * post: none
  * return: 0 on success
  *         -1 on error
- *         -2 if the common name did not match, or the cert did
- *            not exist
+ *         -2 if the common name does not match
  **********************************************************************/
 
 static int 
 __perdition_ssl_check_common_name(X509 *cert, const char *key)
 {
-	const char *domain;
 	int i;
 	size_t key_len;
 	X509_NAME_ENTRY *e;
 	X509_NAME *name;
 
-	if (opt.ssl_no_cn_verify || !key)
-		return 0;
-
-	if (!cert) {
-		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
-		return -2;
-	}
-
 	name = X509_get_subject_name(cert);
 	if (!name) {
 		VANESSA_LOGGER_DEBUG_RAW("warning: could not extract "
 					 "name from certificate");
-		return -2;
+		return -1;
 	}
 
 	key_len = strlen(key);
@@ -632,22 +654,126 @@ __perdition_ssl_check_common_name(X509 *cert, const char *key)
 		if (!e) {
 			VANESSA_LOGGER_DEBUG_RAW_UNSAFE("warning: could not "
 				"extract name entry %d from certificate", i);
-			return -2;
+			return -1;
 		}
 
-		if(key_len == e->value->length &&
-		   !memcmp(key, e->value->data, e->value->length))
+		if (!__perdition_ssl_compare_key(key, e->value->data,
+						 e->value->length))
 			return 0;
+	}
 
-		/* A wild card common name is allowed
-		 * It should be of the form *.domain */
-		if (!memcmp(e->value->data, "*.", 2)) {
-		        domain = strchr(key, '.');
-			if (domain && strlen(domain) == e->value->length - 1 &&
-			    !memcmp(domain, e->value->data + 1,
-			             e->value->length - 1))
-				return 0;
+	return -2;
+}
+
+
+/**********************************************************************
+ * __perdition_ssl_check_alt_subject
+ * pre: cert: certificate to check the names of
+ *      key:  name to match
+ * post: none
+ * return: 0 on success
+ *         -1 on error
+ *         -2 if the common name does not match
+ **********************************************************************/
+
+static int
+__perdition_ssl_check_alt_subject(X509 *cert, const char *key)
+{
+	int i, count, len, status = 0;
+	char *str;
+	BIO *bio;
+	GENERAL_NAME *gn;
+	STACK_OF(GENERAL_NAME) *gns;
+
+	gns = (GENERAL_NAMES*)X509_get_ext_d2i(cert,
+			NID_subject_alt_name, NULL, NULL);
+	if (!gns) {
+		VANESSA_LOGGER_DEBUG_RAW("warning: could not "
+			"extract extensions from certificate");
+		return -1;
+	}
+
+	bio = BIO_new(BIO_s_mem());
+	if (!bio) {
+		VANESSA_LOGGER_DEBUG("BIO_new");
+		return -1;
+	}
+
+	count = sk_GENERAL_NAME_num(gns);
+	for (i = 0; i < count; i++) {
+		gn = sk_GENERAL_NAME_value(gns, i);
+		if (!gn) {
+			VANESSA_LOGGER_DEBUG_RAW_UNSAFE("warning: "
+				"could not extract alt subject %d "
+				"from certificate", i);
+			status = -1;
+			goto out;
 		}
+
+		if (gn->type != GEN_DNS)
+			continue;
+
+		ASN1_STRING_print_ex(bio, gn->d.dNSName, ASN1_STRFLGS_RFC2253);
+		len = BIO_get_mem_data(bio, &str);
+
+		if (!__perdition_ssl_compare_key(key, str, len))
+			goto out;
+
+		if (BIO_reset(bio) != 1) {
+			VANESSA_LOGGER_DEBUG("BIO_reset");
+			status = -1;
+			goto out;
+		}
+	}
+
+	status = -2;
+out:
+	if (!BIO_free(bio)) {
+		VANESSA_LOGGER_DEBUG("BIO_free");
+		return -1;
+	}
+	return status;
+}
+
+
+/**********************************************************************
+ * __perdition_ssl_check_name
+ * pre: cert: certificate to check the common names and alt subjects of
+ *      key:  name to match
+ * post: none
+ * return: 0 on success
+ *         -1 on error
+ *         -2 if the common name did not match, or the cert did
+ *            not exist
+ **********************************************************************/
+
+static int
+__perdition_ssl_check_name(X509 *cert, const char *key)
+{
+	int rc;
+
+	if (opt.ssl_no_cn_verify || !key)
+		return 0;
+
+	if (!cert) {
+		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
+		return -2;
+	}
+
+	rc = __perdition_ssl_check_common_name(cert, key);
+	if (rc == 0)
+	    return 0;
+	else if (rc == -1) {
+		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_common_name");
+		return -1;
+	}
+
+	rc = __perdition_ssl_check_alt_subject(cert, key);
+	if (rc == 0)
+	    return 0;
+	else if (rc == -1) {
+		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_alt_subject");
+		return -1;
 	}
 
 	VANESSA_LOGGER_DEBUG_RAW("error: common name mismatch");
@@ -750,9 +876,9 @@ __perdition_ssl_check_certificate(io_t * io, const char *ca_file,
 		goto leave;
 	}
 
-	status = __perdition_ssl_check_common_name(cert, server);
+	status = __perdition_ssl_check_name(cert, server);
 	if (status < 0) {
-		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_common_name");
+		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_name");
 		goto leave;
 	}
 
