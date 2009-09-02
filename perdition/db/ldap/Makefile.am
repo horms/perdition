@@ -36,11 +36,13 @@ schema_sources = perdition.schema
 EXTRA_DIST = perditiondb_ldap_makedb perditiondb_ldap_makedb.8 \
 		$(schema_sources)
 
+if LDAP_SCHEMA
 install-data-hook: $(schema_sources)
 	test -n "@ldap_schemadir@"
 	mkdir -p "$(DESTDIR)@ldap_schemadir@"
 	chmod 755 "$(DESTDIR)@ldap_schemadir@"
 	install -m 644 $< "$(DESTDIR)@ldap_schemadir@/"
+endif
 
 sbin_SCRIPTS = perditiondb_ldap_makedb
 

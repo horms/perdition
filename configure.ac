@@ -833,6 +833,7 @@ AC_MSG_WARN(
   ]
 )
 fi
+AM_CONDITIONAL(LDAP_SCHEMA, test "${ldap_schemadir}X" != "X")
 
 if test "$enable_ldap" != "yes"; then
 AC_MSG_WARN(
