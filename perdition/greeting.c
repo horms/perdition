@@ -105,11 +105,10 @@ static int greeting_checksum(uint32 *csum)
 
 char *greeting_str(const protocol_t *protocol, flag_t flag){
   char *message;
-  char *host;
-  struct hostent *hp;
-  struct in_addr in;
+  char host[NI_MAXHOST];
   uint32 csum;
   char csum_str[10];
+  int rc;
 
   if(greeting_checksum(&csum) < 0) {
 	  VANESSA_LOGGER_DEBUG("greeting_checksum");
@@ -119,26 +118,18 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
   csum_str[sizeof(csum_str)-1] = '\0';
 
   if(flag&GREETING_ADD_NODENAME){
-    if(!opt.no_bind_banner && !opt.no_lookup && opt.bind_address!=NULL){
-      if((hp=gethostbyname(opt.bind_address))==NULL){
-        VANESSA_LOGGER_DEBUG_HERRNO("gethostbyname");
-        host=opt.bind_address;
-      }
-      else {
-	bcopy(hp->h_addr, &in, hp->h_length);
-	hp=gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
-	if(hp==NULL){
-          VANESSA_LOGGER_DEBUG_HERRNO("gethostbyaddr");
-          host=opt.bind_address;
-	}
-	else {
-          host=opt.bind_address;
-	  host=hp->h_name;
-	}
+    if (!opt.no_bind_banner && peername) {
+      rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+		       host, NI_MAXHOST, NULL, 0,
+		       opt.no_lookup ? NI_NUMERICHOST : 0);
+      if (rc) {
+        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+				    gai_strerror(rc));
+        return NULL;
       }
     }
     else{
-      host=system_uname->nodename;
+      strncpy(host, system_uname->nodename, NI_MAXHOST -1);
     }
     if((message=str_cat(5, protocol->greeting_string, " ", host, " ",
 				    csum_str))==NULL){
