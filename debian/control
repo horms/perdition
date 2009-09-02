@@ -24,7 +24,7 @@ Description: POP3 and IMAP4 Proxy server
 
 Package: perdition-ldap
 Architecture: any
-Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Depends: ${shlibs:Depends}, perdition (= ${binary:Version})
 Description: Library to allow perdition to access LDAP based popmaps
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
@@ -32,7 +32,7 @@ Description: Library to allow perdition to access LDAP based popmaps
 
 Package: perdition-mysql
 Architecture: any
-Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Depends: ${shlibs:Depends}, perdition (= ${binary:Version})
 Description: Library to allow perdition to access MySQL based popmaps
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
@@ -40,7 +40,7 @@ Description: Library to allow perdition to access MySQL based popmaps
 
 Package: perdition-odbc
 Architecture: any
-Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Depends: ${shlibs:Depends}, perdition (= ${binary:Version})
 Description: Library to allow perdition to access ODBC based popmaps
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
@@ -48,7 +48,7 @@ Description: Library to allow perdition to access ODBC based popmaps
 
 Package: perdition-postgresql
 Architecture: any
-Depends: ${shlibs:Depends}, perdition (= ${Source-Version})
+Depends: ${shlibs:Depends}, perdition (= ${binary:Version})
 Description: Library to allow perdition to access PostgreSQL based popmaps
  Perdition allows for arbitrary user database access through
  shared libraries much in the manner of NSS in glibc. This package
