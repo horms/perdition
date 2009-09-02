@@ -37,8 +37,8 @@
 #include <sys/socket.h>
 
 extern struct utsname *system_uname;
-extern struct sockaddr_in *peername;
-extern struct sockaddr_in *sockname;
+extern struct sockaddr_storage *peername;
+extern struct sockaddr_storage *sockname;
 extern options_t opt;
 
 #endif /* _PERDITION_GLOBALS_H */

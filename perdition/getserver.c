@@ -150,14 +150,11 @@
 
 static char *getserver_key_str(const char *query_fmt, 
 		const char *full_user_str, const char *from_str, 
-		const char *to_str, const uint16 from_port,
-		const uint16 to_port)
+		const char *to_str, const char *from_port, const char *to_port)
 {
         const char *user_str=NULL;
         char *domain_str=NULL;
 	size_t user_str_size=0;
-	char to_port_str[6];
-	char from_port_str[6];
         const char *c;
 
 	char *key_str=NULL;
@@ -216,14 +213,10 @@ static char *getserver_key_str(const char *query_fmt,
 				_GSK_STR_ADD_STR(to_str);
 				break;
 			case 'p':
-				snprintf(to_port_str, 6, "%hu", from_port);
-				from_port_str[5] = '\0';
-				_GSK_STR_ADD_STR(from_port_str);
+				_GSK_STR_ADD_STR(from_port);
 				break;
 			case 'P':
-				snprintf(to_port_str, 6, "%hu", to_port);
-				to_port_str[5] = '\0';
-				_GSK_STR_ADD_STR(to_port_str);
+				_GSK_STR_ADD_STR(to_port);
 				break;
 			case '\\':
 				_GSK_STR_ADD_C('\\');
@@ -337,7 +330,7 @@ fail:
 user_server_port_t 
 	*getserver(
   const char *user_str, const char *from_str, const char *to_str, 
-  const uint16 from_port, const uint16 to_port, 
+  const char *from_port, const char *to_port,
   int (*dbserver_get)(const char *, const char *, char **, size_t *),
   int (*dbserver_get2)(const char *, const char *, char **, char **, char **))
 {

@@ -69,7 +69,12 @@ main(int argc, char **argv)
 	vanessa_logger_t *vl;
 	perdition_packet_t *req_packet;
 	perdition_packet_t *rsp_packet;
-	perdition_packet_str_t user;
+	perdition_packet_str_t saddr;
+	perdition_packet_str_t sport;
+	perdition_packet_str_t daddr;
+	perdition_packet_str_t dport;
+	perdition_packet_str_t key;
+	perdition_packet_str_t domain_delimiter;
 	perdition_packet_str_t server;
 	char *server_socket = NULL;
 	char *response = NULL;
@@ -160,15 +165,20 @@ main(int argc, char **argv)
 		VANESSA_LOGGER_DEBUG_UNSAFE("%d bytes recieved from %s", 
 				bytes_recv, unaddr.sun_path);
 
-		if(perdition_packet_verify_v1_req(req_packet, bytes_recv, 
-					&user, NULL) < 0) {
-			VANESSA_LOGGER_DEBUG("perdition_packet_verify_v1_req");
+		if (perdition_packet_verify_v1_req(req_packet, bytes_recv,
+					           &key, &domain_delimiter) &&
+		    perdition_packet_verify_v1_str_req(req_packet, bytes_recv,
+						       &saddr, &sport,
+						       &daddr, &dport,
+					               &key,
+						       &domain_delimiter) < 0) {
+			VANESSA_LOGGER_DEBUG("perdition_packet_verify_v1_*");
 			continue;
 		}
 
 		PERDITION_PACKET_STR_PACK(server, response);
 		if(perdition_packet_init_v1_rsp(&rsp_packet, 0,
-				&user, &server, NULL) < 0) {
+				&key, &server, NULL) < 0) {
 			VANESSA_LOGGER_DEBUG("perdition_packet_init_v1_req");
 			continue;
 		}

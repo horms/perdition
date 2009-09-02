@@ -144,12 +144,23 @@ dbserver_get2(const char *key_str, const char *options_str,
 	struct sockaddr_un unaddr;
 	int bytes;
 	int status = -1;
+	int rc;
 	perdition_packet_t *packet = NULL;
+	char saddr[NI_MAXHOST];
+	char sport[NI_MAXSERV];
+	char daddr[NI_MAXHOST];
+	char dport[NI_MAXSERV];
+	perdition_packet_str_t saddr_pstr;
+	perdition_packet_str_t sport_pstr;
+	perdition_packet_str_t daddr_pstr;
+	perdition_packet_str_t dport_pstr;
 	perdition_packet_str_t key_pstr;
 	perdition_packet_str_t domain_delimiter_pstr;
 	perdition_packet_str_t user_pstr;
 	perdition_packet_str_t server_pstr;
 	perdition_packet_str_t port_pstr;
+	struct sockaddr_in *peername_in;
+	struct sockaddr_in *sockname_in;
 
 	packet = perdition_packet_create();
 	if(!packet) {
@@ -157,17 +168,71 @@ dbserver_get2(const char *key_str, const char *options_str,
 		goto leave;
 	}
 
-	PERDITION_PACKET_STR_PACK(key_pstr, key_str);
+	PERDITION_PACKET_STR_PACK(key_pstr, (char *)key_str);
 	PERDITION_PACKET_STR_PACK(domain_delimiter_pstr, opt.domain_delimiter);
 
-	if(perdition_packet_init_v1_req(&packet, 0,
-			peername?peername->sin_addr.s_addr:0UL,
-			peername?peername->sin_port:0U,
-			sockname?sockname->sin_addr.s_addr:0UL, 
-			sockname?sockname->sin_port:0U, 
-			&key_pstr, &domain_delimiter_pstr) < 0) {
-		VANESSA_LOGGER_DEBUG("perdition_packet_init_v1");
-		goto leave;
+	if ((peername && peername->ss_family == AF_INET6) ||
+	    (sockname && sockname->ss_family == AF_INET6))
+	{
+		/* IPv6 */
+		if (peername) {
+			rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+					 saddr, NI_MAXHOST, sport, NI_MAXSERV,
+					 NI_NUMERICHOST|NI_NUMERICSERV);
+			if (rc) {
+				VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+							    gai_strerror(rc));
+				goto leave;
+			}
+		} else {
+			*saddr = '\0';
+			*sport = '\0';
+		}
+		PERDITION_PACKET_STR_PACK(saddr_pstr, saddr);
+		PERDITION_PACKET_STR_PACK(sport_pstr, sport);
+
+		if (sockname) {
+			rc = getnameinfo((struct sockaddr *)sockname, sizeof(*sockname),
+					 daddr, NI_MAXHOST, dport, NI_MAXSERV,
+					 NI_NUMERICHOST|NI_NUMERICSERV);
+			if (rc) {
+				VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
+							    gai_strerror(rc));
+				goto leave;
+			}
+		} else {
+			*daddr = '\0';
+			*dport = '\0';
+		}
+		PERDITION_PACKET_STR_PACK(daddr_pstr, daddr);
+		PERDITION_PACKET_STR_PACK(dport_pstr, dport);
+
+		if(perdition_packet_init_v1_str_req(&packet,
+						    PERDITION_PACKET_CS_NONE,
+						    &saddr_pstr, &sport_pstr,
+						    &daddr_pstr, &dport_pstr,
+						    &key_pstr,
+						    &domain_delimiter_pstr) < 0) {
+			VANESSA_LOGGER_DEBUG("perdition_packet_init_v1_str_req");
+			goto leave;
+		}
+	} else {
+		/* IPv4  can also use a str_request, as is used for IPv6,
+		 * however the older req format is used for compatibility
+		 * with servers that pre-date str_request */
+
+		peername_in = (struct sockaddr_in *) peername;
+		sockname_in = (struct sockaddr_in *) sockname;
+
+		if(perdition_packet_init_v1_req(&packet, 0,
+				peername_in ? peername_in->sin_addr.s_addr:0UL,
+				peername_in ? peername_in->sin_port:0U,
+				sockname_in ? sockname_in->sin_addr.s_addr:0UL,
+				sockname_in ? sockname_in->sin_port:0U,
+				&key_pstr, &domain_delimiter_pstr) < 0) {
+			VANESSA_LOGGER_DEBUG("perdition_packet_init_v1");
+			goto leave;
+		}
 	}
 
 	perdition_un_init(&sock);

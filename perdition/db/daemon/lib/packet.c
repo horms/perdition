@@ -71,7 +71,6 @@ perdition_packet_destroy(perdition_packet_t *packet)
 	free(packet);
 }
 
-
 #define PACKET_STR_SET(buf, p_str)                                          \
 {                                                                           \
 	perdition_packet_str_t str;                                         \
@@ -115,6 +114,48 @@ perdition_packet_init_v1_req(perdition_packet_t **packet,
 	PACKET_STR_SET(buf, domain_delimiter);
 
 	return(0);
+}
+
+int
+perdition_packet_init_v1_str_req(perdition_packet_t **packet,
+				 uint16_t cs_type,
+				 perdition_packet_str_t *saddr,
+				 perdition_packet_str_t *sport,
+				 perdition_packet_str_t *daddr,
+				 perdition_packet_str_t *dport,
+				 perdition_packet_str_t *key,
+				 perdition_packet_str_t *domain_delimiter)
+{
+	char *buf;
+	perdition_packet_str_t str;
+	size_t body_len;
+
+	body_len = sizeof(str.length) + (saddr ? saddr->length : 0) +
+		   sizeof(str.length) + (sport ? sport->length : 0) +
+		   sizeof(str.length) + (daddr ? daddr->length : 0) +
+		   sizeof(str.length) + (dport ? dport->length : 0) +
+		   sizeof(str.length) + (key ? key->length : 0) +
+		   sizeof(str.length) + (domain_delimiter ?
+					 domain_delimiter->length : 0);
+
+	if(perdition_packet_init_v1_head(packet, cs_type,
+					 PERDITION_PACKET_STR_REQ,
+					 0, 0, 0, 0, body_len) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_packet_init_v1_head");
+		return -1;
+	}
+
+	buf = (*packet)->body;
+
+	/* Fill in Body */
+	PACKET_STR_SET(buf, key);
+	PACKET_STR_SET(buf, domain_delimiter);
+	PACKET_STR_SET(buf, saddr);
+	PACKET_STR_SET(buf, sport);
+	PACKET_STR_SET(buf, daddr);
+	PACKET_STR_SET(buf, dport);
+
+	return 0;
 }
 
 int
@@ -190,25 +231,29 @@ perdition_packet_init_v1_head(perdition_packet_t **packet,
 	return(0);
 }
 
+static size_t packet_str_get(char *buf, perdition_packet_str_t *p_str)
+{
+	perdition_packet_str_t str;
 
-#define PACKET_STR_GET(buf, p_str)                                          \
-{                                                                           \
-	perdition_packet_str_t str;                                         \
-	memcpy(&(str.length), buf, sizeof(str.length));                     \
+	memcpy(&str.length, buf, sizeof(str.length));
+	str.length = ntohs(str.length);
+
+	if (p_str) {
+		p_str->length = str.length;
+		if (p_str->length)
+			p_str->data = (unsigned char *) buf +
+				      sizeof(str.length);
+		else
+			p_str->data = NULL;
+	}
+
+	return str.length + sizeof(str.length);
 }
-	/*
-	buf += sizeof(str.length);                                          \
-	if (p_str) {                                                        \
-		p_str->length = ntohs(str.length);                          \
-		if (p_str->length) {                                        \
-			p_str->data = buf;                                  \
-		}                                                           \
-		else {                                                      \
-			p_str->data = NULL;                                 \
-		}                                                           \
-	}                                                                   \
-	buf += ntohs(str.length);                                           \
-	*/
+
+#define PACKET_STR_GET(buf, p_str)					    \
+do {									    \
+	buf += packet_str_get(buf, p_str);				    \
+} while (0)
 
 int
 perdition_packet_verify_v1_req(perdition_packet_t *packet,
@@ -240,6 +285,46 @@ perdition_packet_verify_v1_req(perdition_packet_t *packet,
 	}
 
 	return(0);
+}
+
+
+
+int
+perdition_packet_verify_v1_str_req(perdition_packet_t *packet, size_t len,
+				   perdition_packet_str_t *saddr,
+				   perdition_packet_str_t *sport,
+				   perdition_packet_str_t *daddr,
+				   perdition_packet_str_t *dport,
+				   perdition_packet_str_t *key,
+				   perdition_packet_str_t *domain_delimiter)
+{
+	char *buf;
+
+	if (perdition_packet_verify_v1_head(packet, len) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_packet_verify_v1_head");
+		return -1;
+	}
+
+	if (ntohs(packet->head.flags) != PERDITION_PACKET_STR_REQ) {
+		VANESSA_LOGGER_DEBUG("Packet is not a string request");
+		return -1;
+	}
+
+	buf = packet->body;
+
+	PACKET_STR_GET(buf, key);
+	PACKET_STR_GET(buf, domain_delimiter);
+	PACKET_STR_GET(buf, saddr);
+	PACKET_STR_GET(buf, sport);
+	PACKET_STR_GET(buf, daddr);
+	PACKET_STR_GET(buf, dport);
+
+	if(perdition_packet_verify_v1_tail(packet, buf - packet->body) < 0) {
+		VANESSA_LOGGER_DEBUG("perdition_packet_verify_v1_head");
+		return -1;
+	}
+
+	return 0;
 }
 
 
@@ -330,5 +415,3 @@ perdition_packet_verify_v1_tail(perdition_packet_t *packet, size_t body_len)
 
 	return(0);
 }
-
-

@@ -88,8 +88,8 @@ struct utsname *system_uname;
 /* Local and Peer address information is global so perditiondb
  * libraries can access this information
  */
-struct sockaddr_in *peername;
-struct sockaddr_in *sockname;
+struct sockaddr_storage *peername;
+struct sockaddr_storage *sockname;
 
 /* PID file that has been created */
 static char *pid_file;
@@ -160,7 +160,7 @@ static int perdition_chown(const char *path, const char *username,
   }
 
 static void 
-perdition_log_auth(timed_log_t *auth_log, const char *from_to_str, 
+perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		struct passwd *pw, const char *servername, const char *port, 
 		const char *progname, const char *reason)
 {
@@ -181,9 +181,9 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_str,
 
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
-			"Auth: %suser=\"%s\" passwd=\"%s\" "
+			"Auth: %s user=\"%s\" passwd=\"%s\" "
 			"server=\"%s\" port=\"%s\" status=\"%s\"",
-			from_to_str, str_null_safe(pw->pw_name),
+			from_to_host_str, str_null_safe(pw->pw_name),
 			str_null_safe(passwd), str_null_safe(servername),
 			str_null_safe(port), str_null_safe(reason));
 	auth_log->log_time = time(NULL) + opt.connect_relog;
@@ -195,14 +195,14 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_str,
 
 #define PERDITION_LOG_AUTH(_reason)                                        \
 do {                                                                       \
-	perdition_log_auth(&auth_log, from_to_str, &pw, servername,        \
+	perdition_log_auth(&auth_log, from_to_host_str, &pw, servername,   \
 			port, progname, _reason);                          \
 } while(0)
 
 static void 
 login_failed_protocol(protocol_t *protocol, int protocol_type, 
 		io_t *io, token_t *tag, timed_log_t *auth_log, 
-		const char *from_to_str, struct passwd *pw, 
+		const char *from_to_host_str, struct passwd *pw,
 		const char *servername, const char *port,
 		const char *progname, const char *reason)
 {
@@ -215,14 +215,14 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 		perdition_exit_cleanly(-1);
 	}
 
-	perdition_log_auth(auth_log, from_to_str, pw, servername, port, 
+	perdition_log_auth(auth_log, from_to_host_str, pw, servername, port,
 			progname, reason);
 }
 
 #define LOGIN_FAILED_PROTOCOL(_type, _reason)                               \
 do {                                                                        \
 	login_failed_protocol(protocol, _type, client_io, client_tag,       \
-			&auth_log, from_to_str, &pw, servername,            \
+			&auth_log, from_to_host_str, &pw, servername,       \
 			port, progname, "failed: " _reason);                \
 } while(0)
 
@@ -244,9 +244,11 @@ int main (int argc, char **argv, char **envp){
   size_t server_resp_buf_size=0;
   flag_t tls_state=0;
   timed_log_t auth_log;
-  char from_to_str[36];
-  char from_str[17];
-  char to_str[17];
+  char from_to_host_str[(NI_MAXHOST*2)+1];
+  char from_host_str[NI_MAXHOST];
+  char to_host_str[NI_MAXHOST];
+  char from_serv_str[NI_MAXSERV];
+  char to_serv_str[NI_MAXSERV];
   char *servername=NULL;
   char *username=NULL;
   char *port=NULL;
@@ -261,6 +263,7 @@ int main (int argc, char **argv, char **envp){
   int rnd;
   int s=-1;
   int *g = NULL;
+  int rc;
 
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
@@ -492,12 +495,14 @@ int main (int argc, char **argv, char **envp){
   /*
    * Allocate the peername and sockname structures
    */
-  if((sockname=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
+  sockname = malloc(sizeof(*sockname));
+  if (!sockname) {
     VANESSA_LOGGER_DEBUG_ERRNO("malloc sockname");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
     perdition_exit_cleanly(-1);
   }
-  if((peername=(struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))==NULL){
+  peername = malloc(sizeof(*peername));
+  if (!peername) {
     VANESSA_LOGGER_DEBUG_ERRNO("malloc peername");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
     perdition_exit_cleanly(-1);
@@ -576,18 +581,21 @@ int main (int argc, char **argv, char **envp){
     }
 
     namelen = sizeof(*peername);
-    if(getpeername(0, (struct sockaddr *)peername, &namelen)){
+    if (getpeername(0, (struct sockaddr *)peername, &namelen)) {
+      free(peername);
       peername=NULL;
     }
 
     namelen = sizeof(*sockname);
-    if(getsockname(1, (struct sockaddr *)sockname, &namelen)){
+    if (getsockname(1, (struct sockaddr *)sockname, &namelen)) {
+      free(sockname);
       sockname=NULL;
     }
   }
   else{
-    s = vanessa_socket_server_acceptv(g, opt.connection_limit, peername, 
-          sockname, 0);
+    s = vanessa_socket_server_acceptv(g, opt.connection_limit,
+				      (struct sockaddr *) peername,
+				      (struct sockaddr *) sockname, 0);
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
       VANESSA_LOGGER_ERR("Fatal error accepting child connection. Exiting.");
@@ -613,25 +621,41 @@ int main (int argc, char **argv, char **envp){
   signal(SIGPIPE,   perdition_exit_cleanly);
 
   /* Get the source and destination ip address as a string */
-  if(peername!=NULL){
-    snprintf(from_str, 17, "%s", inet_ntoa(peername->sin_addr));
+  if (peername!=NULL) {
+    rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+		     from_host_str, NI_MAXHOST, from_serv_str, NI_MAXSERV,
+		     NI_NUMERICHOST|NI_NUMERICSERV);
+    if (rc) {
+        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+				    gai_strerror(rc));
+	VANESSA_LOGGER_ERR("Fatal error formatting peername");
+	perdition_exit_cleanly(-1);
+    }
   }
   else {
-    *from_str='\0';
+    *from_host_str='\0';
+    *from_serv_str='\0';
   }
-  if(sockname!=NULL){
-    snprintf(to_str,   17, "%s", inet_ntoa(sockname->sin_addr));
-    to_addr=&(sockname->sin_addr);
+  if (sockname!=NULL) {
+    rc = getnameinfo((struct sockaddr *)sockname, sizeof(*sockname),
+		     to_host_str, NI_MAXHOST, to_serv_str, NI_MAXSERV,
+		     NI_NUMERICHOST|NI_NUMERICSERV);
+    if (rc) {
+        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
+				    gai_strerror(rc));
+	VANESSA_LOGGER_ERR("Fatal error formatting sockname");
+	perdition_exit_cleanly(-1);
+    }
   }
   else {
-    *to_str='\0';
-    to_addr=NULL;
+    *to_host_str='\0';
+    *from_host_str='\0';
   }
+  *from_to_host_str='\0';
   if(peername!=NULL && sockname!=NULL){
-    snprintf(from_to_str, 36, "%s->%s ", from_str, to_str);
-  }
-  else{
-    *from_to_str='\0';
+    strcat(from_to_host_str, from_host_str);
+    strcat(from_to_host_str, "->");
+    strcat(from_to_host_str, to_host_str);
   }
 
   /*Seed rand*/
@@ -641,10 +665,10 @@ int main (int argc, char **argv, char **envp){
   /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
     VANESSA_LOGGER_INFO_UNSAFE("Connect: %sinetd_pid=%d", 
-          from_to_str, getppid());
+          from_to_host_str, getppid());
   }
   else {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_str);
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_host_str);
   }
   set_proc_title("%s: connect", progname);
 
@@ -662,10 +686,8 @@ int main (int argc, char **argv, char **envp){
   /*Speak to our client*/
   if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
     VANESSA_LOGGER_DEBUG("greeting");
-    VANESSA_LOGGER_ERR_UNSAFE(
-      "Fatal error writing to client. %sExiting child.",
-      from_to_str
-    );
+    VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client. "
+			      "%s. Exiting child.", from_to_host_str);
     perdition_exit_cleanly(-1);
   }
 
@@ -678,19 +700,14 @@ int main (int argc, char **argv, char **envp){
     token_flush();
     if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
-      VANESSA_LOGGER_ERR_UNSAFE(
-	"Fatal Error reading authentication information from client \"%s\": "
-	"Exiting child", 
-	from_to_str
-      );
+      VANESSA_LOGGER_ERR_UNSAFE("Fatal Error reading authentication "
+				"information from client \"%s\": "
+				"Exiting child", from_to_host_str);
       perdition_exit_cleanly(-1);
     }
     else if(status == 1){
-      VANESSA_LOGGER_ERR_UNSAFE(
-        "Closing NULL session: %susername=%s", 
-        from_to_str,
-        str_null_safe(pw.pw_name)
-      );
+      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session: %susername=%s",
+				from_to_host_str, str_null_safe(pw.pw_name));
       perdition_exit_cleanly(0);
     }
 #ifdef WITH_SSL_SUPPORT
@@ -719,19 +736,17 @@ int main (int argc, char **argv, char **envp){
 
     if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
       VANESSA_LOGGER_DEBUG("username_mangle STATE_GET_SERVER");
-      VANESSA_LOGGER_ERR_UNSAFE(
-	"Fatal error manipulating username for client \"%s\": Exiting child",
-	from_str
-      );
+      VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
+				"for client \"%s\": Exiting child",
+				from_host_str);
       perdition_exit_cleanly(-1);
     }
 
     /*Read the server from the map, if we have a map*/
     if(dbserver_get || dbserver_get2 || opt.client_server_specification) {
-    	usp = getserver(username, from_str, to_str, 
-			       peername==NULL?0:ntohs(peername->sin_port), 
-			       sockname==NULL?0:ntohs(sockname->sin_port), 
-			       dbserver_get, dbserver_get2);
+	usp = getserver(username, from_host_str, to_host_str,
+			from_serv_str, to_serv_str,
+			dbserver_get, dbserver_get2);
     }
     if(usp){
       port = usp->port;
@@ -744,11 +759,9 @@ int main (int argc, char **argv, char **envp){
         }
         if((pw.pw_name=strdup(usp->user))==NULL){
 	    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
-            VANESSA_LOGGER_ERR_UNSAFE(
-	      "Fatal error manipulating username for client \"%s\": "
-	      "Exiting child",
-	      from_str
-            );
+            VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
+				      "for client \"%s\": Exiting child",
+				      from_host_str);
         }
       }
     }
@@ -780,10 +793,9 @@ int main (int argc, char **argv, char **envp){
       if((pw2.pw_name=username_mangle(pw.pw_name, 
             to_addr, STATE_LOCAL_AUTH))==NULL){
         VANESSA_LOGGER_DEBUG("username_mangle STATE_LOCAL_AUTH");
-        VANESSA_LOGGER_ERR_UNSAFE(
-	  "Fatal error manipulating username for client \"%s\": Exiting child",
-	  from_str
-        );
+        VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username for "
+				  "client \"%s\": Exiting child",
+				  from_host_str);
         perdition_exit_cleanly(-1);
       }
       pw2.pw_passwd=pw.pw_passwd;
@@ -814,8 +826,7 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    s = vanessa_socket_client_src_open(sockname ? 
-				       inet_ntoa(sockname->sin_addr) : NULL,
+    s = vanessa_socket_client_src_open(sockname ? to_host_str : NULL,
 				       NULL, servername, port, 
 				       opt.no_lookup ? 
 				       VANESSA_SOCKET_NO_LOOKUP : 0);
@@ -848,10 +859,9 @@ int main (int argc, char **argv, char **envp){
     if((pw2.pw_name=username_mangle(pw.pw_name, 
           to_addr, STATE_REMOTE_LOGIN))==NULL){
       VANESSA_LOGGER_DEBUG("username_mangle STATE_REMOTE_LOGIN");
-      VANESSA_LOGGER_ERR_UNSAFE(
-	"Fatal error manipulating username for client \"%s\": Exiting child",
-	from_str
-      );
+      VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
+				"for client \"%s\": Exiting child",
+				from_host_str);
       perdition_exit_cleanly(-1);
     }
     pw2.pw_passwd=pw.pw_passwd;
@@ -970,13 +980,10 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Time to leave*/
-  VANESSA_LOGGER_INFO_UNSAFE(
-    "Close: %suser=\"%s\" received=%d sent=%d", 
-    str_null_safe(from_to_str),
-    str_null_safe(pw.pw_name),
-    bytes_read,
-    bytes_written
-  );
+  VANESSA_LOGGER_INFO_UNSAFE("Close: %s user=\"%s\" received=%d sent=%d",
+			     str_null_safe(from_to_host_str),
+			     str_null_safe(pw.pw_name),
+			     bytes_read, bytes_written);
   set_proc_title("%s: close", progname);
 
   getserver_closelib(handle);

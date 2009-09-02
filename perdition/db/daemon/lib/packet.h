@@ -41,6 +41,7 @@
 
 #define PERDITION_PACKET_REQ     0x0001
 #define PERDITION_PACKET_RSP     0x0002
+#define PERDITION_PACKET_STR_REQ 0x0003
 
 #define PERDITION_PACKET_CS_SHA1 0x00000004
 #define PERDITION_PACKET_CS_MD5  0x00000002
@@ -97,11 +98,15 @@ typedef struct {
 	const unsigned char *data;
 } perdition_packet_str_t;
 
-#define PERDITION_PACKET_STR_PACK(p_str, str) \
-	do{ p_str.data = (unsigned char *)str; \
-		p_str.length = str ? strlen(str) : 0; }while(0)
-	
+static inline void perdition_packet_str_pack(perdition_packet_str_t *p_str,
+					     char *buf)
+{
+	p_str->data = (unsigned char *) buf;
+	p_str->length = buf ? strlen(buf) : 0;
+}
 
+#define PERDITION_PACKET_STR_PACK(p_str, str) \
+	perdition_packet_str_pack(&p_str, str);
 
 perdition_packet_t *
 perdition_packet_create(void);
@@ -118,6 +123,16 @@ perdition_packet_init_v1_req(perdition_packet_t **packet,
 		perdition_packet_str_t *domain_delimiter);
 
 int
+perdition_packet_init_v1_str_req(perdition_packet_t **packet,
+				 uint16_t cs_type,
+				 perdition_packet_str_t *saddr,
+				 perdition_packet_str_t *sport,
+				 perdition_packet_str_t *daddr,
+				 perdition_packet_str_t *dport,
+				 perdition_packet_str_t *key,
+				 perdition_packet_str_t *domain_delimiter);
+
+int
 perdition_packet_init_v1_rsp(perdition_packet_t **packet,
 		uint16_t cs_type,
 		perdition_packet_str_t *user,
@@ -128,6 +143,15 @@ int
 perdition_packet_verify_v1_req(perdition_packet_t *packet,
 		size_t len, perdition_packet_str_t *key,
 		perdition_packet_str_t *domain_delimiter);
+
+int
+perdition_packet_verify_v1_str_req(perdition_packet_t *packet, size_t len,
+				   perdition_packet_str_t *saddr,
+				   perdition_packet_str_t *sport,
+				   perdition_packet_str_t *daddr,
+				   perdition_packet_str_t *dport,
+				   perdition_packet_str_t *key,
+				   perdition_packet_str_t *domain_delimiter);
 
 int
 perdition_packet_verify_v1_rsp(perdition_packet_t *packet,
