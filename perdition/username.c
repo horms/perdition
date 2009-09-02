@@ -50,7 +50,6 @@
  * Append the domain part of the address connected to after
  * the domain delimiter if not already present.
  * pre: username: username to strip domain from
- *      in_addr: Source address of connection
  *      state: The current state. Should be one of STATE_GET_SERVER,
  *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
  *      strip_depth: number of leading levels of the domain to strip
@@ -64,16 +63,16 @@
  **********************************************************************/
 
 char *
-username_add_domain(char *username, struct in_addr *to_addr, int state,
-		unsigned int strip_depth){
-  struct hostent *hp;
+username_add_domain(char *username, int state, unsigned int strip_depth) {
+  int rc;
   char *domainpart;
   char *new_str;
+  char host[NI_MAXHOST];
 
-  VANESSA_LOGGER_DEBUG_UNSAFE("username_add_domain %x %x %p", opt.add_domain, 
-		  state, to_addr);
+  VANESSA_LOGGER_DEBUG_UNSAFE("username_add_domain %x %x", opt.add_domain,
+			      state);
 
-  if(!(opt.add_domain&state) || to_addr==NULL)
+  if(!(opt.add_domain & state))
     return(username);
 
   /* If we already have a domain delimiter, stop now */
@@ -84,18 +83,15 @@ username_add_domain(char *username, struct in_addr *to_addr, int state,
     domainpart = opt.explicit_domain;
   }
   else {
-    hp=gethostbyaddr((char *)to_addr,sizeof(struct in_addr),AF_INET);
-    if (!hp) {
-      VANESSA_LOGGER_DEBUG("no reverse IP lookup, domain not added");
-      return(username);
+    rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+		     host, NI_MAXHOST, NULL, 0, 0);
+    if (rc) {
+      VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+				  gai_strerror(rc));
+      return NULL;
     }
 
-    domainpart = hp->h_name;
-    if (!domainpart || !*domainpart) {
-      VANESSA_LOGGER_DEBUG("No domain in reverse lookup, domain not added");
-      return(username);
-    }
-
+    domainpart = host;
     while (strip_depth-- && *domainpart) {
       char *subdomain;
       subdomain = strchr(domainpart, '.');
@@ -207,7 +203,6 @@ char *username_lower_case(char *username, int state){
  * as per username_add_domain() then convert the result to lowercase
  * using username_lower_case().
  * pre: username: username to manipulate
- *      to_addr: address to do reverse lookup of for username_add_domain
  *      state: The current state. Should be one of STATE_GET_SERVER,
  *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
  * post: Call username_strip(), then username_add_domain() and
@@ -216,8 +211,7 @@ char *username_lower_case(char *username, int state){
  *         NULL on error
  **********************************************************************/
 
-char *username_mangle(char *username, 
-  struct in_addr *to_addr, int state){
+char *username_mangle(char *username, int state){
   char *result;
   char *old_result;
 
@@ -227,8 +221,7 @@ char *username_mangle(char *username,
   }
 
   old_result = result;
-  result = username_add_domain(result, to_addr, state, 
-        opt.add_domain_strip_depth);
+  result = username_add_domain(result, state, opt.add_domain_strip_depth);
   if (!result) {
     VANESSA_LOGGER_DEBUG("username_add_domain");
     return(NULL);

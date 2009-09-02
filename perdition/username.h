@@ -40,7 +40,6 @@
  * Append the domain part of the address connected to after
  * the domain delimiter if not already present.
  * pre: username: username to strip domain from
- *      in_addr: Source address of connection
  *      state: The current state. Should be one of STATE_GET_SERVER,
  *             STATE_LOCAL_AUTH or STATE_REMOTE_LOGIN.
  *      strip_depth: number of leading levels of the domain to strip
@@ -54,8 +53,7 @@
  **********************************************************************/
 
 char *
-username_add_domain(char *username, struct in_addr *to_addr, int state,
-		unsigned int strip_depth);
+username_add_domain(char *username, int state, unsigned int strip_depth);
 
 
 /**********************************************************************
@@ -111,6 +109,6 @@ char *username_lower_case(char *username, int state);
  *         NULL on error
  **********************************************************************/
 
-char *username_mangle(char *username, struct in_addr *to_addr, int state);
+char *username_mangle(char *username, int state);
 
 #endif /* USERNAME_BERT */

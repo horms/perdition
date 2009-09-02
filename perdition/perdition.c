@@ -234,7 +234,6 @@ int main (int argc, char **argv, char **envp){
   vanessa_logger_t *vl;
   struct passwd pw = {NULL, NULL};
   struct passwd pw2 = {NULL, NULL};
-  struct in_addr *to_addr;
   unsigned char *server_resp_buf=NULL;
   unsigned char *buffer;
   user_server_port_t *usp=NULL;
@@ -734,7 +733,8 @@ int main (int argc, char **argv, char **envp){
     }
 #endif /* WITH_SSL_SUPPORT */
 
-    if((username=username_mangle(pw.pw_name, to_addr, STATE_GET_SERVER))==NULL){
+    username = username_mangle(pw.pw_name, STATE_GET_SERVER);
+    if (!username) {
       VANESSA_LOGGER_DEBUG("username_mangle STATE_GET_SERVER");
       VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
 				"for client \"%s\": Exiting child",
@@ -790,8 +790,8 @@ int main (int argc, char **argv, char **envp){
 
 #ifdef WITH_PAM_SUPPORT
     if(opt.authenticate_in){
-      if((pw2.pw_name=username_mangle(pw.pw_name, 
-            to_addr, STATE_LOCAL_AUTH))==NULL){
+      pw2.pw_name = username_mangle(pw.pw_name, STATE_LOCAL_AUTH);
+      if (!pw2.pw_name) {
         VANESSA_LOGGER_DEBUG("username_mangle STATE_LOCAL_AUTH");
         VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username for "
 				  "client \"%s\": Exiting child",
@@ -856,8 +856,8 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_SSL_SUPPORT */
 
     /* Authenticate the user with the pop server */
-    if((pw2.pw_name=username_mangle(pw.pw_name, 
-          to_addr, STATE_REMOTE_LOGIN))==NULL){
+    pw2.pw_name = username_mangle(pw.pw_name, STATE_REMOTE_LOGIN);
+    if(!pw2.pw_name) {
       VANESSA_LOGGER_DEBUG("username_mangle STATE_REMOTE_LOGIN");
       VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
 				"for client \"%s\": Exiting child",
