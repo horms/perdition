@@ -36,10 +36,9 @@ perditiondb_posix_regex.h
 
 libperditiondb_posix_regex_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_posix_regex_la_LIBADD = @ssl_lib@ @posix_regex_libs@
+libperditiondb_posix_regex_la_LIBADD = @posix_regex_libs@
 
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  @ssl_includes@ \
   -DPERDITIONDB_POSIX_REGEX_SYSCONFDIR=\"$(sysconfdir)/perdition\"

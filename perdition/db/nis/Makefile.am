@@ -31,9 +31,8 @@ perditiondb_nis.h
 
 libperditiondb_nis_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_nis_la_LIBADD = @ssl_lib@
+libperditiondb_nis_la_LIBADD     = @nsl_lib@ -lvanessa_logger
 
 INCLUDES=\
 -I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
-@ssl_includes@
+-I$(top_srcdir)/perdition

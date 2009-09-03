@@ -95,8 +95,6 @@ LDADD = \
 -lpopt \
 @pam_lib@ \
 @socket_lib@ \
-@nsl_lib@ \
-@resolv_lib@ \
 @dl_lib@ \
 @ssl_lib@ \
 @dmalloc_lib@

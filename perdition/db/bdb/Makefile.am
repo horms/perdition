@@ -30,9 +30,9 @@ libperditiondb_bdb_la_SOURCES = \
 
 libperditiondb_bdb_la_LDFLAGS    = -version-info 0:0:0
 
-libperditiondb_bdb_la_LIBADD = -ldb
+libperditiondb_bdb_la_LIBADD = -ldb -lvanessa_logger -lvanessa_adt
 
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  -DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\" @ssl_includes@
+  -DPERDITIONDB_BDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"

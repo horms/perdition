@@ -42,7 +42,6 @@ AC_CHECK_LIB(db, db_create, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
-AC_CHECK_LIB(resolv, inet_aton, [ resolv_lib="-lresolv" ], [ resolv_lib="" ])
 AC_CHECK_LIB(crypt, crypt, [ crypt_lib="-lcrypt" ], [ crypt_lib="" ])
 AC_CHECK_LIB(
   popt,
@@ -276,7 +275,7 @@ AC_ARG_WITH(
     AC_MSG_RESULT($mysql_libpath)
   ]
 )
-mysql_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$mysql_libpath -lmysqlclient"
+mysql_libs="-lvanessa_logger -lvanessa_adt -L$mysql_libpath -lmysqlclient"
 fi
 
 if test "$enable_mysql" = "yes"; then
@@ -376,7 +375,7 @@ AC_ARG_WITH(
     AC_MSG_RESULT($odbc_libpath)
   ]
 )
-odbc_libs="$socket_lib $nsl_lib $crypt_lib -lvanessa_logger -lvanessa_adt -lz -lm -L$odbc_libpath -lodbc"
+odbc_libs="-lvanessa_logger -lvanessa_adt -L$odbc_libpath -lodbc"
 fi
 
 if test "$enable_odbc" = "yes"; then
@@ -751,7 +750,7 @@ AC_ARG_WITH(
     AC_MSG_RESULT($ldap_libpath)
   ]
 )
-ldap_libs="$socket_lib $nsl_lib $resolv_lib -L$ldap_libpath -lldap -llber"
+ldap_libs="-L$ldap_libpath -lldap -llber"
 fi
 
 if test "$enable_ldap" = "yes"; then

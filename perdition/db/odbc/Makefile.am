@@ -36,9 +36,6 @@ perditiondb_odbc.h
 
 libperditiondb_odbc_la_LDFLAGS = -version-info 0:0:0
 
-libperditiondb_odbc_la_LIBADD =  @ssl_lib@ @odbc_libs@ 
+libperditiondb_odbc_la_LIBADD =  @odbc_libs@
 
-INCLUDES=\
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
-@ssl_includes@
+INCLUDES= -I$(top_srcdir)/ -I$(top_srcdir)/perdition @odbc_includes@

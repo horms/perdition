@@ -56,7 +56,6 @@ libperditiondb_ldap_la_LDFLAGS    = -version-info 0:0:0
 INCLUDES=\
 -I$(top_srcdir)/ \
 -I$(top_srcdir)/perdition \
-@ssl_includes@ \
 @ldap_includes@
 
-libperditiondb_ldap_la_LIBADD = @ssl_lib@ @ldap_libs@
+libperditiondb_ldap_la_LIBADD = @ldap_libs@ -lvanessa_logger

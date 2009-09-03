@@ -35,4 +35,4 @@ libperditiondb_gdbm_la_LIBADD = -lgdbm
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  -DPERDITIONDB_GDBM_SYSCONFDIR=\"$(sysconfdir)/perdition\" @ssl_includes@
+  -DPERDITIONDB_GDBM_SYSCONFDIR=\"$(sysconfdir)/perdition\"

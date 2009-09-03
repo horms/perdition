@@ -35,4 +35,4 @@ libperditiondb_cdb_la_LIBADD = -lcdb
 INCLUDES=\
   -I$(top_srcdir)/ \
   -I$(top_srcdir)/perdition \
-  -DPERDITIONDB_CDB_SYSCONFDIR=\"$(sysconfdir)/perdition\" @ssl_includes@
+  -DPERDITIONDB_CDB_SYSCONFDIR=\"$(sysconfdir)/perdition\"
