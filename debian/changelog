@@ -1,3 +1,12 @@
+perdition (1.18~rc1-2) unstable; urgency=low
+
+  * Update build dependency on libvanessa-socket-dev to 0.0.8.
+    - Perdition 1.18~rc1 requires symbols that are new in
+      vanessa-socket 0.0.8.
+    (closes: #544876)
+
+ -- Simon Horman <horms@debian.org>  Thu, 03 Sep 2009 23:38:19 +1000
+
 perdition (1.18~rc1-1) unstable; urgency=low
 
   * New Upstream
