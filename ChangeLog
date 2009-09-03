@@ -2,25 +2,109 @@ Change Log
 
 perdition
 Mail retrieval proxy server
-Copyright (C) 1999-2007  Horms <horms@verge.net.au>
+Copyright (C) 1999-2009  Horms <horms@verge.net.au>
 ----------------------------------------------------------------------
 
-XXX
-(XXX)
- * XXX
- - Pass include '\0' in the length passed to yp_match() in the NIS module
-   Thanks to Robert Edmonds
-   (Debian Bug: #412151)
- - Don't dereference sockname in main() if it isn't intialised
- - The following changes are also included in 1.17.1
-   - Verify that tag read from end-users is valid
-     - CVE-2007-5740
-       The format string protection mechanism in IMAPD for Perdition Mail
-       Retrieval Proxy 1.17 and earlier allows remote attackers to execute
-       arbitrary code via an IMAP tag with a null byte followed by a format
-       string specifier, which is not counted by the mechanism.
-   - Various Debian packaging updates
-   - Fixed documentation of map_library. Thanks to Anand Kumria.
+3rd September 2009
+(Simon Horman)
+ * 1.18-rc1
+  - Partially revert "Build: reduce useless linking"
+  - Debian: remove libjain from perdition.shlibs as it no longer exists
+  - Build: reduce useless linking
+  - Debian: Don't include full GPL in Debian copyright file
+  - Debian: Remove ancient dpkg call
+  - Fix syntax error in perdition.8 man page. .ni should be .fi
+  - Debian: Update version to 1.18-rc1
+  - Debian: Reinstate date for 1.17-8 changelog entry
+  - Update FSF address
+  - Debian: Don't ignore errors in helper scripts
+  - Debian: Use dh_prep instead of dh_clean -k
+  - Debian: Use ${binary:Version} instead of ${Source-Version}
+  - Debian: Don't ignore distclean errors
+  - Build: Use a conditional to control the installation of the ldap schema
+  - Fix appending of domain name
+  - Fix greeting
+  - Update sockaddr and peeraddr handling for IPv6
+  - Debian: Use debhelper compatibility level 7
+  - Debian: Use standards version 3.8.2
+  - Debian: ldaps is supported
+  - Debian: ldap v3 is supported
+  - Debian: close #513461 on the next release
+  - Check alt subject if the common name doesn't match
+  - Process all CN entries
+  - Don't use X509_NAME_oneline() as it is deprecated
+  - Null terminate the buffer resulting from the use of BIO_s_mem()
+  - Add group to getgrname error message
+  - Enhance getgrnam error message
+  - Don't accept STARTTLS command in imap4 mode if it hasn't been enabled
+  - Debian: Remove spurious build dependency on libtool
+  - Debian: Update mysql build dependency to libmysqlclient-dev
+  - Use suffix rules
+  - Don't use := in Makefile.am, it isn't portable
+  - Resolve libtoolize warnings
+  - Move configure.in to configure.ac
+  - PAM_RHOST support for perdition
+  - Remove Makefile.in files from repository
+  - MySQL fallback servers
+  - Remove libjain
+  - CDB database library corrections
+  - Remove config.h.in and perdition/db/Makefile.in
+  - Fix Berkeley typos
+  - Debian: Add build dependency on libcdb-dev for recently added CDB support
+  - CDB support in perdition
+  - Debian: Bug #507414 is already pending
+  - ldap_search_s() may return LDAP_SERVER_DOWN on success.
+  - Allow the ldap db to return any one or more of: username, server and port
+  - Removed tag B
+  - update tags
+  - Subject: Debian: LSB formatted dependency info in init.d script
+  - Add connection rate limiting to TODO
+  - Fix buffer overdlow in options logging code
+  - Add custom login-disabled messages to TODO
+  - Get rid of libjain, it does nothing
+  - Clean up install-hook for schema
+  - Don't use mkinstalldirs as it may not exist
+  - Exit with exit status of configure if it fails
+  - Date: Tue, 09 Oct 2007 19:03:21 -0300
+  - Update change logs for CVE-2007-5740
+  - Update debian/changelog for 1.17.1-1 release
+  - Update debian/changelog for 1.17-8 release
+  - Verify that tag read from end-users is valid
+  - Make debian init script log something informative if perdition is already running
+  - Don't dereference sockname in main() if it isn't intialised
+  - Pass include '\0' in the length passed to yp_match() in the NIS module
+  - Update TODO
+  - Fix typo in MySQL arguments
+  - Use ca_path and ca_file for incoming connections
+  - Remove real email address from example
+  - Debian packaging update: Release perdition 1.17-7
+  - Debian packaging update
+  - Debian Packaging Update
+  - Fix documentation of map_library in sample configuration file
+  - add multibind
+  - Roll back non-debian portion of previous commit
+  - Debian Packaging
+  - Reverse regex REG_ICASE patch as the lower_case config option can be used
+  - Debian Packaging Update: Uploaded to Debian.Org
+  - Update MySQL build dependancy to libmysqlclient15-dev
+  - Make regex matches case insensitive.
+  - Include perdition_globals.h in distribtion
+  - Don't build ldap documentation by default
+  - Fix building of daemon map
+  - tls_XXX_force now sets tls_XXX.
+  - signdness fixes. macro cleanups. added log_password option
+  - signdness fixes. macro cleanups. added log_password option
+  - Fix includes
+  - Allow the LDAP protocol version to be specified
+  - Escape data fed into mysql queries. Probably needed for other
+  - Add libtoolize to autogen.sh
+  - The documentation for the mysql (and postgresql) pompaps
+  - Diable use of ldap_initialise() as it seems broken on some
+  - multiple ports
+  - per-user restrictions
+  - Rearange the deamon maps network code into a separate library
+  - Update build dependancies from the stone age
+  - Update copyright
 
 22nd February 2007
 (Horms)
