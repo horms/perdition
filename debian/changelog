@@ -1,4 +1,4 @@
-perdition (1.18) UNRELEASED; urgency=low
+perdition (1.18~rc1-1) UNRELEASED; urgency=low
 
   * New Upstream
     - Pass include '\0' in the length passed to yp_match() in the NIS module
@@ -24,7 +24,7 @@ perdition (1.18) UNRELEASED; urgency=low
     - Support ldaps
       (closes: #477159)
 
- -- Simon Horman <horms@debian.org>  Tue, 01 Sep 2009 21:11:55 +1000
+ -- Simon Horman <horms@debian.org>  Thu, 03 Sep 2009 16:56:50 +1000
 
 perdition (1.17.1-1) unstable; urgency=high
 
