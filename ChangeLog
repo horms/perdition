@@ -106,33 +106,6 @@ Copyright (C) 1999-2009  Horms <horms@verge.net.au>
   - Update build dependancies from the stone age
   - Update copyright
 
-22nd February 2007
-(Horms)
- * 1.18-rc1
- - Make packet and socket handling code in daemon module
-   a separate shared library so its code can be used in
-   daemons written to work with it.
- - Diable use of ldap_initialise() as it seems broken on some
-   OpenLdap releases. Hopefully we can make a check for this 
-   that works in the futrure.
- - The documentation for the mysql (and postgresql) pompaps
-   had the order of the dbsrvcol and dbsrvcol parameters inverted.
-   This has been fixed, and the code has been reordered to reflect this
-   - although the reordering does not affect the functionality.
- - Add libtoolize to autogen.sh. Thanks to Andreas Sartori
- - Escape data fed into mysql queries. Probably needed for other
-   modules too, but its likely to be module-specific.
-   Thanks to Farzad FARID
- - Allow the LDAP protocol version to be specified
- - tls_XXX_force now sets tls_XXX. Previously tls_XXX_force was
-   ignored if tls_XXX was not already set. This proved confusing.
- - Don't build ldap documentation by default, it requres pslatex.sty
-   and we need a check for that.
- - Allow bind address to include a port
- - Allow multiple bind addresses
- - Derive source address from the address connected to,
-   rather than the configured bind address
-
 ----------------------------------------------------------------------
 
 22nd June 2005
