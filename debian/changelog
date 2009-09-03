@@ -46,6 +46,8 @@ perdition (1.17-8) unstable; urgency=low
     libdb4.3 to be removed from the archive.
     (closes: #442663)
 
+ -- Simon Horman <horms@debian.org>  Wed, 19 Sep 2007 11:30:32 +0900
+
 perdition (1.17-7) unstable; urgency=low
 
   * Remove the unneccesary Build-Depends on automake as part of
