@@ -1,3 +1,11 @@
+perdition (1.18~rc1-3) unstable; urgency=low
+
+  * don't call make from perdition prerm script
+    - make may not be installed
+    - unnecessary clean up of user-generated files
+
+ -- Simon Horman <horms@debian.org>  Fri, 04 Sep 2009 11:09:42 +1000
+
 perdition (1.18~rc1-2) unstable; urgency=low
 
   * Update build dependency on libvanessa-socket-dev to 0.0.8.

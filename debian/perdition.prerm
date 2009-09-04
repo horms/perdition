@@ -5,8 +5,6 @@
 
 set -e
 
-make -C /etc/perdition/ clean > /dev/null
-
 if [ "$1" = "purge"  -o "$1" = "remove" ]; then
 	if [ -f /etc/init.d/perdition ]; then
 		invoke-rc.d perdition stop
