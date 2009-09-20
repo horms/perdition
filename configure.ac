@@ -1104,10 +1104,8 @@ AC_SUBST(pam_lib)
 AC_SUBST(dmalloc_lib)
 
 AC_OUTPUT(
-packaging/Makefile
-packaging/lsb/Makefile
-packaging/lsb/perdition.spec
 debian/Makefile 
+perdition.spec
 perdition/Makefile 
 perdition/db/Makefile 
 perdition/db/cdb/Makefile

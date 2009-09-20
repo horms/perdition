@@ -32,7 +32,7 @@ endif
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = $(MAKEGDBM_DIR) $(MAKEBDB_DIR) \
-	perdition debian etc packaging
+	perdition debian etc
 
 EXTRA_DIST = \
 README \
@@ -40,7 +40,7 @@ TODO \
 INSTALL.in \
 CODING_LOCATIONS.in\
 CODING_LOCATIONS \
-autogen.sh
+autogen.sh perdition.spec
 
 clean-local:
 	rm -f build-stamp
