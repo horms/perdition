@@ -23,7 +23,7 @@ Summary: Mail Retrieval Proxy
 Name: perdition
 Version: %ver
 Release: %rel
-Copyright: GPL
+License: GPL
 Group: Applications/Internet
 Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.gz
 BuildRoot: /var/tmp/perdition-%{PACKAGE_VERSION}-root
@@ -62,7 +62,7 @@ of perditiondb libraries.
 %package bdb
 Summary: Library to allow perdition to access Berkeley DB based pop maps.
 Group: Applications/Internet
-Copyright: GPL
+License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-ldap-%{ver}-%{rel}
 
@@ -75,7 +75,7 @@ database to be sourced from a Berkeley DB.
 %package ldap
 Summary: Library to allow perdition to access LDAP based pop maps.
 Group: Applications/Internet
-Copyright: GPL
+License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-ldap-%{ver}-%{rel}
 
@@ -88,7 +88,7 @@ database to be sourced from LDAP.
 %package mysql
 Summary: Library to allow perdition to access MySQL based pop maps.
 Group: Applications/Internet
-Copyright: GPL
+License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-mysql-%{ver}-%{rel}
 
@@ -101,7 +101,7 @@ database stored in a MySQL database.
 %package postgresql
 Summary: Library to allow perdition to access PostgreSQL based pop maps.
 Group: Applications/Internet
-Copyright: GPL
+License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-postgresql-%{ver}-%{rel}
 
@@ -114,7 +114,7 @@ database stored in a PostgreSQL database.
 %package odbc
 Summary: Library to allow perdition to access pop maps via ODBC.
 Group: Applications/Internet
-Copyright: GPL
+License: GPL
 Requires: perdition-%{ver}-%{rel} unixODBC
 Provides: perdition-odbc-%{ver}-%{rel}
 
