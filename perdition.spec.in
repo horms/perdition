@@ -31,7 +31,7 @@ Packager: Horms <horms@verge.net.au>
 URL: http://vergenet.net/linux/perdition/
 Docdir: %{prefix}/doc
 Provides: perdition-%{ver}-%{rel}
-BuildPrereq: gcc make vanessa_logger-devel >= 0.0.6 vanessa_adt-devel >= 0.0.6  vanessa_socket-devel >= 0.0.8  gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel ghostscript tetex-latex tetex-dvips libtiff unixODBC-devel /usr/include/db.h
+BuildPrereq: gcc make vanessa_logger-devel >= 0.0.6 vanessa_adt-devel >= 0.0.6  vanessa_socket-devel >= 0.0.8  gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel tetex-dvips unixODBC-devel /usr/include/db.h
 Requires: vanessa_logger >= 0.0.6 vanessa_adt >= 0.0.6 vanessa_socket >= 0.0.8
 
 %description
@@ -259,7 +259,6 @@ true
 
 %files ldap
 %defattr(-,root,root)
-%doc %attr(-, root, root) perdition/db/ldap/doc/perdition_ldap.pdf
 %{_libdir}/libperditiondb_ldap.a
 %{_libdir}/libperditiondb_ldap.la
 %{_libdir}/libperditiondb_ldap.so
