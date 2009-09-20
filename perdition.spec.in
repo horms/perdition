@@ -241,6 +241,11 @@ true
 %{_libdir}/libperditiondb_daemon.so
 %{_libdir}/libperditiondb_daemon.so.0
 %{_libdir}/libperditiondb_daemon.so.0.0.0
+%{_libdir}/libperditiondb_daemon_base.a
+%{_libdir}/libperditiondb_daemon_base.la
+%{_libdir}/libperditiondb_daemon_base.so
+%{_libdir}/libperditiondb_daemon_base.so.0
+%{_libdir}/libperditiondb_daemon_base.so.0.0.0
 
 %files bdb
 %defattr(-,root,root)
