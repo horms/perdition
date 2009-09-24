@@ -46,6 +46,11 @@ typedef enum {
   io_type_none
 } io_type_t;
 
+enum io_err {
+  io_err_none,
+  io_err_other,
+  io_err_timeout
+};
 
 /**********************************************************************
  * io_create_fd 
@@ -164,6 +169,17 @@ io_type_t io_get_type(io_t *io);
  **********************************************************************/
 
 const char *io_get_name(io_t *io);
+
+
+/**********************************************************************
+ * io_get_err
+ * Get error status of an io
+ * pre: io: io_t to setget the err of
+ * post: none
+ * return: error status of the io
+ **********************************************************************/
+
+enum io_err io_get_err(io_t *io);
 
 
 #ifdef WITH_SSL_SUPPORT

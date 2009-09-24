@@ -69,6 +69,7 @@ struct io_t_struct {
   io_type_t type;
   __io_data_t data;
   char *name;
+  enum io_err err;
 };
 
 
@@ -101,6 +102,8 @@ static io_t *__io_create(const char *name){
   else {
     io->name = NULL;
   }
+
+  io->err = io_err_none;
 
   return(io);
 }
@@ -255,29 +258,29 @@ ssize_t io_write(io_t *io, const void *buf, size_t count){
     case io_type_fd:
       if((bytes=write(io->data.d_fd->write, buf, count))<0){
 	VANESSA_LOGGER_DEBUG_ERRNO("write");
-	return(-1);
+	goto err;
       }
-      break;
+      return bytes;
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
       if((bytes=(ssize_t)SSL_write(io->data.d_ssl->ssl, buf, (int)count))<=0){
         if(bytes < 0) {
 	  __IO_READ_WRITE_SSL_ERROR("SSL_write", io->data.d_ssl->ssl, bytes);
+          goto err;
         }
-        else {
-
-          return(0);
-        }
+        else
+          return 0;
       }
-      break;
+      return bytes;
 #endif /* WITH_SSL_SUPPORT */
     default:
       VANESSA_LOGGER_DEBUG("unknown io type");
-      bytes=-1;
-      break;
+      goto err;
    }
-  
-  return(bytes);
+
+err:
+  io->err = io_err_other;
+  return -1;
 }
 
 
@@ -299,28 +302,29 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
     case io_type_fd:
       if((bytes=read(io->data.d_fd->read, buf, count))<0){
 	VANESSA_LOGGER_DEBUG_ERRNO("read");
-	return(-1);
+	goto err;
       }
-      break;
+      return bytes;
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
       if((bytes=(ssize_t)SSL_read(io->data.d_ssl->ssl, buf, (int)count))<=0){
         if(bytes < 0) {
 	  __IO_READ_WRITE_SSL_ERROR("SSL_read", io->data.d_ssl->ssl, bytes);
+          goto err;
         }
-        else {
-          return(0);
-        }
+        else
+          return 0;
       }
-      break;
+      return bytes;
 #endif /* WITH_SSL_SUPPORT */
     default:
       VANESSA_LOGGER_DEBUG("unknown io type");
-      bytes=-1;
-      break;
+      goto err;
    }
-  
-  return(bytes);
+
+err:
+  io->err = io_err_other;
+  return -1;
 }
 
 
@@ -334,24 +338,21 @@ ssize_t io_read(io_t *io, void *buf, size_t count){
  **********************************************************************/
 
 int io_get_rfd(io_t *io){
-  int fd;
-
   switch(io->type){
     case io_type_fd:
-      fd=io->data.d_fd->read;
-      break;
+      return io->data.d_fd->read;
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
-      fd=io->data.d_ssl->read;
-      break;
+      return io->data.d_ssl->read;
 #endif /* WITH_SSL_SUPPORT */
     default:
       VANESSA_LOGGER_DEBUG("unknown io type");
-      fd=-1;
-      break;
+      goto err;
    }
-  
-  return(fd);
+
+err:
+  io->err = io_err_other;
+  return -1;
 }
 
 
@@ -365,24 +366,21 @@ int io_get_rfd(io_t *io){
  **********************************************************************/
 
 int io_get_wfd(io_t *io){
-  int fd;
-
   switch(io->type){
     case io_type_fd:
-      fd=io->data.d_fd->write;
-      break;
+      return io->data.d_fd->write;
 #ifdef WITH_SSL_SUPPORT
     case io_type_ssl:
-      fd=io->data.d_ssl->write;
-      break;
+      return io->data.d_ssl->write;
 #endif /* WITH_SSL_SUPPORT */
     default:
       VANESSA_LOGGER_DEBUG("unknown io type");
-      fd=-1;
-      break;
+      goto err;
    }
-  
-  return(fd);
+
+err:
+  io->err = io_err_other;
+  return -1;
 }
 
 
@@ -412,6 +410,20 @@ const char *io_get_name(io_t *io){
 }
 
 
+/**********************************************************************
+ * io_get_err
+ * Get error status of an io
+ * pre: io: io_t to get the err of
+ * post: none
+ * return: error status of the io
+ **********************************************************************/
+
+enum io_err io_get_err(io_t *io)
+{
+  return io->err;
+}
+
+
 #ifdef WITH_SSL_SUPPORT
 /**********************************************************************
  * io_get_ssl
@@ -431,6 +443,7 @@ SSL *io_get_ssl(io_t *io){
       break;
     default:
       ssl=NULL;
+      io->err = io_err_other;
       break;
    }
   
@@ -467,11 +480,11 @@ int io_close(io_t *io){
   
     if(close(read_fd)){
       VANESSA_LOGGER_DEBUG_ERRNO("close 1");
-      return(-1);
+      goto err;
     }
     if(read_fd!=write_fd && close(write_fd)){
       VANESSA_LOGGER_DEBUG_ERRNO("close 2 %d %d");
-      return(-1);
+      goto err;
     }
 
     break;;
@@ -490,10 +503,14 @@ int io_close(io_t *io){
 #endif /* WITH_SSL_SUPPORT */
     default:
       VANESSA_LOGGER_DEBUG("Unknown io type");
-      return(-1);
+      goto err;
   }
 
   return(0);
+
+err:
+  io->err = io_err_other;
+  return -1;
 }
 
 
@@ -527,8 +544,10 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
   io=io_select_get(s, fd);
   if(io == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_get");
-	  return(-1);
+	  goto err;
   }
+
+  io->err = io_err_none;
 
   bytes = io_read(io, buf, count);
 
@@ -537,7 +556,7 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
     dump_str = VANESSA_LOGGER_DUMP(buf, bytes, 0);
     if(!dump_str) {
       VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
-      return(-1);
+      goto err;
     }
     VANESSA_LOGGER_LOG_UNSAFE(LOG_DEBUG, "%s \"%s\"", 
 		    str_null_safe(io_get_name(io)), dump_str);
@@ -545,6 +564,11 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
   }
 
   return(bytes);
+
+err:
+  if (io->err == io_err_none)
+        io->err = io_err_other;
+  return -1;
 }
          
 
@@ -573,7 +597,7 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
   s = io_select_create();
   if(s == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_create");
-	  return(-1);
+	  goto err;
   }
 
   s->log = log;
@@ -581,7 +605,7 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
   if(io_select_add(s, io_a) == NULL || io_select_add(s, io_b) == NULL) {
 	  VANESSA_LOGGER_DEBUG("io_select_add");
 	  io_select_destroy(s);
-	  return(-1);
+          goto err;
   }
 
   if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a), io_get_wfd(io_a),
@@ -589,9 +613,22 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
       idle_timeout, return_a_read_bytes, return_b_read_bytes,
       __io_pipe_read, __io_pipe_write, io_select, (void *)s))<0){
 	VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
+        if (bytes == 1) {
+            /* timeout */
+            io_a->err = io_err_timeout;
+            io_b->err = io_err_timeout;
+        }
+        goto err;
   }
 
   io_select_destroy(s);
 
   return(bytes);
+
+err:
+  if (io_a->err != io_err_none && io_b->err != io_err_none) {
+            io_a->err = io_err_other;
+            io_b->err = io_err_other;
+  }
+  return -1;
 }
