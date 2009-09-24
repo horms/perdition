@@ -577,6 +577,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
+    io_set_timeout(client_io, opt.timeout);
 
     namelen = sizeof(*peername);
     if (getpeername(0, (struct sockaddr *)peername, &namelen)) {
@@ -611,6 +612,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
+    io_set_timeout(client_io, opt.timeout);
   }
 
   /* A child process, or process handling an inetd connection
@@ -698,9 +700,15 @@ int main (int argc, char **argv, char **envp){
     token_flush();
     if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
-      VANESSA_LOGGER_ERR_UNSAFE("Fatal Error reading authentication "
-				"information from client \"%s\": "
-				"Exiting child", from_to_host_str);
+      if (io_get_err(client_io) == io_err_timeout)
+	VANESSA_LOGGER_ERR_UNSAFE("Fatal Error: Timeout reading "
+				  "authentication information from "
+				  "client \"%s\": Exiting child",
+				  from_to_host_str);
+      else
+	VANESSA_LOGGER_ERR_UNSAFE("Fatal Error reading authentication "
+				  "information from client \"%s\": "
+				  "Exiting child", from_to_host_str);
       perdition_exit_cleanly(-1);
     }
     else if(status == 1){
@@ -841,6 +849,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
+    io_set_timeout(server_io, opt.timeout);
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_SSL_OUTGOING) {
@@ -932,7 +941,11 @@ int main (int argc, char **argv, char **envp){
     }
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
-      VANESSA_LOGGER_ERR("Fatal error authenticating user. Exiting child.");
+      if (io_get_err(client_io) == io_err_timeout)
+	VANESSA_LOGGER_ERR("Fatal error: Timeout authenticating user. "
+			   "Exiting child.");
+      else
+        VANESSA_LOGGER_ERR("Fatal error authenticating user. Exiting child.");
       perdition_exit_cleanly(-1);
     }
 
@@ -971,10 +984,14 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Let the client talk to the real server*/
-  if(io_pipe(server_io, client_io, buffer, BUFFER_SIZE, opt.timeout,
+  if(io_pipe(server_io, client_io, buffer, BUFFER_SIZE,
         &bytes_written, &bytes_read, &auth_log)<0){
     VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
-    VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
+    if (io_get_err(client_io) == io_err_timeout)
+      VANESSA_LOGGER_ERR("Fatal error: Timeout piping data. "
+			 "Exiting child.");
+    else
+      VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
     perdition_exit_cleanly(-1);
   }
 

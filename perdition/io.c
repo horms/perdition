@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <vanessa_socket.h>
+#include <limits.h>
 
 #include "io.h"
 #include "io_select.h"
@@ -70,6 +71,7 @@ struct io_t_struct {
   __io_data_t data;
   char *name;
   enum io_err err;
+  long timeout;
 };
 
 
@@ -290,7 +292,6 @@ err:
  * pre: io: io_t to read from
  *      buf: buffer to read
  *      count: maximum number of bytes to read
- *      timeout: idle timeout in seconds, 0 for no timeout
  * post: up to count bytes are read from io into buf
  * return: Number of bytes read
  *         -1 on error
@@ -330,7 +331,7 @@ err:
 }
 
 
-ssize_t io_read(io_t *io, void *buf, size_t count, long timeout)
+ssize_t io_read(io_t *io, void *buf, size_t count)
 {
 	io_select_t *s = NULL;
 	struct timeval tv;
@@ -365,11 +366,12 @@ ssize_t io_read(io_t *io, void *buf, size_t count, long timeout)
 		FD_SET(rfd, &read_template);
 		FD_ZERO(&except_template);
 		FD_SET(rfd, &except_template);
-		tv.tv_sec = timeout;
+		tv.tv_sec = io->timeout;
 		tv.tv_usec = 0;
 
 		status = io_select(FD_SETSIZE, &read_template, NULL,
-                                   &except_template, timeout ? &tv : NULL, s);
+                                   &except_template, io->timeout ? &tv : NULL,
+                                   s);
 		if (status < 0) {
 			if (errno != EINTR) {
 				VANESSA_LOGGER_DEBUG_ERRNO("select");
@@ -420,6 +422,35 @@ err:
  **********************************************************************/
 
 void io_set_err(io_t *io, enum io_err err);
+
+
+/**********************************************************************
+ * io_get_timoeut
+ * Get the idle timeout of an io
+ * pre: io: io_t to get the idle timeout of
+ * post: none
+ * return: timeout in seconds
+ **********************************************************************/
+
+long io_get_timeout(io_t *io)
+{
+        return io->timeout;
+}
+
+
+/**********************************************************************
+ * io_set_timoeut
+ * Set the idle timeout of an io
+ * pre: io: io_t to set the idle timeout of
+ *      timeout: timeout in seconds, 0 for no timeout
+ * post: idle timeout of the io_t is set
+ * return: none
+ **********************************************************************/
+
+void io_set_timeout(io_t *io, long timeout)
+{
+        io->timeout = timeout;
+}
 
 
 /**********************************************************************
@@ -615,17 +646,13 @@ err:
  *      io_b: the other io_t
  *      buffer:   allocated buffer to read data into
  *      buffer_length: size of buffer in bytes
- *      idle_timeout:  timeout in seconds to wait for input
- *                     timeout of 0 = infinite timeout
  *      return_a_read_bytes: Pointer to int where number
  *                           of bytes read from a will be recorded.
  *      return_b_read_bytes: Pointer to int where number
  *                           of bytes read from b will be recorded.
  * post: bytes are read from io_a and written to io_b and vice versa
- * return: -1 on error
- *         1 on idle timeout
+ * return: -1 on error, including idle timeout
  *         0 otherwise (one of io_a or io_b closes gracefully)
- *
  **********************************************************************/
 
 static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
@@ -683,10 +710,26 @@ static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
 
          
 ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
-      int buffer_length, int idle_timeout, int *return_a_read_bytes,
+      int buffer_length, int *return_a_read_bytes,
       int *return_b_read_bytes, timed_log_t *log){
   int bytes;
   io_select_t *s;
+  long timeout;
+
+  if (io_a->timeout && io_b->timeout)
+        timeout = io_a->timeout < io_b->timeout ? io_a->timeout :
+                io_b->timeout;
+  else if (io_a->timeout)
+        timeout = io_a->timeout;
+  else if (io_b->timeout)
+        timeout = io_b->timeout;
+  else
+        timeout = 0;
+
+  /* Cap timeout at INT_MAX, as vanessa_socket_pipe_func() takes
+   * an integer as the timeout argument */
+  if (timeout > INT_MAX)
+        timeout = INT_MAX;
 
   s = io_select_create();
   if(s == NULL) {
@@ -704,7 +747,7 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
 
   if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a), io_get_wfd(io_a),
       io_get_rfd(io_b), io_get_wfd(io_b), buffer, buffer_length,
-      idle_timeout, return_a_read_bytes, return_b_read_bytes,
+      timeout, return_a_read_bytes, return_b_read_bytes,
       __io_pipe_read, __io_pipe_write, io_select, (void *)s))<0){
 	VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
         if (bytes == 1) {

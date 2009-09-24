@@ -218,8 +218,7 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
 	int bytes_read;
 	char *dump_buf;
 
-	bytes_read = io_read(io, token_read_buffer, MAX_LINE_LENGTH-1,
-			     opt->timeout);
+	bytes_read = io_read(io, token_read_buffer, MAX_LINE_LENGTH-1);
 	if (bytes_read < 0) {
 		VANESSA_LOGGER_DEBUG_ERRNO("error reading input");
 		return -1;

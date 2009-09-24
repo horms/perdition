@@ -117,13 +117,12 @@ ssize_t io_write(io_t *io, const void *buf, size_t count);
  * pre: io: io_t to read from
  *      buf: buffer to read
  *      count: maximum number of bytes to read
- *      timeout: idle timeout in seconds, 0 for no timeout
  * post: up to count bytes are read from io into buf
  * return: Number of bytes read
  *         -1 on error
  **********************************************************************/
 
-ssize_t io_read(io_t *io, void *buf, size_t count, long timeout);
+ssize_t io_read(io_t *io, void *buf, size_t count);
 
 
 /**********************************************************************
@@ -183,6 +182,41 @@ const char *io_get_name(io_t *io);
 enum io_err io_get_err(io_t *io);
 
 
+/**********************************************************************
+ * io_get_timoeut
+ * Get the idle timeout of an io
+ * pre: io: io_t to get the idle timeout of
+ * post: none
+ * return: timeout in seconds
+ **********************************************************************/
+
+long io_get_timeout(io_t *io);
+
+
+/**********************************************************************
+ * io_set_timoeut
+ * Set the idle timeout of an io
+ * pre: io: io_t to set the idle timeout of
+ *      timeout: timeout in seconds, 0 for no timeout
+ * post: idle timeout of the io_t is set
+ * return: none
+ **********************************************************************/
+
+void io_set_timeout(io_t *io, long timeout);
+
+
+/**********************************************************************
+ * io_set_timoeut
+ * Set the idle timeout of io
+ * pre: io: io_t to set the idle timeout of
+ *      timeout: timeout in seconds, 0 for no timeout
+ * post: idle timeout of the io_t is set
+ * return: none
+ **********************************************************************/
+
+void io_set_timeout(io_t *io, long timeout);
+
+
 #ifdef WITH_SSL_SUPPORT
 /**********************************************************************
  * io_get_ssl
@@ -218,21 +252,17 @@ int io_close(io_t *io);
  *      io_b: the other io_t
  *      buffer:   allocated buffer to read data into
  *      buffer_length: size of buffer in bytes
- *      idle_timeout:  timeout in seconds to wait for input
- *                     timeout of 0 = infinite timeout
  *      return_a_read_bytes: Pointer to int where number
  *                           of bytes read from a will be recorded.
  *      return_b_read_bytes: Pointer to int where number
  *                           of bytes read from b will be recorded.
  * post: bytes are read from io_a and written to io_b and vice versa
- * return: -1 on error
- *         1 on idle timeout
+ * return: -1 on error, including idle timeout
  *         0 otherwise (one of io_a or io_b closes gracefully)
- *
  **********************************************************************/
 
 ssize_t io_pipe( io_t *io_a, io_t *io_b, unsigned char *buffer,
-  int buffer_length, int idle_timeout, int *return_a_read_bytes,
+  int buffer_length, int *return_a_read_bytes,
   int *return_b_read_bytes, timed_log_t *log);
 
 #endif /* _PERDITION_IO_H */

@@ -926,6 +926,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		goto bail;
 	}
 
+	io_set_timeout(new_io, io_get_timeout(io));
 	io_destroy(io);
 	io = NULL;
 
