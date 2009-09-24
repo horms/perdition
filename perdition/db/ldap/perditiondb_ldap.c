@@ -517,11 +517,11 @@ int dbserver_get2(const char *key_str, const char *options_str,
 
 	/* Build the return string */
 	if (returns[0])
-		user_str = &returns[0];
+		*user_str = returns[0];
 	if (returns[1])
-		server_str = &returns[1];
+		*server_str = returns[1];
 	if (returns[2])
-		port_str = &returns[2];
+		*port_str = returns[2];
 
 	status = 0;
 
