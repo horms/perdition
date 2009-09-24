@@ -1,4 +1,4 @@
-perdition (1.18~rc1-3) unstable; urgency=low
+perdition (1.18~rc2-1) unstable; urgency=low
 
   * don't call make from perdition prerm script
     - make may not be installed
@@ -6,7 +6,7 @@ perdition (1.18~rc1-3) unstable; urgency=low
   * Fix ldap module return values
     (closes: #548054)
 
- -- Simon Horman <horms@debian.org>  Thu, 24 Sep 2009 17:02:12 +1000
+ -- Simon Horman <horms@debian.org>  Thu, 24 Sep 2009 17:03:42 +1000
 
 perdition (1.18~rc1-2) unstable; urgency=low
 
