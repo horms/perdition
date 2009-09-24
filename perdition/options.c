@@ -355,6 +355,8 @@ int options(int argc, char **argv, flag_t f){
   {
     {"add_domain",                  'A',  POPT_ARG_STRING, NULL, 'A'},
     {"authenticate_in",             'a',  POPT_ARG_NONE,   NULL, 'a'},
+    {"authenticate_timeout",        '\0', POPT_ARG_STRING, NULL,
+     TAG_AUTHENTICATE_TIMEOUT},
     {"no_bind_banner",              'B',  POPT_ARG_NONE,   NULL, 'B'},
     {"bind_address",                'b',  POPT_ARG_STRING, NULL, 'b'},
     {"connection_logging",          'C',  POPT_ARG_NONE,   NULL, 'C'},
@@ -444,6 +446,8 @@ int options(int argc, char **argv, flag_t f){
 #ifdef WITH_PAM_SUPPORT
     opt_i(&(opt.authenticate_in), DEFAULT_AUTHENTICATE_IN, &i, 0, OPT_NOT_SET);
 #endif /* WITH_PAM_SUPPORT */
+    opt_i(&(opt.authenticate_timeout), DEFAULT_AUTHENTICATE_TIMEOUT,
+	  &i, 0, OPT_NOT_SET);
     opt_i(&(opt.no_bind_banner), DEFAULT_NO_BIND_BANNER,
 		    &i, 0, OPT_NOT_SET);
     opt_i(&(opt.client_server_specification), 
@@ -586,7 +590,13 @@ int options(int argc, char **argv, flag_t f){
         poptFreeContext(context);
         return(-1);
       }
-#endif /* WITH_PAM_SUPPORT */
+#endif
+      case TAG_AUTHENTICATE_TIMEOUT:
+        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR) 
+	  usage(-1);
+        opt_i(&(opt.authenticate_timeout), atoi(optarg), &(opt.mask2),
+	      MASK2_AUTHENTICATE_TIMEOUT, f);
+        break;
       case 'B':
         opt_i(&(opt.no_bind_banner), 1, &(opt.mask), MASK_NO_BIND_BANNER, f);
         break;
@@ -1094,6 +1104,7 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
 #endif /* WITH_PAM_SUPPORT */
+    "authenticate_timeout=%d, "
     "bind_address=\"%s\", "
     "capability=\"%s\", "
     "client_server_specification=%s, "
@@ -1151,6 +1162,7 @@ int log_options_str(char *str, size_t n){
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
 #endif /* WITH_PAM_SUPPORT */
+    opt.authenticate_timeout,
     OPT_STR(bind_address),
     OPT_STR(opt.capability),
     BIN_OPT_STR(opt.client_server_specification),
@@ -1298,6 +1310,9 @@ void usage(int exit_status){
     " -a|--authenticate_in:\n"
     "    User is authenticated by perdition before connection to real-server.\n"
 #endif /* WITH_PAM_SUPPORT */
+    " --authenticate_timeout:\n"
+    "    Timeout used during authentication phase.\n"
+    "    Zero for infinite timeout. (default %d)\n"
     " -B|--no_bind_banner:\n"
     "    Use uname to generate banner of even if bind_address is in effect.\n"
     " -b|--bind_address SERVER[,SERVER...]:\n"
@@ -1379,7 +1394,8 @@ void usage(int exit_status){
     "    Allow domain portion of username to be striped in given state(s).\n"
     "    (default \"\")\n"
     " -t|--timeout SECONDS:\n"
-    "    Idle timeout. Zero for infinite timeout. (default %d)\n"
+    "    Idle timeout for post-authentication phase.\n"
+    "    Zero for infinite timeout. (default %d)\n"
     " -u|--username USERNAME:\n"
     "    User to run as. (default \"%s\")\n"
     " -U|--username_from_database:\n"
@@ -1451,6 +1467,7 @@ void usage(int exit_status){
     "        be used unless noted otherwise.\n"
     "        See the perdition(8) man page for more details.\n",
     VERSION,
+    DEFAULT_AUTHENTICATE_TIMEOUT,
     OPT_STR(DEFAULT_BIND_ADDRESS),
     DEFAULT_CONNECT_RELOG,
     OPT_STR(DEFAULT_DOMAIN_DELIMITER),

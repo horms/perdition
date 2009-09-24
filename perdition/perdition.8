@@ -103,6 +103,10 @@ e.g. all,2
 .sp
 (the default value for add_domain is "")
 .TP
+.B \-\-authenticate_timeout:
+Idle timeout in seconds used while the user is unauthenticated. Zero for
+infinite timeout.
+.TP
 .B \-a, \-\-authenticate_in:
 User is authenticated by perdition before connection to back-end
 server is made. Only available if perdition is compiled with pam
@@ -352,7 +356,7 @@ will be striped off in given state(s).See add_domain for a
 description of the states.
 .TP
 .B \-t, \-\-timeout SECONDS:
-Idle timeout. Zero for infinite timeout.
+Idle timeout for post-authentication phase. Zero for infinite timeout.
 .br
 (default 1800)
 .TP
@@ -672,11 +676,14 @@ POP3
 user james@other.host
 .fi
 .SH IDLE TIMEOUTS
-If there is no input from the client or back\-end server for greater than
-timeout seconds then the connection is closed. The default timeout is 1800
-seconds and can be specified on the command line with the \-t|\-\-timeout
-option.  A time out of 0 means that timeouts are disabled and clients and
-back\-end servers can idle indefinitely.
+Perdition allows two idle timeouts to be configured. \-\-authentication_timeout
+is used before the user has been successfully authenticated with the
+back-end server. And after that \-\-timeout is used.
+
+The default value for both timeouts is is 1800.
+A timeout value of 0 means that the timeouts are disabled and clients and
+back\-end servers can idle indefinitely, though in practice a TCP timeout
+will be in effect.
 .SH LOOP DETECTION
 The greeting that perdition displays when accepting an incoming connection
 is "+OK POP3 Ready <hostname>" or "* OK IMAP4 Ready <hostname>" in POP3 and

@@ -139,6 +139,7 @@
 #define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_RESP_LINE             0
 #define DEFAULT_TIMEOUT                      1800 /*in seconds*/
+#define DEFAULT_AUTHENTICATE_TIMEOUT         DEFAULT_TIMEOUT
 #ifdef WITH_USER
 #define DEFAULT_USERNAME                     WITH_USER
 #else
@@ -179,6 +180,7 @@ typedef struct {
   unsigned int    add_domain_strip_depth;
 #ifdef WITH_PAM_SUPPORT
   int             authenticate_in;
+  int             authenticate_timeout;
 #endif /* WITH_PAM_SUPPORT */
   vanessa_dynamic_array_t *bind_address;
   char            *capability;
@@ -277,6 +279,7 @@ typedef struct {
 #define MASK2_PID_FILE                   (flag_t) 0x00000002
 #define MASK2_EXPLICIT_DOMAIN            (flag_t) 0x00000004
 #define MASK2_LOG_PASSWD                 (flag_t) 0x00000008
+#define MASK2_AUTHENTICATE_TIMEOUT       (flag_t) 0x00000010
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -325,6 +328,7 @@ typedef struct {
 #define TAG_SSL_OUTGOING_CIPHERS               (int) 147
 #define TAG_SSL_NO_CERT_VERIFY                 (int) 148
 #define TAG_SSL_NO_CN_VERIFY                   (int) 149
+#define TAG_AUTHENTICATE_TIMEOUT               (int) 150
 
 
 /*Flag values for options()*/

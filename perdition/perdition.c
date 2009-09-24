@@ -577,7 +577,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
-    io_set_timeout(client_io, opt.timeout);
+    io_set_timeout(client_io, opt.authenticate_timeout);
 
     namelen = sizeof(*peername);
     if (getpeername(0, (struct sockaddr *)peername, &namelen)) {
@@ -612,7 +612,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
-    io_set_timeout(client_io, opt.timeout);
+    io_set_timeout(client_io, opt.authenticate_timeout);
   }
 
   /* A child process, or process handling an inetd connection
@@ -849,7 +849,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error setting IO. Exiting.");
       perdition_exit_cleanly(-1);
     }
-    io_set_timeout(server_io, opt.timeout);
+    io_set_timeout(server_io, opt.authenticate_timeout);
 
 #ifdef WITH_SSL_SUPPORT
     if(opt.ssl_mode & SSL_MODE_SSL_OUTGOING) {
@@ -984,6 +984,8 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Let the client talk to the real server*/
+  io_set_timeout(client_io, opt.timeout);
+  io_set_timeout(server_io, opt.timeout);
   if(io_pipe(server_io, client_io, buffer, BUFFER_SIZE,
         &bytes_written, &bytes_read, &auth_log)<0){
     VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
