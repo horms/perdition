@@ -215,88 +215,30 @@ static int token_fill_buffer(io_t *io, const options_t *opt,
 
 static int __token_fill_buffer(io_t *io, const options_t *opt,
 		const char *log_str){
-  io_select_t *s = NULL;
-  struct timeval timeout;
-  fd_set except_template;
-  fd_set read_template;
-  int bytes_read;
-  int status;
-  int return_status = -1;
-  int fd;
+	int bytes_read;
+	char *dump_buf;
 
-  if((fd=io_get_rfd(io))<0){
-    VANESSA_LOGGER_DEBUG_UNSAFE("io_get_rfd %d", fd);
-    return(-1);
-  }
+	bytes_read = io_read(io, token_read_buffer, MAX_LINE_LENGTH-1,
+			     opt->timeout);
+	if (bytes_read < 0) {
+		VANESSA_LOGGER_DEBUG_ERRNO("error reading input");
+		return -1;
+	}
 
-  s = io_select_create();
-  if(s == NULL) {
-	  VANESSA_LOGGER_DEBUG("io_select_create");
-	  goto leave;
-  }
-  
-  if(io_select_add(s, io) == NULL) {
-	  VANESSA_LOGGER_DEBUG("io_select_add");
-	  goto leave;
-  }
+	token_read_offset = 0;
+	token_read_bytes = bytes_read;
+	if (opt->connection_logging) {
+		dump_buf = VANESSA_LOGGER_DUMP(token_read_buffer,
+					       bytes_read, 0);
+		if (!dump_buf) {
+			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
+			return -1;
+		}
+		VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s \"%s\"", log_str, dump_buf);
+		free(dump_buf);
+	}
 
-  while(1){
-    FD_ZERO(&read_template);
-    FD_SET(fd, &read_template);
-    FD_ZERO(&except_template);
-    FD_SET(fd, &except_template);
-    timeout.tv_sec=opt->timeout;
-    timeout.tv_usec=0;
-
-    status=io_select(
-      FD_SETSIZE, 
-      &read_template, 
-      NULL, 
-      &except_template,
-      opt->timeout?&timeout:NULL,
-      s
-    );
-    if(status<0){
-      if(errno!=EINTR){
-        VANESSA_LOGGER_DEBUG_ERRNO("select");
-	goto leave;
-      }
-      continue;  /* Ignore EINTR */
-    }
-    else if(FD_ISSET(fd, &except_template)){
-      VANESSA_LOGGER_DEBUG("error on file descriptor");
-      goto leave;
-    }
-    else if(status==0){
-      VANESSA_LOGGER_DEBUG("idle timeout");
-      goto leave;
-    }
-
-    /*If we get this far fd must be ready for reading*/
-    if((bytes_read=io_read(
-      io, 
-      token_read_buffer, 
-      MAX_LINE_LENGTH-1
-    ))<0){
-      VANESSA_LOGGER_DEBUG_ERRNO("error reading input");
-      goto leave;
-    }
-
-    token_read_offset=0;
-    token_read_bytes=bytes_read;
-    if(opt->connection_logging){
-      char *dump_buf;
-      dump_buf = VANESSA_LOGGER_DUMP(token_read_buffer, bytes_read, 0);
-      VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s \"%s\"", log_str, dump_buf);
-      free(dump_buf);
-    }
-    break;
-  }
-
-  return_status = bytes_read;
-leave:
-  io_select_destroy(s);
-  return(return_status);
+	return bytes_read;
 }
 
 

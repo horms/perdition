@@ -117,12 +117,13 @@ ssize_t io_write(io_t *io, const void *buf, size_t count);
  * pre: io: io_t to read from
  *      buf: buffer to read
  *      count: maximum number of bytes to read
+ *      timeout: idle timeout in seconds, 0 for no timeout
  * post: up to count bytes are read from io into buf
  * return: Number of bytes read
  *         -1 on error
  **********************************************************************/
 
-ssize_t io_read(io_t *io, void *buf, size_t count);
+ssize_t io_read(io_t *io, void *buf, size_t count, long timeout);
 
 
 /**********************************************************************

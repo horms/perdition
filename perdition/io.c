@@ -290,12 +290,14 @@ err:
  * pre: io: io_t to read from
  *      buf: buffer to read
  *      count: maximum number of bytes to read
+ *      timeout: idle timeout in seconds, 0 for no timeout
  * post: up to count bytes are read from io into buf
  * return: Number of bytes read
  *         -1 on error
  **********************************************************************/
 
-ssize_t io_read(io_t *io, void *buf, size_t count){
+ssize_t __io_read(io_t *io, void *buf, size_t count)
+{
   ssize_t bytes=0;
 
   switch(io->type){
@@ -326,6 +328,98 @@ err:
   io->err = io_err_other;
   return -1;
 }
+
+
+ssize_t io_read(io_t *io, void *buf, size_t count, long timeout)
+{
+	io_select_t *s = NULL;
+	struct timeval tv;
+	fd_set except_template;
+	fd_set read_template;
+	int bytes_read;
+	int status;
+	int return_status = -1;
+        int rfd;
+
+        io->err = io_err_none;
+
+        rfd = io_get_rfd(io);
+        if (rfd < 0) {
+		VANESSA_LOGGER_DEBUG("io_get_rfd");
+		goto err;
+	}
+
+	s = io_select_create();
+	if (s == NULL) {
+		VANESSA_LOGGER_DEBUG("io_select_create");
+		goto err;
+	}
+
+	if (!io_select_add(s, io)) {
+		VANESSA_LOGGER_DEBUG("io_select_add");
+		goto err_free;
+	}
+
+	while (1) {
+		FD_ZERO(&read_template);
+		FD_SET(rfd, &read_template);
+		FD_ZERO(&except_template);
+		FD_SET(rfd, &except_template);
+		tv.tv_sec = timeout;
+		tv.tv_usec = 0;
+
+		status = io_select(FD_SETSIZE, &read_template, NULL,
+                                   &except_template, timeout ? &tv : NULL, s);
+		if (status < 0) {
+			if (errno != EINTR) {
+				VANESSA_LOGGER_DEBUG_ERRNO("select");
+	                        goto err_free;
+			}
+			continue;	/* Ignore EINTR */
+		}
+		else if (FD_ISSET(rfd, &except_template)){
+			VANESSA_LOGGER_DEBUG("error on file descriptor");
+			goto err_free;
+		}
+		else if (!status) {
+			VANESSA_LOGGER_DEBUG("idle timeout");
+                        io->err = io_err_timeout;
+                        goto err_free;
+		}
+
+		/* If we get this far fd must be ready for reading */
+		bytes_read = __io_read(io, buf, count);
+                if (bytes_read < 0) {
+			if (errno != EINTR) {
+			        VANESSA_LOGGER_DEBUG_ERRNO("error reading "
+                                                           "input");
+	                        goto err_free;
+			}
+			continue;	/* Ignore EINTR */
+		}
+
+                break;
+	}
+
+        return_status = bytes_read;
+err_free:
+        io_select_destroy(s);
+err:
+        if (return_status < 0 && io->err == io_err_none)
+                io->err = io_err_other;
+        return return_status;
+}
+
+
+/**********************************************************************
+ * io_get_err
+ * Get error status of an io
+ * pre: io: io_t to get the err of
+ * post: none
+ * return: error status of the io
+ **********************************************************************/
+
+void io_set_err(io_t *io, enum io_err err);
 
 
 /**********************************************************************
@@ -549,7 +643,7 @@ static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
 
   io->err = io_err_none;
 
-  bytes = io_read(io, buf, count);
+  bytes = __io_read(io, buf, count);
 
   if(opt.connection_logging && bytes > 0) {
     char *dump_str;
