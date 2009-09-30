@@ -446,7 +446,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
 			! strncasecmp((char *)token_buf(t), IMAP4_CMD_STARTTLS, 
 				token_len(t))) {
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_STARTTLS);
-      if(!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING)) {
+      if(!(opt.ssl_mode & SSL_MODE_TLS_LISTEN)) {
 	__IMAP4_IN_BAD("STARTTLS disabled, mate");
       }
       if(io_get_type(io) != io_type_ssl){
