@@ -81,6 +81,9 @@ username_add_domain(char *username, int state, unsigned int strip_depth) {
   if (opt.explicit_domain) {
     domainpart = opt.explicit_domain;
   }
+  else if (!peername) {
+    return username;
+  }
   else {
     rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
 		     host, NI_MAXHOST, NULL, 0, 0);
