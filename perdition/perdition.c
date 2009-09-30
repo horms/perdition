@@ -57,6 +57,7 @@
 #include "server_port.h"
 #include "username.h"
 #include "ssl.h"
+#include "sock.h"
 #include "setproctitle.h"
 #include "imap4_tag.h"
 #include "perdition_globals.h"
@@ -622,7 +623,8 @@ int main (int argc, char **argv, char **envp){
 
   /* Get the source and destination ip address as a string */
   if (peername!=NULL) {
-    rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+    rc = getnameinfo((struct sockaddr *)peername,
+		     perdition_get_salen((struct sockaddr *)peername),
 		     from_host_str, NI_MAXHOST, from_serv_str, NI_MAXSERV,
 		     NI_NUMERICHOST|NI_NUMERICSERV);
     if (rc) {
@@ -637,7 +639,8 @@ int main (int argc, char **argv, char **envp){
     *from_serv_str='\0';
   }
   if (sockname!=NULL) {
-    rc = getnameinfo((struct sockaddr *)sockname, sizeof(*sockname),
+    rc = getnameinfo((struct sockaddr *)sockname,
+		     perdition_get_salen((struct sockaddr *)sockname),
 		     to_host_str, NI_MAXHOST, to_serv_str, NI_MAXSERV,
 		     NI_NUMERICHOST|NI_NUMERICSERV);
     if (rc) {

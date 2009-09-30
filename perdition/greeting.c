@@ -31,6 +31,7 @@
 #include "greeting.h"
 #include "options.h"
 #include "perdition_globals.h"
+#include "sock.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -118,7 +119,8 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
 
   if(flag&GREETING_ADD_NODENAME){
     if (!opt.no_bind_banner && peername) {
-      rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+      rc = getnameinfo((struct sockaddr *)peername,
+                       perdition_get_salen((struct sockaddr *)peername),
 		       host, NI_MAXHOST, NULL, 0,
 		       opt.no_lookup ? NI_NUMERICHOST : 0);
       if (rc) {

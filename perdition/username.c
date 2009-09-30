@@ -35,6 +35,7 @@
 #include "username.h"
 #include "options.h"
 #include "str.h"
+#include "sock.h"
 
 
 #ifdef DMALLOC
@@ -85,7 +86,8 @@ username_add_domain(char *username, int state, unsigned int strip_depth) {
     return username;
   }
   else {
-    rc = getnameinfo((struct sockaddr *)peername, sizeof(*peername),
+    rc = getnameinfo((struct sockaddr *)peername,
+		     perdition_get_salen((struct sockaddr *)peername),
 		     host, NI_MAXHOST, NULL, 0, 0);
     if (rc) {
       VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",

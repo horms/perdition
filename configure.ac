@@ -35,6 +35,7 @@ AC_PROG_MAKE_SET
 
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [], [[#include <sys/socket.h>]])
 
 # Checks for libraries.
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
