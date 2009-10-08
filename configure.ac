@@ -628,20 +628,17 @@ fi
 
 AM_CONDITIONAL(BDB_BUILD, test "${enable_bdb}" = "yes")
 
-# More BDB Stupidity.
-# It seems that function call arguments actually vary between versions.
-# Why do we use this crap anyway?
-
 if test "$enable_bdb" = "yes"; then
-	AC_MSG_CHECKING("For Berkeley DB Version 4.1 and above");
-	AC_TRY_RUN(
-		[ #include <db.h>
-	  	int main(int arc, char **argv) { 
-	  	exit((DB_VERSION_MAJOR>=4 && DB_VERSION_MINOR>=1)?0:1);} ],
-        	[ AC_DEFINE(HAVE_BDB_4_1, 1, Berkeley DB Version 4.1 and above)
-          	AC_MSG_RESULT("yes") ],
-        	[ AC_MSG_RESULT("no") ]
-	)
+	AC_MSG_CHECKING([If BDB db->open() takes 7 arguments]);
+	AC_TRY_COMPILE(
+		[ #include <db.h> ],
+		[ DB *dbp;
+		  db_create(&dbp, NULL, 0);
+		  dbp->open(NULL, NULL, NULL, NULL, 0, 0, 0); ],
+		AC_MSG_RESULT("yes")
+		AC_DEFINE(HAVE_BDB_OPEN_7, 1,
+			    [BDB db->open() takes 7 arguments]),
+		AC_MSG_RESULT("no"))
 fi
 
 

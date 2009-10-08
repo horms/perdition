@@ -59,7 +59,7 @@ int dbserver_get(
   }
   if ((ret = dbp->open(
        dbp,
-#ifdef HAVE_BDB_4_1
+#ifdef HAVE_BDB_OPEN_7
        NULL,
 #endif
        (options_str==NULL)?PERDITIONDB_BDB_DEFAULT_MAPNAME:options_str,
