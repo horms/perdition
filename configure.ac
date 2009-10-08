@@ -154,9 +154,13 @@ AC_ARG_WITH(
   [  ssl_libpath="$withval" ],
   [ 
     AC_MSG_CHECKING(OpenSSL library path)
-    for ssl_libpath in /usr/openssl/lib /usr/local/openssl/lib \
-        /usr/lib/openssl /usr/local/lib/openssl /usr/local/ssl/lib \
-  	  /usr/lib /usr/local/lib; do
+    for ssl_libpath in /usr/openssl/lib64 /usr/openssl/lib \
+		/usr/local/openssl/lib64 /usr/local/openssl/lib \
+		/usr/lib64/openssl /usr/lib/openssl \
+		/usr/local/lib64/openssl /usr/local/lib/openssl \
+		/usr/local/ssl/lib64 /usr/local/ssl/lib \
+		/usr/lib64 /usr/lib \
+		/usr/local/lib64 /usr/local/lib; do
       if test -f "${ssl_libpath}/libssl.a" -o -f "${ssl_libpath}/libssl.so" 
       then
         break
@@ -265,9 +269,13 @@ AC_ARG_WITH(
   [  mysql_libpath="$withval" ],
   [ 
     AC_MSG_CHECKING(MySQL include path)
-    for mysql_libpath in /usr/mysql/lib /usr/local/mysql/lib \
-        /usr/lib/mysql /usr/local/lib/mysql \
-    	/usr/local/mysql/lib/mysql /usr/lib /usr/local/lib; do
+    for mysql_libpath in /usr/mysql/lib64 /usr/mysql/lib \
+		/usr/local/mysql/lib64 /usr/local/mysql/lib \
+		/usr/lib64/mysql /usr/lib/mysql \
+		/usr/local/lib64/mysql /usr/local/lib/mysql \
+		/usr/local/mysql/lib64/mysql /usr/local/mysql/lib/mysql \
+		/usr/lib64 /usr/lib \
+		/usr/local/lib64 /usr/local/lib; do
       if test -f "${mysql_libpath}/libmysqlclient.a" \
       	-o -f "${mysql_libpath}/libmysqlclient.so"; then
         break
@@ -366,9 +374,13 @@ AC_ARG_WITH(
   [  odbc_libpath="$withval" ],
   [ 
     AC_MSG_CHECKING(ODBC include path)
-    for odbc_libpath in /usr/odbc/lib /usr/local/odbc/lib \
-        /usr/lib/odbc /usr/local/lib/odbc \
-    	/usr/local/odbc/lib/odbc /usr/lib /usr/local/lib ; do
+    for odbc_libpath in /usr/odbc/lib64 /usr/odbc/lib \
+		/usr/local/odbc/lib64 /usr/local/odbc/lib \
+		/usr/lib64/odbc /usr/lib/odbc \
+		/usr/local/lib64/odbc /usr/local/lib/odbc \
+		/usr/local/odbc/lib64/odbc /usr/local/odbc/lib/odbc \
+		/usr/lib64 /usr/lib \
+		/usr/local/lib64 /usr/local/lib ; do
       if test -f "${odbc_libpath}/odbc.a" ; then
         break
       fi
@@ -740,9 +752,12 @@ AC_ARG_WITH(
   ],
   [ 
     AC_MSG_CHECKING(OpenLDAP library path)
-    for ldap_libpath in /usr/openldap/lib /usr/local/openldap/lib \
-        /usr/lib/openldap /usr/local/lib/openldap \
-    	/usr/lib /usr/local/lib; do
+    for ldap_libpath in /usr/openldap/lib64 /usr/openldap/lib \
+		/usr/local/openldap/lib64 /usr/local/openldap/lib \
+		/usr/lib64/openldap /usr/lib/openldap \
+		/usr/local/lib64/openldap /usr/local/lib/openldap \
+		/usr/lib64 /usr/lib \
+		/usr/local/lib64 /usr/local/lib; do
       if test -f "${ldap_libpath}/libldap.a" \
       	-o -f "${ldap_libpath}/libldap.so"; then
         break
