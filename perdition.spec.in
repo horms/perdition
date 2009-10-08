@@ -116,7 +116,6 @@ access databases via ODBC.
 make
 
 %install
-rm -rf $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}/etc/{rc.d/init.d,sysconfig}
 
 make DESTDIR=$RPM_BUILD_ROOT install-strip
