@@ -114,34 +114,7 @@ access databases via ODBC.
 
 %build
 
-# I am providing my own configure macro replacement. Hopefully this
-# will result in fewer portability problems than using the one supplied
-# by various vendours. I fear that I hope in vein.
-CFLAGS="${CFLAGS:-%optflags} -I/usr/kerberos/include" ; export CFLAGS
-if [ -f confgure.in ]; then
-	aclocal
-	libtoolize --force --copy
-	autoheader
-	automake
-	autoconf
-fi
-./configure %{_target_platform} \
-       --prefix=%{_prefix} \
-       --exec-prefix=%{_exec_prefix} \
-       --bindir=%{_bindir} \
-       --sbindir=%{_sbindir} \
-       --sysconfdir=/etc \
-       --datadir=%{_datadir} \
-       --includedir=%{_includedir} \
-       --libdir=%{_libdir} \
-       --libexecdir=%{_libexecdir} \
-       --localstatedir=%{_localstatedir} \
-       --sharedstatedir=%{_sharedstatedir} \
-       --mandir=%{_mandir} \
-       --infodir=%{_infodir} \
-       --with-ldap-schema-directory=/etc/openldap/schema \
-       --enable-shared
-
+%configure --with-ldap-schema-directory=/etc/openldap/schema --enable-shared
 make
 
 %install
