@@ -48,7 +48,6 @@
 #include <dmalloc.h>
 #endif
 
-
 static char *pldap_filter = NULL;
 
 static int pldap_version = PERDITIONDB_LDAP_VERSION;

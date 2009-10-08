@@ -36,6 +36,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <lber.h>
+
+/* This code uses Deprecated functions */
+#define LDAP_DEPRECATED 1
 #include <ldap.h>
 
 int dbserver_fini(void);
