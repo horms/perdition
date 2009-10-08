@@ -1,6 +1,5 @@
 %define ver      @VERSION@
 %define rel      1
-%define prefix   /usr
 
 Summary: Mail Retrieval Proxy
 Name: perdition
