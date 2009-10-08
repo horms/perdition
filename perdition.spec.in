@@ -112,7 +112,8 @@ access databases via ODBC.
 
 %build
 
-%configure --with-ldap-schema-directory=/etc/openldap/schema --enable-shared
+%configure --with-ldap-schema-directory=/etc/openldap/schema \
+	--enable-shared --disable-static
 make
 
 %install
@@ -165,18 +166,15 @@ true
 %{_mandir}/man5/perditiondb.*
 
 # nis map
-%{_libdir}/libperditiondb_nis.a
 %{_libdir}/libperditiondb_nis.so.0
 %{_libdir}/libperditiondb_nis.so.0.0.0
 
 # posix_regex map
-%{_libdir}/libperditiondb_posix_regex.a
 %{_libdir}/libperditiondb_posix_regex.so.0
 %{_libdir}/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
 # gdbm map
-%{_libdir}/libperditiondb_gdbm.a
 %{_libdir}/libperditiondb_gdbm.so.0
 %{_libdir}/libperditiondb_gdbm.so.0.0.0
 %{_bindir}/makegdbm
@@ -186,16 +184,13 @@ true
 %config /etc/perdition/popmap
 
 # daemon map
-%{_libdir}/libperditiondb_daemon.a
 %{_libdir}/libperditiondb_daemon.so.0
 %{_libdir}/libperditiondb_daemon.so.0.0.0
-%{_libdir}/libperditiondb_daemon_base.a
 %{_libdir}/libperditiondb_daemon_base.so.0
 %{_libdir}/libperditiondb_daemon_base.so.0.0.0
 
 %files bdb
 %defattr(-,root,root)
-%{_libdir}/libperditiondb_bdb.a
 %{_libdir}/libperditiondb_bdb.so.0
 %{_libdir}/libperditiondb_bdb.so.0.0.0
 %{_bindir}/makebdb
@@ -209,7 +204,6 @@ ldconfig
 
 %files ldap
 %defattr(-,root,root)
-%{_libdir}/libperditiondb_ldap.a
 %{_libdir}/libperditiondb_ldap.so.0
 %{_libdir}/libperditiondb_ldap.so.0.0.0
 %{_sbindir}/perditiondb_ldap_makedb
@@ -224,7 +218,6 @@ ldconfig
 
 %files mysql
 %defattr(-,root,root)
-%{_libdir}/libperditiondb_mysql.a
 %{_libdir}/libperditiondb_mysql.so.0
 %{_libdir}/libperditiondb_mysql.so.0.0.0
 %{_sbindir}/perditiondb_mysql_makedb
@@ -238,7 +231,6 @@ ldconfig
 
 %files postgresql
 %defattr(-,root,root)
-%{_libdir}/libperditiondb_postgresql.a
 %{_libdir}/libperditiondb_postgresql.so.0
 %{_libdir}/libperditiondb_postgresql.so.0.0.0
 %{_sbindir}/perditiondb_postgresql_makedb
@@ -252,7 +244,6 @@ ldconfig
 
 %files odbc
 %defattr(-,root,root)
-%{_libdir}/libperditiondb_odbc.a
 %{_libdir}/libperditiondb_odbc.so.0
 %{_libdir}/libperditiondb_odbc.so.0.0.0
 %{_sbindir}/perditiondb_odbc_makedb
