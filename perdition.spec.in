@@ -126,7 +126,9 @@ install -m755 \
   ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
 install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
   ${RPM_BUILD_ROOT}/etc/sysconfig/perdition
-  
+
+# Don't install .la and .so files
+rm $RPM_BUILD_ROOT/%{_libdir}/*.{la,so}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -165,23 +167,17 @@ true
 
 # nis map
 %{_libdir}/libperditiondb_nis.a
-%{_libdir}/libperditiondb_nis.la
-%{_libdir}/libperditiondb_nis.so
 %{_libdir}/libperditiondb_nis.so.0
 %{_libdir}/libperditiondb_nis.so.0.0.0
 
 # posix_regex map
 %{_libdir}/libperditiondb_posix_regex.a
-%{_libdir}/libperditiondb_posix_regex.la
-%{_libdir}/libperditiondb_posix_regex.so
 %{_libdir}/libperditiondb_posix_regex.so.0
 %{_libdir}/libperditiondb_posix_regex.so.0.0.0
 %config /etc/perdition/popmap.re
 
 # gdbm map
 %{_libdir}/libperditiondb_gdbm.a
-%{_libdir}/libperditiondb_gdbm.la
-%{_libdir}/libperditiondb_gdbm.so
 %{_libdir}/libperditiondb_gdbm.so.0
 %{_libdir}/libperditiondb_gdbm.so.0.0.0
 %{_bindir}/makegdbm
@@ -192,21 +188,15 @@ true
 
 # daemon map
 %{_libdir}/libperditiondb_daemon.a
-%{_libdir}/libperditiondb_daemon.la
-%{_libdir}/libperditiondb_daemon.so
 %{_libdir}/libperditiondb_daemon.so.0
 %{_libdir}/libperditiondb_daemon.so.0.0.0
 %{_libdir}/libperditiondb_daemon_base.a
-%{_libdir}/libperditiondb_daemon_base.la
-%{_libdir}/libperditiondb_daemon_base.so
 %{_libdir}/libperditiondb_daemon_base.so.0
 %{_libdir}/libperditiondb_daemon_base.so.0.0.0
 
 %files bdb
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_bdb.a
-%{_libdir}/libperditiondb_bdb.la
-%{_libdir}/libperditiondb_bdb.so
 %{_libdir}/libperditiondb_bdb.so.0
 %{_libdir}/libperditiondb_bdb.so.0.0.0
 %{_bindir}/makebdb
@@ -221,8 +211,6 @@ ldconfig
 %files ldap
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_ldap.a
-%{_libdir}/libperditiondb_ldap.la
-%{_libdir}/libperditiondb_ldap.so
 %{_libdir}/libperditiondb_ldap.so.0
 %{_libdir}/libperditiondb_ldap.so.0.0.0
 %{_sbindir}/perditiondb_ldap_makedb
@@ -238,8 +226,6 @@ ldconfig
 %files mysql
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_mysql.a
-%{_libdir}/libperditiondb_mysql.la
-%{_libdir}/libperditiondb_mysql.so
 %{_libdir}/libperditiondb_mysql.so.0
 %{_libdir}/libperditiondb_mysql.so.0.0.0
 %{_sbindir}/perditiondb_mysql_makedb
@@ -254,8 +240,6 @@ ldconfig
 %files postgresql
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_postgresql.a
-%{_libdir}/libperditiondb_postgresql.la
-%{_libdir}/libperditiondb_postgresql.so
 %{_libdir}/libperditiondb_postgresql.so.0
 %{_libdir}/libperditiondb_postgresql.so.0.0.0
 %{_sbindir}/perditiondb_postgresql_makedb
@@ -270,8 +254,6 @@ ldconfig
 %files odbc
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_odbc.a
-%{_libdir}/libperditiondb_odbc.la
-%{_libdir}/libperditiondb_odbc.so
 %{_libdir}/libperditiondb_odbc.so.0
 %{_libdir}/libperditiondb_odbc.so.0.0.0
 %{_sbindir}/perditiondb_odbc_makedb
