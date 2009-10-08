@@ -12,7 +12,6 @@ BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
 URL: http://vergenet.net/linux/perdition/
 Provides: perdition-%{ver}-%{rel}
 BuildRequires: gcc make vanessa_logger-devel >= 0.0.6 vanessa_adt-devel >= 0.0.6  vanessa_socket-devel >= 0.0.8  gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel tetex-dvips unixODBC-devel /usr/include/db.h
-Requires: vanessa_logger >= 0.0.6 vanessa_adt >= 0.0.6 vanessa_socket >= 0.0.8
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
@@ -95,7 +94,7 @@ database stored in a PostgreSQL database.
 Summary: Library to allow perdition to access pop maps via ODBC.
 Group: Applications/Internet
 License: GPL
-Requires: perdition-%{ver}-%{rel} unixODBC
+Requires: perdition-%{ver}-%{rel}
 Provides: perdition-odbc-%{ver}-%{rel}
 
 %description odbc
