@@ -181,7 +181,7 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
-			"Auth: %s user=\"%s\" passwd=\"%s\" "
+			"Auth:%s user=\"%s\" passwd=\"%s\" "
 			"server=\"%s\" port=\"%s\" status=\"%s\"",
 			from_to_host_str, str_null_safe(pw->pw_name),
 			str_null_safe(passwd), str_null_safe(servername),
@@ -243,7 +243,7 @@ int main (int argc, char **argv, char **envp){
   size_t server_resp_buf_size=0;
   flag_t tls_state=0;
   timed_log_t auth_log;
-  char from_to_host_str[(NI_MAXHOST*2)+1];
+  char from_to_host_str[(NI_MAXHOST*2)+2];
   char from_host_str[NI_MAXHOST];
   char to_host_str[NI_MAXHOST];
   char from_serv_str[NI_MAXSERV];
@@ -656,6 +656,7 @@ int main (int argc, char **argv, char **envp){
   }
   *from_to_host_str='\0';
   if(peername!=NULL && sockname!=NULL){
+    strcat(from_to_host_str, " ");
     strcat(from_to_host_str, from_host_str);
     strcat(from_to_host_str, "->");
     strcat(from_to_host_str, to_host_str);
@@ -667,11 +668,11 @@ int main (int argc, char **argv, char **envp){
 
   /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect: %sinetd_pid=%d", 
+    VANESSA_LOGGER_INFO_UNSAFE("Connect:%s inetd_pid=%d",
           from_to_host_str, getppid());
   }
   else {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_host_str);
+    VANESSA_LOGGER_INFO_UNSAFE("Connect:%s", from_to_host_str);
   }
   set_proc_title("%s: connect", progname);
 
@@ -689,8 +690,8 @@ int main (int argc, char **argv, char **envp){
   /*Speak to our client*/
   if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
     VANESSA_LOGGER_DEBUG("greeting");
-    VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client. "
-			      "%s. Exiting child.", from_to_host_str);
+    VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client%s."
+			      "Exiting child.", from_to_host_str);
     perdition_exit_cleanly(-1);
   }
 
@@ -706,16 +707,16 @@ int main (int argc, char **argv, char **envp){
       if (io_get_err(client_io) == io_err_timeout)
 	VANESSA_LOGGER_ERR_UNSAFE("Fatal Error: Timeout reading "
 				  "authentication information from "
-				  "client \"%s\": Exiting child",
+				  "client%s: Exiting child",
 				  from_to_host_str);
       else
 	VANESSA_LOGGER_ERR_UNSAFE("Fatal Error reading authentication "
-				  "information from client \"%s\": "
+				  "information from client%s: "
 				  "Exiting child", from_to_host_str);
       perdition_exit_cleanly(-1);
     }
     else if(status == 1){
-      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session: %susername=%s",
+      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s username=%s",
 				from_to_host_str, str_null_safe(pw.pw_name));
       perdition_exit_cleanly(0);
     }
@@ -1000,7 +1001,7 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Time to leave*/
-  VANESSA_LOGGER_INFO_UNSAFE("Close: %s user=\"%s\" received=%d sent=%d",
+  VANESSA_LOGGER_INFO_UNSAFE("Close:%s user=\"%s\" received=%d sent=%d",
 			     str_null_safe(from_to_host_str),
 			     str_null_safe(pw.pw_name),
 			     bytes_read, bytes_written);
