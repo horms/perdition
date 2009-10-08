@@ -381,7 +381,7 @@ AC_ARG_WITH(
 		/usr/local/odbc/lib64/odbc /usr/local/odbc/lib/odbc \
 		/usr/lib64 /usr/lib \
 		/usr/local/lib64 /usr/local/lib ; do
-      if test -f "${odbc_libpath}/odbc.a" ; then
+      if test -f "${odbc_libpath}/libodbc.so" ; then
         break
       fi
     done
