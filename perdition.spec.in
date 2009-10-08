@@ -7,7 +7,7 @@ Version: %ver
 Release: %rel
 License: GPL
 Group: Applications/Internet
-Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.gz
+Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.bz2
 BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
 URL: http://vergenet.net/linux/perdition/
 Provides: perdition-%{ver}-%{rel}
