@@ -8,7 +8,10 @@ static size_t perdition_get_salen(const struct sockaddr *sa)
 #ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
 	return sa->sa_len;
 #else
-	return sizeof(struct sockaddr_storage);
+	if (sa->sa_family == AF_INET)
+		return sizeof(struct sockaddr_in);
+	else
+		return sizeof(struct sockaddr_in6);
 #endif
 }
 
