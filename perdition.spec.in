@@ -9,7 +9,6 @@ License: GPL
 Group: Applications/Internet
 Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.gz
 BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
-Packager: Horms <horms@verge.net.au>
 URL: http://vergenet.net/linux/perdition/
 Provides: perdition-%{ver}-%{rel}
 BuildPrereq: gcc make vanessa_logger-devel >= 0.0.6 vanessa_adt-devel >= 0.0.6  vanessa_socket-devel >= 0.0.8  gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel tetex-dvips unixODBC-devel /usr/include/db.h
