@@ -43,7 +43,7 @@ Summary: Library to allow perdition to access Berkeley DB based pop maps.
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
-Provides: perdition-ldap-%{ver}-%{rel}
+Provides: perdition-bdb-%{ver}-%{rel}
 
 %description bdb
 Perdition allows for arbitrary user database access through shared
