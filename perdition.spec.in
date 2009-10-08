@@ -2,23 +2,6 @@
 %define rel      1
 %define prefix   /usr
 
-#Uncomment these if they are not defined by your rpm macros file
-#%define _prefix                /usr
-#%define _exec_prefix           %{_prefix}
-#%define _bindir                %{_exec_prefix}/bin
-#%define _sbindir               %{_exec_prefix}/sbin
-#%define _libexecdir            %{_exec_prefix}/libexec
-#%define _datadir               %{_prefix}/share
-#%define _sysconfdir            %{_prefix}/etc
-#%define _sharedstatedir        %{_prefix}/com
-%define _localstatedir          /var
-#%define _lib                   lib
-#%define _libdir                %{_exec_prefix}/%{_lib}
-#%define _includedir            %{_prefix}/include
-#%define _oldincludedir         /usr/include
-#%define _infodir               %{_prefix}/info
-#%define _mandir                %{_prefix}/man
-
 Summary: Mail Retrieval Proxy
 Name: perdition
 Version: %ver
