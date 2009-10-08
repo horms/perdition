@@ -836,8 +836,7 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    s = vanessa_socket_client_src_open(sockname ? to_host_str : NULL,
-				       NULL, servername, port, 
+    s = vanessa_socket_client_src_open(NULL, NULL, servername, port,
 				       opt.no_lookup ? 
 				       VANESSA_SOCKET_NO_LOOKUP : 0);
     if(s < 0) {
