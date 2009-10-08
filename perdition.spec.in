@@ -8,7 +8,7 @@ Release: %rel
 License: GPL
 Group: Applications/Internet
 Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.gz
-BuildRoot: /var/tmp/perdition-%{PACKAGE_VERSION}-root
+BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
 Packager: Horms <horms@verge.net.au>
 URL: http://vergenet.net/linux/perdition/
 Provides: perdition-%{ver}-%{rel}
