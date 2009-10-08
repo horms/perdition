@@ -136,7 +136,7 @@ main(int argc, char **argv)
 
 	memset(&unaddr, 0, sizeof(struct sockaddr_un));
 	unaddr.sun_family = AF_UNIX;
-	strncpy(unaddr.sun_path, un.name, sizeof(struct sockaddr_un));
+	strncpy(unaddr.sun_path, un.name, PERDITION_UN_STR_LEN);
 
 	unlink(unaddr.sun_path);
 	if(bind(un.fd, (struct sockaddr *) &unaddr, 

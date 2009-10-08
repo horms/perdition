@@ -252,7 +252,7 @@ dbserver_get2(const char *key_str, const char *options_str,
 
 	memset(&unaddr, 0, sizeof(struct sockaddr_un));
 	unaddr.sun_family = AF_UNIX;
-	strncpy(unaddr.sun_path, sock.name, sizeof(struct sockaddr_un));
+	strncpy(unaddr.sun_path, sock.name, PERDITION_UN_STR_LEN);
 
 	if(bind(sock.fd, (struct sockaddr *) &unaddr, 
 				sizeof(struct sockaddr_un)) < 0) {
