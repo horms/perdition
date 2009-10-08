@@ -136,8 +136,10 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/chkconfig --add perdition
 make -q -C /etc/perdition/
 true
+ldconfig
 
 %postun
+ldconfig
 
 %preun
 /sbin/chkconfig --del perdition
@@ -211,6 +213,12 @@ true
 %{_bindir}/makebdb
 %{_mandir}/man1/makebdb.*
 
+%post bdb
+ldconfig
+
+%postun bdb
+ldconfig
+
 %files ldap
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_ldap.a
@@ -222,6 +230,12 @@ true
 %{_mandir}/man8/perditiondb_ldap_makedb.*
 /etc/openldap/schema/perdition.schema
 
+%post ldap
+ldconfig
+
+%postun ldap
+ldconfig
+
 %files mysql
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_mysql.a
@@ -231,6 +245,12 @@ true
 %{_libdir}/libperditiondb_mysql.so.0.0.0
 %{_sbindir}/perditiondb_mysql_makedb
 %{_mandir}/man8/perditiondb_mysql_makedb.*
+
+%post mysql
+ldconfig
+
+%postun mysql
+ldconfig
 
 %files postgresql
 %defattr(-,root,root)
@@ -242,6 +262,12 @@ true
 %{_sbindir}/perditiondb_postgresql_makedb
 %{_mandir}/man8/perditiondb_postgresql_makedb.*
 
+%post postgresql
+ldconfig
+
+%postun postgresql
+ldconfig
+
 %files odbc
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_odbc.a
@@ -251,6 +277,12 @@ true
 %{_libdir}/libperditiondb_odbc.so.0.0.0
 %{_sbindir}/perditiondb_odbc_makedb
 %{_mandir}/man8/perditiondb_odbc_makedb.*
+
+%post odbc
+ldconfig
+
+%postun odbc
+ldconfig
 
 %changelog
 * Sat Sep 20 2009 Simon Horman <horms@verge.net.au> (0.0.8-1)
