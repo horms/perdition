@@ -36,14 +36,7 @@ perditiondb_postgresql.h
 
 libperditiondb_postgresql_la_LDFLAGS    = -version-info 0:0:0
 
-PG_LIBPATH	= $(shell pg_config --libdir)
-PG_INCLUDEPATH	= $(shell pg_config --includedir)
-
 libperditiondb_postgresql_la_LIBADD	= \
--lvanessa_logger -lvanessa_adt \
--L$(PG_LIBPATH) -lpq
+-lvanessa_logger -lvanessa_adt @pg_libdir@ -lpq
 
-INCLUDES=\
--I$(top_srcdir)/ \
--I$(top_srcdir)/perdition \
--I$(PG_INCLUDEPATH)
+INCLUDES= -I$(top_srcdir) -I$(top_srcdir)/perdition @pg_includedir@

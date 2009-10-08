@@ -454,6 +454,12 @@ fi
 
 AM_CONDITIONAL(PG_BUILD, test "${enable_pg}" = "yes")
 
+if test "$enable_pg" = "yes"; then
+	pg_libdir=-L`$PG_CONFIG --libdir`
+	AC_SUBST(pg_libdir)
+	pg_includedir=-I`$PG_CONFIG --includedir`
+	AC_SUBST(pg_includedir)
+fi
 
 ######################################################################
 # CDB
@@ -1095,8 +1101,6 @@ AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS(select socket strdup strerror parse_printf_format flim)
 
-AC_SUBST(pg_libs)
-AC_SUBST(pg_includes)
 AC_SUBST(odbc_libs)
 AC_SUBST(odbc_includes)
 AC_SUBST(mysql_libs)
