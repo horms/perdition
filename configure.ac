@@ -39,7 +39,6 @@ AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [], [[#include <sys/socket.h>]])
 
 # Checks for libraries.
 AC_CHECK_LIB(dl, dlopen,  [ dl_lib="-ldl" ], [ dl_lib="" ])
-AC_CHECK_LIB(db, db_create, true, true)
 AC_CHECK_LIB(nsl, yp_match, true, true)
 AC_CHECK_LIB(socket, socket, [ socket_lib="-lsocket" ], [ socket_lib="" ])
 AC_CHECK_LIB(nsl, gethostbyname, [ nsl_lib="-lnsl" ], [ nsl_lib="" ])
@@ -607,24 +606,22 @@ AC_CHECK_HEADERS(
 )
 fi
 
-# Removed because different versions of libdb.a actually
-# have different symbols. Pitty you can't legistlate against stupidity.
-#if test "$enable_bdb" = "yes"; then
-#AC_CHECK_LIB(
-#  db,
-#  db_create, ,
-#  [ 
-#    enable_bdb="no"
-#AC_MSG_WARN(
-#""
-#"**********************************************************************"
-#"* perditiondb_bdb and makebdb will not be built"
-#"**********************************************************************"
-#) ;\
-#    sleep 5
-#  ]
-#)
-#fi
+if test "$enable_bdb" = "yes"; then
+AC_CHECK_LIB(
+  db,
+  db_create, ,
+  [
+    enable_bdb="no"
+AC_MSG_WARN(
+""
+"**********************************************************************"
+"* perditiondb_bdb and makebdb will not be built"
+"**********************************************************************"
+) ;\
+    sleep 5
+  ]
+)
+fi
 
 AM_CONDITIONAL(BDB_BUILD, test "${enable_bdb}" = "yes")
 
