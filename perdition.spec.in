@@ -238,7 +238,7 @@ ldconfig
 %files
 %defattr(-,root,root)
 %doc %attr(-, root, root) README
-%doc %attr(-, root, root) ChangeLog NEWS CODING_LOCATIONS TODO
+%doc %attr(-, root, root) ChangeLog CODING_LOCATIONS TODO
 %{_sbindir}/perdition
 %{_sbindir}/perdition.pop3
 %{_sbindir}/perdition.pop3s
