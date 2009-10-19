@@ -22,4 +22,4 @@
 #
 ######################################################################
 
-EXTRA_DIST = perdition
+EXTRA_DIST = perdition perdition.suse

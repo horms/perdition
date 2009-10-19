@@ -1,0 +1,79 @@
+## Path:	Network/Mail/Perdition
+## Description:	Basic configuration of the perdition mail retrieval proxy
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run perdition?
+# A value of no overrides all other settings
+#
+RUN_PERDITION="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in any mode
+#
+# This is in addition to any mode specific flags.
+# That is, it is in addition to any command line options supplied
+# by POP3_FLAGS, POP3S_FLAGS, IMAP4_FLAGS or IMAP4S_FLAGS
+#
+FLAGS=""
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run an instance of perdition in POP3 mode?
+#
+POP3="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in POP3 mode
+#
+POP3_FLAGS=""
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run an instance of perdition in POP3S mode?
+#
+POP3S="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in POP3S mode
+#
+POP3S_FLAGS=""
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run an instance of perdition in IMAP4 mode?
+#
+# Set to "yes" to run this instance of perdition
+# Set to any other value to not run this instance of perdition
+IMAP4="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in IMAP4 mode
+#
+IMAP4_FLAGS=""
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run an instance of perdition in IMAP4S mode?
+#
+IMAP4S="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in IMAP4S mode
+#
+IMAP4S_FLAGS=""
