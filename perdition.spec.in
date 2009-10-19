@@ -203,8 +203,7 @@ rm -rf $RPM_BUILD_ROOT
         /sbin/chkconfig --add perdition
 %endif
 %endif
-make -q -C /etc/perdition/
-true
+	make -C /etc/perdition/
 ldconfig
 
 %postun
@@ -231,12 +230,10 @@ ldconfig
 	if [ $1 = 0 ]; then
 		/sbin/service <script> stop >/dev/null 2>&1
 		/sbin/chkconfig --del perdition
-		make -q -C /etc/perdition/ clean
+		make -C /etc/perdition/ clean
 	fi
 %endif
 %endif
-true
-
 
 %files
 %defattr(-,root,root)
