@@ -159,8 +159,7 @@ access databases via ODBC.
 
 %build
 
-%configure --with-ldap-schema-directory=/etc/openldap/schema \
-	--enable-shared --disable-static
+%configure --with-ldap-schema-directory=no --enable-shared --disable-static
 make
 
 %install
@@ -301,11 +300,11 @@ ldconfig
 
 %files ldap
 %defattr(-,root,root)
+%doc %attr(-, root, root) perdition/db/ldap/perdition.schema
 %{_libdir}/libperditiondb_ldap.so.0
 %{_libdir}/libperditiondb_ldap.so.0.0.0
 %{_sbindir}/perditiondb_ldap_makedb
 %{_mandir}/man8/perditiondb_ldap_makedb.*
-/etc/openldap/schema/perdition.schema
 
 %post ldap
 ldconfig
