@@ -19,14 +19,36 @@ BuildRequires: libvanessa_socket1-devel >= 0.0.8
 BuildRequires: gdbm-devel
 BuildRequires: mysql-devel
 BuildRequires: postgresql-devel
-BuildRequires: openldap-devel
-BuildRequires: popt
 BuildRequires: pam-devel
 BuildRequires: zlib-devel
 BuildRequires: openssl-devel
-BuildRequires: tetex-dvips
 BuildRequires: unixODBC-devel
-BuildRequires: /usr/include/db.h
+
+%if 0%{?suse_version} || 0%{?fedora_version}
+BuildRequires: popt-devel
+%else
+%if 0%{?mandriva_version}
+BuildRequires: libpopt-devel
+%else
+BuildRequires: popt
+%endif
+%endif
+
+%if 0%{?suse_version}
+BuildRequires: db-devel
+%else
+%if 0%{?mandriva_version}
+BuildRequires: libdb4.6-devel
+%else
+%endif
+BuildRequires: db4-devel
+%endif
+
+%if 0%{?suse_version}
+BuildRequires: openldap2-devel
+%else
+BuildRequires: openldap-devel
+%endif
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
