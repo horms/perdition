@@ -11,7 +11,22 @@ Source: http://www.vergenet.net/linux/perdition/%{ver}/perdition-%{ver}.tar.bz2
 BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
 URL: http://vergenet.net/linux/perdition/
 Provides: perdition-%{ver}-%{rel}
-BuildRequires: gcc make libvanessa_logger0-devel >= 0.0.6 libvanessa_adt0-devel >= 0.0.6  libvanessa_socket1-devel >= 0.0.8  gdbm-devel mysql-devel postgresql-devel openldap-devel popt pam-devel zlib-devel openssl-devel tetex-dvips unixODBC-devel /usr/include/db.h
+BuildRequires: gcc
+BuildRequires: make
+BuildRequires: libvanessa_logger0-devel >= 0.0.6
+BuildRequires: libvanessa_adt0-devel >= 0.0.6
+BuildRequires: libvanessa_socket1-devel >= 0.0.8
+BuildRequires: gdbm-devel
+BuildRequires: mysql-devel
+BuildRequires: postgresql-devel
+BuildRequires: openldap-devel
+BuildRequires: popt
+BuildRequires: pam-devel
+BuildRequires: zlib-devel
+BuildRequires: openssl-devel
+BuildRequires: tetex-dvips
+BuildRequires: unixODBC-devel
+BuildRequires: /usr/include/db.h
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
