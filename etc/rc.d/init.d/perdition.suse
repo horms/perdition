@@ -1,0 +1,167 @@
+#!/bin/sh
+#
+# Author: Simon Horman <horms@verge.net.au>
+#
+### BEGIN INIT INFO
+# Provides:          perdition
+# Required-Start:    $remote_fs
+# Should-Start:      $syslog $named
+# Required-Stop:     $remote_fs
+# Should-Stop:       $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: POP and IMAP proxy
+# Description:       Starts perdition to allow proxied POP and IMAP access
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.status
+
+if [ -f /etc/sysconfig/perdition ]; then
+  . /etc/sysconfig/perdition
+fi
+
+# Please do not edit the values below.
+# Rather, please edit /etc/sysconfig/perdition
+RUN_PERDITION="${RUN_PERDITION:=yes}"
+FLAGS="${FLAGS:=}"
+POP3="${POP3:=yes}"
+POP3_FLAGS="${POP3_FLAGS:=}"
+POP3S="${POP3S:=yes}"
+POP3S_FLAGS="${POP3S_FLAGS:=}"
+IMAP4="${IMAP4:=yes}"
+IMAP4_FLAGS="${IMAP4_FLAGS:=}"
+IMAP4S="${IMAP4S:=yes}"
+IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+
+POP3_BIN="/usr/sbin/perdition.pop3"
+POP3_PID="/var/run/perdition.pop3/perdition.pop3.pid"
+POP3S_BIN="/usr/sbin/perdition.pop3s"
+POP3S_PID="/var/run/perdition.pop3s/perdition.pop3s.pid"
+IMAP4_BIN="/usr/sbin/perdition.imap4"
+IMAP4_PID="/var/run/perdition.imap4/perdition.imap4.pid"
+IMAP4S_BIN="/usr/sbin/perdition.imaps"
+IMAP4S_PID="/var/run/perdition.imaps/perdition.imaps.pid"
+
+if [ "$RUN_PERDITION" != "yes" ]; then
+	exit 0
+fi
+
+# See how we were called.
+case "$1" in
+  start)
+	if [ "$POP3" = "yes" ]; then
+		echo -n "Starting perdition daemon (POP3): "
+		$POP3_BIN $FLAGS $POP3_FLAGS --pid_file $POP3_PID && \
+		[ -e $POP3_PID ] && \
+		checkproc -p $POP3_PID $POP3_BIN
+		rc_status -v
+	fi
+
+	if [ "$POP3S" = "yes" ]; then
+		echo -n "Starting perdition daemon (POP3S): "
+		$POP3S_BIN $FLAGS $POP3S_FLAGS --pid_file $POP3S_PID && \
+		[ -e $POP3S_PID ] && \
+		checkproc -p $POP3S_PID $POP3S_BIN
+		rc_status -v
+	fi
+
+	if [ "$IMAP4" = "yes" ]; then
+		echo -n "Starting perdition daemon (IMAP4): "
+		$IMAP4_BIN $FLAGS $IMAP4_FLAGS --pid_file $IMAP4_PID && \
+		[ -e $IMAP4_PID ] && \
+		checkproc -p $IMAP4_PID $IMAP4_BIN
+		rc_status -v
+	fi
+
+	if [ "$IMAP4S" = "yes" ]; then
+		echo -n "Starting perdition daemon (IMAP4S): "
+		$IMAP4S_BIN $FLAGS $IMAP4S_FLAGS --pid_file $IMAP4S_PID && \
+		[ -e $IMAP4S_PID ] && \
+		checkproc -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	;;
+  status)
+        if [ "$POP3" = "yes" ]; then
+		echo -n "Checking for perdition (POP3): "
+		checkproc -p $POP3_PID $POP3_BIN
+		rc_status -v
+	fi
+        if [ "$POP3S" = "yes" ]; then
+		echo -n "Checking for perdition (POP3S): "
+		checkproc -p $POP3S_PID $POP3S_BIN
+		rc_status -v
+	fi
+	if [ "$IMAP4" = "yes" ]; then
+		echo -n "Checking for perdition (IMAP4): "
+		checkproc -p $IMAP4_PID $IMAP4_BIN
+		rc_status -v
+	fi
+	if [ "$IMAP4S" = "yes" ]; then
+		echo -n "Checking for perdition (IMAP4S): "
+		checkproc -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	;;
+  try-restart)
+	$0 status >/dev/null &&  $0 restart
+	rc_status
+	;;
+  restart)
+        $0 stop
+	$0 start
+        ;;
+  reload|force-reload)
+        if [ "$POP3" = "yes" ]; then
+		echo -n "Checking for perdition (POP3): "
+		killproc -HUP -p $POP3_PID $POP3_BIN
+		rc_status -v
+	fi
+        if [ "$POP3S" = "yes" ]; then
+		echo -n "Checking for perdition (POP3S): "
+		killproc -HUP -p $POP3S_PID $POP3S_BIN
+		rc_status -v
+	fi
+	if [ "$IMAP4" = "yes" ]; then
+		echo -n "Checking for perdition (IMAP4): "
+		killproc -HUP -p $IMAP4_PID $IMAP4_BIN
+		rc_status -v
+	fi
+	if [ "$IMAP4S" = "yes" ]; then
+		echo -n "Checking for perdition (IMAP4S): "
+		killproc -HUP -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	;;
+  stop)
+	if [ "$POP3" = "yes" ]; then
+		echo -n "Shutting down perdition services (POP3): "
+		killproc -TERM -p $POP3_PID $POP3_BIN
+		rc_status -v
+	fi
+
+	if [ "$POP3S" = "yes" ]; then
+		echo -n "Shutting down perdition services (POP3S): "
+		killproc -TERM -p $POP3S_PID $POP3S_BIN
+		rc_status -v
+	fi
+
+	if [ "$IMAP4" = "yes" ]; then
+		echo -n "Shutting down perdition services (IMAP4): "
+		killproc -TERM -p $IMAP4_PID $IMAP4_BIN
+		rc_status -v
+	fi
+
+	if [ "$IMAP4S" = "yes" ]; then
+		echo -n "Shutting down perdition services (IMAP4S): "
+		killproc -TERM -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	;;
+  *)
+	echo "Usage: perdition {start|stop|status|restart|reload}"
+	exit 1
+esac
+
+exit 0

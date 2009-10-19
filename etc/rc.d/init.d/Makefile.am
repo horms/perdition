@@ -25,5 +25,6 @@
 EXTRA_DIST = \
   perdition.rh \
   perdition.rh.in \
+  perdition.suse \
   perdition.debian \
   perdition.debian.in

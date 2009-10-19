@@ -176,7 +176,7 @@ make DESTDIR=$RPM_BUILD_ROOT install-strip
 
 %if 0%{?suse_version}
 install -m755 \
-  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.suse \
   ${RPM_BUILD_ROOT}/etc/init.d/perdition
 install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition.suse \
   ${RPM_BUILD_ROOT}/var/adm/fillup-templates/sysconfig.perdition
