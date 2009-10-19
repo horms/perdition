@@ -1,40 +1,18 @@
 #!/bin/sh
 #
+# Author: Simon Horman <horms@verge.net.au>
+#
 ### BEGIN INIT INFO
 # Provides:          perdition
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
+# Required-Start:    $remote_fs
+# Should-Start:      $syslog $named
+# Required-Stop:     $remote_fs
+# Should-Stop:       $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
+# Short-Description: POP and IMAP proxy
+# Description:       Starts perdition to allow proxied POP and IMAP access
 ### END INIT INFO
-#
-######################################################################
-# Version:                                              September 1999
-# Author:                                   Horms <horms@verge.net.au>
-#
-# Debian init script for perdition
-# based on /etc/init.d/skeleton
-#
-# perdition
-# Mail retrieval proxy server
-# Copyright (C) 1999-2005  Horms
-# 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of the
-# License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-######################################################################
-
 
 PATH=@prefix@/sbin:/bin:/usr/bin:/sbin:/usr/sbin
 NAME=perdition
