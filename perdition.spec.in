@@ -87,7 +87,7 @@ of perditiondb libraries.
 
 
 %package bdb
-Summary: Library to allow perdition to access Berkeley DB based pop maps.
+Summary: Library to allow perdition to access Berkeley DB based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -100,7 +100,7 @@ database to be sourced from a Berkeley DB.
 
 
 %package ldap
-Summary: Library to allow perdition to access LDAP based pop maps.
+Summary: Library to allow perdition to access LDAP based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -113,7 +113,7 @@ database to be sourced from LDAP.
 
 
 %package mysql
-Summary: Library to allow perdition to access MySQL based pop maps.
+Summary: Library to allow perdition to access MySQL based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -126,7 +126,7 @@ database stored in a MySQL database.
 
 
 %package postgresql
-Summary: Library to allow perdition to access PostgreSQL based pop maps.
+Summary: Library to allow perdition to access PostgreSQL based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
@@ -139,7 +139,7 @@ database stored in a PostgreSQL database.
 
 
 %package odbc
-Summary: Library to allow perdition to access pop maps via ODBC.
+Summary: Library to allow perdition to access pop maps via ODBC
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
