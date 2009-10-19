@@ -50,6 +50,17 @@ BuildRequires: openldap2-devel
 BuildRequires: openldap-devel
 %endif
 
+%if 0%{?suse_version}
+PreReq: %insserv_prereq %fillup_prereq
+%else
+Requires(post):  chkconfig
+Requires(preun): chkconfig
+%if 0%{?mandriva_version}
+%else
+Requires(preun): initscripts
+%endif
+%endif
+
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
 handle both SSL and non-SSL connections and redirect users to a
@@ -153,15 +164,25 @@ access databases via ODBC.
 make
 
 %install
-mkdir -p ${RPM_BUILD_ROOT}/etc/{rc.d/init.d,sysconfig}
+mkdir -p ${RPM_BUILD_ROOT}/etc/rc.d/init.d
+%if 0%{?suse_version}
+	mkdir -p ${RPM_BUILD_ROOT}/var/adm/fillup-templates
+%else
+	mkdir -p ${RPM_BUILD_ROOT}/etc/sysconfig
+%endif
 
 make DESTDIR=$RPM_BUILD_ROOT install-strip
 
 install -m755 \
   ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \
   ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
+%if 0%{?suse_version}
+install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition.suse \
+  ${RPM_BUILD_ROOT}/var/adm/fillup-templates/sysconfig.perdition
+%else
 install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
   ${RPM_BUILD_ROOT}/etc/sysconfig/perdition
+%endif
 
 # Don't install .la and .so files
 rm $RPM_BUILD_ROOT/%{_libdir}/*.{la,so}
@@ -170,17 +191,47 @@ rm $RPM_BUILD_ROOT/%{_libdir}/*.{la,so}
 rm -rf $RPM_BUILD_ROOT
 
 %post
-/sbin/chkconfig --add perdition
+%if 0%{?suse_version}
+	%{fillup_and_insserv -n perdition}
+%else
+%if 0%{?mandriva_version}
+	%_post_service perdition
+%else
+        /sbin/chkconfig --add perdition
+%endif
+%endif
 make -q -C /etc/perdition/
 true
 ldconfig
 
 %postun
 ldconfig
+%if 0%{?suse_version}
+	%restart_on_update perdition
+	%insserv_cleanup
+%else
+%if 0%{?mandriva_version}
+%else
+	if [ "$1" -ge "1" ] ; then
+		/sbin/service perdition condrestart >/dev/null 2>&1 || :
+	fi
+%endif
+%endif
 
 %preun
-/sbin/chkconfig --del perdition
-make -q -C /etc/perdition/ clean
+%if 0%{?suse_version}
+	%stop_on_removal perdition
+%else
+%if 0%{?mandriva_version}
+	%_preun_service perdition
+%else
+	if [ $1 = 0 ]; then
+		/sbin/service <script> stop >/dev/null 2>&1
+		/sbin/chkconfig --del perdition
+		make -q -C /etc/perdition/ clean
+	fi
+%endif
+%endif
 true
 
 
@@ -196,7 +247,11 @@ true
 %{_sbindir}/perdition.imaps
 /etc/pam.d/perdition
 /etc/rc.d/init.d/perdition
+%if 0%{?suse_version}
+/var/adm/fillup-templates/sysconfig.perdition
+%else
 %config /etc/sysconfig/perdition
+%endif
 %config /etc/perdition/perdition.conf
 %{_mandir}/man8/perdition.*
 %{_mandir}/man5/perditiondb.*
