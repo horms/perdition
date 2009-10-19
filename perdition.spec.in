@@ -245,12 +245,12 @@ ldconfig
 %{_sbindir}/perdition.imap4
 %{_sbindir}/perdition.imap4s
 %{_sbindir}/perdition.imaps
-/etc/pam.d/perdition
+%config /etc/pam.d/perdition
 %if 0%{?suse_version}
-/etc/init.d/perdition
+%config /etc/init.d/perdition
 /var/adm/fillup-templates/sysconfig.perdition
 %else
-/etc/rc.d/init.d/perdition
+%config /etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition
 %endif
 %config /etc/perdition/perdition.conf
@@ -271,10 +271,10 @@ ldconfig
 %{_libdir}/libperditiondb_gdbm.so.0
 %{_libdir}/libperditiondb_gdbm.so.0.0.0
 %{_bindir}/makegdbm
-/etc/perdition/Makefile
-/etc/perdition/Makefile.popmap
-%{_mandir}/man1/makegdbm.*
+%config /etc/perdition/Makefile
+%config /etc/perdition/Makefile.popmap
 %config /etc/perdition/popmap
+%{_mandir}/man1/makegdbm.*
 
 # daemon map
 %{_libdir}/libperditiondb_daemon.so.0
