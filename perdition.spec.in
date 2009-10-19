@@ -164,22 +164,26 @@ access databases via ODBC.
 make
 
 %install
-mkdir -p ${RPM_BUILD_ROOT}/etc/rc.d/init.d
 %if 0%{?suse_version}
+	mkdir -p ${RPM_BUILD_ROOT}/etc/init.d
 	mkdir -p ${RPM_BUILD_ROOT}/var/adm/fillup-templates
 %else
+	mkdir -p ${RPM_BUILD_ROOT}/etc/rc.d/init.d
 	mkdir -p ${RPM_BUILD_ROOT}/etc/sysconfig
 %endif
 
 make DESTDIR=$RPM_BUILD_ROOT install-strip
 
+%if 0%{?suse_version}
 install -m755 \
   ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \
-  ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
-%if 0%{?suse_version}
+  ${RPM_BUILD_ROOT}/etc/init.d/perdition
 install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition.suse \
   ${RPM_BUILD_ROOT}/var/adm/fillup-templates/sysconfig.perdition
 %else
+install -m755 \
+  ${RPM_BUILD_DIR}/perdition-%{ver}/etc/rc.d/init.d/perdition.rh \
+  ${RPM_BUILD_ROOT}/etc/rc.d/init.d/perdition
 install -m644 ${RPM_BUILD_DIR}/perdition-%{ver}/etc/sysconfig/perdition \
   ${RPM_BUILD_ROOT}/etc/sysconfig/perdition
 %endif
@@ -246,10 +250,11 @@ true
 %{_sbindir}/perdition.imap4s
 %{_sbindir}/perdition.imaps
 /etc/pam.d/perdition
-/etc/rc.d/init.d/perdition
 %if 0%{?suse_version}
+/etc/init.d/perdition
 /var/adm/fillup-templates/sysconfig.perdition
 %else
+/etc/rc.d/init.d/perdition
 %config /etc/sysconfig/perdition
 %endif
 %config /etc/perdition/perdition.conf
