@@ -86,66 +86,66 @@ provides headers and libraries that may be useful in the development
 of perditiondb libraries.
 
 
-%package bdb
+%package -n libperditiondb_bdb0
 Summary: Library to allow perdition to access Berkeley DB based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-bdb-%{ver}-%{rel}
 
-%description bdb
+%description -n libperditiondb_bdb0
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
 database to be sourced from a Berkeley DB.
 
 
-%package ldap
+%package -n libperditiondb_ldap0
 Summary: Library to allow perdition to access LDAP based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-ldap-%{ver}-%{rel}
 
-%description ldap
+%description -n libperditiondb_ldap0
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
 database to be sourced from LDAP.
 
 
-%package mysql
+%package -n libperditiondb_mysql0
 Summary: Library to allow perdition to access MySQL based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-mysql-%{ver}-%{rel}
 
-%description mysql
+%description -n libperditiondb_mysql0
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
 database stored in a MySQL database.
 
 
-%package postgresql
+%package -n libperditiondb_postgresql0
 Summary: Library to allow perdition to access PostgreSQL based pop maps
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-postgresql-%{ver}-%{rel}
 
-%description postgresql
+%description -n libperditiondb_postgresql0
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
 database stored in a PostgreSQL database.
 
 
-%package odbc
+%package -n libperditiondb_odbc0
 Summary: Library to allow perdition to access pop maps via ODBC
 Group: Applications/Internet
 License: GPL
 Requires: perdition-%{ver}-%{rel}
 Provides: perdition-odbc-%{ver}-%{rel}
 
-%description odbc
+%description -n libperditiondb_odbc0
 Perdition allows for arbitrary user database access through shared
 libraries much in the manner of NSS in glibc. This package allows a user
 access databases via ODBC.
@@ -282,20 +282,20 @@ ldconfig
 %{_libdir}/libperditiondb_daemon_base.so.0
 %{_libdir}/libperditiondb_daemon_base.so.0.0.0
 
-%files bdb
+%files -n libperditiondb_bdb0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_bdb.so.0
 %{_libdir}/libperditiondb_bdb.so.0.0.0
 %{_bindir}/makebdb
 %{_mandir}/man1/makebdb.*
 
-%post bdb
+%post -n libperditiondb_bdb0
 ldconfig
 
-%postun bdb
+%postun -n libperditiondb_bdb0
 ldconfig
 
-%files ldap
+%files -n libperditiondb_ldap0
 %defattr(-,root,root)
 %doc %attr(-, root, root) perdition/db/ldap/perdition.schema
 %{_libdir}/libperditiondb_ldap.so.0
@@ -303,49 +303,49 @@ ldconfig
 %{_sbindir}/perditiondb_ldap_makedb
 %{_mandir}/man8/perditiondb_ldap_makedb.*
 
-%post ldap
+%post -n libperditiondb_ldap0
 ldconfig
 
-%postun ldap
+%postun -n libperditiondb_ldap0
 ldconfig
 
-%files mysql
+%files -n libperditiondb_mysql0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_mysql.so.0
 %{_libdir}/libperditiondb_mysql.so.0.0.0
 %{_sbindir}/perditiondb_mysql_makedb
 %{_mandir}/man8/perditiondb_mysql_makedb.*
 
-%post mysql
+%post -n libperditiondb_mysql0
 ldconfig
 
-%postun mysql
+%postun -n libperditiondb_mysql0
 ldconfig
 
-%files postgresql
+%files -n libperditiondb_postgresql0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_postgresql.so.0
 %{_libdir}/libperditiondb_postgresql.so.0.0.0
 %{_sbindir}/perditiondb_postgresql_makedb
 %{_mandir}/man8/perditiondb_postgresql_makedb.*
 
-%post postgresql
+%post -n libperditiondb_postgresql0
 ldconfig
 
-%postun postgresql
+%postun -n libperditiondb_postgresql0
 ldconfig
 
-%files odbc
+%files -n libperditiondb_odbc0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_odbc.so.0
 %{_libdir}/libperditiondb_odbc.so.0.0.0
 %{_sbindir}/perditiondb_odbc_makedb
 %{_mandir}/man8/perditiondb_odbc_makedb.*
 
-%post odbc
+%post -n libperditiondb_odbc0
 ldconfig
 
-%postun odbc
+%postun -n libperditiondb_odbc0
 ldconfig
 
 %changelog
