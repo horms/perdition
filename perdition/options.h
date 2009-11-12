@@ -180,8 +180,8 @@ typedef struct {
   unsigned int    add_domain_strip_depth;
 #ifdef WITH_PAM_SUPPORT
   int             authenticate_in;
-  int             authenticate_timeout;
 #endif /* WITH_PAM_SUPPORT */
+  int             authenticate_timeout;
   vanessa_dynamic_array_t *bind_address;
   char            *capability;
   char            *mangled_capability;
