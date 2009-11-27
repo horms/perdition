@@ -1,3 +1,9 @@
+perdition (1.18-1) unstable; urgency=low
+
+  * New Upstream
+
+ -- Simon Horman <horms@debian.org>  Fri, 27 Nov 2009 11:07:43 +1100
+
 perdition (1.18~rc3-1) unstable; urgency=low
 
   * New Upstream
