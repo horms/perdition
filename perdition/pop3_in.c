@@ -127,7 +127,7 @@ int pop3_in_get_pw(
   while(1){
     q=read_line(io, NULL, NULL, TOKEN_POP3, 0, PERDITION_LOG_STR_CLIENT);
     if(!q) {
-      VANESSA_LOGGER_DEBUG("pop3_in_get_pw: read_line");
+      VANESSA_LOGGER_DEBUG("read_line");
       break;
     }
 
