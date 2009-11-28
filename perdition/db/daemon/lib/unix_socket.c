@@ -71,7 +71,8 @@ perdition_un_send_recv(perdition_un_t *sock, perdition_un_t *peer,
 		int timeout, int retry)
 {
 	struct sockaddr_un unaddr;
-	int bytes;
+	ssize_t bytes;
+	int rc;
 	socklen_t socklen;
 	fd_set readfd;
 	struct timeval to;
@@ -93,7 +94,7 @@ resend:
 				*/
 		bytes = sendto(sock->fd, msg, send_len, 0, 
 				(struct sockaddr *) &unaddr, socklen);
-		if(bytes != send_len) {
+		if(bytes < 0 || (size_t)bytes != send_len) {
 			if(errno == EINTR) {
 				attempt--;
 				continue;
@@ -124,15 +125,15 @@ resend:
 		to.tv_sec = pause;
 		to.tv_usec = 0;
 
-		bytes = select(sock->fd + 1, &readfd, NULL, NULL, &to);
-		if(bytes < 0) {
+		rc = select(sock->fd + 1, &readfd, NULL, NULL, &to);
+		if(rc < 0) {
 			if(errno == EINTR) {
 				continue;
 			}
 			VANESSA_LOGGER_DEBUG_ERRNO("select");
 			return(-1);
 		}
-		if(bytes == 0) {
+		if(rc == 0) {
 			/* Timeout */
 			pause *= 2;
 			goto resend;

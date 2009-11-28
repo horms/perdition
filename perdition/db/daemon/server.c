@@ -117,13 +117,13 @@ main(int argc, char **argv)
 	perdition_un_init(&un);
 
 	req_packet = perdition_packet_create();
-	if(req_packet < 0) {
+	if (!req_packet) {
 		VANESSA_LOGGER_DEBUG("perdition_packet_create");
 		goto leave;
 	}
 
 	rsp_packet = perdition_packet_create();
-	if(rsp_packet < 0) {
+	if(!rsp_packet) {
 		VANESSA_LOGGER_DEBUG("perdition_packet_create");
 		goto leave;
 	}
