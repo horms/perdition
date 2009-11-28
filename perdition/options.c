@@ -982,7 +982,14 @@ int options(int argc, char **argv, flag_t f){
 
 
 #define BIN_OPT_STR(_opt) ((_opt)?"on":"off")
-#define OPT_STR(_opt) ((_opt)?(_opt):"")
+
+static const char *opt_str(const char *opt)
+{
+	if (!opt)
+		return "";
+	return opt;
+}
+#define OPT_STR(_opt) opt_str(_opt)
 
 
 /**********************************************************************
