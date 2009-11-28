@@ -243,11 +243,6 @@ leave:
 		status = protocol_status;
 	}
 	return(status);
-
-	/* Stop compiler from complaining */
-	if(&opt);
-	if(tmp_status);
-	if(tmp_token);
 }
   
 

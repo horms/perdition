@@ -271,13 +271,6 @@ leave:
     vanessa_queue_destroy(q);
   }
   return(status);
-
-  /* Stop compiler from complaining */
-  if(capability_status);
-  if(n);
-  if(buf);
-  if(&opt);
-  goto ok;
 }
   
 
