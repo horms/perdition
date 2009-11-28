@@ -59,7 +59,7 @@ makebdb_options_t makebdb_options(int argc, char **argv){
 
 
   /*Defaults*/
-  opt.undo=0;
+  memset(&opt, 0, sizeof(opt));
 
   if(argc==0 || argv==NULL) return(opt);
 

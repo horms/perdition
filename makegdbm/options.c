@@ -59,7 +59,7 @@ makegdbm_options_t makegdbm_options(int argc, char **argv){
 
 
   /*Defaults*/
-  opt.undo=0;
+  memset(&opt, 0, sizeof(opt));
 
   if(argc==0 || argv==NULL) return(opt);
 
