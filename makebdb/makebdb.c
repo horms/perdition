@@ -111,25 +111,26 @@ void makebdb_new(const makebdb_options_t options){
   while(fgets(line, MAX_LINE_LENGTH, stdin)!=NULL){
     blank=1;
     key.data=line;
-    key.size=-1;
-    content.size=-1;
+    key.size = MAX_LINE_LENGTH;
+    content.size = MAX_LINE_LENGTH;
     for(i=0;i<MAX_LINE_LENGTH;i++){
       if(blank && *(line+i)!=' ' && *(line+i)!='\t'&& *(line+i)!='\n'){
         blank=0;
       }
-      if(key.size==-1 && *(line+i)==FIELD_DELIMITER){
+      if(key.size == MAX_LINE_LENGTH && *(line+i)==FIELD_DELIMITER){
         key.size=i;
         content.data=line+i+1;
         continue;
       }
-      if(content.size==-1 && *(line+i)=='\n'){
+      if(content.size == MAX_LINE_LENGTH && *(line+i)=='\n'){
         content.size=i-key.size-1;
         lineno++;
         break;
       }
     }
     fflush(NULL);
-    if(!blank && !status && (key.size<1 || content.size<1)){
+    if(!blank && !status &&
+       (key.size == MAX_LINE_LENGTH || content.size == MAX_LINE_LENGTH)){
       status=1;
     }
     if(status){
