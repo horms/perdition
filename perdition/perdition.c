@@ -121,21 +121,14 @@ static int perdition_chown(const char *path, const char *username,
   if(pw2.pw_name!=NULL && pw2.pw_name!=pw.pw_name){ \
     free(pw2.pw_name); \
   } \
-  pw2.pw_name=NULL; \
-  pw2.pw_passwd=NULL; \
+  memset(&pw2, 0, sizeof(pw2)); \
   if(pw.pw_name!=NULL){ \
     free(pw.pw_name); \
-    pw.pw_name=NULL; \
   } \
   if(pw.pw_passwd!=NULL){ \
     free(pw.pw_passwd); \
-    pw.pw_passwd=NULL;\
   } \
-  if(pw2.pw_name!=NULL){ \
-    free(pw2.pw_name); \
-    pw2.pw_name=NULL; \
-  } \
-  pw2.pw_passwd=NULL; \
+  memset(&pw, 0, sizeof(pw)); \
   if (!round_robin_server){ \
     user_server_port_destroy(usp); \
   } \
@@ -232,8 +225,7 @@ do {                                                                        \
 
 int main (int argc, char **argv, char **envp){
   vanessa_logger_t *vl;
-  struct passwd pw = {NULL, NULL};
-  struct passwd pw2 = {NULL, NULL};
+  struct passwd pw, pw2;
   char *server_resp_buf = NULL;
   char *buffer;
   user_server_port_t *usp=NULL;
@@ -255,8 +247,8 @@ int main (int argc, char **argv, char **envp){
   io_t *client_io=NULL;
   io_t *server_io=NULL;
   FILE *fh;
-  int bytes_written=0;
-  int bytes_read=0;
+  size_t bytes_written = 0;
+  size_t bytes_read = 0;
   int status;
   int round_robin_server=0;
   int rnd;
@@ -267,6 +259,9 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
 #endif /* WITH_SSL_SUPPORT */
+
+  memset(&pw, 0, sizeof(pw));
+  memset(&pw2, 0, sizeof(pw2));
 
   /*
    * Create Logger
@@ -1258,8 +1253,8 @@ write_pid_file(const char *pidfilename, const char *username,
 			return -1;
 		}
 
-		pid = strtoul(pidbuf, NULL, 10);
-		if (pid == ULONG_MAX && errno == ERANGE) {
+		pid = strtol(pidbuf, NULL, 10);
+		if (pid == LONG_MAX && errno == ERANGE) {
 			VANESSA_LOGGER_DEBUG_UNSAFE("Invalid pid in pid-file "
 	 				"[%s]: %s", pidfilename, 
 					strerror(errno));
@@ -1301,7 +1296,7 @@ write_pid_file(const char *pidfilename, const char *username,
 	}
 
 	if (snprintf(pidbuf, sizeof(pidbuf), "%u", 
-				getpid()) >= sizeof(pidbuf)) {
+				getpid()) >= (int)sizeof(pidbuf)) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Pid too long for buffer [%u]", 
 				getpid());
 		goto unlink;
@@ -1309,7 +1304,7 @@ write_pid_file(const char *pidfilename, const char *username,
 
 	while (1) {
 		bytes = write(pidfilefd, pidbuf, strlen(pidbuf));
-		if (bytes != strlen(pidbuf)) {
+		if (bytes != (ssize_t)strlen(pidbuf)) {
 			if (bytes < 0 && errno == EINTR) {
 				continue;
 			}
