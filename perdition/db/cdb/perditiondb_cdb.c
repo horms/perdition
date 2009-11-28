@@ -34,6 +34,8 @@
 #include <dmalloc.h>
 #endif
 
+#include <limits.h>
+
 
 /**********************************************************************
  * dbserver_get
@@ -56,6 +58,7 @@ int dbserver_get(const char *key_str, const char *options_str, char **str_return
 
     int fd;
     int ret = -2; /* Presume key not found */
+    unsigned len;
 
     /* Open a file handle on the CDB file */
     if((fd = open((options_str==NULL)?PERDITIONDB_CDB_DEFAULT_MAPNAME:(char *)options_str, O_RDONLY)) == -1) {
@@ -64,7 +67,7 @@ int dbserver_get(const char *key_str, const char *options_str, char **str_return
     }
 
     /* Attempt to find the key in the file */
-    if(cdb_seek(fd, (char *)key_str, strlen((char *)key_str), (int *)len_return) > 0) {
+    if (cdb_seek(fd, key_str, strlen(key_str), &len) > 0 && len <= UINT_MAX) {
 
         char * str_value;
 
@@ -80,6 +83,9 @@ int dbserver_get(const char *key_str, const char *options_str, char **str_return
 
         /* Set string return value */
         *str_return = str_value;
+
+        /* Set length return value */
+        *len_return = (int)len;
 
         /* Set successful function return value */
         ret = 0;
