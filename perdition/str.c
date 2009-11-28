@@ -170,9 +170,9 @@ static const char *__str_vwrite(const flag_t flag,
 		const size_t nargs, const char *fmt, va_list ap,
 		int *bytes)
 {
-	int fmt_args;
+	size_t fmt_args;
 #ifndef HAVE_PARSE_PRINT_FORMAT
-	int place;
+	size_t place;
 #endif				/* HAVE_PARSE_PRINT_FORMAT */
 
 	/* Fast Path */
@@ -230,7 +230,7 @@ int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
 	if (opt.connection_logging) {
 		char *dump_str;
 
-		dump_str = VANESSA_LOGGER_DUMP((unsigned char *)str, bytes, 0);
+		dump_str = VANESSA_LOGGER_DUMP(str, bytes, 0);
 		if (!dump_str) {
 			VANESSA_LOGGER_DEBUG("VANESSA_LOGGER_DUMP");
 			return (-1);

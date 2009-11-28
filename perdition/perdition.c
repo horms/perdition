@@ -234,8 +234,8 @@ int main (int argc, char **argv, char **envp){
   vanessa_logger_t *vl;
   struct passwd pw = {NULL, NULL};
   struct passwd pw2 = {NULL, NULL};
-  unsigned char *server_resp_buf=NULL;
-  unsigned char *buffer;
+  char *server_resp_buf = NULL;
+  char *buffer;
   user_server_port_t *usp=NULL;
   protocol_t *protocol=NULL;
   token_t *our_tag=NULL;
@@ -482,9 +482,8 @@ int main (int argc, char **argv, char **envp){
    * If we are using the server's ok line then allocate a buffer to store it
    */ 
   if(opt.server_resp_line){
-    if((server_resp_buf=(unsigned char *)malloc(
-      sizeof(unsigned char)*MAX_LINE_LENGTH
-    ))==NULL){
+    server_resp_buf = malloc(MAX_LINE_LENGTH);
+    if (!server_resp_buf) {
       VANESSA_LOGGER_DEBUG_ERRNO("malloc server_resp_buf");
       VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
       perdition_exit_cleanly(-1);
@@ -511,14 +510,14 @@ int main (int argc, char **argv, char **envp){
   /* Open incoming socket as required */
   if(!opt.inetd_mode) {
 	  size_t nfrom;
-	  char **fromv;
+	  const char **fromv;
 	  
   	  if (opt.bind_address) 
 		  nfrom = vanessa_dynamic_array_get_count(opt.bind_address);
 	  else 
 		  nfrom = 1;
 	  
-  	  fromv = (char **)malloc(((nfrom * 2) + 1) * sizeof(char *));
+	  fromv = malloc(((nfrom * 2) + 1));
 	  if (!fromv) {
 		  VANESSA_LOGGER_DEBUG_ERRNO("malloc fromv");
 		  VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
@@ -980,7 +979,8 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*We need a buffer for reads and writes to the server*/
-  if((buffer=(unsigned char *)malloc(BUFFER_SIZE*sizeof(unsigned char)))==NULL){
+  buffer = malloc(BUFFER_SIZE);
+  if (!buffer) {
     VANESSA_LOGGER_DEBUG_ERRNO("malloc");
     VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting child.");
     perdition_exit_cleanly(-1);
@@ -1202,7 +1202,7 @@ write_pid_file(const char *pidfilename, const char *username,
 	int     pidfilefd;
 	char    pidbuf[11];
 	pid_t   pid;
-	size_t  bytes;
+	ssize_t  bytes;
 
 	if (create_pid_directory(pidfilename, username, group) < 0) {
 		return -1;

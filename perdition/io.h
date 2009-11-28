@@ -261,8 +261,7 @@ int io_close(io_t *io);
  *         0 otherwise (one of io_a or io_b closes gracefully)
  **********************************************************************/
 
-ssize_t io_pipe( io_t *io_a, io_t *io_b, unsigned char *buffer,
-  int buffer_length, int *return_a_read_bytes,
-  int *return_b_read_bytes, timed_log_t *log);
-
+ssize_t io_pipe(io_t *io_a, io_t *io_b, char *buffer,
+		int buffer_length, size_t *return_a_read_bytes,
+		size_t *return_b_read_bytes, timed_log_t *log);
 #endif /* _PERDITION_IO_H */

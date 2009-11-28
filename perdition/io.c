@@ -709,9 +709,9 @@ static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
 }
 
          
-ssize_t io_pipe(io_t *io_a, io_t *io_b, unsigned char *buffer,
-      int buffer_length, int *return_a_read_bytes,
-      int *return_b_read_bytes, timed_log_t *log){
+ssize_t io_pipe(io_t *io_a, io_t *io_b, char *buffer,
+      int buffer_length, size_t *return_a_read_bytes,
+      size_t *return_b_read_bytes, timed_log_t *log){
   int bytes;
   io_select_t *s;
   long timeout;

@@ -94,7 +94,7 @@ int imap4_out_authenticate(
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol,
-  unsigned char *buf,
+  char *buf,
   size_t *n
 );
 

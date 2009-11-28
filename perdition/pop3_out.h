@@ -91,7 +91,7 @@ int pop3_out_authenticate(
   const struct passwd *pw,
   token_t *tag,
   const protocol_t *protocol,
-  unsigned char *buf,
+  char *buf,
   size_t *n
 );
 
@@ -117,7 +117,7 @@ int pop3_out_response(
   const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,
-  unsigned char *buf,
+  char *buf,
   size_t *n
 );
 

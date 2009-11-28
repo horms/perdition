@@ -60,12 +60,12 @@ struct protocol_t_struct {
 	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, 
 				 const struct passwd *pw, token_t *tag,
 				 const struct protocol_t_struct *protocol,
-				 unsigned char *buf, size_t *n);
+				 char *buf, size_t *n);
 	int (*in_authenticate) (const struct passwd *pw, io_t *io,
 				const token_t * tag);
 	int (*out_response) (io_t *rs_io, io_t *eu_io, const token_t *tag, 
 			const token_t *desired_token,
-			vanessa_queue_t **q, unsigned char *buf,
+			vanessa_queue_t **q, char *buf,
 			size_t *n);
 	void (*destroy) (struct protocol_t_struct *protcol);
 	char *(*port) (char *port);
