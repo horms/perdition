@@ -89,7 +89,7 @@ static int imap4_out_get_capability(io_t *rs_io, io_t *eu_io, token_t *ok,
 		VANESSA_LOGGER_DEBUG("imap4_write");
 		goto leave;
 	}
-	token_assign(capability, (unsigned char *)IMAP4_CMD_CAPABILITY, 
+	token_assign(capability, IMAP4_CMD_CAPABILITY,
 			strlen(IMAP4_CMD_CAPABILITY), 
 	      		TOKEN_NONE);
   	if(buf_n) { new_buf_n = *buf_n; }
@@ -103,7 +103,7 @@ static int imap4_out_get_capability(io_t *rs_io, io_t *eu_io, token_t *ok,
 		goto leave;
 	}
 
-	token_assign(capability, (unsigned char *)str, str_n, TOKEN_DONT_CARE);
+	token_assign(capability, str, str_n, TOKEN_DONT_CARE);
 	while(vanessa_queue_length(*q)) {
 		if((*q=vanessa_queue_pop(*q, (void **)&t))==NULL){
 			VANESSA_LOGGER_DEBUG("vanessa_queue_pop");
@@ -189,7 +189,7 @@ int imap4_out_setup(
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(ok, (PERDITION_USTRING)IMAP4_OK, strlen(IMAP4_OK),
+  token_assign(ok, IMAP4_OK, strlen(IMAP4_OK),
       TOKEN_DONT_CARE);
 
   if((status=imap4_out_response(rs_io, eu_io, NULL, ok, &q, NULL, NULL))<0){
@@ -314,15 +314,13 @@ int imap4_out_authenticate(
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(ok, (unsigned char *)IMAP4_OK, strlen(IMAP4_OK), 
-		  TOKEN_DONT_CARE);
+  token_assign(ok, IMAP4_OK, strlen(IMAP4_OK), TOKEN_DONT_CARE);
 
   if((cont=token_create())==NULL){
     VANESSA_LOGGER_DEBUG("token_create");
     goto leave;
   }
-  token_assign(cont, (unsigned char *)IMAP4_CONT_TAG, 
-		  strlen(IMAP4_CONT_TAG), TOKEN_DONT_CARE);
+  token_assign(cont, IMAP4_CONT_TAG, strlen(IMAP4_CONT_TAG), TOKEN_DONT_CARE);
 
   if(n) { new_n = *n; }
   capability_status = imap4_out_get_capability(rs_io, eu_io, ok, tag, &q, 
@@ -470,7 +468,7 @@ leave:
 
 int imap4_out_response(io_t *rs_io, io_t *eu_io, const token_t *tag, 
 		const token_t *desired_token, vanessa_queue_t **q, 
-		unsigned char *buf, size_t *n)
+		char *buf, size_t *n)
 {
   int status = -1;
   token_t *t = NULL;

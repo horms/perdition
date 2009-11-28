@@ -175,8 +175,7 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 			VANESSA_LOGGER_DEBUG("token_create");
 			return(-1);
 		}
-		token_assign(*input_token, 
-				(unsigned char *)strdup(IMAP4_CONT_TAG), 1, 0);
+		token_assign(*input_token, strdup(IMAP4_CONT_TAG), 1, 0);
 		imap4_write(io, NULL_FLAG, *input_token, IMAP4_OK, 
 				0, "ready for additional input");
 		token_destroy(input_token);
@@ -311,7 +310,7 @@ int imap4_in_authenticate(
 
 static int imap4_in_verify_tag_str(const token_t *tag)
 {
-	unsigned char *tag_str;
+	char *tag_str;
 	size_t tag_str_len, i;
 
 	tag_str_len = token_len(tag);
@@ -411,7 +410,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
     }
 
 	if (imap4_in_verify_tag_str(tag)) {
-		token_assign(tag, (unsigned char *)strdup(IMAP4_UNTAGGED),
+		token_assign(tag, strdup(IMAP4_UNTAGGED),
 		             strlen(IMAP4_UNTAGGED), 0);
 		__IMAP4_IN_BAD("Invalid tag, mate");
 		goto loop;

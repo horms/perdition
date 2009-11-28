@@ -66,7 +66,7 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 		VANESSA_LOGGER_DEBUG("token_create");
 		goto leave;
 	}
-	token_assign(t, (PERDITION_USTRING) protocol->type[PROTOCOL_OK],
+	token_assign(t, protocol->type[PROTOCOL_OK],
 		     strlen(protocol->type[PROTOCOL_OK]), TOKEN_DONT_CARE);
 
 	if ((protocol->out_response(io, NULL, tag, t, &q, NULL, 

@@ -121,7 +121,7 @@ int imap4_out_response(
   const token_t *tag,
   const token_t *desired_token,
   vanessa_queue_t **q,
-  unsigned char *buf,
+  char *buf,
   size_t *n
 );
 

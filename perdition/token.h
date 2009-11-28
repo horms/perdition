@@ -46,7 +46,7 @@
   
 typedef struct{
   ssize_t n;
-  unsigned char *buf;
+  char *buf;
   flag_t flag;
 }token_t;
 
@@ -103,7 +103,7 @@ token_t *token_create(void);
 
 void token_assign(
   token_t *t, 
-  unsigned char * buf, 
+  char * buf,
   const size_t n,
   const flag_t flag
 );
@@ -200,7 +200,7 @@ void token_flush(void);
 
 token_t *token_read(
   io_t *io,
-  unsigned char *literal_buf, 
+  char *literal_buf,
   size_t *n,
   flag_t flag,
   size_t m,

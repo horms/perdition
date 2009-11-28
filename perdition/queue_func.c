@@ -56,7 +56,7 @@
  *       return what has been read so far. (No buffer overflows today)
  **********************************************************************/
 
-vanessa_queue_t *read_line(io_t *io, unsigned char *buf, size_t *n, 
+vanessa_queue_t *read_line(io_t *io, char *buf, size_t *n,
   flag_t flag, size_t m, const char *log_str
 ){
   token_t *t=NULL;

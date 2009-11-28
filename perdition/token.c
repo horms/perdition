@@ -40,7 +40,7 @@
 
 
 
-static unsigned char token_read_buffer[MAX_LINE_LENGTH];
+static char token_read_buffer[MAX_LINE_LENGTH];
 static size_t token_read_offset=0;
 static size_t token_read_bytes=0;
 
@@ -91,7 +91,7 @@ token_t *token_create(void){
 
 void token_assign(
   token_t *t, 
-  unsigned char * buf, 
+  char *buf,
   const size_t n,
   const flag_t flag
 ){
@@ -121,7 +121,7 @@ void token_assign(
  **********************************************************************/
 
 void token_unassign(token_t *t){
-  token_assign(t, (unsigned char *)NULL, (size_t)0, 0);
+  token_assign(t, NULL, 0, 0);
 }
 
 
@@ -277,15 +277,15 @@ static int __token_fill_buffer(io_t *io, const options_t *opt,
 
 token_t *token_read(
   io_t *io,
-  unsigned char *literal_buf, 
+  char *literal_buf,
   size_t *n,
   flag_t flag,
   size_t m,
   const char *log_str
 ){
-  unsigned char buffer[MAX_LINE_LENGTH];
-  unsigned char *assign_buffer;
-  unsigned char c;
+  char buffer[MAX_LINE_LENGTH];
+  char *assign_buffer;
+  char c;
   token_t *t;
   size_t literal_offset=0;
   size_t len=0;
@@ -350,9 +350,10 @@ end_while:
     VANESSA_LOGGER_DEBUG("token_create");
     return(NULL);
   }
-  if((assign_buffer=(unsigned char*)malloc(len))==NULL){
-    token_destroy(&t);
+  assign_buffer = malloc(len);
+  if (!assign_buffer) {
     VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+    token_destroy(&t);
     return(NULL);
   }
   memcpy(assign_buffer, buffer, len);
@@ -403,7 +404,7 @@ int token_cmp(const token_t *a, const token_t *b){
 
 char *token_to_string(const token_t *t, const unsigned char strip){
   char *string;
-  unsigned char *buf;
+  char *buf;
   size_t n;
 
   if(t==NULL || t->buf == NULL) {

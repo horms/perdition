@@ -43,8 +43,6 @@ typedef uint32 flag_t;
 #define PERDITION_AUTH_FAIL_SLEEP 3
 #define PERDITION_CONNECT_RETRY 3
 
-#define PERDITION_USTRING unsigned char *
-
 #define MAX_LINE_LENGTH 4096
 
 #define PERDITION_LOG_STR_SELF   "SELF:  "
