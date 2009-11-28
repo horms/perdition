@@ -68,8 +68,8 @@ static char *db_port_col = PERDITIONDB_ODBC_DEFAULT_DBPORTCOL;
 
 void perditiondb_odbc_log(const char *msg_str, SQLHDBC hdbc)
 {
-	char stat[10];
-	char msg[202];
+	SQLCHAR stat[10];
+	SQLCHAR msg[202];
 	SQLINTEGER err;
 	SQLSMALLINT len;
 
@@ -308,7 +308,7 @@ int dbserver_get(const char *key_str, const char *UNUSED(options_str),
 	}
 
 	/* Make Query */
-	rc = SQLExecDirect(hstmt, sqlstr, SQL_NTS);
+	rc = SQLExecDirect(hstmt, (SQLCHAR*)sqlstr, SQL_NTS);
 	if ((rc != SQL_SUCCESS) && (rc != SQL_SUCCESS_WITH_INFO)) {
 		VANESSA_LOGGER_DEBUG("SQLExecDirect");
 		goto err_hstmt;
