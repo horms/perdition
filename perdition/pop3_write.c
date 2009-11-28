@@ -92,23 +92,36 @@ static const char *__pop3_write_fmt(io_t *UNUSED(io), flag_t *flag,
 	return(__pop3_write_fmt_str);
 }
 
-int pop3_write(io_t *io, flag_t flag, const token_t *UNUSED(tag), 
-		const char *command, size_t nargs, const char *fmt, ...)
+int pop3_vwrite(io_t *io, flag_t flag, const token_t *UNUSED(tag),
+		const char *command, size_t nargs, const char *fmt, va_list ap)
 {
 	const char *new_fmt = NULL;
-	va_list ap;
-
 
 	new_fmt = __pop3_write_fmt(io, &flag, command, fmt);
 
-	va_start(ap, fmt);
-	if(str_vwrite(io, flag, nargs, new_fmt, ap)<0){
+	if (str_vwrite(io, flag, nargs, new_fmt, ap) < 0) {
 		VANESSA_LOGGER_DEBUG("str_vwrite");
-		va_end(ap);
-		return(-1);
+		return -1;
 	}
+
+	return 0;
+}
+
+int pop3_write(io_t *io, flag_t flag, const token_t *tag,
+		const char *command, size_t nargs, const char *fmt, ...)
+{
+	va_list ap;
+	int status = -1;
+
+	va_start(ap, fmt);
+	if (pop3_vwrite(io, flag, tag, command, nargs, fmt, ap) < 0) {
+		VANESSA_LOGGER_DEBUG("str_vwrite");
+		goto err;
+	}
+
+	status = 0;
+err:
 	va_end(ap);
-  
-  	return(0);
+	return status;
 }
 

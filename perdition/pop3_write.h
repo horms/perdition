@@ -27,6 +27,8 @@
 #ifndef POP3_WRITE_FLIM
 #define POP3_WRITE_FLIM
 
+#include <stdarg.h>
+
 #include "log.h"
 #include "str.h"
 #include "token.h"
@@ -66,6 +68,10 @@
  * Return 0 on success
  *        -1 otherwise
  **********************************************************************/
+
+int pop3_vwrite(io_t *io, const flag_t flag, const token_t *tag,
+		const char *command, const size_t nargs,
+		const char *fmt, va_list ap);
 
 int pop3_write(io_t *io, const flag_t flag, const token_t *tag, 
 		const char *command, const size_t nargs, 

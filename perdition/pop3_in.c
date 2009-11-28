@@ -89,6 +89,50 @@ int pop3_in_authenticate(
 #endif /* WITH_PAM_SUPPORT */
 
 
+static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
+{
+	va_list ap;
+	int rc;
+
+	sleep(VANESSA_LOGGER_ERR_SLEEP);
+
+	va_start(ap, fmt);
+	rc = pop3_vwrite(io, NULL_FLAG, NULL, POP3_ERR, nargs, fmt, ap);
+	va_end(ap);
+
+	if (rc < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write err");
+		return -1;
+	}
+
+	return 0;
+}
+
+#define __POP3_IN_ERR(_reason)						\
+	if (pop3_in_err(io, 1, "%s", _reason) < 0) {			\
+		break;							\
+	}								\
+	goto loop;
+
+static int pop3_in_invalid_cmd(io_t *io, const char *msg)
+{
+	char *extra = "";
+
+	if (opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
+	    io_get_type(io) != io_type_ssl)
+		extra = POP3_CMD_STLS ", ";
+
+	return pop3_in_err(io, 2, "Mate, %smust be one of %s"
+			   POP3_CMD_CAPA ", " POP3_CMD_USER ", "
+			   POP3_CMD_PASS " or " POP3_CMD_QUIT, msg, extra);
+}
+
+#define __POP3_IN_INVALID_CMD(_reason)					\
+	if (pop3_in_invalid_cmd(io, _reason) < 0) {			\
+		break;							\
+	}								\
+	goto loop;
+
 /**********************************************************************
  * pop3_in_get_pw
  * read USER and PASS commands and return them in a struct passwd *
@@ -103,15 +147,6 @@ int pop3_in_authenticate(
  *         1 if user quits (QUIT command)
  *         -1 on error
  **********************************************************************/
-
-#define __POP3_IN_ERR(_reason)                                             \
-	sleep(VANESSA_LOGGER_ERR_SLEEP);                                   \
-        if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 1,                    \
-				"%s", (_reason))<0){                       \
-          VANESSA_LOGGER_DEBUG("pop3_write err");                          \
-          break;                                                           \
-        }                                                                  \
-        goto loop;
 
 int pop3_in_get_pw(
   io_t *io,
@@ -141,10 +176,8 @@ int pop3_in_get_pw(
 	    __POP3_IN_ERR("Null command, mate");
     }
 
-    if(token_len(t) != POP3_CMD_LEN) {
-	    __POP3_IN_ERR("Mate, the command too short, must be one of " 
-			    POP3_CMD_CAPA ", " POP3_CMD_USER ", " 
-			    POP3_CMD_PASS " or " POP3_CMD_QUIT);
+    if (token_len(t) != POP3_CMD_LEN) {
+	    __POP3_IN_INVALID_CMD("the command is too short, ");
     }
 
     if(strncasecmp((char *)token_buf(t), POP3_CMD_CAPA, token_len(t))==0){
@@ -236,10 +269,8 @@ int pop3_in_get_pw(
       vanessa_queue_destroy(q);
       return(1);
     }
-    else{
-	    __POP3_IN_ERR("Mate, the command must be one of " 
-			    POP3_CMD_CAPA ", " POP3_CMD_USER ", " 
-			    POP3_CMD_PASS " or " POP3_CMD_QUIT);
+    else {
+	    __POP3_IN_INVALID_CMD("the command ");
     }
 
     /*Clean up before looping*/
