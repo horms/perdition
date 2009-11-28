@@ -201,8 +201,8 @@ int pop3_in_get_pw(
       }
       token_destroy(&t);
       
-      if((message=str_cat(3, POP3_CMD_USER " ", return_pw->pw_name, 
-				      " set, mate"))<0){
+      message = str_cat(3, POP3_CMD_USER " ", return_pw->pw_name, " set, mate");
+      if (!message) {
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
