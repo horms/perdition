@@ -560,8 +560,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
           break;
         }
 
-	imap4_token_wrapper(io, q, &t);
-	if(t < 0) {
+	if (imap4_token_wrapper(io, q, &t) < 0) {
 	  __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR;
 	  goto loop;
 	}
