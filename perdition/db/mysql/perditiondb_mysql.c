@@ -214,7 +214,7 @@ int dbserver_get(
   size_t *len_return
 ){
    MYSQL db;
-   long rc;
+   MYSQL *rc;
    MYSQL_RES *res;
    MYSQL_ROW row;
    char sqlstr[PERDITIONDB_MYSQL_QUERY_LENGTH];
@@ -222,13 +222,13 @@ int dbserver_get(
    size_t servername_len;
    size_t hcnt = 0;
 
-   rc = mysql_init(&db);
-   if(!rc){  
+   if (!mysql_init(&db)) {
      perditiondb_mysql_log("mysql_init", &db);
      vanessa_dynamic_array_destroy(a);
      return(-1);
    }
 
+   rc = NULL;
    while (hcnt < dbhosts_count
         && !(rc=mysql_real_connect(&db,
                         vanessa_dynamic_array_get_element(dbhosts_array, hcnt),
@@ -274,8 +274,7 @@ int dbserver_get(
      }
    }
 
-   rc = mysql_query(&db, sqlstr);
-   if(rc){  
+   if (mysql_query(&db, sqlstr)) {
      perditiondb_mysql_log("mysql_query", &db);
      mysql_close(&db);
      return(-1);
