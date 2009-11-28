@@ -52,12 +52,9 @@ makegdbm_options_t makegdbm_options(int argc, char **argv){
 
   static struct poptOption options[] =
   {
-    {"help",  'h', POPT_ARG_NONE, NULL, 'h'},
-    {"undo",  'u', POPT_ARG_NONE, NULL, 'u'},
-    {"jain",  'j', POPT_ARG_NONE, NULL, 'j'},
-    {"jane",  'j', POPT_ARG_NONE, NULL, 'j'}, 
-    {"jayne", 'j', POPT_ARG_NONE, NULL, 'j'},
-    {NULL,    0,   0,             NULL, 0  }
+    {"help",  'h', POPT_ARG_NONE, NULL, 'h', NULL, NULL},
+    {"undo",  'u', POPT_ARG_NONE, NULL, 'u', NULL, NULL},
+    {NULL,    0,   0,             NULL, 0,   NULL, NULL}
   };
 
 
