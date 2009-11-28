@@ -9,6 +9,7 @@
 #include <vanessa_logger.h>
 #include <signal.h>
 
+#include "unused.h"
 #include "lib/packet.h"
 #include "lib/unix_socket.h"
 
@@ -19,7 +20,7 @@
 static int leaving = 0;
 
 static void
-exit_handler(int sig) 
+exit_handler(int UNUSED(sig))
 {
 	leaving++;
 }

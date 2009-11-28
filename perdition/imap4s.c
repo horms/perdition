@@ -31,6 +31,7 @@
 #include "imap4.h"
 #include "imap4s.h"
 #include "options.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -79,7 +80,7 @@ protocol_t *imap4s_initialise_protocol(protocol_t *protocol){
  * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
-static void imap4s_destroy_protocol(protocol_t *protocol)
+static void imap4s_destroy_protocol(protocol_t *UNUSED(protocol))
 {
   ;
 }

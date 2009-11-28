@@ -31,6 +31,7 @@
 #include "pop3_in.h"
 #include "options.h"
 #include "perdition_globals.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -58,7 +59,7 @@
 int pop3_in_authenticate(
   const struct passwd *pw, 
   io_t *io,
-  const token_t *tag
+  const token_t *UNUSED(tag)
 ){
   pam_handle_t *pamh=NULL;
 
@@ -115,7 +116,7 @@ int pop3_in_authenticate(
 int pop3_in_get_pw(
   io_t *io,
   struct passwd *return_pw,
-  token_t **return_tag
+  token_t **UNUSED(return_tag)
 ){
   vanessa_queue_t *q = NULL;
   token_t *t = NULL;

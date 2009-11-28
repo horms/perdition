@@ -43,6 +43,7 @@
 
 #include "perdition_globals.h"
 #include "perditiondb_ldap.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -340,7 +341,7 @@ static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
  *         -3 on other error
  **********************************************************************/
 
-int dbserver_get2(const char *key_str, const char *options_str,
+int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 		 char **user_str, char **server_str, char **port_str)
 {
 	LDAPURLDesc *lud = NULL;

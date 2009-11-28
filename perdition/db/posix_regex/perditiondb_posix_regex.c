@@ -29,6 +29,7 @@
 #endif
 
 #include "perditiondb_posix_regex.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -196,7 +197,7 @@ leave:
 /* Maximum number of (..) constructs */
 #define  REXEX_NOSUBMATCH  10
 
-int dbserver_get(const char *key_str, const char *options_str,
+int dbserver_get(const char *key_str, const char *UNUSED(options_str),
 			char **str_return, int  *len_return)
 {
   int i;

@@ -38,6 +38,7 @@
 #endif
 
 #include "perditiondb_odbc.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -209,7 +210,7 @@ int dbserver_init(char *options_str)
  *       localhost
  **********************************************************************/
 
-int dbserver_get(const char *key_str, const char *options_str, 
+int dbserver_get(const char *key_str, const char *UNUSED(options_str),
 		char **str_return, size_t * len_return)
 {
 	SQLINTEGER rc;

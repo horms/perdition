@@ -32,6 +32,7 @@
 #include "protocol.h"
 #include "options.h"
 #include "perdition_globals.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -80,7 +81,7 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
  * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
-static void imap4_destroy_protocol(protocol_t *protocol)
+static void imap4_destroy_protocol(protocol_t *UNUSED(protocol))
 {
   ;
 }
@@ -128,7 +129,7 @@ static flag_t imap4_encryption(flag_t ssl_flags)
  *       with IMAP4 parameters
  **********************************************************************/
 
-char *imap4_capability(char *capability, char **mangled_capability,
+char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 		flag_t tls_flags, flag_t tls_state) 
 {
 	flag_t mode;

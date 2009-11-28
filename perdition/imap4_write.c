@@ -29,6 +29,7 @@
 #endif
 
 #include "imap4_write.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -56,7 +57,7 @@
 
 static char __imap4_write_fmt_str[MAX_LINE_LENGTH];
 
-static const char *__imap4_write_fmt(io_t *io, flag_t *flag, 
+static const char *__imap4_write_fmt(io_t *UNUSED(io), flag_t *flag,
 		const token_t *tag, const char *command, const char *fmt)
 {
 	char *tag_str = NULL;

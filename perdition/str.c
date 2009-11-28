@@ -166,7 +166,7 @@ char *strn_to_str(const char *string, const size_t n)
 
 static char __str_write_buf[STR_WRITE_BUF_LEN];
 
-static const char *__str_vwrite(io_t * io, const flag_t flag, 
+static const char *__str_vwrite(const flag_t flag,
 		const size_t nargs, const char *fmt, va_list ap,
 		int *bytes)
 {
@@ -221,7 +221,7 @@ int str_vwrite(io_t * io, const flag_t flag, const size_t nargs,
 	const char *str;
 	int bytes = 0;
 
-	str = __str_vwrite(io, flag, nargs, fmt, ap, &bytes);
+	str = __str_vwrite(flag, nargs, fmt, ap, &bytes);
 	if(!str) {
 		VANESSA_LOGGER_DEBUG("__str_vwrite");
 		return(-1);

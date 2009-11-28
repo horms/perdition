@@ -35,6 +35,7 @@
 #include "pop3_out.h"
 #include "options.h"
 #include "protocol.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -85,7 +86,7 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
  * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
-static void pop3s_destroy_protocol(protocol_t *protocol)
+static void pop3s_destroy_protocol(protocol_t *UNUSED(protocol))
 {
   ;
 }
@@ -138,8 +139,8 @@ static flag_t pop3s_encryption(flag_t ssl_flags)
  **********************************************************************/
 
 static char *pop3s_capability(char *capability, 
-		char **mangled_capability, flag_t tls_flags,
-		flag_t tls_state)
+		char **mangled_capability, flag_t UNUSED(tls_flags),
+		flag_t UNUSED(tls_state))
 {
       	capability = protocol_capability(capability, PROTOCOL_C_DEL, 
       			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,

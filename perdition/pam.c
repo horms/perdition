@@ -34,6 +34,7 @@
 
 
 #include "pam.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -46,8 +47,8 @@ int pam_retval;
 struct pam_conv conv_struct={perdition_conv, NULL};
 
 int perdition_conv(
-  int num_msg,
-  const struct pam_message **msgm,
+  int UNUSED(num_msg),
+  const struct pam_message **UNUSED(msgm),
   struct pam_response **response,
   void *appdata_ptr
 ){

@@ -47,6 +47,7 @@
 #include "log.h"
 #include "io.h"
 #include "options.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -70,7 +71,8 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 
 
 static int 
-__perdition_ssl_passwd_cb(char *buf, int size, int rwflag, void *data)
+__perdition_ssl_passwd_cb(char *buf, int size,
+			  int UNUSED(rwflag), void *UNUSED(data))
 {
 	ssize_t nbytes;
 	struct termios new;

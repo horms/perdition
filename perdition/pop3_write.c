@@ -29,6 +29,7 @@
 #endif
 
 #include "pop3_write.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -55,7 +56,7 @@
 
 static char __pop3_write_fmt_str[MAX_LINE_LENGTH];
 
-static const char *__pop3_write_fmt(io_t *io, flag_t *flag,
+static const char *__pop3_write_fmt(io_t *UNUSED(io), flag_t *flag,
 		const char *command, const char *fmt)
 {
 	char *new_fmt_end = NULL;
@@ -91,7 +92,7 @@ static const char *__pop3_write_fmt(io_t *io, flag_t *flag,
 	return(__pop3_write_fmt_str);
 }
 
-int pop3_write(io_t *io, flag_t flag, const token_t *tag, 
+int pop3_write(io_t *io, flag_t flag, const token_t *UNUSED(tag), 
 		const char *command, size_t nargs, const char *fmt, ...)
 {
 	const char *new_fmt = NULL;

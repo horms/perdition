@@ -45,6 +45,7 @@
 #include <vanessa_adt.h>
 
 #include "options.h"
+#include "unused.h"
 #include "lib/packet.h"
 #include "lib/unix_socket.h"
 
@@ -134,7 +135,7 @@ dbserver_init(char *options_str)
  **********************************************************************/
 
 int 
-dbserver_get2(const char *key_str, const char *options_str,
+dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	      	char **user_return, char **server_return,
 		char **port_return)
 {

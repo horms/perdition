@@ -32,6 +32,7 @@
 #include "imap4_tag.h"
 #include "options.h"
 #include "perdition_globals.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -169,7 +170,7 @@ leave:
 int imap4_out_setup(
   io_t *rs_io,
   io_t *eu_io,
-  const struct passwd *pw,
+  const struct passwd *UNUSED(pw),
   token_t *tag,
   const protocol_t *protocol
 ){
@@ -305,7 +306,7 @@ int imap4_out_authenticate(
   io_t *eu_io,
   const struct passwd *pw,
   token_t *tag,
-  const protocol_t *protocol,
+  const protocol_t *UNUSED(protocol),
   unsigned char *buf,
   size_t *n
 ){

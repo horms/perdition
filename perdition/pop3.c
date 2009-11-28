@@ -34,6 +34,7 @@
 #include "pop3_write.h"
 #include "options.h"
 #include "protocol.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -83,7 +84,7 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
  * Destroy protocol specific elements of the protocol structure
  **********************************************************************/
 
-static void pop3_destroy_protocol(protocol_t *protocol)
+static void pop3_destroy_protocol(protocol_t *UNUSED(protocol))
 {
   ;
 }

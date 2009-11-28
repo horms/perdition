@@ -31,6 +31,7 @@
 #include "options.h"
 #include "pop3_out.h"
 #include "perdition_globals.h"
+#include "unused.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -58,8 +59,9 @@
  *       -1 on error
  **********************************************************************/
 
-int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw, 
-		token_t *tag, const protocol_t *protocol)
+int pop3_out_setup(io_t *rs_io, io_t *eu_io,
+		   const struct passwd *UNUSED(pw), token_t *UNUSED(tag),
+		   const protocol_t *protocol)
 {
 	token_t *ok;
 	token_t *capa_end = NULL;
@@ -269,8 +271,8 @@ int pop3_out_authenticate(
   io_t *rs_io,
   io_t *eu_io,
   const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol,
+  token_t *UNUSED(tag),
+  const protocol_t *UNUSED(protocol),
   unsigned char *buf,
   size_t *n
 ){
@@ -342,8 +344,8 @@ int pop3_out_authenticate(
 
 int pop3_out_response(
   io_t *rs_io,
-  io_t *eu_io,
-  const token_t *tag,
+  io_t *UNUSED(eu_io),
+  const token_t *UNUSED(tag),
   const token_t *desired_token,
   vanessa_queue_t **q,
   unsigned char *buf,
