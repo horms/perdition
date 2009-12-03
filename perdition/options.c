@@ -480,6 +480,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_NO_CN_VERIFY, NULL, NULL},
     {"ssl_passphrase_fd",           '\0', POPT_ARG_STRING, NULL,
       TAG_SSL_PASSPHRASE_FD, NULL, NULL},
+    {"ssl_passphrase_file",         '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_PASSPHRASE_FILE, NULL, NULL},
     {NULL,                           0,   0,               NULL,
      0, NULL, NULL}
   };
@@ -601,6 +603,8 @@ int options(int argc, char **argv, flag_t f){
 		    &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_no_cn_verify),DEFAULT_SSL_NO_CN_VERIFY, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_passphrase_fd),DEFAULT_SSL_PASSPHRASE_FD,
+		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_passphrase_file),DEFAULT_SSL_PASSPHRASE_FILE,
 		    &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
@@ -955,9 +959,30 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_passphrase_fd");
 #endif /* WITH_SSL_SUPPORT */
         break;
+      case TAG_SSL_PASSPHRASE_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_passphrase_file), optarg, &(opt.ssl_mask),
+			MASK_SSL_PASSPHRASE_FILE, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_passphrase_file");
+#endif /* WITH_SSL_SUPPORT */
+        break;
       default:
         VANESSA_LOGGER_DEBUG_RAW("Unknown Option");
         break;
+    }
+  }
+
+  if (opt.ssl_mask & MASK_SSL_PASSPHRASE_FD &&
+      opt.ssl_mask & MASK_SSL_PASSPHRASE_FILE) {
+    VANESSA_LOGGER_DEBUG_RAW("Only one of ssl_passphrase_fd and "
+			     "ssl_passphrase_file may be specified");
+    if (f&OPT_ERR) {
+      usage(-1);
+    }
+    else {
+        poptFreeContext(context);
+        return -1;
     }
   }
 
@@ -1301,6 +1326,7 @@ static char *log_options_ssl_str(void)
 		 "ssl_no_cert_verify=\"%s\", "
 		 "ssl_no_cn_verify=\"%s\" "
 		 "ssl_passphrase_fd=%d, "
+		 "ssl_passphrase_file=\"%s\", "
 		 "(ssl_mask=0x%08x) ",
 		 ssl_mode,
 		 OPT_STR(opt.ssl_ca_file),
@@ -1317,6 +1343,7 @@ static char *log_options_ssl_str(void)
 		 BIN_OPT_STR(opt.ssl_no_cert_verify),
 		 BIN_OPT_STR(opt.ssl_no_cn_verify),
 		 opt.ssl_passphrase_fd,
+		 opt.ssl_passphrase_file,
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
@@ -1593,6 +1620,9 @@ void usage(int exit_status){
     "    File descriptor from with the passphrase for the certificate\n"
     "    is read.\n"
     "    (default %d)\n"
+    " --ssl_passphrase_file FILENAME:\n"
+    "    File from with the passphrase for the certificate is read.\n"
+    "    (default \"%s\")\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Notes: Default value for binary flags is off.\n"
@@ -1634,7 +1664,8 @@ void usage(int exit_status){
     OPT_STR(DEFAULT_SSL_KEY_FILE),
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
     OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS),
-    DEFAULT_SSL_PASSPHRASE_FD
+    DEFAULT_SSL_PASSPHRASE_FD,
+    OPT_STR(DEFAULT_SSL_PASSPHRASE_FILE)
 #endif /* WITH_SSL_SUPPORT */
   );
 

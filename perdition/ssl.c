@@ -499,6 +499,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
 	struct passwd_cb_data pw_data;
+	int fd = -1;
 
 	/* 
 	 * If either the certificate or private key is non-NULL the
@@ -552,8 +553,24 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
-	pw_data.fd = opt.ssl_passphrase_fd;
+	pw_data.privkey = privkey;
+	if (opt.ssl_passphrase_file) {
+		fd = open(opt.ssl_passphrase_file, O_RDONLY);
+		if (fd < 0) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Could not open "
+						    "passphrase-file "
+						    "[%s]: %s",
+						    opt.ssl_passphrase_file,
+						    strerror(errno));
+			goto err;
+		}
+		pw_data.fd = fd;
+	}
+	else
+		pw_data.fd = opt.ssl_passphrase_fd;
+
 	SSL_CTX_set_default_passwd_cb_userdata(ssl_ctx, &pw_data);
+
 	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
 			SSL_FILETYPE_PEM) <= 0) {
 		PERDITION_DEBUG_SSL_ERR_UNSAFE
@@ -610,6 +627,8 @@ out:
 err:
 	if (!out)
 		SSL_CTX_free(ssl_ctx);
+	if (fd > -1)
+		close(fd);
 	return out;
 }
 

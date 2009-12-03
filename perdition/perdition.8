@@ -566,7 +566,16 @@ to connect to the server. Used for SSL or TLS outgoing connections.
 .B \-\-ssl_passphrase_fd N:
 File descriptor to read the passphrase for the certificate from.
 Only the first line will be read.
+Only one of ssl_passphrase_fd and ssl_passphrase_file may
+be specified.
 (default 0)
+.TP
+.B \-\-ssl_passphrase_file FILENAME:
+File to read the passphrase for the certificate from.
+Only the first line will be read.
+Only one of ssl_passphrase_fd and ssl_passphrase_file may
+be specified.
+(default NULL, no file)
 .TP
 Notes: 
 Default value for binary flags is off.
