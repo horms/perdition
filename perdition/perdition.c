@@ -438,6 +438,19 @@ int main (int argc, char **argv, char **envp){
 	  our_tag = NULL;
   }
 
+  /*
+   * Log the options we will be running with.
+   * If we are in inetd mode then only do this if debugging is turned on,
+   * else debugging is a bit too verbose.
+   */
+  if ((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug) {
+    if (log_options()) {
+      VANESSA_LOGGER_DEBUG("log_options");
+      VANESSA_LOGGER_ERR("Fatal error logging options. Exiting.");
+      perdition_exit_cleanly(-1);
+    }
+  }
+
 #ifdef WITH_SSL_SUPPORT
   /*Set up the ssl mode */
   opt.ssl_mode=protocol->encryption(opt.ssl_mode);
@@ -459,19 +472,6 @@ int main (int argc, char **argv, char **envp){
 		  &(opt.mangled_capability), SSL_MODE_NONE, SSL_MODE_NONE);
 #endif /* WITH_SSL_SUPPORT */
 
-
-  /*
-   * Log the options we will be running with.
-   * If we are in inetd mode then only do this if debugging is turned on,
-   * else debugging is a bit too verbose.
-   */
-  if((!opt.quiet && !opt.inetd_mode && !opt.no_daemon && !fh) || opt.debug){
-    if(log_options()){
-      VANESSA_LOGGER_DEBUG("log_options");
-      VANESSA_LOGGER_ERR("Fatal error logging options. Exiting.");
-      perdition_exit_cleanly(-1);
-    }
-  }
 
   /* Create PID file */
   if (!opt.inetd_mode && opt.pid_file && *opt.pid_file) {
