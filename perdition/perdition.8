@@ -563,6 +563,11 @@ Used for SSL or TLS outgoing connections.
 Don't verify the real-server's common name with the name used.
 to connect to the server. Used for SSL or TLS outgoing connections.
 .TP
+.B \-\-ssl_passphrase_fd N:
+File descriptor to read the passphrase for the certificate from.
+Only the first line will be read.
+(default 0)
+.TP
 Notes: 
 Default value for binary flags is off.
 .br

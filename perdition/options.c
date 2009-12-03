@@ -478,6 +478,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_NO_CERT_VERIFY, NULL, NULL},
     {"ssl_no_cn_verify",            '\0', POPT_ARG_NONE,   NULL,
       TAG_SSL_NO_CN_VERIFY, NULL, NULL},
+    {"ssl_passphrase_fd",           '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_PASSPHRASE_FD, NULL, NULL},
     {NULL,                           0,   0,               NULL,
      0, NULL, NULL}
   };
@@ -598,6 +600,8 @@ int options(int argc, char **argv, flag_t f){
     opt_i(&(opt.ssl_no_cert_verify), DEFAULT_SSL_NO_CERT_VERIFY,
 		    &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_no_cn_verify),DEFAULT_SSL_NO_CN_VERIFY, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_passphrase_fd),DEFAULT_SSL_PASSPHRASE_FD,
+		    &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -941,6 +945,16 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_no_cn_verify");
 #endif /* WITH_SSL_SUPPORT */
         break; 
+      case TAG_SSL_PASSPHRASE_FD:
+#ifdef WITH_SSL_SUPPORT
+        if (!vanessa_socket_str_is_digit(optarg))
+          return opt_err(f, context);
+        opt_i(&(opt.ssl_passphrase_fd), atoi(optarg), &(opt.ssl_mask),
+			MASK_SSL_PASSPHRASE_FD, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_passphrase_fd");
+#endif /* WITH_SSL_SUPPORT */
+        break;
       default:
         VANESSA_LOGGER_DEBUG_RAW("Unknown Option");
         break;
@@ -1286,6 +1300,7 @@ static char *log_options_ssl_str(void)
 		 "ssl_outgoing_ciphers=\"%s\", "
 		 "ssl_no_cert_verify=\"%s\", "
 		 "ssl_no_cn_verify=\"%s\" "
+		 "ssl_passphrase_fd=%d, "
 		 "(ssl_mask=0x%08x) ",
 		 ssl_mode,
 		 OPT_STR(opt.ssl_ca_file),
@@ -1301,6 +1316,7 @@ static char *log_options_ssl_str(void)
 		 OPT_STR(opt.ssl_outgoing_ciphers),
 		 BIN_OPT_STR(opt.ssl_no_cert_verify),
 		 BIN_OPT_STR(opt.ssl_no_cn_verify),
+		 opt.ssl_passphrase_fd,
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
@@ -1573,6 +1589,10 @@ void usage(int exit_status){
     " --ssl_no_cn_verify:\n"
     "    Don't verify the real-server's common name with the name used\n"
     "    to connect to the server.\n"
+    " --ssl_passphrase_fd N:\n"
+    "    File descriptor from with the passphrase for the certificate\n"
+    "    is read.\n"
+    "    (default %d)\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Notes: Default value for binary flags is off.\n"
@@ -1613,7 +1633,8 @@ void usage(int exit_status){
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
     OPT_STR(DEFAULT_SSL_KEY_FILE),
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
-    OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS)
+    OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS),
+    DEFAULT_SSL_PASSPHRASE_FD
 #endif /* WITH_SSL_SUPPORT */
   );
 

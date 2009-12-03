@@ -72,19 +72,21 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 
 struct passwd_cb_data {
 	const char *privkey;
+	int fd;
 };
 
 static int 
 __perdition_ssl_passwd_cb(char *buf, int size,
-			  int UNUSED(rwflag), void *(data))
+			  int UNUSED(rwflag), void *data)
 {
 	ssize_t nbytes;
 	struct termios new;
 	struct termios old;
 	int istty;
 	const struct passwd_cb_data *pw_data = (struct passwd_cb_data *)data;
+	char *p;
 
-	istty = isatty(0);
+	istty = isatty(pw_data->fd);
 	if (!istty && errno == EBADF) {
 		VANESSA_LOGGER_DEBUG_ERRNO("isatty");
 		return -1;
@@ -92,13 +94,13 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 
 	if (istty) {
 		/* Turn echoing off */
-		if (tcgetattr(0, &old) < 0) {
+		if (tcgetattr(pw_data->fd, &old) < 0) {
 			VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
 			return -1;
 		}
 		new = old;
 		new.c_lflag &= (~ECHO);
-		if(tcsetattr(0, TCSANOW, &new) < 0) {
+		if(tcsetattr(pw_data->fd, TCSANOW, &new) < 0) {
 			VANESSA_LOGGER_DEBUG_ERRNO("tcsetattr");
 			return -1;
 		}
@@ -108,14 +110,14 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 	}
 
 	/* Read Bytes */
-	nbytes = read(0, buf, size-1);
+	nbytes = read(pw_data->fd, buf, size - 1);
 
 	if (istty) {
 		/* End prompt */
 		fputc('\n', stderr);
 
 		/* Turn echoing on */
-		if(tcsetattr(0, TCSANOW, &old) < 0) {
+		if(tcsetattr(pw_data->fd, TCSANOW, &old) < 0) {
 			VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
 			return -1;
 		}
@@ -129,17 +131,15 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 	/* Make sure the result is null terminated */
 	*(buf + nbytes) = '\0';
 
-	/* Cut of trailing "\n" or trailing "\r\n" */
-	if(nbytes > 1 && *(buf + nbytes - 1) == '\n') {
-		nbytes--;
-		 *(buf + nbytes) = '\0';
-		if(nbytes > 1 && *(buf + nbytes - 1) == '\r') {
-			nbytes--;
-		 	*(buf + nbytes) = '\0';
-		}
-	}
+	/* Truncate at the first "\n" or "\r" */
+	p = strchr(buf, '\n');
+	if (p)
+		*p = '\0';
+	p = strchr(buf, '\r');
+	if (p)
+		*p = '\0';
 
-	return nbytes;
+	return strlen(buf);
 }
 
 
@@ -553,6 +553,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
 	pw_data.privkey = privkey;
+	pw_data.fd = opt.ssl_passphrase_fd;
 	SSL_CTX_set_default_passwd_cb_userdata(ssl_ctx, &pw_data);
 	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
 			SSL_FILETYPE_PEM) <= 0) {

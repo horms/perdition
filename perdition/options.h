@@ -172,6 +172,7 @@
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
 #define DEFAULT_SSL_NO_CERT_VERIFY           0
 #define DEFAULT_SSL_NO_CN_VERIFY             0
+#define DEFAULT_SSL_PASSPHRASE_FD            0
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -236,6 +237,7 @@ typedef struct {
   char            *ssl_outgoing_ciphers;
   int             ssl_no_cert_verify;
   int             ssl_no_cn_verify;
+  int             ssl_passphrase_fd;
   flag_t          ssl_mask;
 } options_t;
 
@@ -298,6 +300,7 @@ typedef struct {
 #define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000800
 #define MASK_SSL_NO_CERT_VERIFY                (flag_t) 0x00001000
 #define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00002000
+#define MASK_SSL_PASSPHRASE_FD                 (flag_t) 0x00004000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -329,6 +332,7 @@ typedef struct {
 #define TAG_SSL_NO_CERT_VERIFY                 (int) 148
 #define TAG_SSL_NO_CN_VERIFY                   (int) 149
 #define TAG_AUTHENTICATE_TIMEOUT               (int) 150
+#define TAG_SSL_PASSPHRASE_FD                  (int) 151
 
 
 /*Flag values for options()*/
