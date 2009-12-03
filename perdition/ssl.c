@@ -495,7 +495,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		const char *ca_chain_file, const char *ciphers)
 {
 	SSL_METHOD *ssl_method;
-	SSL_CTX *ssl_ctx;
+	SSL_CTX *ssl_ctx, *out = NULL;
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
 	struct passwd_cb_data pw_data;
@@ -552,7 +552,6 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
-	pw_data.privkey = privkey;
 	pw_data.fd = opt.ssl_passphrase_fd;
 	SSL_CTX_set_default_passwd_cb_userdata(ssl_ctx, &pw_data);
 	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
@@ -561,12 +560,11 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		    ("SSL_CTX_use_PrivateKey_file: \"%s\"", privkey);
 		VANESSA_LOGGER_ERR_UNSAFE
 		    ("Error loading private key file \"%s\"", privkey);
-		SSL_CTX_free(ssl_ctx);
-		return NULL;
+		goto err;
 	}
 
 	if (opt.ssl_no_cert_verify)
-		return ssl_ctx;
+		goto out;
 
 	/* 
 	 * Load the Certificate Authorities 
@@ -585,8 +583,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		    ("Error loading certificate authority: " 
 		     "file=\"%s\" path=\"%s\"", str_null_safe(use_ca_file),
 		     str_null_safe(use_ca_path)); 
-		SSL_CTX_free(ssl_ctx);
-		return NULL;
+		goto err;
 	}
 	SSL_CTX_set_verify_depth(ssl_ctx, opt.ssl_cert_verify_depth + 1);
 
@@ -604,12 +601,16 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 					"SSL_CTX_load_verify_locations: "
 					"could not load CA file %s", 
 					ca_chain_file);
-			SSL_CTX_free(ssl_ctx);
-			return NULL;
+			goto err;
 		}
 	}
 
-	return ssl_ctx;
+out:
+	out = ssl_ctx;
+err:
+	if (!out)
+		SSL_CTX_free(ssl_ctx);
+	return out;
 }
 
 
