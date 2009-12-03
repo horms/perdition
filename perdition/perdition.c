@@ -376,14 +376,6 @@ int main (int argc, char **argv, char **envp){
     }
   }
 
-  /*Close file descriptors and detach process from shell as necessary*/
-  if(opt.inetd_mode || opt.no_daemon || fh != NULL){
-    vanessa_socket_daemon_inetd_process();
-  }
-  else{
-    vanessa_socket_daemon_process();
-  }
-
   /*
    * Re-create logger now process is detached (unless in inetd mode)
    * and configuration file has been read.
@@ -472,6 +464,16 @@ int main (int argc, char **argv, char **envp){
 		  &(opt.mangled_capability), SSL_MODE_NONE, SSL_MODE_NONE);
 #endif /* WITH_SSL_SUPPORT */
 
+  /* Close file descriptors and detach process from shell as necessary */
+  if (opt.inetd_mode || opt.no_daemon || fh != NULL)
+    vanessa_socket_daemon_inetd_process();
+  else {
+    vanessa_socket_daemon_process();
+    if (vanessa_logger_reopen(vanessa_logger_get()) < 0) {
+      fprintf(stderr, "Fatal error reopening logger. Exiting.");
+      perdition_exit_cleanly(-1);
+    }
+  }
 
   /* Create PID file */
   if (!opt.inetd_mode && opt.pid_file && *opt.pid_file) {
