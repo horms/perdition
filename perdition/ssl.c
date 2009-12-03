@@ -81,33 +81,44 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 	ssize_t nbytes;
 	struct termios new;
 	struct termios old;
+	int istty;
 	const struct passwd_cb_data *pw_data = (struct passwd_cb_data *)data;
 
-	/* Turn echoing off */
-	if (tcgetattr(0, &old) < 0) {
-		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
-		return -1;
-	}
-	new = old;
-	new.c_lflag &= (~ECHO);
-	if(tcsetattr(0, TCSANOW, &new) < 0) {
-		VANESSA_LOGGER_DEBUG_ERRNO("tcsetattr");
+	istty = isatty(0);
+	if (!istty && errno == EBADF) {
+		VANESSA_LOGGER_DEBUG_ERRNO("isatty");
 		return -1;
 	}
 
-	/* Prompt user for password */
-	fprintf(stderr, "Passphrase for %s: ", pw_data->privkey);
+	if (istty) {
+		/* Turn echoing off */
+		if (tcgetattr(0, &old) < 0) {
+			VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
+			return -1;
+		}
+		new = old;
+		new.c_lflag &= (~ECHO);
+		if(tcsetattr(0, TCSANOW, &new) < 0) {
+			VANESSA_LOGGER_DEBUG_ERRNO("tcsetattr");
+			return -1;
+		}
+
+		/* Prompt user for password */
+		fprintf(stderr, "Passphrase for %s: ", pw_data->privkey);
+	}
 
 	/* Read Bytes */
-	nbytes = read(1, buf, size-1);
+	nbytes = read(0, buf, size-1);
 
-	/* End prompt */
-	fputc('\n', stderr);
+	if (istty) {
+		/* End prompt */
+		fputc('\n', stderr);
 
-	/* Turn echoing on */
-	if(tcsetattr(0, TCSANOW, &old) < 0) {
-		VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
-		return -1;
+		/* Turn echoing on */
+		if(tcsetattr(0, TCSANOW, &old) < 0) {
+			VANESSA_LOGGER_DEBUG_ERRNO("tcgetattr");
+			return -1;
+		}
 	}
 
 	if(nbytes < 0) {
