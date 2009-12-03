@@ -360,17 +360,28 @@ int options(int argc, char **argv, flag_t f);
 
 
 /**********************************************************************
+ * log_options_str_free
+ * Free return value of log_options_str()
+ * pre: a: array of strings to free
+ * post: a is freed
+ * return: none
+ **********************************************************************/
+
+void log_options_str_free(char **a);
+
+
+/**********************************************************************
  * log_options_str
- * Log options to a string
- * pre: str: string to log options to
- *      len: number of bytes in str
- *      global opt is set
- * post: options are logged to str
+ * Log options to a null-terminated array of strings
+ * pre: global opt is set
+ * post: options are logged to a
+ *       Caller must free strings in a using log_options_str_free()
  * return: 0 on success
  *         1 on error
  **********************************************************************/
 
-int log_options_str(char *str, size_t n);
+
+char **log_options_str(void);
 
 
 /**********************************************************************

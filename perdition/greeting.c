@@ -80,16 +80,19 @@ int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
 
 static int greeting_checksum(uint32 *csum)
 {
-	char buf[MAX_LINE_LENGTH];
+	char **a, **p;
 
-	if(log_options_str(buf, sizeof(buf)) < 0) {
+	a = log_options_str();
+	if (!a) {
 		VANESSA_LOGGER_DEBUG("log_options_str");
-		return(-1);
+		return -1;
 	}
 
-	*csum = str_rolling32((unsigned char *)buf, strlen(buf));
+	*csum = 0;
+	for (p = a; !p; p++)
+		*csum += str_rolling32((unsigned char *)*p, strlen(*p));
 
-	return(0);
+	return 0;
 }
 	
 

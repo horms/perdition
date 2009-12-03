@@ -993,15 +993,39 @@ static const char *opt_str(const char *opt)
 
 
 /**********************************************************************
+ * log_options_str_free
+ * Free return value of log_options_str()
+ * pre: a: array of strings to free
+ * post: a is freed
+ * return: none
+ **********************************************************************/
+
+void log_options_str_free(char **a)
+{
+	int i;
+
+	for (i = 0; i < 4; i++)
+		if (a[i])
+			free(a[i]);
+
+	free(a);
+}
+
+
+/**********************************************************************
  * log_options_str
- * Log options to a string
- * pre: str: string to log options to
- *      len: number of bytes in str
- *      global opt is set
- * post: options are logged to str
+ * Log options to a null-terminated array of strings
+ * pre: global opt is set
+ * post: options are logged to a
+ *       Caller must free strings in a using log_options_str_free()
  * return: 0 on success
  *         1 on error
  **********************************************************************/
+
+static char *log_options_head_str(void)
+{
+	return strdup("version=" VERSION);
+}
 
 #define LOG_OPTIONS_ADD_STR(str, dest, start) \
 { \
@@ -1036,8 +1060,10 @@ static const char *opt_str(const char *opt)
   } \
 }
 
-int log_options_str(char *str, size_t n){
+static char *log_options_non_ssl_str(void)
+{
   int status = -1;
+  char *out = NULL;
   char *protocol=NULL;
   char *outgoing_server=NULL;
   char *bind_address=NULL;
@@ -1045,14 +1071,16 @@ int log_options_str(char *str, size_t n){
   char add_domain[40];
   char lower_case[40];
   char strip_domain[40];
-#ifdef WITH_SSL_SUPPORT
-  char ssl_mode[40];
-  char *ssl_mode_p = NULL;
-#endif /* WITH_SSL_SUPPORT */
+
+  out = malloc(MAX_LINE_LENGTH);
+  if (!out) {
+    VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+    return NULL;
+  }
 
   if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL){
     VANESSA_LOGGER_DEBUG("protocol_list");
-    return(-1);
+    goto err;
   }
 
   if(opt.outgoing_server!=NULL){
@@ -1094,53 +1122,10 @@ int log_options_str(char *str, size_t n){
   }
   LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.lower_case, lower_case);
   LOG_OPTIONS_BUILD_USERNAME_MODIFIER(opt.strip_domain, strip_domain);
-  
-#ifdef WITH_SSL_SUPPORT
-  switch(opt.ssl_mode){
-    case SSL_MODE_EMPTY: 
-      *ssl_mode='\0';
-      break;
-    case SSL_MODE_NONE:
-      strcpy(ssl_mode, "none");
-      break;
-    default:
-      ssl_mode_p=ssl_mode;
-      if(opt.ssl_mode&SSL_MODE_SSL_LISTEN 
-          && opt.ssl_mode&SSL_MODE_SSL_OUTGOING)
-        LOG_OPTIONS_ADD_STR("ssl_all", ssl_mode_p, ssl_mode)
-      else if(opt.ssl_mode&SSL_MODE_TLS_LISTEN &&
-          opt.ssl_mode&SSL_MODE_TLS_OUTGOING)
-        LOG_OPTIONS_ADD_STR("tls_all", ssl_mode_p, ssl_mode)
-      else {
-        if(opt.ssl_mode&SSL_MODE_SSL_LISTEN)
-          LOG_OPTIONS_ADD_STR("ssl_listen", ssl_mode_p, ssl_mode)
-        if(opt.ssl_mode&SSL_MODE_SSL_OUTGOING)
-          LOG_OPTIONS_ADD_STR("ssl_outgoing", ssl_mode_p, ssl_mode)
-        if(opt.ssl_mode&SSL_MODE_TLS_LISTEN)
-          LOG_OPTIONS_ADD_STR("tls_listen", ssl_mode_p, ssl_mode)
-        if(opt.ssl_mode&SSL_MODE_TLS_OUTGOING)
-          LOG_OPTIONS_ADD_STR("tls_outgoing", ssl_mode_p, ssl_mode)
-        if(ssl_mode_p==ssl_mode)
-          *ssl_mode_p='\0';
-      }
-      break;
-  }
-  if((opt.ssl_mode&SSL_MODE_TLS_OUTGOING_FORCE) &&
-		  (opt.ssl_mode&SSL_MODE_TLS_LISTEN_FORCE)) {
-    LOG_OPTIONS_ADD_STR("tls_all_force", ssl_mode_p, ssl_mode)
-  }
-  else {
-    if(opt.ssl_mode&SSL_MODE_TLS_OUTGOING_FORCE)
-      LOG_OPTIONS_ADD_STR("tls_outgoing_force", ssl_mode_p, ssl_mode)
-    if(opt.ssl_mode&SSL_MODE_TLS_LISTEN_FORCE)
-      LOG_OPTIONS_ADD_STR("tls_listen_force", ssl_mode_p, ssl_mode)
-  }
-#endif /* WITH_SSL_SUPPORT */
 
   snprintf(
-    str,
-    n -1,
-    "version=" VERSION ", "
+    out,
+    MAX_LINE_LENGTH - 1,
     "add_domain=\"%s\", "
 #ifdef WITH_PAM_SUPPORT
     "authenticate_in=%s, "
@@ -1180,25 +1165,8 @@ int log_options_str(char *str, size_t n){
     "username=\"%s\", "
     "username_from_database=%s, "
     "query_key=\"%s\", " 
-    "quiet=%s, " 
-#ifdef WITH_SSL_SUPPORT
-    "ssl_mode=\"%s\", "
-    "ssl_ca_file=\"%s\", "
-    "ssl_ca_path=\"%s\", "
-    "ssl_ca_accept_self_signed=\"%s\", "
-    "ssl_cert_file=\"%s\", "
-    "ssl_cert_accept_expired=\"%s\", "
-    "ssl_cert_not_yet_valid=\"%s\", "
-    "ssl_cert_self_signed=\"%s\", "
-    "ssl_cert_verify_depth=%d, "
-    "ssl_key_file=\"%s\", "
-    "ssl_listen_ciphers=\"%s\", "
-    "ssl_outgoing_ciphers=\"%s\", "
-    "ssl_no_cert_verify=\"%s\", "
-    "ssl_no_cn_verify=\"%s\", "
-    "(ssl_mask=0x%08x) "
-#endif /* WITH_SSL_SUPPORT */
-    "(mask=0x%08x %08x)\n",
+    "quiet=%s "
+    "(mask=0x%08x %08x)",
     OPT_STR(add_domain),
 #ifdef WITH_PAM_SUPPORT
     BIN_OPT_STR(opt.authenticate_in),
@@ -1239,34 +1207,145 @@ int log_options_str(char *str, size_t n){
     BIN_OPT_STR(opt.username_from_database),
     OPT_STR(query_key),
     BIN_OPT_STR(opt.quiet),
-#ifdef WITH_SSL_SUPPORT
-    ssl_mode,
-    OPT_STR(opt.ssl_ca_file),
-    OPT_STR(opt.ssl_ca_path),
-    BIN_OPT_STR(opt.ssl_ca_accept_self_signed),
-    OPT_STR(opt.ssl_cert_file),
-    BIN_OPT_STR(opt.ssl_cert_accept_expired),
-    BIN_OPT_STR(opt.ssl_cert_accept_not_yet_valid),
-    BIN_OPT_STR(opt.ssl_cert_accept_self_signed),
-    opt.ssl_cert_verify_depth,
-    OPT_STR(opt.ssl_key_file),
-    OPT_STR(opt.ssl_listen_ciphers),
-    OPT_STR(opt.ssl_outgoing_ciphers),
-    BIN_OPT_STR(opt.ssl_no_cert_verify),
-    BIN_OPT_STR(opt.ssl_no_cn_verify),
-    opt.ssl_mask,
-#endif /* WITH_SSL_SUPPORT */
     opt.mask, opt.mask2
   );
-  *(str+n-1) = '\0';
+  out[MAX_LINE_LENGTH - 1] = '\0';
 
   status = 0;
 err:
+  if (status) {
+    str_free(out);
+    out = NULL;
+  }
   str_free(protocol);
   str_free(outgoing_server);
   str_free(bind_address);
   str_free(query_key);
-  return status;
+  return out;
+}
+
+#ifdef WITH_SSL_SUPPORT
+static char *log_options_ssl_str(void)
+{
+	char ssl_mode[40];
+	char *ssl_mode_p = NULL;
+	char *out = NULL;
+
+	out = malloc(MAX_LINE_LENGTH);
+	if (!out) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		return NULL;
+	}
+
+	switch (opt.ssl_mode) {
+	case SSL_MODE_EMPTY:
+		*ssl_mode = '\0';
+		break;
+	case SSL_MODE_NONE:
+		strcpy(ssl_mode, "none");
+		break;
+	default:
+		ssl_mode_p=ssl_mode;
+		if (opt.ssl_mode & SSL_MODE_SSL_LISTEN &&
+		    opt.ssl_mode & SSL_MODE_SSL_OUTGOING)
+			LOG_OPTIONS_ADD_STR("ssl_all", ssl_mode_p, ssl_mode)
+		else if (opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
+			 opt.ssl_mode & SSL_MODE_TLS_OUTGOING)
+			LOG_OPTIONS_ADD_STR("tls_all", ssl_mode_p, ssl_mode)
+		else {
+			if (opt.ssl_mode & SSL_MODE_SSL_LISTEN)
+				LOG_OPTIONS_ADD_STR("ssl_listen", ssl_mode_p,
+						    ssl_mode)
+			if (opt.ssl_mode & SSL_MODE_SSL_OUTGOING)
+				LOG_OPTIONS_ADD_STR("ssl_outgoing", ssl_mode_p,
+						    ssl_mode)
+			if (opt.ssl_mode & SSL_MODE_TLS_LISTEN)
+				LOG_OPTIONS_ADD_STR("tls_listen", ssl_mode_p,
+						    ssl_mode)
+			if (opt.ssl_mode & SSL_MODE_TLS_OUTGOING)
+				LOG_OPTIONS_ADD_STR("tls_outgoing", ssl_mode_p,
+						    ssl_mode)
+			if (ssl_mode_p == ssl_mode)
+				*ssl_mode_p='\0';
+		}
+		break;
+	}
+	if ((opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE) &&
+	    (opt.ssl_mode & SSL_MODE_TLS_LISTEN_FORCE)) {
+		LOG_OPTIONS_ADD_STR("tls_all_force", ssl_mode_p, ssl_mode)
+	}
+	else {
+		if (opt.ssl_mode&SSL_MODE_TLS_OUTGOING_FORCE)
+			LOG_OPTIONS_ADD_STR("tls_outgoing_force", ssl_mode_p,
+					    ssl_mode)
+		if (opt.ssl_mode&SSL_MODE_TLS_LISTEN_FORCE)
+			LOG_OPTIONS_ADD_STR("tls_listen_force", ssl_mode_p,
+					    ssl_mode)
+	}
+
+	snprintf(out, MAX_LINE_LENGTH - 1,
+		 "ssl_mode=\"%s\", "
+		 "ssl_ca_file=\"%s\", "
+		 "ssl_ca_path=\"%s\", "
+		 "ssl_ca_accept_self_signed=\"%s\", "
+		 "ssl_cert_file=\"%s\", "
+		 "ssl_cert_accept_expired=\"%s\", "
+		 "ssl_cert_not_yet_valid=\"%s\", "
+		 "ssl_cert_self_signed=\"%s\", "
+		 "ssl_cert_verify_depth=%d, "
+		 "ssl_key_file=\"%s\", "
+		 "ssl_listen_ciphers=\"%s\", "
+		 "ssl_outgoing_ciphers=\"%s\", "
+		 "ssl_no_cert_verify=\"%s\", "
+		 "ssl_no_cn_verify=\"%s\" "
+		 "(ssl_mask=0x%08x) ",
+		 ssl_mode,
+		 OPT_STR(opt.ssl_ca_file),
+		 OPT_STR(opt.ssl_ca_path),
+		 BIN_OPT_STR(opt.ssl_ca_accept_self_signed),
+		 OPT_STR(opt.ssl_cert_file),
+		 BIN_OPT_STR(opt.ssl_cert_accept_expired),
+		 BIN_OPT_STR(opt.ssl_cert_accept_not_yet_valid),
+		 BIN_OPT_STR(opt.ssl_cert_accept_self_signed),
+		 opt.ssl_cert_verify_depth,
+		 OPT_STR(opt.ssl_key_file),
+		 OPT_STR(opt.ssl_listen_ciphers),
+		 OPT_STR(opt.ssl_outgoing_ciphers),
+		 BIN_OPT_STR(opt.ssl_no_cert_verify),
+		 BIN_OPT_STR(opt.ssl_no_cn_verify),
+		 opt.ssl_mask);
+	out[MAX_LINE_LENGTH - 1] = '\0';
+
+	return out;
+}
+#endif /* WITH_SSL_SUPPORT */
+
+char **log_options_str(void)
+{
+	char **a;
+
+	a = calloc(4, sizeof(char *));
+	if (!a) {
+		VANESSA_LOGGER_DEBUG_ERRNO("calloc");
+		return NULL;
+	}
+
+	a[0] = log_options_head_str();
+	if (!a[0])
+		goto err;
+	a[1] = log_options_non_ssl_str();
+	if (!a[1])
+		goto err;
+#ifdef WITH_SSL_SUPPORT
+	a[2] = log_options_ssl_str();
+	if (!a[2])
+		goto err;
+#endif /* WITH_SSL_SUPPORT */
+
+	return a;
+err:
+	log_options_str_free(a);
+	return NULL;
 }
 
 
@@ -1282,17 +1361,22 @@ err:
  *         1 on error
  **********************************************************************/
 
-int log_options(void){
-  char buf[MAX_LINE_LENGTH];
+int log_options(void)
+{
+	char **a, **p;
 
-  if(log_options_str(buf, sizeof(buf))<0) {
-    VANESSA_LOGGER_DEBUG("log_options_str");
-    return(-1);
-  }
+	a = log_options_str();
+	if (!a) {
+		VANESSA_LOGGER_DEBUG("log_options_str");
+		return -1;
+	}
 
-  VANESSA_LOGGER_INFO(buf);
+	for (p = a; *p; p++)
+		VANESSA_LOGGER_INFO(*p);
 
-  return(0);
+	log_options_str_free(a);
+
+	return 0;
 }
 
 
