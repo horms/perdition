@@ -70,13 +70,18 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		flag_t flag);
 
 
+struct passwd_cb_data {
+	const char *privkey;
+};
+
 static int 
 __perdition_ssl_passwd_cb(char *buf, int size,
-			  int UNUSED(rwflag), void *UNUSED(data))
+			  int UNUSED(rwflag), void *(data))
 {
 	ssize_t nbytes;
 	struct termios new;
 	struct termios old;
+	const struct passwd_cb_data *pw_data = (struct passwd_cb_data *)data;
 
 	/* Turn echoing off */
 	if (tcgetattr(0, &old) < 0) {
@@ -90,8 +95,14 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 		return -1;
 	}
 
+	/* Prompt user for password */
+	fprintf(stderr, "Passphrase for %s: ", pw_data->privkey);
+
 	/* Read Bytes */
 	nbytes = read(1, buf, size-1);
+
+	/* End prompt */
+	fputc('\n', stderr);
 
 	/* Turn echoing on */
 	if(tcsetattr(0, TCSANOW, &old) < 0) {
@@ -476,6 +487,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	SSL_CTX *ssl_ctx;
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
+	struct passwd_cb_data pw_data;
 
 	/* 
 	 * If either the certificate or private key is non-NULL the
@@ -529,6 +541,8 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 
 	SSL_CTX_set_default_passwd_cb(ssl_ctx, __perdition_ssl_passwd_cb);
+	pw_data.privkey = privkey;
+	SSL_CTX_set_default_passwd_cb_userdata(ssl_ctx, &pw_data);
 	if (cert && SSL_CTX_use_PrivateKey_file(ssl_ctx, privkey, 
 			SSL_FILETYPE_PEM) <= 0) {
 		PERDITION_DEBUG_SSL_ERR_UNSAFE
