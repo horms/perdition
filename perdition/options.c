@@ -207,6 +207,25 @@ opt_da(vanessa_dynamic_array_t **opt, vanessa_dynamic_array_t *value,
 	*opt = value;
 }
 
+static int
+opt_err(flag_t f, poptContext context)
+{
+	poptFreeContext(context);
+
+	if (f&OPT_ERR)
+		usage(-1); /* Exits */
+
+	return -1; 
+}
+
+static int
+opt_err_digit(flag_t f, poptContext context, const char *opt)
+{
+	VANESSA_LOGGER_ERR_RAW_UNSAFE("Parameter to %s must be "
+				      "a positive integer", opt);
+	return opt_err(f, context);
+}
+
 #define OPT_MODIFY_USERNAME(opt, mask, mask_entry, flag, id_str) \
   if(strcasecmp(optarg_copy, "all")==0){ \
     opt_i_or(&opt, STATE_ALL, &mask, mask_entry, flag); \
@@ -319,13 +338,7 @@ opt_da(vanessa_dynamic_array_t **opt, vanessa_dynamic_array_t *value,
 #define NO_SSL_OPT(_opt)                                                     \
       VANESSA_LOGGER_DEBUG_RAW(_opt                                          \
 	" is only supported when ssl support is compiled in");               \
-      if(f&OPT_ERR){                                                         \
-        usage(-1);                                                           \
-      }                                                                      \
-      else{                                                                  \
-        poptFreeContext(context);                                            \
-        return(-1);                                                          \
-      }
+      return opt_err(f, context);
 
 #endif /* WITH_SSL_SUPPORT */
 
@@ -617,17 +630,11 @@ int options(int argc, char **argv, flag_t f){
 #else
       VANESSA_LOGGER_DEBUG_RAW(
 	"authenticate is only supported when compiled against libpam");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+      return opt_err(f, context);
 #endif
       case TAG_AUTHENTICATE_TIMEOUT:
-        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR) 
-	  usage(-1);
+        if (!vanessa_socket_str_is_digit(optarg))
+	  return opt_err_digit(f, context, "authenticate_timeout");
         opt_i(&(opt.authenticate_timeout), atoi(optarg), &(opt.mask2),
 	      MASK2_AUTHENTICATE_TIMEOUT, f);
         break;
@@ -647,9 +654,8 @@ int options(int argc, char **argv, flag_t f){
         }
         break;
       case TAG_CONNECT_RELOG:
-        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
-	  usage(-1); 
-	}
+        if (!vanessa_socket_str_is_digit(optarg))
+	  return opt_err_digit(f, context, "connect_relog");
         opt_i(&(opt.connect_relog), atoi(optarg), &(opt.mask), 
 			MASK_CONNECT_RELOG, f);
         break;
@@ -697,9 +703,8 @@ int options(int argc, char **argv, flag_t f){
 	VANESSA_LOGGER_DEBUG( "Jain, Oath\n"); 
         break;
       case 'L':
-        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
-	  usage(-1); 
-	}
+        if (!vanessa_socket_str_is_digit(optarg))
+	  return opt_err_digit(f, context, "L|connection_limit");
         opt_i(&(opt.connection_limit), atoi(optarg), &(opt.mask),
 			MASK_CONNECTION_LIMIT, f);
         break;
@@ -756,9 +761,8 @@ int options(int argc, char **argv, flag_t f){
         }
         break;
       case 't':
-        if(!vanessa_socket_str_is_digit(optarg) && f&OPT_ERR){ 
-	  usage(-1); 
-	}
+        if (!vanessa_socket_str_is_digit(optarg))
+          return opt_err_digit(f, context, "t|timeout");
         opt_i(&(opt.timeout), atoi(optarg), &(opt.mask), MASK_TIMEOUT, f);
         break;
       case 'u':
@@ -862,16 +866,7 @@ int options(int argc, char **argv, flag_t f){
         opt_p(&(opt.ssl_ca_chain_file), optarg, &(opt.ssl_mask),
 			MASK_SSL_CA_CHAIN_FILE, f);
 #else /* WITH_SSL_SUPPORT */
-      VANESSA_LOGGER_DEBUG(
-	"--ssl_ca_chain_file is only supported when ssl support "
-	"is compiled in");
-      if(f&OPT_ERR){
-        usage(-1);
-      }
-      else{
-        poptFreeContext(context);
-        return(-1);
-      }
+      NO_SSL_OPT("ssl_ca_chain_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_CERT_FILE:
@@ -955,14 +950,7 @@ int options(int argc, char **argv, flag_t f){
   if (c < -1) {
     VANESSA_LOGGER_DEBUG_UNSAFE( "%s: %s",
       poptBadOption(context, POPT_BADOPTION_NOALIAS), poptStrerror(c));
-      
-    if(f&OPT_ERR){
-      usage(-1);
-    }
-    else{
-      poptFreeContext(context);
-      return(-1);
-    }
+    return opt_err(f, context);
   }
 
   trailing_argv = poptGetArgs(context);
