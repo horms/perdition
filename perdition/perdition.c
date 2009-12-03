@@ -212,6 +212,50 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 			progname, reason);
 }
 
+void logger_init(void)
+{
+	vanessa_logger_t *vl;
+
+	vl = vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG,
+		       VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_NO_IDENT_PID);
+	if (!vl) {
+		fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
+			"Fatal error opening logger. Exiting.\n");
+		perdition_exit_cleanly(-1);
+	}
+
+	vanessa_logger_set(vl);
+}
+
+void logger_reopen(FILE *fh)
+{
+	vanessa_logger_t *vl;
+
+	if (fh != NULL)
+		vl = vanessa_logger_openlog_filehandle(fh, LOG_IDENT,
+			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
+			VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
+	else if (opt.log_facility != NULL && *(opt.log_facility) == '/')
+		vl = vanessa_logger_openlog_filename(opt.log_facility,
+			LOG_IDENT,
+			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
+			VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
+	else
+		vl = vanessa_logger_openlog_syslog_byname(opt.log_facility,
+			LOG_IDENT,
+			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
+			LOG_CONS);
+
+	if (vl == NULL) {
+    		VANESSA_LOGGER_DEBUG("vanessa_logger_openlog");
+		VANESSA_LOGGER_ERR("Fatal error opening logger. Exiting.");
+		perdition_exit_cleanly(-1);
+	}
+
+	vanessa_logger_closelog(vanessa_logger_get());
+	vanessa_logger_set(vl);
+}
+
 #define LOGIN_FAILED_PROTOCOL(_type, _reason)                               \
 do {                                                                        \
 	login_failed_protocol(protocol, _type, client_io, client_tag,       \
@@ -224,7 +268,6 @@ do {                                                                        \
  **********************************************************************/
 
 int main (int argc, char **argv, char **envp){
-  vanessa_logger_t *vl;
   struct passwd pw, pw2;
   char *server_resp_buf = NULL;
   char *buffer;
@@ -263,17 +306,8 @@ int main (int argc, char **argv, char **envp){
   memset(&pw, 0, sizeof(pw));
   memset(&pw2, 0, sizeof(pw2));
 
-  /*
-   * Create Logger
-   */
-  vl=vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG,
-		  VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_NO_IDENT_PID);
-  if(!vl) {
-    fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
-                    "Fatal error opening logger. Exiting.\n");
-    perdition_exit_cleanly(-1);
-  }
-  vanessa_logger_set(vl);
+  /* Create Logger */
+  logger_init();
 
   /*Parse options*/
   options(argc, argv, OPT_FIRST_CALL);
@@ -288,12 +322,10 @@ int main (int argc, char **argv, char **envp){
   }
   set_proc_title(progname);
 
-  /*
-   * Update Logger
-   */
-  if(!opt.debug){
-    vanessa_logger_change_max_priority(vl, opt.quiet?LOG_ERR:LOG_INFO);
-  }
+  /* Update Logger */
+  if (!opt.debug)
+    vanessa_logger_change_max_priority(vanessa_logger_get(),
+				       opt.quiet?LOG_ERR:LOG_INFO);
 
   /*Read config file*/
   if(opt.config_file!=NULL){
@@ -356,29 +388,7 @@ int main (int argc, char **argv, char **envp){
    * Re-create logger now process is detached (unless in inetd mode)
    * and configuration file has been read.
    */
-  if(fh != NULL) {
-    vl=vanessa_logger_openlog_filehandle(fh, LOG_IDENT,
-      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
-      VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
-  }
-  else if(opt.log_facility!=NULL && *(opt.log_facility)=='/'){
-    vl=vanessa_logger_openlog_filename(opt.log_facility, LOG_IDENT,
-      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), 
-      VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
-  }
-  else {
-    vl=vanessa_logger_openlog_syslog_byname(opt.log_facility, LOG_IDENT,
-      opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO), LOG_CONS);
-  }
-  if(vl == NULL) {
-	  VANESSA_LOGGER_DEBUG("vanessa_logger_openlog");
-	  VANESSA_LOGGER_ERR("Fatal error opening logger. Exiting.");
-	  perdition_exit_cleanly(-1);
-  }
-  vanessa_logger_closelog(vanessa_logger_get());
-  vanessa_logger_set(vl);
- 
-  /* Create a PID file */
+  logger_reopen(fh);
 
   /*Seed the uname structure*/
   if((system_uname=(struct utsname *)malloc(sizeof(struct utsname)))==NULL){
