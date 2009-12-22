@@ -183,7 +183,7 @@ enum io_err io_get_err(io_t *io);
 
 
 /**********************************************************************
- * io_get_timoeut
+ * io_get_timeout
  * Get the idle timeout of an io
  * pre: io: io_t to get the idle timeout of
  * post: none
@@ -194,20 +194,8 @@ long io_get_timeout(io_t *io);
 
 
 /**********************************************************************
- * io_set_timoeut
+ * io_set_timeout
  * Set the idle timeout of an io
- * pre: io: io_t to set the idle timeout of
- *      timeout: timeout in seconds, 0 for no timeout
- * post: idle timeout of the io_t is set
- * return: none
- **********************************************************************/
-
-void io_set_timeout(io_t *io, long timeout);
-
-
-/**********************************************************************
- * io_set_timoeut
- * Set the idle timeout of io
  * pre: io: io_t to set the idle timeout of
  *      timeout: timeout in seconds, 0 for no timeout
  * post: idle timeout of the io_t is set
