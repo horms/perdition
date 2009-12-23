@@ -779,6 +779,28 @@ following command:
 openssl req \-new \-x509 \-nodes \\
   \-out perdition.crt.pem \-keyout perdition.key.pem \-days 365
 .fi
+.SH Mixed-mode configurations
+Perdition can be used in a mixed-mode where the end-users
+connect to perdition using SSL and then perdition connects to the
+real-servers using palin-text. Or vice versa. This is achieved using
+\-\-ssl_mode and at least one of \-l|\-\-listen_port  and
+\-p|\-\-outgoing_port. When running this kind of configuration
+\-P|\-\-protocol values of IMAP and IMAPS are equivalent and likewise
+POP3 and POP3S are equivalent.
+.P
+For example, to accept connections from end-users using POP3S on port 995
+(the default POP3S port) and communicate with the real-servers using
+POP3 on port 110 (the default POP3 port) the following are equivalent.
+
+\-\-ssl_mode=ssl_listen \-\-protocol=POP3S \-\-outgoing_port=110
+
+and
+
+\-\-ssl_mode=ssl_listen \-\-protocol=POP3 \-\-incoming_port=995
+
+Perdition is not able to listen for connections from
+end-users using POP3/POP3S and communicate with real-servers using
+IMAP4/IMAP4S or vice-versa.
 .SH FILES
 .TP
 \fC/etc/perdition/perdition.conf
