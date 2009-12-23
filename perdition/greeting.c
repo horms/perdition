@@ -89,8 +89,10 @@ static int greeting_checksum(uint32 *csum)
 	}
 
 	*csum = 0;
-	for (p = a; !p; p++)
+	for (p = a; *p; p++)
 		*csum += str_rolling32((unsigned char *)*p, strlen(*p));
+
+	log_options_str_free(a);
 
 	return 0;
 }
