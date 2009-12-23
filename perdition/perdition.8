@@ -113,10 +113,10 @@ server is made. Only available if perdition is compiled with pam
 support.
 .TP
 .B \-B, \-\-no_bind_banner:
-If bind_address is specified, then the address will be resolved
-and the reverse\-lookup of this will be used in the greeting. This
-option disables this behaviour an reverts to using the uname to
-derive the hostname for the greeting.
+Use the hostname derived from usname in the banner.  In inetd mode this is
+always the case. In non-inetd mode if this option is not in effect then the
+IP address used to accept a connection will be used and if
+\-n|\-\-no_loookup is not in effect it will be resolved.
 .TP
 .B \-b, \-\-bind_address SERVER[,SERVER...]:
 Bind to these addresses and ports. interfaces with this address. 
