@@ -937,6 +937,48 @@ leave:
 }
 
 
+static int set_socket_timeout(int s, long timeout)
+{
+	struct timeval tv = { .tv_sec = timeout, .tv_usec = 0 };
+
+	if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))) {
+		VANESSA_LOGGER_DEBUG_ERRNO("setcockopt");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int io_set_socket_timeout(io_t *io, long timeout)
+{
+        int s;
+
+        s = io_get_rfd(io);
+        if (s < 0) {
+                VANESSA_LOGGER_DEBUG("io_get_rfd");
+                return -1;
+        }
+
+        if (set_socket_timeout(s, timeout) < 0) {
+                VANESSA_LOGGER_DEBUG("set_socket_timeout(rfd)");
+                return -1;
+        }
+
+        s = io_get_wfd(io);
+        if (s < 0) {
+                VANESSA_LOGGER_DEBUG("io_get_wfd");
+                return -1;
+        }
+
+        if (set_socket_timeout(s, timeout) < 0) {
+                VANESSA_LOGGER_DEBUG("set_socket_timeout(wfd)");
+                return -1;
+        }
+
+        return 0;
+}
+
+
 /**********************************************************************
  * __perdition_ssl_connection
  * Change a stdio based connection into an SSL connection
@@ -959,6 +1001,7 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 	io_t *new_io = NULL;
 	SSL *ssl = NULL;
 	int ret;
+	long timeout;
 
 	ssl = SSL_new(ssl_ctx);
 	if (!ssl) {
@@ -974,9 +1017,16 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		goto bail;
 	}
 
-	io_set_timeout(new_io, io_get_timeout(io));
+	timeout = io_get_timeout(io);
+
+	io_set_timeout(new_io, timeout);
 	io_destroy(io);
 	io = NULL;
+
+	if (io_set_socket_timeout(new_io, timeout) < 0) {
+		VANESSA_LOGGER_DEBUG("io_set_socket_timeout(timeout)");
+		goto bail;
+	}
 
 	/* Get for TLS/SSL handshake */
 	if (flag & PERDITION_SSL_CLIENT) {
@@ -994,9 +1044,14 @@ static io_t *__perdition_ssl_connection(io_t *io, SSL_CTX *ssl_ctx,
 		if (ret <= 0) {
 			PERDITION_DEBUG_SSL_IO_ERR("SSL_accept",
 					io_get_ssl(new_io), ret);
-			VANESSA_LOGGER_DEBUG("no shared ciphers?");
+			VANESSA_LOGGER_DEBUG("timeout or no shared ciphers?");
 			goto bail;
 		}
+	}
+
+	if (io_set_socket_timeout(new_io, 0) < 0) {
+		VANESSA_LOGGER_DEBUG("io_set_socket_timeout(0)");
+		goto bail;
 	}
 
 	return (new_io);
