@@ -321,6 +321,102 @@ static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
 	return(0);
 }
 
+#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
+static char *perdition_ldap_uri (const LDAPURLDesc *lud)
+{
+	int nhost = 1;
+	char *uri, *start, *end;
+
+	/* Multiple hosts may be supplied, space delimited.
+	 * But they will all end up with the same port.
+	 * This is supported by openldap.
+	 * The location of the specification for this is as yet unknown. */
+
+	start = lud->lud_host;
+	while (*start == ' ')
+		start++;
+	while ((start = strchr(start, ' '))) {
+		nhost++;
+		while (*start == ' ')
+			start++;
+	}
+
+	/*
+         * The '+9' on calloc is the worst case scenario of a non-default
+         * LDAP port: 65535 and such. The extra bytes are for the leading
+	 * "://" and trailing ' ' or '\n'.
+         */
+	uri = calloc((strlen(lud->lud_scheme) + 9) * nhost +
+		     strlen(lud->lud_host) + 1, 1);
+	if (!uri)
+		return NULL;
+
+	start = lud->lud_host;
+	do {
+		while (*start == ' ')
+			start++;
+		end = strchr(start, ' ');
+		if (!end)
+			end = start + strlen(start);
+
+		if (end == start)
+			break;
+
+		if (*uri)
+			strcat(uri, " ");
+		strcat(uri, lud->lud_scheme);
+		strcat(uri, "://");
+		strncat(uri, start, end - start);
+		if (lud->lud_port != LDAP_PORT) {
+			strcat(uri, ":");
+			sprintf(uri + strlen(uri),
+				"%d", lud->lud_port);
+		}
+	} while ((start = strchr(start, ' ')));
+
+	return uri;
+}
+
+static LDAP *perdition_ldap_initialize (const LDAPURLDesc *lud)
+{
+	int err;
+	char *uri;
+	LDAP *connection = NULL;
+
+	uri = perdition_ldap_uri(lud);
+	if (uri == NULL) {
+		VANESSA_LOGGER_DEBUG("perdition_ldap_uri");
+		return NULL;
+	}
+
+	err = ldap_initialize(&connection, uri);
+	if (err != LDAP_SUCCESS) {
+		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_initialize: %s", uri);
+		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_initialize: %s",
+				ldap_err2string(err));
+		connection = NULL;
+		goto leave;
+	}
+
+leave:
+	free(uri);
+	return connection;
+}
+#else
+static LDAP *perdition_ldap_initialize (const LDAPURLDesc *lud)
+{
+	LDAP *connection;
+
+	connection = ldap_init(lud->lud_host, lud->lud_port);
+
+	if (!connection) {
+		VANESSA_LOGGER_DEBUG_ERRNO("ldap_init");
+		return NULL;
+	}
+
+	return connection;
+}
+#endif
 
 /**********************************************************************
  * dbserver_get2
@@ -358,7 +454,6 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	char **returns = NULL;
 	char *binddn = NULL;
 	char *bindpw = NULL;
-	char *ldap_connect = NULL;
 
 	/* get filter string */
 	if (pldap_get_filter(key_str, pldap_filter, &lud) < 0) {
@@ -369,34 +464,11 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	}
 
 	/* Open LDAP connection */
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-	/*
-         * This '+6' on calloc is the worst case scenario of a non-default
-         * LDAP port: 65535 and such. The extra byte is for '\0'
-         */
-	ldap_connect = calloc(strlen (lud->lud_scheme) +
-			      strlen (lud->lud_host) + 6, sizeof (char));
-	if (!ldap_connect)
-		goto leave;
-	if (lud->lud_port != LDAP_PORT)
-		sprintf(ldap_connect, "%s://%s:%d", lud->lud_scheme,
-			lud->lud_host, lud->lud_port);
-	else
-		sprintf(ldap_connect, "%s://%s", lud->lud_scheme,
-			lud->lud_host);
-	err = ldap_initialize(&connection, ldap_connect);
-	if (err != LDAP_SUCCESS) {
-		VANESSA_LOGGER_DEBUG_UNSAFE("ldap_initialize: %s",
-				ldap_err2string(err));
-		goto leave;
-	}
-#else
-	connection = ldap_init(lud->lud_host, lud->lud_port);
+	connection = perdition_ldap_initialize(lud);
 	if (!connection) {
-		VANESSA_LOGGER_DEBUG_ERRNO("ldap_init");
+		VANESSA_LOGGER_DEBUG("perdition_ldap_initialize");
 		goto leave;
 	}
-#endif
 
 #ifdef WITH_LDAP_LUD_EXTS
 	/* Check extensions */
@@ -541,8 +613,6 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	status = 0;
 
       leave:
-	if (ldap_connect)
-		free(ldap_connect);
 	if (returns && status) {
 		for (count = 0; count < attrcount; count++)
 			if (returns[count] != NULL)
