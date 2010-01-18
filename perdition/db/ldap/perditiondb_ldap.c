@@ -482,7 +482,7 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
 	{
 		struct timeval mytimeval;
-		mytimeval.tv_sec = 10;
+		mytimeval.tv_sec = PERDITIONDB_LDAP_NETWORK_TIMEOUT;
 		mytimeval.tv_usec = 0;
 		if (ldap_set_option(connection, LDAP_OPT_NETWORK_TIMEOUT,
 				    &mytimeval) != LDAP_OPT_SUCCESS) {
