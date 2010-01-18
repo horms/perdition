@@ -36,6 +36,8 @@
 #include "io.h"
 #include "perdition_types.h"
 
+#define PERDITION_SSL_CLIENT (flag_t) 0x1
+#define PERDITION_SSL_SERVER (flag_t) 0x2
 
 /**********************************************************************
  * perdition_ssl_ctx
@@ -62,6 +64,7 @@
  *               files, usually in certificate chain order.  
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
+ *      flag: PERDITION_SSL_CLIENT or PERDITION_SSL_SERVER
  * post: If SSL is initiated and a context is created
  *       If cert is non-NULL then this certificate file is loaded
  *       If privkey is non-NULL then this private key file is loaded
@@ -76,7 +79,7 @@
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		const char *cert, const char *privkey, 
-		const char *ca_chain_file, const char *ciphers);
+		const char *ca_chain_file, const char *ciphers, flag_t flag);
 
 
 /**********************************************************************

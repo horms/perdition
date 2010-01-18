@@ -452,7 +452,8 @@ int main (int argc, char **argv, char **envp){
   if(opt.ssl_mode & SSL_LISTEN_MASK) {
     ssl_ctx = perdition_ssl_ctx(opt.ssl_ca_file, opt.ssl_ca_path,
 				opt.ssl_cert_file, opt.ssl_key_file,
-				opt.ssl_ca_chain_file, opt.ssl_listen_ciphers);
+				opt.ssl_ca_chain_file, opt.ssl_listen_ciphers,
+				PERDITION_SSL_SERVER);
     if(!ssl_ctx) {
       PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
       VANESSA_LOGGER_ERR("Fatal error establishing SSL context for listening");

@@ -556,7 +556,11 @@ ciphers(1). If empty ("") then openssl's default will be used.
 (default "")
 .TP
 .B \-\-ssl_no_cert_verify:
-Don't cryptographically verify the real-server's certificate.
+Don't cryptographically verify the certificates.
+Used for SSL or TLS outgoing connections.
+.TP
+.B \-\-ssl_no_client_cert_verify:
+Don't cryptographically verify the end-user's certificate.
 Used for SSL or TLS outgoing connections.
 .TP
 .B \-\-ssl_no_cn_verify:

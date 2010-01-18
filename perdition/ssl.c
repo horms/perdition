@@ -55,9 +55,6 @@
 
 #include "perdition_globals.h"
 
-#define PERDITION_SSL_CLIENT (flag_t) 0x1
-#define PERDITION_SSL_SERVER (flag_t) 0x2
-
 static int __perdition_ssl_passwd_cb(char *buf, int size, int rwflag, 
 		void *data);
 static int __perdition_verify_callback(int ok, X509_STORE_CTX *ctx);
@@ -171,6 +168,7 @@ __perdition_ssl_passwd_cb(char *buf, int size,
  *               Overrides ca_pat and ca_file
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
+ *      flag: PERDITION_SSL_CLIENT or PERDITION_SSL_SERVER
  * post: If SSL is initiated and a context is created
  *       If cert is non-NULL then this certificate file is loaded
  *       If privkey is non-NULL then this private key file is loaded
@@ -492,14 +490,14 @@ static long __perdition_verify_result(long verify, X509 *cert)
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
 		const char *cert, const char *privkey, 
-		const char *ca_chain_file, const char *ciphers)
+		const char *ca_chain_file, const char *ciphers, flag_t flag)
 {
 	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx, *out = NULL;
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
 	struct passwd_cb_data pw_data;
-	int fd = -1;
+	int mode, fd = -1;
 
 	/* 
 	 * If either the certificate or private key is non-NULL the
@@ -580,7 +578,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		goto err;
 	}
 
-	if (opt.ssl_no_cert_verify)
+	if (flag & PERDITION_SSL_CLIENT && opt.ssl_no_cert_verify)
 		goto out;
 
 	/* 
@@ -604,8 +602,12 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 	SSL_CTX_set_verify_depth(ssl_ctx, opt.ssl_cert_verify_depth + 1);
 
-	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_CLIENT_ONCE, 
-			__perdition_verify_callback);
+	if (flag & PERDITION_SSL_SERVER &&
+	    (opt.ssl_no_cert_verify || opt.ssl_no_client_cert_verify))
+		mode = SSL_VERIFY_NONE;
+	else
+		mode = SSL_VERIFY_PEER|SSL_VERIFY_CLIENT_ONCE;
+	SSL_CTX_set_verify(ssl_ctx, mode, __perdition_verify_callback);
 
 	/* NB: We do not need to call SSL_CTX_check_private_key()
 	 * because SSL_CTX_set_verify_depth has been called */
@@ -1098,7 +1100,7 @@ perdition_ssl_client_connection(io_t * io, const char *ca_file,
 	io_t *new_io;
 
 	ssl_ctx = perdition_ssl_ctx(ca_file, ca_path, NULL, NULL, NULL,
-			ciphers);
+			ciphers, PERDITION_SSL_CLIENT);
 	if (!ssl_ctx) {
 		PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);

@@ -171,6 +171,7 @@
 #define DEFAULT_SSL_LISTEN_CIPHERS           NULL
 #define DEFAULT_SSL_OUTGOING_CIPHERS         NULL
 #define DEFAULT_SSL_NO_CERT_VERIFY           0
+#define DEFAULT_SSL_NO_CLIENT_CERT_VERIFY    0
 #define DEFAULT_SSL_NO_CN_VERIFY             0
 #define DEFAULT_SSL_PASSPHRASE_FD            0
 #define DEFAULT_SSL_PASSPHRASE_FILE          NULL
@@ -237,6 +238,7 @@ typedef struct {
   char            *ssl_listen_ciphers;
   char            *ssl_outgoing_ciphers;
   int             ssl_no_cert_verify;
+  int             ssl_no_client_cert_verify;
   int             ssl_no_cn_verify;
   int             ssl_passphrase_fd;
   char            *ssl_passphrase_file;
@@ -301,9 +303,10 @@ typedef struct {
 #define MASK_SSL_LISTEN_CIPHERS                (flag_t) 0x00000800
 #define MASK_SSL_OUTGOING_CIPHERS              (flag_t) 0x00000800
 #define MASK_SSL_NO_CERT_VERIFY                (flag_t) 0x00001000
-#define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00002000
-#define MASK_SSL_PASSPHRASE_FD                 (flag_t) 0x00004000
-#define MASK_SSL_PASSPHRASE_FILE               (flag_t) 0x00008000
+#define MASK_SSL_NO_CLIENT_CERT_VERIFY         (flag_t) 0x00003000
+#define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00004000
+#define MASK_SSL_PASSPHRASE_FD                 (flag_t) 0x00008000
+#define MASK_SSL_PASSPHRASE_FILE               (flag_t) 0x00010000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -333,11 +336,11 @@ typedef struct {
 #define TAG_SSL_LISTEN_CIPHERS                 (int) 146
 #define TAG_SSL_OUTGOING_CIPHERS               (int) 147
 #define TAG_SSL_NO_CERT_VERIFY                 (int) 148
-#define TAG_SSL_NO_CN_VERIFY                   (int) 149
-#define TAG_AUTHENTICATE_TIMEOUT               (int) 150
-#define TAG_SSL_PASSPHRASE_FD                  (int) 151
-#define TAG_SSL_PASSPHRASE_FILE                (int) 152
-
+#define TAG_SSL_NO_CLIENT_CERT_VERIFY          (int) 149
+#define TAG_SSL_NO_CN_VERIFY                   (int) 150
+#define TAG_AUTHENTICATE_TIMEOUT               (int) 151
+#define TAG_SSL_PASSPHRASE_FD                  (int) 152
+#define TAG_SSL_PASSPHRASE_FILE                (int) 153
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/
