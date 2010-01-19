@@ -34,7 +34,7 @@
 #include "token.h"
 
 
-#define POP3_GREETING "POP3 Ready"
+#define POP3_GREETING "POP3 perditon ready on"
 #define POP3_QUIT "QUIT"
 #define POP3_OK "+OK"
 #define POP3_ERR "-ERR"
