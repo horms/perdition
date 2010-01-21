@@ -1148,5 +1148,4 @@ etc/rc.d/init.d/perdition.rh
 etc/sysconfig/Makefile 
 Makefile
 INSTALL
-CODING_LOCATIONS
 )

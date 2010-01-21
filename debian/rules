@@ -59,9 +59,6 @@ install: build
 	install -c -m 644 ChangeLog \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/changelog
-	install -c -m 644 CODING_LOCATIONS \
-	  $(pwd)/debian/tmp/usr/share/doc/perdition/CODING_LOCATIONS
-	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/CODING_LOCATIONS
 	install -c -m 644 TODO \
 	  $(pwd)/debian/tmp/usr/share/doc/perdition/TODO
 	gzip --best $(pwd)/debian/tmp/usr/share/doc/perdition/TODO

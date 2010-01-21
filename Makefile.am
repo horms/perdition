@@ -38,8 +38,6 @@ EXTRA_DIST = \
 README \
 TODO \
 INSTALL.in \
-CODING_LOCATIONS.in\
-CODING_LOCATIONS \
 autogen.sh perdition.spec
 
 clean-local:
