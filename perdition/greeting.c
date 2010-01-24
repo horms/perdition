@@ -96,7 +96,26 @@ static int greeting_checksum(uint32 *csum)
 
 	return 0;
 }
-	
+
+int getnameinfo_try_lookup(struct sockaddr *addr, char *host, size_t hostlen)
+{
+	int rc = 0;
+
+	if (!opt.no_lookup)
+		rc = getnameinfo(addr, perdition_get_salen(addr),
+				 host, hostlen, NULL, 0, 0);
+
+	if (rc == EAI_AGAIN)
+		/* Try again for a numeric host */
+		rc = getnameinfo(addr, perdition_get_salen(addr),
+				 host, hostlen, NULL, 0, NI_NUMERICHOST);
+
+	if (rc)
+		VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
+					    gai_strerror(rc));
+
+	return rc;
+}
 
 /**********************************************************************
  * greeting_str
@@ -124,13 +143,10 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
 
   if(flag&GREETING_ADD_NODENAME){
     if (!opt.no_bind_banner && sockname) {
-      rc = getnameinfo((struct sockaddr *)sockname,
-                       perdition_get_salen((struct sockaddr *)sockname),
-		       host, NI_MAXHOST, NULL, 0,
-		       opt.no_lookup ? NI_NUMERICHOST : 0);
+      rc = getnameinfo_try_lookup((struct sockaddr *)sockname,
+				  host, NI_MAXHOST);
       if (rc) {
-        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
-				    gai_strerror(rc));
+        VANESSA_LOGGER_DEBUG("getnameinfo_try_lookup");
         return NULL;
       }
     }
