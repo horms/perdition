@@ -82,15 +82,15 @@ username_add_domain(char *username, int state, unsigned int strip_depth) {
   if (opt.explicit_domain) {
     domainpart = opt.explicit_domain;
   }
-  else if (!peername) {
+  else if (!sockname) {
     return username;
   }
   else {
-    rc = getnameinfo((struct sockaddr *)peername,
-		     perdition_get_salen((struct sockaddr *)peername),
+    rc = getnameinfo((struct sockaddr *)sockname,
+		     perdition_get_salen((struct sockaddr *)sockname),
 		     host, NI_MAXHOST, NULL, 0, 0);
     if (rc) {
-      VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+      VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
 				  gai_strerror(rc));
       return NULL;
     }

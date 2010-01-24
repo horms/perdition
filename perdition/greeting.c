@@ -123,13 +123,13 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
   csum_str[sizeof(csum_str)-1] = '\0';
 
   if(flag&GREETING_ADD_NODENAME){
-    if (!opt.no_bind_banner && peername) {
-      rc = getnameinfo((struct sockaddr *)peername,
-                       perdition_get_salen((struct sockaddr *)peername),
+    if (!opt.no_bind_banner && sockname) {
+      rc = getnameinfo((struct sockaddr *)sockname,
+                       perdition_get_salen((struct sockaddr *)sockname),
 		       host, NI_MAXHOST, NULL, 0,
 		       opt.no_lookup ? NI_NUMERICHOST : 0);
       if (rc) {
-        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo peername: %s",
+        VANESSA_LOGGER_DEBUG_UNSAFE("getnameinfo sockname: %s",
 				    gai_strerror(rc));
         return NULL;
       }
