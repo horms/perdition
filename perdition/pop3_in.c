@@ -127,6 +127,135 @@ static int pop3_in_invalid_cmd(io_t *io, const char *msg)
 			   POP3_CMD_PASS " or " POP3_CMD_QUIT, msg, extra);
 }
 
+/**********************************************************************
+ * pop3_mangle_capability
+ * Modify a capability from the single line format used internally,
+ * where a double space ("  ") delimits a capability, to the format
+ * used on he wire where a "\r\n" delimits a capability.
+ * pre: capability: capability string that has been set
+ * post: mangled_capability is set to the wire format of capability
+ * return: capability on success
+ *         NULL on error
+ **********************************************************************/
+
+/* Be careful with this macro, it does not do bounds checking */
+#define __POP3_CAPABILITY_APPEND(_cursor, _capa, _capa_len)           \
+	strcpy(_cursor, _capa);                                       \
+	cursor += _capa_len;                                          \
+	strcpy(_cursor, "\r\n");                                      \
+	cursor += 2;
+
+static char *pop3_mangle_capability(char *capability, char **mangled_capability)
+{
+	char *start;
+	char *end;
+	char *cursor;
+	size_t n_len;
+	int finish;
+
+	if (mangled_capability == NULL)
+		return capability;
+
+	n_len = 0;
+	end = capability;
+	finish = 0;
+	while (1) {
+		start = end;
+		end = strstr(start, POP3_CAPABILITY_DELIMITER);
+		if (!end) {
+			end = start + strlen(start);
+			finish = 1;
+		}
+		if (!strncmp(start, POP3_CAPABILITY_DELIMITER,
+			     POP3_CAPABILITY_DELIMITER_LEN)) {
+			end += POP3_CAPABILITY_DELIMITER_LEN;
+			continue;
+		}
+		n_len += 2  /* Space for trailing "\r\n"*/
+			+  end - start;
+		if (finish)
+			break;
+		end += POP3_CAPABILITY_DELIMITER_LEN;
+	}
+
+	n_len += 4; /* Space for trailing ".\r\n\0" */
+	*mangled_capability = (char *)malloc(n_len + 1);
+	if(*mangled_capability == NULL) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		free(capability);
+		return NULL;
+	}
+	memset(*mangled_capability, 0, n_len +1);
+
+	finish = 0;
+	end = capability;
+	cursor = *mangled_capability;
+	while (1) {
+		start = end;
+		end = strstr(start, POP3_CAPABILITY_DELIMITER);
+		if (end == NULL) {
+			end = start + strlen(start);
+			finish = 1;
+		}
+		if (end == start && *end != '\0') {
+			end += POP3_CAPABILITY_DELIMITER_LEN;
+			continue;
+		}
+		if (!strncmp(start, POP3_CAPABILITY_DELIMITER,
+			     POP3_CAPABILITY_DELIMITER_LEN)) {
+			end += POP3_CAPABILITY_DELIMITER_LEN;
+			continue;
+		}
+		if (*start == '\0')
+			break;
+		__POP3_CAPABILITY_APPEND(cursor, start, end-start);
+		if (finish)
+			break;
+		end += POP3_CAPABILITY_DELIMITER_LEN;
+	}
+	__POP3_CAPABILITY_APPEND(cursor, ".", 1);
+
+	return capability;
+}
+
+
+/**********************************************************************
+ * pop3_capability
+ * Return the capability string to be used.
+ * pre: capability: capability string that has been set
+ *      tls_flags: not used
+ *      tls_state: not used
+ * post: capability to use, as per protocol_capability
+ *       with POP parameters
+ **********************************************************************/
+
+char *pop3_capability(char *capability, char **mangled_capability,
+		      flag_t tls_flags, flag_t tls_state)
+{
+	flag_t mode;
+
+	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
+	    !(tls_state & SSL_MODE_TLS_LISTEN))
+		mode = PROTOCOL_C_ADD;
+	else
+		mode = PROTOCOL_C_DEL;
+
+	capability = protocol_capability(mode, capability, POP3_CMD_STLS,
+					 POP3_CAPABILITY_DELIMITER);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return NULL;
+	}
+
+	capability = pop3_mangle_capability(capability, mangled_capability);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
+		return NULL;
+	}
+
+	return capability;
+}
+
 #define __POP3_IN_INVALID_CMD(_reason)					\
 	if (pop3_in_invalid_cmd(io, _reason) < 0) {			\
 		break;							\
