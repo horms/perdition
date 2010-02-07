@@ -129,16 +129,17 @@ static int pop3_in_invalid_cmd(io_t *io, const char *msg)
 
 /**********************************************************************
  * pop3_in_mangle_capability
- * Modify a capability from the single line format used internally,
- * where a double space ("  ") delimits a capability, to the format
- * used on he wire where a "\r\n" delimits a capability.
+ * Modify a capability by exchanging delimiters and optionally
+ * appending a tail.
  * pre: capability: capability string that has been set
+ *      old_delimiter: Delimiter to remove
  * return: mangled_capability suitable for sending on the wire,
  *         caller should free this memory
  *         NULL on error
  **********************************************************************/
 
-static char *pop3_in_mangle_capability(const char *capability)
+static char *pop3_in_mangle_capability(const char *capability,
+				       const char *old_delimiter)
 {
 	const char *start;
 	const char *end;
@@ -146,18 +147,23 @@ static char *pop3_in_mangle_capability(const char *capability)
 	size_t n_len;
 	int count;
 
+	const char *new_delimiter = "\r\n";
+	const char *tail = "\r\n.\r\n";
+
+	const size_t old_delimiter_len = strlen(old_delimiter);
+	const size_t new_delimiter_len = strlen(new_delimiter);
+	const size_t tail_len = strlen(tail);
+
 	n_len = 0;
 	count = 0;
 	start = capability;
-	while ((start = strstr(start, POP3_CAPABILITY_DELIMITER))) {
-		start += POP3_CAPABILITY_DELIMITER_LEN;
+	while ((start = strstr(start, old_delimiter))) {
+		start += old_delimiter_len;
 		count++;
 	}
 
-	n_len = strlen(capability) -
-		(count * POP3_CAPABILITY_DELIMITER_LEN) + /* old delimter */
-		(count * 2) + /* new "\r\n"  delimiter */
-	        5; /* for trailing "\r\n.\r\n" */
+	n_len = strlen(capability) - (count * old_delimiter_len) +
+		(count * new_delimiter_len) + tail_len;
 
 	mangled_capability = (char *)malloc(n_len + 1);
 	if (!mangled_capability) {
@@ -169,19 +175,18 @@ static char *pop3_in_mangle_capability(const char *capability)
 	end = capability;
 	while (1) {
 		start = end;
-		end = strstr(start, POP3_CAPABILITY_DELIMITER);
+		end = strstr(start, old_delimiter);
 		if (!end)
 			break;
 		strncat(mangled_capability, start, end-start);
-		strcat(mangled_capability, "\r\n");
-		end += POP3_CAPABILITY_DELIMITER_LEN;
+		strcat(mangled_capability, new_delimiter);
+		end += old_delimiter_len;
 	}
 	strncat(mangled_capability, start, end-start);
-	strcat(mangled_capability, "\r\n.\r\n");
+	strcat(mangled_capability, tail);
 
 	return mangled_capability;
 }
-
 
 /**********************************************************************
  * pop3_in_capability
@@ -213,7 +218,8 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 	}
 
 	old_capability = capability;
-	capability = pop3_in_mangle_capability(old_capability);
+	capability = pop3_in_mangle_capability(old_capability,
+					       POP3_CAPABILITY_DELIMITER);
 	free(old_capability);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
