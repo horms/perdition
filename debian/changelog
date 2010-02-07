@@ -1,3 +1,13 @@
+perdition (1.19~rc0-0) UNRELEASED; urgency=low
+
+  * New Upstream
+    - Separate pop_capability and imap_capability configuration patameters
+      (closes: #564164)
+    - Use "." as the delimiter for pop_capability
+      (closes: #564164)
+
+ -- Simon Horman <horms@debian.org>  Sun, 07 Feb 2010 18:06:08 +1100
+
 perdition (1.18-2) unstable; urgency=low
 
   * Don't check for pid files after starting daemons in init script.
