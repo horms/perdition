@@ -59,6 +59,100 @@
 #define IMAP4_NON_SYNCHRONISING_TOKEN 0x3
 
 /**********************************************************************
+ * imap4_in_noop_cmd
+ * Do a response to a NOOP command
+ * pre: io: io_t to write to
+ * post: Tagged response to NOOP is written to io
+ * return: 0 on success
+ *         -1 otherwise
+ **********************************************************************/
+
+int imap4_in_noop_cmd(io_t *io, const token_t *tag)
+{
+	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_NOOP) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**********************************************************************
+ * imap4_in_logout_cmd
+ * Do a response to a LOGOUT command
+ * pre: io: io_t to write to
+ * post: An untagged response advising of logout is written to io
+ *       A tagged response to the LOGOUT is written to io
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_logout_cmd(io_t *io, const token_t *tag)
+{
+	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
+			"IMAP4 server logging out, mate") < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write untagged");
+		return(-1);
+	}
+
+	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
+			IMAP4_CMD_LOGOUT) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write tagged");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**********************************************************************
+ * imap4_in_capability_cmd
+ * Do a response to a CAPABILITY command
+ * pre: io: io_t to write to
+ * post: An untagged response giving capabilities is written to io
+ *       A tagged response to the CAPABILITY command is written to io
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_capability_cmd(io_t *io, const token_t *tag)
+{
+	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
+		        str_null_safe(opt.capability)) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write untagged");
+		return -1;
+	}
+
+	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
+			IMAP4_CMD_CAPABILITY) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write tagged");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**********************************************************************
+ * imap4_in_authenticate_cmd
+ * Do a response to an AUTHENTICATE command
+ * pre: io: io_t to write to
+ * post: A tagged error to the AUTHENTICATE command is given
+ * return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+int imap4_in_authenticate_cmd(io_t *io, const token_t *tag)
+{
+	if (imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0,
+			IMAP4_CMD_AUTHENTICATE
+			" mechanism not supported, mate") < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**********************************************************************
  * imap4_token_is_literal
  * Determine if a token is a literal as defined in RFC 1730
  * That is a string of the form "{n}" where n is a positive integral 
@@ -603,97 +697,4 @@ loop:
   token_destroy(&tag);
   vanessa_queue_destroy(q);
   return(-1);
-}
-
-
-/**********************************************************************
- * imap4_in_noop_cmd
- * Do a response to a NOOP command
- * pre: io: io_t to write to
- * post: Tagged response to NOOP is written to io
- * return: 0 on success
- *         -1 otherwise
- **********************************************************************/
-
-int imap4_in_noop_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_NOOP)<0){
-    VANESSA_LOGGER_DEBUG("imap4_write");
-    return(-1);
-  }
-
-  return(0);
-}
-
-
-/**********************************************************************
- * imap4_in_logout_cmd
- * Do a response to a LOGOUT command
- * pre: io: io_t to write to
- * post: An untagged response advising of logout is written to io
- *       A tagged response to the LOGOUT is written to io
- * return 0 on success
- *        -1 otherwise
- **********************************************************************/
-
-int imap4_in_logout_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
-			  "IMAP4 server logging out, mate")<0){
-    VANESSA_LOGGER_DEBUG("imap4_write untagged");
-    return(-1);
-  }
-
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_LOGOUT)<0){
-    VANESSA_LOGGER_DEBUG("imap4_write tagged");
-    return(-1);
-  }
-
-  return(0);
-}
-
-
-/**********************************************************************
- * imap4_in_capability_cmd
- * Do a response to a CAPABILITY command
- * pre: io: io_t to write to
- * post: An untagged response giving capabilities is written to io
- *       A tagged response to the CAPABILITY command is written to io
- * return 0 on success
- *        -1 otherwise
- **********************************************************************/
-
-int imap4_in_capability_cmd(io_t *io, const token_t *tag){
-  if(imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
-			  str_null_safe(opt.capability))<0){
-    VANESSA_LOGGER_DEBUG("imap4_write untagged");
-    return(-1);
-  }
-
-  if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
-			  IMAP4_CMD_CAPABILITY)<0){
-    VANESSA_LOGGER_DEBUG("imap4_write tagged");
-    return(-1);
-  }
-
-  return(0);
-}
-
-
-/**********************************************************************
- * imap4_in_authenticate_cmd
- * Do a response to an AUTHENTICATE command
- * pre: io: io_t to write to
- * post: A tagged error to the AUTHENTICATE command is given
- * return 0 on success
- *        -1 otherwise
- **********************************************************************/
-
-int imap4_in_authenticate_cmd(io_t *io, const token_t *tag){
-	if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0, 
-				IMAP4_CMD_AUTHENTICATE 
-				" mechanism not supported, mate")<0){
-		VANESSA_LOGGER_DEBUG("imap4_write");
-		return(-1);
-	}
-
-	return(0);
 }
