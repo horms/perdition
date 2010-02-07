@@ -138,18 +138,10 @@ static int pop3_in_invalid_cmd(io_t *io, const char *msg)
  *         NULL on error
  **********************************************************************/
 
-/* Be careful with this macro, it does not do bounds checking */
-#define __POP3_IN_CAPABILITY_APPEND(_cursor, _capa, _capa_len)        \
-	strcpy(_cursor, _capa);                                       \
-	cursor += _capa_len;                                          \
-	strcpy(_cursor, "\r\n");                                      \
-	cursor += 2;
-
 static char *pop3_in_mangle_capability(const char *capability)
 {
 	const char *start;
 	const char *end;
-	char *cursor;
 	char *mangled_capability;
 	size_t n_len;
 	int count;
@@ -175,17 +167,17 @@ static char *pop3_in_mangle_capability(const char *capability)
 	memset(mangled_capability, 0, n_len +1);
 
 	end = capability;
-	cursor = mangled_capability;
 	while (1) {
 		start = end;
 		end = strstr(start, POP3_CAPABILITY_DELIMITER);
 		if (!end)
 			break;
-		__POP3_IN_CAPABILITY_APPEND(cursor, start, end-start);
+		strncat(mangled_capability, start, end-start);
+		strcat(mangled_capability, "\r\n");
 		end += POP3_CAPABILITY_DELIMITER_LEN;
 	}
-	__POP3_IN_CAPABILITY_APPEND(cursor, start, strlen(start));
-	__POP3_IN_CAPABILITY_APPEND(cursor, ".", 1);
+	strncat(mangled_capability, start, end-start);
+	strcat(mangled_capability, "\r\n.\r\n");
 
 	return mangled_capability;
 }
