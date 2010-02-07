@@ -176,7 +176,7 @@ static char *pop3_in_mangle_capability(const char *capability)
 		end += POP3_CAPABILITY_DELIMITER_LEN;
 	}
 
-	n_len += 4; /* Space for trailing ".\r\n\0" */
+	n_len += 3; /* Space for trailing ".\r\n" */
 	mangled_capability = (char *)malloc(n_len + 1);
 	if (!mangled_capability) {
 		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
