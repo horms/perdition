@@ -73,7 +73,6 @@ protocol_t *pop3_initialise_protocol(protocol_t *protocol){
   protocol->destroy = pop3_destroy_protocol;
   protocol->port = pop3_port;
   protocol->encryption = pop3_encryption;
-  protocol->capability = pop3_capability;
 
   return(protocol);
 }

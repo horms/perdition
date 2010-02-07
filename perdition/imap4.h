@@ -49,20 +49,4 @@
 
 protocol_t *imap4_initialise_protocol(protocol_t *protocol);
 
-
-/**********************************************************************
- * imap4_capability 
- * Return the capability string to be used.
- * pre: capability: capability string that has been set
- *      mangled_capability: not used
- *      tls_flags: the encryption flags that have been set
- *      tls_state: the current state of encryption for the session
- * post: capability to use, as per protocol_capability
- *       with IMAP4 parameters
- **********************************************************************/
-
-char *imap4_capability(char *capability, char **mangled_capability,
-		flag_t tls_flags, flag_t tls_mode);
-
-
 #endif

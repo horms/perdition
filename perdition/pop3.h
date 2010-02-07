@@ -44,18 +44,5 @@
 
 protocol_t *pop3_initialise_protocol(protocol_t *protocol);
 
-
-/**********************************************************************
- * pop3_capability 
- * Return the capability string to be used.
- * pre: capability: capability string that has been set
- *      tls_flags: not used
- *      tls_state: not used
- * post: capability to use, as per protocol_capability
- *       with POP parameters
- **********************************************************************/
-
-char *pop3_capability(char *capability, char **mangled_capability,
-		flag_t tls_flags, flag_t tls_state);
 #endif
 

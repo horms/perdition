@@ -141,9 +141,7 @@ static int perdition_chown(const char *path, const char *username,
   server_io=NULL; \
   usp=NULL; \
   token_destroy(&client_tag); \
-  tls_state=0; \
-  opt.capability = protocol->capability(opt.capability, \
-    &(opt.mangled_capability), opt.ssl_mode, tls_state);
+  tls_state=0;
 
 /* Macro to set the uid and gid */
 #define PERDITION_SET_UID_AND_GID \
@@ -446,8 +444,6 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
   /*Set up the ssl mode */
   opt.ssl_mode=protocol->encryption(opt.ssl_mode);
-  opt.capability = protocol->capability(opt.capability, 
-		  &(opt.mangled_capability), opt.ssl_mode, tls_state);
 
   if(opt.ssl_mode & SSL_LISTEN_MASK) {
     ssl_ctx = perdition_ssl_ctx(opt.ssl_ca_file, opt.ssl_ca_path,
@@ -460,9 +456,6 @@ int main (int argc, char **argv, char **envp){
       perdition_exit_cleanly(-1);
     }
   }
-#else
-  opt.capability = protocol->capability(opt.capability, 
-		  &(opt.mangled_capability), SSL_MODE_NONE, SSL_MODE_NONE);
 #endif /* WITH_SSL_SUPPORT */
 
   /* Close file descriptors and detach process from shell as necessary */
@@ -707,7 +700,8 @@ int main (int argc, char **argv, char **envp){
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
-    status=(*(protocol->in_get_pw))(client_io, &pw, &client_tag);
+    status=(*(protocol->in_get_pw))(client_io, opt.ssl_mode, tls_state,
+				    &pw, &client_tag);
     token_flush();
     if(status<0){
       VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
@@ -737,8 +731,6 @@ int main (int argc, char **argv, char **envp){
         perdition_exit_cleanly(-1);
       }
       tls_state |= SSL_MODE_TLS_LISTEN;
-      opt.capability = protocol->capability(opt.capability,
-            &(opt.mangled_capability), opt.ssl_mode, tls_state);
       continue;
     }
     else if(opt.login_disabled ||

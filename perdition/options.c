@@ -542,7 +542,6 @@ int options(int argc, char **argv, flag_t f){
     opt_i(&(opt.quiet), DEFAULT_QUIET, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.connect_relog), DEFAULT_CONNECT_RELOG, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.capability), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
-    opt_p(&(opt.mangled_capability), NULL, &i, 0, OPT_NOT_SET);
     opt_da(&(opt.bind_address), DEFAULT_BIND_ADDRESS, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.log_facility), DEFAULT_LOG_FACILITY, &i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE)) {

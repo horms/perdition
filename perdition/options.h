@@ -187,7 +187,6 @@ typedef struct {
   int             authenticate_timeout;
   vanessa_dynamic_array_t *bind_address;
   char            *capability;
-  char            *mangled_capability;
   int             client_server_specification;
   char            *config_file;
   int             connection_limit;

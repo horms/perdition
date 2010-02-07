@@ -76,6 +76,8 @@ int imap4_in_authenticate(
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * Pre: io: io_t to read from and write to
+ *      tls_flags: the encryption flags that have been set
+ *      tls_state: the current state of encryption for the session
  *      return_pw: pointer to an allocated struct pw, 
  *                 where username and password
  *                 will be returned if one is found
@@ -86,6 +88,7 @@ int imap4_in_authenticate(
  *         -1 on error
  **********************************************************************/
 
-int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag);
+int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
+		    struct passwd *return_pw, token_t **return_tag);
 
 #endif

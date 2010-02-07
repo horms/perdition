@@ -70,7 +70,6 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->destroy = imap4_destroy_protocol;
   protocol->port = imap4_port;
   protocol->encryption = imap4_encryption;
-  protocol->capability = imap4_capability;
 
   return(protocol);
 }

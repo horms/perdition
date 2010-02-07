@@ -52,8 +52,8 @@ struct protocol_t_struct {
 			const char *fmt, ...);
 	char *greeting_string;
 	char *quit_string;
-	int (*in_get_pw) (io_t *io, struct passwd *return_pw,
-			  token_t **return_tag);
+	int (*in_get_pw) (io_t *io, flag_t ssl_flags, flag_t ssl_state,
+			  struct passwd *return_pw, token_t **return_tag);
 	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct passwd *pw,
 				 token_t *tag,
 				 const struct protocol_t_struct *protocol);
@@ -70,8 +70,6 @@ struct protocol_t_struct {
 	void (*destroy) (struct protocol_t_struct *protcol);
 	char *(*port) (char *port);
 	flag_t(*encryption) (flag_t ssl_flags);
-	char *(*capability) (char *capability, char **mangled_capability,
-			flag_t ssl_flags, flag_t ssl_state);
 };
 
 typedef struct protocol_t_struct protocol_t;

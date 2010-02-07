@@ -59,25 +59,22 @@
 #define IMAP4_NON_SYNCHRONISING_TOKEN 0x3
 
 /**********************************************************************
- * imap4_capability
+ * imap4_in_capability
  * Return the capability string to be used.
- * pre: capability: capability string that has been set
- *      mangled_capability: not used
- *      tls_flags: the encryption flags that have been set
+ * pre: tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
  * post: capability to use, as per protocol_capability
- *       with IMAP4 parameters
+ *       with IMAP4 parameters. Should be freed by caller.
  **********************************************************************/
 
-char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
-		flag_t tls_flags, flag_t tls_state)
+static char *imap4_in_capability(flag_t tls_flags, flag_t tls_state)
 {
 	flag_t mode;
+	char *capability, *old_capability;
 
-	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
-		free(capability);
-		capability = strdup(IMAP4_DEFAULT_CAPABILITY);
-	}
+	capability = opt.capability;
+	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT))
+		capability = IMAP4_DEFAULT_CAPABILITY;
 
 	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
 	    !(tls_state & SSL_MODE_TLS_LISTEN))
@@ -85,7 +82,8 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 	else
 		mode = PROTOCOL_C_DEL;
 
-	capability = protocol_capability(mode, capability, IMAP4_CMD_STARTTLS,
+	capability = protocol_capability(mode, capability,
+					 IMAP4_CMD_STARTTLS,
 					 IMAP4_CAPABILITY_DELIMITER);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("protocol_capability: STARTTLS");
@@ -93,16 +91,19 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 	}
 
 	if(!opt.login_disabled && (!(tls_flags & SSL_MODE_TLS_LISTEN) ||
-			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)))
-		return(capability);
+				   !(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)))
+		return capability;
 
 	if (!(tls_state & SSL_MODE_TLS_LISTEN))
 		mode = PROTOCOL_C_ADD;
 	else
 		mode = PROTOCOL_C_DEL;
-	capability = protocol_capability(mode, capability,
+
+	old_capability = capability;
+	capability = protocol_capability(mode, old_capability,
 					 IMAP4_CMD_LOGINDISABLED,
 					 IMAP4_CAPABILITY_DELIMITER);
+	free(old_capability);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("protocol_capability: LOGINDISABLED");
 		return NULL;
@@ -167,20 +168,31 @@ static int imap4_in_logout_cmd(io_t *io, const token_t *tag)
  *        -1 otherwise
  **********************************************************************/
 
-static int imap4_in_capability_cmd(io_t *io, const token_t *tag)
+static int imap4_in_capability_cmd(io_t *io, const token_t *tag,
+				   flag_t tls_flags, flag_t tls_state)
 {
+	char *capability;
+	int status = -1;
+
+	capability = imap4_in_capability(tls_flags, tls_state);
+	if (!capability)
+		 return -1;
+
 	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
-		        str_null_safe(opt.capability)) < 0) {
+			capability) < 0) {
 		VANESSA_LOGGER_DEBUG("imap4_write untagged");
-		return -1;
+		goto err;
 	}
 
 	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
 			IMAP4_CMD_CAPABILITY) < 0) {
 		VANESSA_LOGGER_DEBUG("imap4_write tagged");
-		return -1;
+		goto err;
 	}
 
+	status = 0;
+err:
+	free(capability);
 	return 0;
 }
 
@@ -497,6 +509,8 @@ static int imap4_in_verify_tag_str(const token_t *tag)
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * Pre: io: io_t to read from and write to
+ *      tls_flags: the encryption flags that have been set
+ *      tls_state: the current state of encryption for the session
  *      return_pw: pointer to an allocated struct pw, 
  *                 where username and password
  *                 will be returned if one is found
@@ -535,7 +549,8 @@ static int imap4_in_verify_tag_str(const token_t *tag)
 				" but there shouldn't be one, mate");       \
 	}
 
-int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
+int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
+		    struct passwd *return_pw, token_t **return_tag)
 {
   int status;
   vanessa_queue_t *q = NULL;
@@ -613,7 +628,7 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
 			! strncasecmp((char *)token_buf(t), 
 				IMAP4_CMD_CAPABILITY, token_len(t))){
       __IMAP4_IN_CHECK_NO_ARG(IMAP4_CMD_CAPABILITY);
-      if(imap4_in_capability_cmd(io, tag)){
+      if(imap4_in_capability_cmd(io, tag, tls_flags, tls_state)){
         VANESSA_LOGGER_DEBUG("imap4_in_capability");
         break;
       }
@@ -637,7 +652,6 @@ int imap4_in_get_pw(io_t *io, struct passwd *return_pw, token_t **return_tag)
         VANESSA_LOGGER_DEBUG("imap4_in_noop 3");
         break;
       }
-      vanessa_queue_destroy(q);
       return(1);
     }
     else if (token_len(t) == IMAP4_CMD_LOGIN_LEN &&
