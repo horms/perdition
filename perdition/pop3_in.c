@@ -230,9 +230,7 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 	flag_t mode;
 	char *capability, *old_capability;
 
-	capability = opt.capability;
-	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT))
-		capability = POP3_DEFAULT_CAPABILITY;
+	capability = opt.pop_capability;
 
 	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
 	    !(tls_state & SSL_MODE_TLS_LISTEN))

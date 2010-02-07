@@ -400,10 +400,10 @@ int options(int argc, char **argv, flag_t f){
      'i', NULL, NULL},
     {"capability",                  'I',  POPT_ARG_STRING, NULL,
      'I', NULL, NULL},
-    {"imap_capability",             'I',  POPT_ARG_STRING, NULL,
-     'I', NULL, NULL},
-    {"pop_capability",              'I',  POPT_ARG_STRING, NULL,
-     'I', NULL, NULL},
+    {"imap_capability",             '\0', POPT_ARG_STRING, NULL,
+     TAG_IMAP_CAPABILITY, NULL, NULL},
+    {"pop_capability",              '\0', POPT_ARG_STRING, NULL,
+     TAG_POP_CAPABILITY, NULL, NULL},
     {"connection_limit",            'L',  POPT_ARG_STRING, NULL,
      'L', NULL, NULL},
     {"listen_port",                 'l',  POPT_ARG_STRING, NULL,
@@ -541,7 +541,6 @@ int options(int argc, char **argv, flag_t f){
    		    &i, 0, OPT_NOT_SET);
     opt_i(&(opt.quiet), DEFAULT_QUIET, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.connect_relog), DEFAULT_CONNECT_RELOG, &i, 0, OPT_NOT_SET);
-    opt_p(&(opt.capability), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
     opt_da(&(opt.bind_address), DEFAULT_BIND_ADDRESS, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.log_facility), DEFAULT_LOG_FACILITY, &i, 0, OPT_NOT_SET);
     if(!(f&OPT_FILE)) {
@@ -553,6 +552,7 @@ int options(int argc, char **argv, flag_t f){
 		    &i, 0, OPT_NOT_SET);
     opt_p(&(opt.explicit_domain), NULL, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.group), DEFAULT_GROUP, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.imap_capability), DEFAULT_IMAP_CAPABILITY, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.listen_port), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.log_passwd), DEFAILT_LOG_PASSWD, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.map_library), DEFAULT_MAP_LIB, &i, 0, OPT_NOT_SET);
@@ -564,6 +564,7 @@ int options(int argc, char **argv, flag_t f){
     opt_p(&(opt.username), DEFAULT_USERNAME, &i, 0, OPT_NOT_SET);
     opt_da(&(opt.outgoing_server), DEFAULT_OUTGOING_SERVER, 
 		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.pop_capability), DEFAULT_POP_CAPABILITY, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.pid_file), PERDITION_PROTOCOL_DEPENDANT,&i, 0, OPT_NOT_SET);
     {
       char *filename;
@@ -705,7 +706,20 @@ int options(int argc, char **argv, flag_t f){
 	}
 	break;
       case 'I':
-	opt_p(&(opt.capability), optarg, &(opt.mask), MASK_CAPABILITY, f);
+	if (options_set_mask(&opt.mask2, MASK2_IMAP_CAPABILITY, f))
+	  opt_p(&(opt.imap_capability), optarg, &(opt.mask2),
+		MASK2_IMAP_CAPABILITY, f);
+	if (options_set_mask(&opt.mask2, MASK2_POP_CAPABILITY, f))
+	  opt_p(&(opt.pop_capability), optarg, &(opt.mask2),
+		MASK2_POP_CAPABILITY, f);
+	break;
+      case TAG_IMAP_CAPABILITY:
+	opt_p(&(opt.imap_capability), optarg, &(opt.mask2),
+	      MASK2_IMAP_CAPABILITY, f);
+	break;
+      case TAG_POP_CAPABILITY:
+	opt_p(&(opt.pop_capability), optarg, &(opt.mask2),
+	      MASK2_POP_CAPABILITY, f);
 	break;
       case 'i':
         opt_i(&(opt.inetd_mode), 1, &(opt.mask), MASK_INETD_MODE, f);
@@ -1170,7 +1184,6 @@ static char *log_options_non_ssl_str(void)
 #endif /* WITH_PAM_SUPPORT */
     "authenticate_timeout=%d, "
     "bind_address=\"%s\", "
-    "capability=\"%s\", "
     "client_server_specification=%s, "
     "config_file=\"%s\", "
     "connection_limit=%d, "
@@ -1180,6 +1193,7 @@ static char *log_options_non_ssl_str(void)
     "domain_delimiter=\"%s\", "
     "explicit_domain=\"%s\", "
     "group=\"%s\", "
+    "imap_capability=\"%s\", "
     "inetd_mode=%s, "
     "listen_port=\"%s\", "
     "log_facility=\"%s\", "
@@ -1196,6 +1210,7 @@ static char *log_options_non_ssl_str(void)
     "outgoing_port=\"%s\", "
     "outgoing_server=\"%s\", "
     "pid_file=\"%s\", "
+    "pop_capability=\"%s\", "
     "protocol=\"%s\", "
     "server_resp_line=%s, "
     "strip_domain=\"%s\", "
@@ -1211,7 +1226,6 @@ static char *log_options_non_ssl_str(void)
 #endif /* WITH_PAM_SUPPORT */
     opt.authenticate_timeout,
     OPT_STR(bind_address),
-    OPT_STR(opt.capability),
     BIN_OPT_STR(opt.client_server_specification),
     OPT_STR(opt.config_file),
     opt.connection_limit,
@@ -1221,6 +1235,7 @@ static char *log_options_non_ssl_str(void)
     OPT_STR(opt.domain_delimiter),
     OPT_STR(opt.explicit_domain),
     OPT_STR(opt.group),
+    OPT_STR(opt.imap_capability),
     BIN_OPT_STR(opt.inetd_mode),
     OPT_STR(opt.listen_port),
     OPT_STR(opt.log_facility),
@@ -1237,6 +1252,7 @@ static char *log_options_non_ssl_str(void)
     OPT_STR(opt.outgoing_port),
     OPT_STR(outgoing_server),
     OPT_STR(opt.pid_file),
+    OPT_STR(opt.pop_capability),
     protocol,
     BIN_OPT_STR(opt.server_resp_line),
     strip_domain,
@@ -1513,7 +1529,9 @@ void usage(int exit_status){
     " -h|--help:\n"
     "    Display this message.\n"
     " -I|--capability|--pop_capability|--imap_capability STRING:\n"
-    "    Capabilities for the protocol.\n"
+    "    Deprecated in favour of --pop_capability and --imap_capability.\n"
+    " --imap_capability STRING:\n"
+    "    Capabilities for imap4 and imap4s.\n"
     "    (default \"%s\")\n"
     " -i|--inetd_mode:\n"
     "    Run in inetd mode.\n"
@@ -1547,6 +1565,9 @@ void usage(int exit_status){
     " -o|--server_resp_line:\n"
     "    Use back-end server's authentication response, instead of \n"
     "    generating one.\n"
+    " --pop_capability STRING:\n"
+    "    Capabilities for pop3 and pop3s.\n"
+    "    (default \"%s\")\n"
     " -P|--protocol PROTOCOL:\n"
     "    Protocol to use.\n"
     "    (default \"%s\")\n"
@@ -1650,14 +1671,15 @@ void usage(int exit_status){
     DEFAULT_CONNECT_RELOG,
     OPT_STR(DEFAULT_DOMAIN_DELIMITER),
     OPT_STR(DEFAULT_LOG_FACILITY),
+    OPT_STR(DEFAULT_IMAP_CAPABILITY),
     OPT_STR(DEFAULT_GROUP),
-    OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     DEFAULT_CONNECTION_LIMIT,
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     OPT_STR(log_passwd_to_str(DEFAILT_LOG_PASSWD)),
     OPT_STR(DEFAULT_MAP_LIB),
     OPT_STR(DEFAULT_MAP_LIB_OPT),
     OPT_STR(DEFAULT_OK_LINE),
+    OPT_STR(DEFAULT_IMAP_CAPABILITY),
     OPT_STR(default_protocol_str),
     OPT_STR(available_protocols),
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),

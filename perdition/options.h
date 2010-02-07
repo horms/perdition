@@ -123,6 +123,7 @@
 #else
 #define DEFAULT_GROUP                        "nobody"
 #endif /* WITH_GROUP */
+#define DEFAULT_IMAP_CAPABILITY              "IMAP4 IMAP4REV1"
 #define DEFAULT_INETD_MODE                   0
 #define DEFAULT_MAP_LIB                      PERDITION_LIBDIR \
 			                     "/libperditiondb_gdbm.so.0"
@@ -135,6 +136,7 @@
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_OK_LINE                      "You are so in"
+#define DEFAULT_POP_CAPABILITY               "UIDL  USER"
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
 #define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_RESP_LINE             0
@@ -186,7 +188,8 @@ typedef struct {
 #endif /* WITH_PAM_SUPPORT */
   int             authenticate_timeout;
   vanessa_dynamic_array_t *bind_address;
-  char            *capability;
+  char            *pop_capability;
+  char            *imap_capability;
   int             client_server_specification;
   char            *config_file;
   int             connection_limit;
@@ -198,7 +201,6 @@ typedef struct {
   char            *explicit_domain;
   char            *group;
   int             inetd_mode;
-  char            *pop_capability;
   char            *listen_port;
   char            *log_facility;
   int             log_passwd;
@@ -250,7 +252,6 @@ typedef struct {
 #define MASK_AUTHENTICATE_IN             (flag_t) 0x00000002
 #endif /* WITH_PAM_SUPPORT */
 #define MASK_BIND_ADDRESS                (flag_t) 0x00000004
-#define MASK_CAPABILITY                  (flag_t) 0x00000008
 #define MASK_CONNECTION_LIMIT            (flag_t) 0x00000010
 #define MASK_CONNECTION_LOGGING          (flag_t) 0x00000020
 #define MASK_CONNECT_RELOG               (flag_t) 0x00000040
@@ -285,6 +286,8 @@ typedef struct {
 #define MASK2_EXPLICIT_DOMAIN            (flag_t) 0x00000004
 #define MASK2_LOG_PASSWD                 (flag_t) 0x00000008
 #define MASK2_AUTHENTICATE_TIMEOUT       (flag_t) 0x00000010
+#define MASK2_IMAP_CAPABILITY            (flag_t) 0x00000020
+#define MASK2_POP_CAPABILITY             (flag_t) 0x00000040
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -340,6 +343,8 @@ typedef struct {
 #define TAG_AUTHENTICATE_TIMEOUT               (int) 151
 #define TAG_SSL_PASSPHRASE_FD                  (int) 152
 #define TAG_SSL_PASSPHRASE_FILE                (int) 153
+#define TAG_IMAP_CAPABILITY                    (int) 154
+#define TAG_POP_CAPABILITY                     (int) 155
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

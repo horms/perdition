@@ -205,32 +205,28 @@ Group to run as.
 .B \-h, \-\-help:
 Display this message
 .TP
-.B \-I, \-\-capability, \-\-pop_capability, \-\-imap_capability STRING:
-Capabilities for the protocol.
+.B \-I, \-\-capability STRING:
+Deprecated in favour of \-\-pop_capability and \-\-imap_capability
+.TP
+.B \-\-imap_capability STRING:
+Capabilities for IMAP3 and IMAP4S
 .sp
-When using a POP3 based protocol, the capabilities should be
-delimited by two spaces. This is because the capabilities themselves
-may contain single spaces. The default is "UIDL  USER".
-.sp
-When using an IMAP4 based protocol, this string is taken as a string
-literal that will be returned when a client issues the CAPABILITY
-command. As such the capabilities should be space delimited.
-The default is "IMAP4 IMAP4REV1". However, perdition does
-support RFC 2088 non-synchronising string literals, if the real
-servers also support this then the capability may be set to
+This string is taken as a string literal that will be returned when a
+client issues the CAPABILITY command. As such the capabilities should be
+space delimited.  The default is "IMAP4 IMAP4REV1". However, perdition does
+support RFC 2088 non-synchronising string literals, if the real servers
+also support this then the capability may be set to
 "IMAP4 IMAP4REV1 LITERAL+".
 .sp
-If perdition is listening for TLS connections then the
-capability STLS for POP3 or STARTTLS for IMAP4 will be
-appended to the list of capabilities if it is not already 
-present. Similarly these capabilities will be removed from
-the list of capabilities if they are present and perdition is not
-listening for TLS connections.
+If perdition is running with ssl_mode includes to ssl_listen then the
+capability STARTTLS will be appended to the list of capabilities if it is
+not already present. Similarly this capability will be removed from the
+list of capabilities if present and perdition is not running with an
+ssl_mode that includes to ssl_listen.
 .sp
-Perdition may also manipulate the capability in IMAP mode
-to add and remove the LOGINDISABLED capability if the no_login capability
-is in effect or if the ssl_mode includes tls_listen_force or
-tls_outgoing_force.
+Perdition may also manipulate the capability in IMAP mode to add and remove
+the LOGINDISABLED capability if the no_login capability is in effect or if
+the ssl_mode includes tls_listen_force or tls_outgoing_force.
 .TP
 .B \-i, \-\-inetd_mode:
 Run in inetd mode
@@ -349,6 +345,19 @@ allow perdition to subsequently removed the pid file.
 Empty for no pid file. Not used in inetd mode.
 .br
 (default <var_state_dir>/<basename>/<basename>.pid)
+.TP
+.B \-\-pop_capability STRING:
+Capabilities for POP3 and POP3S
+.sp
+The capabilities should be delimited by two spaces. This is because the
+capabilities themselves may contain single spaces. The default is
+"UIDL USER".
+.sp
+If perdition is running with ssl_mode includes to ssl_listen then the
+capability STLS will be appended to the list of capabilities if it is not
+already present. Similarly this capability will be removed from the list of
+capabilities it is present and perdition is not running with an ssl_mode
+that includes to ssl_listen.
 .TP
 .B \-S, \-\-strip_domain STATE[,STATE]:
 Allow USER of the from user<delimiter>domain where <delimiter>domain

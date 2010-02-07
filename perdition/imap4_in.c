@@ -72,9 +72,7 @@ static char *imap4_in_capability(flag_t tls_flags, flag_t tls_state)
 	flag_t mode;
 	char *capability, *old_capability;
 
-	capability = opt.capability;
-	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT))
-		capability = IMAP4_DEFAULT_CAPABILITY;
+	capability = opt.imap_capability;
 
 	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
 	    !(tls_state & SSL_MODE_TLS_LISTEN))
