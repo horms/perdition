@@ -1,3 +1,12 @@
+perdition (1.18-2) unstable; urgency=low
+
+  * Don't check for pid files after starting daemons in init script.
+    They legitimately may not exist yet.
+  * ssl: honour timeout during setup
+    (closes: #561885)
+
+ -- Simon Horman <horms@debian.org>  Wed, 23 Dec 2009 16:23:20 +1100
+
 perdition (1.18-1) unstable; urgency=low
 
   * New Upstream
