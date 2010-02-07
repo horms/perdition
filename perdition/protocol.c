@@ -209,7 +209,7 @@ char *protocol_capability(flag_t mode, const char *existing_capability,
                                                  add_capability,
                                                  capability_delimiter);
     if(capability == NULL) {
-      VANESSA_LOGGER_DEBUG("str_delete_substring");
+      VANESSA_LOGGER_DEBUG("str_append_substring_if_missing");
       return(NULL);
     }
   }
