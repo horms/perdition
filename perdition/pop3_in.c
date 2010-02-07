@@ -152,31 +152,21 @@ static char *pop3_in_mangle_capability(const char *capability)
 	char *cursor;
 	char *mangled_capability;
 	size_t n_len;
-	int finish;
+	int count;
 
 	n_len = 0;
-	end = capability;
-	finish = 0;
-	while (1) {
-		start = end;
-		end = strstr(start, POP3_CAPABILITY_DELIMITER);
-		if (!end) {
-			end = start + strlen(start);
-			finish = 1;
-		}
-		if (!strncmp(start, POP3_CAPABILITY_DELIMITER,
-			     POP3_CAPABILITY_DELIMITER_LEN)) {
-			end += POP3_CAPABILITY_DELIMITER_LEN;
-			continue;
-		}
-		n_len += 2  /* Space for trailing "\r\n"*/
-			+  end - start;
-		if (finish)
-			break;
-		end += POP3_CAPABILITY_DELIMITER_LEN;
+	count = 0;
+	start = capability;
+	while ((start = strstr(start, POP3_CAPABILITY_DELIMITER))) {
+		start += POP3_CAPABILITY_DELIMITER_LEN;
+		count++;
 	}
 
-	n_len += 3; /* Space for trailing ".\r\n" */
+	n_len = strlen(capability) -
+		(count * POP3_CAPABILITY_DELIMITER_LEN) + /* old delimter */
+		(count * 2) + /* new "\r\n"  delimiter */
+	        5; /* for trailing "\r\n.\r\n" */
+
 	mangled_capability = (char *)malloc(n_len + 1);
 	if (!mangled_capability) {
 		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
@@ -184,32 +174,17 @@ static char *pop3_in_mangle_capability(const char *capability)
 	}
 	memset(mangled_capability, 0, n_len +1);
 
-	finish = 0;
 	end = capability;
 	cursor = mangled_capability;
 	while (1) {
 		start = end;
 		end = strstr(start, POP3_CAPABILITY_DELIMITER);
-		if (end == NULL) {
-			end = start + strlen(start);
-			finish = 1;
-		}
-		if (end == start && *end != '\0') {
-			end += POP3_CAPABILITY_DELIMITER_LEN;
-			continue;
-		}
-		if (!strncmp(start, POP3_CAPABILITY_DELIMITER,
-			     POP3_CAPABILITY_DELIMITER_LEN)) {
-			end += POP3_CAPABILITY_DELIMITER_LEN;
-			continue;
-		}
-		if (*start == '\0')
+		if (!end)
 			break;
 		__POP3_IN_CAPABILITY_APPEND(cursor, start, end-start);
-		if (finish)
-			break;
 		end += POP3_CAPABILITY_DELIMITER_LEN;
 	}
+	__POP3_IN_CAPABILITY_APPEND(cursor, start, strlen(start));
 	__POP3_IN_CAPABILITY_APPEND(cursor, ".", 1);
 
 	return mangled_capability;
