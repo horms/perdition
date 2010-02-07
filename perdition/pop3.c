@@ -139,7 +139,7 @@ static flag_t pop3_encryption(flag_t ssl_flags)
 	strcpy(_cursor, "\r\n");                                      \
 	cursor += 2;
 
-char *pop3_mangle_capability(char *capability, char **mangled_capability)
+static char *pop3_mangle_capability(char *capability, char **mangled_capability)
 {
 	char *start;
 	char *end;

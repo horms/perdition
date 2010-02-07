@@ -44,8 +44,6 @@
 static void pop3s_destroy_protocol(protocol_t *protocol);
 static char *pop3s_port(char *port);
 static flag_t pop3s_encryption(flag_t ssl_flags);
-static char *pop3s_capability(char *capability, char **mangled_capability,
-		flag_t tls_flags, flag_t tls_state);
 
 
 /**********************************************************************
@@ -75,7 +73,7 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
   protocol->destroy = pop3s_destroy_protocol;
   protocol->port = pop3s_port;
   protocol->encryption = pop3s_encryption;
-  protocol->capability = pop3s_capability;
+  protocol->capability = pop3_capability;
 
   return(protocol);
 }
@@ -125,37 +123,3 @@ static flag_t pop3s_encryption(flag_t ssl_flags)
   }
   return(SSL_MODE_SSL_ALL);
 }
-
-
-/**********************************************************************
- * pop3s_capability 
- * Return the capability string to be used.
- * pre: capability: capability string that has been set
- *      mangled_capability: ignored
- *      tls_flags: ignored
- *      tls_state: ignored
- * post: capability to use, as per protocol_capability
- *       with POP parameters
- **********************************************************************/
-
-static char *pop3s_capability(char *capability, 
-		char **mangled_capability, flag_t UNUSED(tls_flags),
-		flag_t UNUSED(tls_state))
-{
-      	capability = protocol_capability(PROTOCOL_C_DEL,
-      			capability, POP3_CMD_STLS,
-      			POP3_CAPABILITY_DELIMITER);
-	if(capability == NULL) {
-		VANESSA_LOGGER_DEBUG("protocol_capability");
-		return(NULL);
-	}
-
-	capability = pop3_mangle_capability(capability, mangled_capability);
-	if(capability == NULL) {
-		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
-		return(NULL);
-	}
-
-	return(capability);
-}
-
