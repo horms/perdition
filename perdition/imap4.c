@@ -119,7 +119,7 @@ static flag_t imap4_encryption(flag_t ssl_flags)
 
 
 /**********************************************************************
- * imap4_capability 
+ * imap4_capability
  * Return the capability string to be used.
  * pre: capability: capability string that has been set
  *      mangled_capability: not used
@@ -130,49 +130,44 @@ static flag_t imap4_encryption(flag_t ssl_flags)
  **********************************************************************/
 
 char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
-		flag_t tls_flags, flag_t tls_state) 
+		flag_t tls_flags, flag_t tls_state)
 {
 	flag_t mode;
 
-	if(!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
+	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT)) {
 		free(capability);
 		capability = strdup(IMAP4_DEFAULT_CAPABILITY);
 	}
-  
-      	if((tls_flags & SSL_MODE_TLS_LISTEN) && 
-			!(tls_state & SSL_MODE_TLS_LISTEN)) {
+
+	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
+	    !(tls_state & SSL_MODE_TLS_LISTEN))
 		mode = PROTOCOL_C_ADD;
-	}
-	else {
+	else
 		mode = PROTOCOL_C_DEL;
-	}
-	capability = protocol_capability(mode,
-			capability, IMAP4_CMD_STARTTLS, 
-			IMAP4_CAPABILITY_DELIMITER);
-	if(capability == NULL) {
+
+	capability = protocol_capability(mode, capability, IMAP4_CMD_STARTTLS,
+					 IMAP4_CAPABILITY_DELIMITER);
+	if (!capability) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");
-		return(NULL);
+		return NULL;
 	}
 
 	if(!opt.login_disabled && (!(tls_flags & SSL_MODE_TLS_LISTEN) ||
-			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE))) {
+			!(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)))
 		return(capability);
-	}
 
-      	if(!(tls_state & SSL_MODE_TLS_LISTEN)) {
+	if (!(tls_state & SSL_MODE_TLS_LISTEN))
 		mode = PROTOCOL_C_ADD;
-	}
-	else {
+	else
 		mode = PROTOCOL_C_DEL;
-	}
-	capability = protocol_capability(mode,
-			capability, IMAP4_CMD_LOGINDISABLED, 
-			IMAP4_CAPABILITY_DELIMITER);
-	if(capability == NULL) {
+	capability = protocol_capability(mode, capability,
+					 IMAP4_CMD_LOGINDISABLED,
+					 IMAP4_CAPABILITY_DELIMITER);
+	if (!capability) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");
-		return(NULL);
+		return NULL;
 	}
 
-	return(capability);
+	return capability;
 }
 
