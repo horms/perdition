@@ -142,8 +142,8 @@ static char *pop3s_capability(char *capability,
 		char **mangled_capability, flag_t UNUSED(tls_flags),
 		flag_t UNUSED(tls_state))
 {
-      	capability = protocol_capability(capability, PROTOCOL_C_DEL, 
-      			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
+      	capability = protocol_capability(PROTOCOL_C_DEL,
+      			capability, POP3_CMD_STLS,
       			POP3_CAPABILITY_DELIMITER);
 	if(capability == NULL) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");

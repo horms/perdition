@@ -240,8 +240,8 @@ char *pop3_capability(char *capability, char **mangled_capability,
 	else {
 		mode = PROTOCOL_C_DEL;
 	}
-	capability = protocol_capability(capability, mode,
-			POP3_DEFAULT_CAPABILITY, POP3_CMD_STLS,
+	capability = protocol_capability(mode,
+			capability, POP3_CMD_STLS,
 			POP3_CAPABILITY_DELIMITER);
 	if(capability == NULL) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");

@@ -198,11 +198,13 @@ char *protocol_list(char *string, const char *delimiter, const int request){
 }
 
 
-char *protocol_capability(char *capability, flag_t flag,
-		const char *existing_capability, const char *add_capability,
-		const char *capability_delimiter) 
+char *protocol_capability(flag_t mode, const char *existing_capability,
+                          const char *add_capability,
+                          const char *capability_delimiter)
 {
-  if(flag & PROTOCOL_C_ADD) {
+  char *capability;
+
+  if(mode & PROTOCOL_C_ADD) {
     capability = str_append_substring_if_missing(existing_capability,
                                                  add_capability,
                                                  capability_delimiter);

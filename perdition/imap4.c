@@ -146,7 +146,7 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 	else {
 		mode = PROTOCOL_C_DEL;
 	}
-	capability = protocol_capability(capability, mode, 
+	capability = protocol_capability(mode,
 			capability, IMAP4_CMD_STARTTLS, 
 			IMAP4_CAPABILITY_DELIMITER);
 	if(capability == NULL) {
@@ -165,7 +165,7 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 	else {
 		mode = PROTOCOL_C_DEL;
 	}
-	capability = protocol_capability(capability, mode, 
+	capability = protocol_capability(mode,
 			capability, IMAP4_CMD_LOGINDISABLED, 
 			IMAP4_CAPABILITY_DELIMITER);
 	if(capability == NULL) {
