@@ -67,7 +67,7 @@
  *         -1 otherwise
  **********************************************************************/
 
-int imap4_in_noop_cmd(io_t *io, const token_t *tag)
+static int imap4_in_noop_cmd(io_t *io, const token_t *tag)
 {
 	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_NOOP) < 0) {
 		VANESSA_LOGGER_DEBUG("imap4_write");
@@ -87,7 +87,7 @@ int imap4_in_noop_cmd(io_t *io, const token_t *tag)
  *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_logout_cmd(io_t *io, const token_t *tag)
+static int imap4_in_logout_cmd(io_t *io, const token_t *tag)
 {
 	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
 			"IMAP4 server logging out, mate") < 0) {
@@ -114,7 +114,7 @@ int imap4_in_logout_cmd(io_t *io, const token_t *tag)
  *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_capability_cmd(io_t *io, const token_t *tag)
+static int imap4_in_capability_cmd(io_t *io, const token_t *tag)
 {
 	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
 		        str_null_safe(opt.capability)) < 0) {
@@ -140,7 +140,7 @@ int imap4_in_capability_cmd(io_t *io, const token_t *tag)
  *        -1 otherwise
  **********************************************************************/
 
-int imap4_in_authenticate_cmd(io_t *io, const token_t *tag)
+static int imap4_in_authenticate_cmd(io_t *io, const token_t *tag)
 {
 	if (imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0,
 			IMAP4_CMD_AUTHENTICATE
