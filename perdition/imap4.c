@@ -148,7 +148,7 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 	capability = protocol_capability(mode, capability, IMAP4_CMD_STARTTLS,
 					 IMAP4_CAPABILITY_DELIMITER);
 	if (!capability) {
-		VANESSA_LOGGER_DEBUG("protocol_capability");
+		VANESSA_LOGGER_DEBUG("protocol_capability: STARTTLS");
 		return NULL;
 	}
 
@@ -164,7 +164,7 @@ char *imap4_capability(char *capability, char **UNUSED(mangled_capability),
 					 IMAP4_CMD_LOGINDISABLED,
 					 IMAP4_CAPABILITY_DELIMITER);
 	if (!capability) {
-		VANESSA_LOGGER_DEBUG("protocol_capability");
+		VANESSA_LOGGER_DEBUG("protocol_capability: LOGINDISABLED");
 		return NULL;
 	}
 
