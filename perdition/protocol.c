@@ -202,38 +202,23 @@ char *protocol_capability(char *capability, flag_t flag,
 		const char *existing_capability, const char *add_capability,
 		const char *capability_delimiter) 
 {
-  char *tmp_str;
-  
-  if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, capability)){
-    tmp_str = strdup(existing_capability);
-    if(tmp_str == NULL) {
-      VANESSA_LOGGER_DEBUG_ERRNO("strdup");
-      return(NULL);
-    }
-  }
-  else {
-    tmp_str = capability;
-  }
-
   if(flag & PROTOCOL_C_ADD) {
-    capability = str_append_substring_if_missing(tmp_str, add_capability, 
-		    capability_delimiter);
+    capability = str_append_substring_if_missing(existing_capability,
+                                                 add_capability,
+                                                 capability_delimiter);
     if(capability == NULL) {
       VANESSA_LOGGER_DEBUG("str_delete_substring");
-      free(tmp_str);
       return(NULL);
     }
   }
   else {
-    capability = str_delete_substring(tmp_str, add_capability, 
-		    capability_delimiter);
+    capability = str_delete_substring(existing_capability, add_capability,
+                                      capability_delimiter);
     if(capability == NULL) {
       VANESSA_LOGGER_DEBUG("str_delete_substring");
-      free(tmp_str);
       return(NULL);
     }
   }
 
-  free(tmp_str);
   return(capability);
 }
