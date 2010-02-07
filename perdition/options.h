@@ -136,7 +136,7 @@
 #define DEFAULT_NO_LOOKUP                    0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_OK_LINE                      "You are so in"
-#define DEFAULT_POP_CAPABILITY               "UIDL  USER"
+#define DEFAULT_POP_CAPABILITY               "UIDL.USER"
 #define DEFAULT_PROTOCOL                     PROTOCOL_POP3
 #define DEFAULT_STRIP_DOMAIN                 STATE_NONE
 #define DEFAULT_SERVER_RESP_LINE             0

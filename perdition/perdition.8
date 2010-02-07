@@ -349,9 +349,11 @@ Empty for no pid file. Not used in inetd mode.
 .B \-\-pop_capability STRING:
 Capabilities for POP3 and POP3S
 .sp
-The capabilities should be delimited by two spaces. This is because the
-capabilities themselves may contain single spaces. The default is
-"UIDL USER".
+The capabilities should be delimited by a '.' spaces. Up until perdition
+1.18 the delimiter was two spaces, "  ". This is now deprecated and it is
+not valid to mix delimiters.
+.sp
+The default capability is "UIDL.USER".
 .sp
 If perdition is running with ssl_mode includes to ssl_listen then the
 capability STLS will be appended to the list of capabilities if it is not

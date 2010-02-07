@@ -201,8 +201,17 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 {
 	flag_t mode;
 	char *capability, *old_capability;
+	const char *delimiter;
 
 	capability = opt.pop_capability;
+
+	/* If the new delimiter is present, use it and only it.
+	 * This allows the old delimiter to be used as a literal.
+	 */
+	if (strstr(capability, POP3_CAPABILITY_DELIMITER))
+		delimiter = POP3_CAPABILITY_DELIMITER;
+	else
+		delimiter = POP3_OLD_CAPABILITY_DELIMITER;
 
 	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
 	    !(tls_state & SSL_MODE_TLS_LISTEN))
@@ -211,15 +220,14 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 		mode = PROTOCOL_C_DEL;
 
 	capability = protocol_capability(mode, capability, POP3_CMD_STLS,
-					 POP3_CAPABILITY_DELIMITER);
+					 delimiter);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("protocol_capability");
 		return NULL;
 	}
 
 	old_capability = capability;
-	capability = pop3_in_mangle_capability(old_capability,
-					       POP3_CAPABILITY_DELIMITER);
+	capability = pop3_in_mangle_capability(old_capability, delimiter);
 	free(old_capability);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("pop3_mangle_capability");
