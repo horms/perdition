@@ -77,7 +77,8 @@ perdition_SOURCES = \
         server_port.c       server_port.h \
         str.c               str.h \
         ssl.c               ssl.h \
-        username.c          username.h
+        username.c          username.h \
+	unused.h
 
 
 INCLUDES= \
