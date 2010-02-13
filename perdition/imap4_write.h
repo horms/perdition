@@ -31,7 +31,7 @@
 #include "str.h"
 #include "token.h"
 
-#define IMAP4_GREETING "IMAP4 perdition ready on"
+#define IMAP4_GREETING "perdition ready on"
 #define IMAP4_QUIT "LOGOUT"
 #define IMAP4_OK "OK"
 #define IMAP4_BAD "BAD"

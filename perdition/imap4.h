@@ -39,6 +39,16 @@
 #include "imap4_out.h"
 
 /**********************************************************************
+ * imap4_greeting_str
+ * String for imap greeting
+ * pre: flag: Flags as per greeting.h
+ * return greeting string
+ *        NULL on error
+ **********************************************************************/
+
+char *imap4_greeting_str(flag_t flag);
+
+/**********************************************************************
  * imap4_greeting
  * Send a greeting to the user
  * pre: io_t: io_t to write to

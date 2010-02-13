@@ -44,6 +44,57 @@ static char *imap4_port(char *port);
 static flag_t imap4_encryption(flag_t ssl_flags);
 
 /**********************************************************************
+ * imap4_greeting_str
+ * String for imap greeting
+ * pre: flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * return greeting string
+ *        NULL on error
+ **********************************************************************/
+
+char *imap4_greeting_str(flag_t flag)
+{
+	char *message = NULL;
+	char *capability = NULL;;
+	char *base = NULL;
+
+	/* The tls_state argument to imap4_capability() can be
+	 * SSL_MODE_EMPTY as the capability before any tls login has
+	 * occured is desired. Its for the greeting, before anything has
+	 * happend.
+	 */
+	capability = imap4_capability(SSL_MODE_EMPTY, opt.ssl_mode);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("imap4_capability");
+		goto err;
+	}
+
+	base = malloc(IMAP4_CMD_CAPABILITY_LEN + strlen(capability) +
+		      strlen(IMAP4_GREETING) + 5);
+	if (!base) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		goto err;
+	}
+
+	strcpy(base, "[" IMAP4_CMD_CAPABILITY " ");
+	strcat(base, capability);
+	strcat(base, "] " IMAP4_GREETING);
+
+	VANESSA_LOGGER_DEBUG(base);
+
+	message = greeting_str(base, flag);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		goto err;
+	}
+
+err:
+	free(capability);
+	free(base);
+	return message;
+}
+
+/**********************************************************************
  * imap4_greeting
  * Send a greeting to the user
  * pre: io_t: io_t to write to
@@ -59,7 +110,7 @@ int imap4_greeting(io_t *io, flag_t flag)
 	char *message = NULL;
 	int status = -1;
 
-	message = greeting_str(IMAP4_GREETING, flag);
+	message = imap4_greeting_str(flag);
 	if (!message) {
 		VANESSA_LOGGER_DEBUG("greeting_str");
 		return -1;

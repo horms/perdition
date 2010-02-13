@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "imap4.h"
 #include "imap4_out.h"
 #include "imap4_tag.h"
 #include "options.h"
@@ -207,7 +208,7 @@ int imap4_out_setup(
   }
   q = NULL;
 
-  greeting_string = greeting_str(IMAP4_GREETING, GREETING_ADD_NODENAME);
+  greeting_string = imap4_greeting_str(GREETING_ADD_NODENAME);
   if(!greeting_string){
     VANESSA_LOGGER_DEBUG("greeting_str");
     goto leave;
