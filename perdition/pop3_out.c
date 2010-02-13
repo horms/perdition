@@ -46,7 +46,6 @@
  *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
- *      protocol: protocol structure for POP3
  * post: Read the vreeting string from the server
  *       It tls_outgoing is set then issue the CAPA command
  *       and check for STLS capability.
@@ -60,8 +59,7 @@
  **********************************************************************/
 
 int pop3_out_setup(io_t *rs_io, io_t *eu_io,
-		   const struct passwd *UNUSED(pw), token_t *UNUSED(tag),
-		   const protocol_t *protocol)
+		   const struct passwd *UNUSED(pw), token_t *UNUSED(tag))
 {
 	token_t *ok;
 	token_t *capa_end = NULL;
@@ -98,7 +96,7 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io,
 	}
 	q = NULL;
 
-	greeting_string = greeting_str(protocol, GREETING_ADD_NODENAME);
+	greeting_string = greeting_str(POP3_GREETING, GREETING_ADD_NODENAME);
 	if(!greeting_string) {
 		VANESSA_LOGGER_DEBUG("greeting_str");
 		status=-1;

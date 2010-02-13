@@ -39,36 +39,6 @@
 
 
 /**********************************************************************
- * greeting
- * Send a greeting to the user
- * pre: io_t: io_t to write to
- *      protocol: Protocol in use
- *      message: Message to display
- *      flag: Flags as per greeting.h
- * post: greeting is written to io
- * return 0 on success
- *        -1 on error
- **********************************************************************/
-
-int greeting(io_t *io, const protocol_t *protocol, flag_t flag){
-  char *message=NULL;
-
-  message=greeting_str(protocol, flag);
-  if(!message){
-    VANESSA_LOGGER_DEBUG("greeting_str");
-    return(-1);
-  }
-  if(protocol->write(io, NULL_FLAG, NULL, protocol->type[PROTOCOL_OK], 
-        1, "%s", message)<0){
-    VANESSA_LOGGER_DEBUG("protocol->write");
-    return(-1);
-  }
-  free(message);
-  return(0);
-}
-
-
-/**********************************************************************
  * greeting_checksum
  * Produce a checksum for greeting string
  * pre: csum: checksum will be returned here
@@ -120,14 +90,15 @@ int getnameinfo_try_lookup(struct sockaddr *addr, char *host, size_t hostlen)
 /**********************************************************************
  * greeting_str
  * Produce greeting string
- * pre: protocol: Protocol in use
+ * pre: base: Base string for greeting
  *      flag: Flags as per greeting.h
  * post: Protocol specific message string is formed
  * return message string on success
  *        NULL on error
  **********************************************************************/
 
-char *greeting_str(const protocol_t *protocol, flag_t flag){
+char *greeting_str(const char *base, flag_t flag)
+{
   char *message;
   char host[NI_MAXHOST];
   uint32 csum;
@@ -153,14 +124,13 @@ char *greeting_str(const protocol_t *protocol, flag_t flag){
     else{
       strncpy(host, system_uname->nodename, NI_MAXHOST -1);
     }
-    if((message=str_cat(5, protocol->greeting_string, " ", host, " ",
-				    csum_str))==NULL){
+    if((message=str_cat(5, base, " ", host, " ", csum_str))==NULL){
       VANESSA_LOGGER_DEBUG("str_cat");
       return(NULL);
     }
   }
   else{
-    if((message=strdup(protocol->greeting_string))==NULL){
+    if((message=strdup(base))==NULL){
       VANESSA_LOGGER_DEBUG("strdup");
       return(NULL);
     }

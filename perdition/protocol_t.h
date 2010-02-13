@@ -50,13 +50,12 @@ struct protocol_t_struct {
 	int (*write)(io_t *io, flag_t flag, const token_t *tag,
 			const char *command, size_t nargs, 
 			const char *fmt, ...);
-	char *greeting_string;
+	int (*greeting)(io_t *io, flag_t flag);
 	char *quit_string;
 	int (*in_get_pw) (io_t *io, flag_t ssl_flags, flag_t ssl_state,
 			  struct passwd *return_pw, token_t **return_tag);
 	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct passwd *pw,
-				 token_t *tag,
-				 const struct protocol_t_struct *protocol);
+				 token_t *tag);
 	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, 
 				 const struct passwd *pw, token_t *tag,
 				 const struct protocol_t_struct *protocol,

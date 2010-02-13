@@ -47,6 +47,39 @@ static char *pop3_port(char *port);
 static flag_t pop3_encryption(flag_t ssl_flags);
 
 /**********************************************************************
+ * pop3_greeting
+ * Send a greeting to the user
+ * pre: io_t: io_t to write to
+ *      flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * post: greeting is written to io
+ * return 0 on success
+ *        -1 on error
+ **********************************************************************/
+
+int pop3_greeting(io_t *io, flag_t flag)
+{
+	char *message = NULL;
+	int status = -1;
+
+	message = greeting_str(POP3_GREETING, flag);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		return -1;
+	}
+
+	if (pop3_write(io, NULL_FLAG, NULL, POP3_OK, 1, "%s", message) < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write");
+		goto err;
+	}
+
+	status = 0;
+err:
+	free(message);
+	return status;
+}
+
+/**********************************************************************
  * pop3_initialise_protocol
  * Initialise the protocol structure for the pop3 protocol
  * Pre: protocol: pointer to an allocated protocol structure
@@ -59,7 +92,7 @@ char *pop3_type[]={POP3_OK, POP3_ERR, POP3_ERR};
 protocol_t *pop3_initialise_protocol(protocol_t *protocol){
   protocol->type = pop3_type;
   protocol->write = pop3_write;
-  protocol->greeting_string = POP3_GREETING;
+  protocol->greeting = pop3_greeting;
   protocol->quit_string = POP3_QUIT;
   protocol->in_get_pw= pop3_in_get_pw;
 #ifdef WITH_PAM_SUPPORT

@@ -38,6 +38,17 @@
 #include "imap4_in.h"
 #include "imap4_out.h"
 
+/**********************************************************************
+ * imap4_greeting
+ * Send a greeting to the user
+ * pre: io_t: io_t to write to
+ *      flag: Flags as per greeting.h
+ * post: greeting is written to io
+ * return 0 on success
+ *        -1 on error
+ **********************************************************************/
+
+int imap4_greeting(io_t *io, flag_t flag);
 
 /**********************************************************************
  * imap4_initialise_protocol

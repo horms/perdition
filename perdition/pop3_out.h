@@ -47,7 +47,6 @@
  *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    ignored 
- *      protocol: protocol structure for POP3
  * post: Read the vreeting string from the server
  *       It tls_outgoing is set then issue the CAPA command
  *       and check for STLS capability.
@@ -64,8 +63,7 @@ int pop3_out_setup(
   io_t *rs_io,
   io_t *eu_io,
   const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol
+  token_t *tag
 );
 
 

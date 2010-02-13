@@ -688,7 +688,7 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_SSL_SUPPORT */
 
   /*Speak to our client*/
-  if(greeting(client_io, protocol, GREETING_ADD_NODENAME)){
+  if(protocol->greeting(client_io, GREETING_ADD_NODENAME)){
     VANESSA_LOGGER_DEBUG("greeting");
     VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client%s."
 			      "Exiting child.", from_to_host_str);
@@ -876,8 +876,7 @@ int main (int argc, char **argv, char **envp){
     }
     pw2.pw_passwd=pw.pw_passwd;
 
-    status = (*(protocol->out_setup))(server_io, client_io, &pw2, our_tag, 
-		    protocol);
+    status = (*(protocol->out_setup))(server_io, client_io, &pw2, our_tag);
     if(status==0){
 	    quit(server_io, protocol, our_tag);
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Connection Negotiation Failure");

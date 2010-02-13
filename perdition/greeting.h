@@ -43,32 +43,16 @@
 /* Flags for greeting() and greeting_str()*/
 #define GREETING_ADD_NODENAME (flag_t)0x1    /*Append nodename to message*/
 
-
-/**********************************************************************
- * greeting
- * Send a greeting to the user
- * pre: io_t: io_t to write to
- *      protocol: Protocol in use
- *      message: Message to display
- *      flag: Flags as per greeting.h
- * post: greeting is written to io
- * return 0 on success
- *        -1 on error
- **********************************************************************/
-
-int greeting(io_t *io, const protocol_t *protocol, flag_t flag);
-
-
 /**********************************************************************
  * greeting_str
  * Produce greeting string
- * pre: protocol: Protocol in use
+ * pre: base: Base string for greeting
  *      flag: Flags as per greeting.h
  * post: Protocol specific message string is formed
  * return message string on success
  *        NULL on error
  **********************************************************************/
 
-char *greeting_str(const protocol_t *protocol, flag_t flag);
+char *greeting_str(const char *base, flag_t flag);
 
 #endif

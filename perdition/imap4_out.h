@@ -48,7 +48,6 @@
  *      eu_io: io to use to communicate with end user
  *      pw:     structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
- *      protocol: protocol structure for imap4
  * post: Read the greeting string from the server
  *       If tls_outgoing is set issue the CAPABILITY command and check
  *       for the STARTTLS capability.
@@ -63,8 +62,7 @@ int imap4_out_setup(
   io_t *rs_io,
   io_t *eu_io,
   const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol
+  token_t *tag
 );
 
 

@@ -44,6 +44,39 @@ static char *imap4_port(char *port);
 static flag_t imap4_encryption(flag_t ssl_flags);
 
 /**********************************************************************
+ * imap4_greeting
+ * Send a greeting to the user
+ * pre: io_t: io_t to write to
+ *      flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * post: greeting is written to io
+ * return 0 on success
+ *        -1 on error
+ **********************************************************************/
+
+int imap4_greeting(io_t *io, flag_t flag)
+{
+	char *message = NULL;
+	int status = -1;
+
+	message = greeting_str(IMAP4_GREETING, flag);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		return -1;
+	}
+
+	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_OK, 1, "%s", message) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write");
+		goto err;
+	}
+
+	status = 0;
+err:
+	free(message);
+	return status;
+}
+
+/**********************************************************************
  * imap4_initialise_protocol
  * Initialise the protocol structure for the imap4 protocol
  * Pre: protocol: pointer to an allocated protocol structure
@@ -56,7 +89,7 @@ char *imap4_type[]={IMAP4_OK, IMAP4_NO, IMAP4_BAD};
 protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->type = imap4_type;
   protocol->write = imap4_write;
-  protocol->greeting_string = IMAP4_GREETING;
+  protocol->greeting = imap4_greeting;
   protocol->quit_string = IMAP4_QUIT;
   protocol->in_get_pw= imap4_in_get_pw;
 #ifdef WITH_PAM_SUPPORT

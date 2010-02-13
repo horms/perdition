@@ -33,6 +33,19 @@
 
 #include "protocol_t.h"
 
+/**********************************************************************
+ * imap4_greeting
+ * Send a greeting to the user
+ * pre: io_t: io_t to write to
+ *      message: Message to display
+ *      flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * post: greeting is written to io
+ * return 0 on success
+ *        -1 on error
+ **********************************************************************/
+
+int pop3_greeting(io_t *io, flag_t flag);
 
 /**********************************************************************
  * pop3_initialise_protocol
