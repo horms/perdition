@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "imap4.h"
 #include "imap4_in.h"
 #include "options.h"
 #include "perdition_globals.h"
@@ -57,58 +58,6 @@
 #define IMAP4_QUOTED_STRING             0x1
 #define IMAP4_SYNCHRONISING_TOKEN     0x2
 #define IMAP4_NON_SYNCHRONISING_TOKEN 0x3
-
-/**********************************************************************
- * imap4_in_capability
- * Return the capability string to be used.
- * pre: tls_flags: the encryption flags that have been set
- *      tls_state: the current state of encryption for the session
- * post: capability to use, as per protocol_capability
- *       with IMAP4 parameters. Should be freed by caller.
- **********************************************************************/
-
-static char *imap4_in_capability(flag_t tls_flags, flag_t tls_state)
-{
-	flag_t mode;
-	char *capability, *old_capability;
-
-	capability = opt.imap_capability;
-
-	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
-	    !(tls_state & SSL_MODE_TLS_LISTEN))
-		mode = PROTOCOL_C_ADD;
-	else
-		mode = PROTOCOL_C_DEL;
-
-	capability = protocol_capability(mode, capability,
-					 IMAP4_CMD_STARTTLS,
-					 IMAP4_CAPABILITY_DELIMITER);
-	if (!capability) {
-		VANESSA_LOGGER_DEBUG("protocol_capability: STARTTLS");
-		return NULL;
-	}
-
-	if(!opt.login_disabled && (!(tls_flags & SSL_MODE_TLS_LISTEN) ||
-				   !(tls_flags & SSL_MODE_TLS_LISTEN_FORCE)))
-		return capability;
-
-	if (!(tls_state & SSL_MODE_TLS_LISTEN))
-		mode = PROTOCOL_C_ADD;
-	else
-		mode = PROTOCOL_C_DEL;
-
-	old_capability = capability;
-	capability = protocol_capability(mode, old_capability,
-					 IMAP4_CMD_LOGINDISABLED,
-					 IMAP4_CAPABILITY_DELIMITER);
-	free(old_capability);
-	if (!capability) {
-		VANESSA_LOGGER_DEBUG("protocol_capability: LOGINDISABLED");
-		return NULL;
-	}
-
-	return capability;
-}
 
 /**********************************************************************
  * imap4_in_noop_cmd
@@ -172,7 +121,7 @@ static int imap4_in_capability_cmd(io_t *io, const token_t *tag,
 	char *capability;
 	int status = -1;
 
-	capability = imap4_in_capability(tls_flags, tls_state);
+	capability = imap4_capability(tls_flags, tls_state);
 	if (!capability)
 		 return -1;
 
