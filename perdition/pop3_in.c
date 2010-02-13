@@ -88,45 +88,6 @@ int pop3_in_authenticate(
 
 #endif /* WITH_PAM_SUPPORT */
 
-
-static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
-{
-	va_list ap;
-	int rc;
-
-	sleep(VANESSA_LOGGER_ERR_SLEEP);
-
-	va_start(ap, fmt);
-	rc = pop3_vwrite(io, NULL_FLAG, NULL, POP3_ERR, nargs, fmt, ap);
-	va_end(ap);
-
-	if (rc < 0) {
-		VANESSA_LOGGER_DEBUG("pop3_write err");
-		return -1;
-	}
-
-	return 0;
-}
-
-#define __POP3_IN_ERR(_reason)						\
-	if (pop3_in_err(io, 1, "%s", _reason) < 0) {			\
-		break;							\
-	}								\
-	goto loop;
-
-static int pop3_in_invalid_cmd(io_t *io, const char *msg)
-{
-	char *extra = "";
-
-	if (opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
-	    io_get_type(io) != io_type_ssl)
-		extra = POP3_CMD_STLS ", ";
-
-	return pop3_in_err(io, 2, "Mate, %smust be one of %s"
-			   POP3_CMD_CAPA ", " POP3_CMD_USER ", "
-			   POP3_CMD_PASS " or " POP3_CMD_QUIT, msg, extra);
-}
-
 /**********************************************************************
  * pop3_in_mangle_capability
  * Modify a capability by exchanging delimiters and optionally
@@ -235,6 +196,44 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 	}
 
 	return capability;
+}
+
+static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
+{
+	va_list ap;
+	int rc;
+
+	sleep(VANESSA_LOGGER_ERR_SLEEP);
+
+	va_start(ap, fmt);
+	rc = pop3_vwrite(io, NULL_FLAG, NULL, POP3_ERR, nargs, fmt, ap);
+	va_end(ap);
+
+	if (rc < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write err");
+		return -1;
+	}
+
+	return 0;
+}
+
+#define __POP3_IN_ERR(_reason)						\
+	if (pop3_in_err(io, 1, "%s", _reason) < 0) {			\
+		break;							\
+	}								\
+	goto loop;
+
+static int pop3_in_invalid_cmd(io_t *io, const char *msg)
+{
+	char *extra = "";
+
+	if (opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
+	    io_get_type(io) != io_type_ssl)
+		extra = POP3_CMD_STLS ", ";
+
+	return pop3_in_err(io, 2, "Mate, %smust be one of %s"
+			   POP3_CMD_CAPA ", " POP3_CMD_USER ", "
+			   POP3_CMD_PASS " or " POP3_CMD_QUIT, msg, extra);
 }
 
 #define __POP3_IN_INVALID_CMD(_reason)					\
