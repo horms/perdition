@@ -80,8 +80,6 @@ char *imap4_greeting_str(flag_t flag)
 	strcat(base, capability);
 	strcat(base, "] " IMAP4_GREETING);
 
-	VANESSA_LOGGER_DEBUG(base);
-
 	message = greeting_str(base, flag);
 	if (!message) {
 		VANESSA_LOGGER_DEBUG("greeting_str");
