@@ -233,15 +233,15 @@ int imap4_out_setup(
   }
   if(!capability_status) {
 	  if (!(opt.ssl_mode & SSL_MODE_TLS_OUTGOING_FORCE)) {
-	    	  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing_force is set, "
+		  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing is set, "
 				  "but the real-server does not have the "
 				  "STARTTLS capability, "
 	  			  "connection will not be encrypted");
 	    	  goto ok;
 	  }
-	  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing is set, but the real-server "
-	  		  "does not have the STARTTLS capability, "
-	  		  "closing connection");
+	  VANESSA_LOGGER_DEBUG_RAW("tls_outgoing_force is set, but the "
+				   "real-server does not have the STARTTLS"
+				   "capability, closing connection");
       	  status = 0;
 	  goto leave;
   }
