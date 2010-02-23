@@ -51,9 +51,9 @@
  *       and check for STLS capability.
  *       Note, that as many POP3 daemons do not impliment the CAPA
  *       command, the failure of this is not considered an error
- * return: Logical or of PROTOCOL_S_OK and
- *         PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
- *         and the STARTTLS capability was reported by the server
+ * return:
+ *       PROTOCOL_S_OK: success, don't use STARTTLS
+ *       PROTOCOL_S_OK|PROTOCOL_S_STARTTLS: success, use STARTTLS
  *       0: on failure
  *       -1 on error
  **********************************************************************/
