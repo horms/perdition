@@ -255,6 +255,7 @@ static int pldap_get_filter(const char *key_str, const char *filter_str,
 	return(0);
 }
 
+#ifdef WITH_LDAP_LUD_EXTS
 /**********************************************************************
  * pldap_scan_exts
  * Scan an array of ldap extensions returned from an ldap
@@ -320,6 +321,7 @@ static int pldap_scan_exts(char **exts, char **bindname, char **xbindpw)
 
 	return(0);
 }
+#endif
 
 #if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
 static char *perdition_ldap_uri (const LDAPURLDesc *lud)
