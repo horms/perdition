@@ -65,4 +65,29 @@ managesieve_write_str(io_t *io, const flag_t flag, const token_t *UNUSED(tag),
 	return managesieve_write(io, flag, command, NULL, str);
 }
 
+static inline int
+managesieve_ok(io_t *io, const struct managesieve_response_code *rc,
+	       const char *message)
+{
+	return managesieve_write(io, PERDITION_SERVER,
+				 MANAGESIEVE_OK, rc, message);
+}
+static inline int
+managesieve_no(io_t *io, const struct managesieve_response_code *rc,
+	       const char *message)
+{
+	sleep(PERDITION_AUTH_FAIL_SLEEP);
+	return managesieve_write(io, PERDITION_SERVER,
+				 MANAGESIEVE_NO, rc, message);
+}
+
+static inline int
+managesieve_bye(io_t *io, const struct managesieve_response_code *rc,
+		const char *message)
+{
+	sleep(PERDITION_AUTH_FAIL_SLEEP);
+	return managesieve_write(io, PERDITION_SERVER,
+				 MANAGESIEVE_BYE, rc, message);
+}
+
 #endif /* PERDIITON_MANAGESIEVE_WRITE_H */
