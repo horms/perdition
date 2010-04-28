@@ -206,7 +206,7 @@ static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
 	sleep(VANESSA_LOGGER_ERR_SLEEP);
 
 	va_start(ap, fmt);
-	rc = pop3_vwrite(io, NULL_FLAG, NULL, POP3_ERR, nargs, fmt, ap);
+	rc = pop3_vwrite(io, NULL_FLAG, POP3_ERR, nargs, fmt, ap);
 	va_end(ap);
 
 	if (rc < 0) {
@@ -300,7 +300,7 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
       if(vanessa_queue_length(q)!=0){
 	    __POP3_IN_ERR("Mate, try: " POP3_CMD_CAPA);
       }
-      pop3_write(io, WRITE_STR_NO_CLLF, NULL, POP3_OK, 1,
+      pop3_write(io, WRITE_STR_NO_CLLF, POP3_OK, 1,
 		 "Capability list follows, mate\r\n%s", capability);
       goto loop;
     }

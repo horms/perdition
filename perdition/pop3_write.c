@@ -44,7 +44,6 @@
  *       <string>
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
- *      tag: ignored 
  *      command: command in message sent
  *           if NULL then only string is written
  *      nargs: number of arguments after fmt
@@ -91,8 +90,8 @@ static const char *__pop3_write_fmt(io_t *UNUSED(io), flag_t *flag,
 	return(__pop3_write_fmt_str);
 }
 
-int pop3_vwrite(io_t *io, flag_t flag, const token_t *UNUSED(tag),
-		const char *command, size_t nargs, const char *fmt, va_list ap)
+int pop3_vwrite(io_t *io, flag_t flag, const char *command,
+		size_t nargs, const char *fmt, va_list ap)
 {
 	const char *new_fmt = NULL;
 
@@ -106,14 +105,14 @@ int pop3_vwrite(io_t *io, flag_t flag, const token_t *UNUSED(tag),
 	return 0;
 }
 
-int pop3_write(io_t *io, flag_t flag, const token_t *tag,
-		const char *command, size_t nargs, const char *fmt, ...)
+int pop3_write(io_t *io, flag_t flag, const char *command,
+	       size_t nargs, const char *fmt, ...)
 {
 	va_list ap;
 	int status = -1;
 
 	va_start(ap, fmt);
-	if (pop3_vwrite(io, flag, tag, command, nargs, fmt, ap) < 0) {
+	if (pop3_vwrite(io, flag, command, nargs, fmt, ap) < 0) {
 		VANESSA_LOGGER_DEBUG("str_vwrite");
 		goto err;
 	}

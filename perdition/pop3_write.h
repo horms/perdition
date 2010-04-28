@@ -58,7 +58,6 @@
  * Display an message of the form <command> [<string>]
  * Pre: io: io_t to write to
  *      flag: flag to pass to str_write as per str.h
- *      tag: ignored 
  *      command: command in message sent
  *           if NULL then only string is written
  *      nargs: number of arguments after fmt
@@ -68,13 +67,11 @@
  *        -1 otherwise
  **********************************************************************/
 
-int pop3_vwrite(io_t *io, const flag_t flag, const token_t *tag,
-		const char *command, const size_t nargs,
-		const char *fmt, va_list ap);
+int pop3_vwrite(io_t *io, const flag_t flag, const char *command,
+		const size_t nargs, const char *fmt, va_list ap);
 
-int pop3_write(io_t *io, const flag_t flag, const token_t *tag, 
-		const char *command, const size_t nargs, 
-		const char *fmt, ...);
+int pop3_write(io_t *io, const flag_t flag, const char *command,
+	       const size_t nargs, const char *fmt, ...);
 
 /**********************************************************************
  * pop3_write_str
@@ -94,8 +91,8 @@ static inline int
 pop3_write_str(io_t *io, const flag_t flag, const token_t *UNUSED(tag),
 	       const char *command, const char *str) {
 	if (str)
-		return pop3_write(io, flag, NULL, command, 1, "%s", str);
-	return pop3_write(io, flag, NULL, command, 0, NULL);
+		return pop3_write(io, flag, command, 1, "%s", str);
+	return pop3_write(io, flag, command, 0, NULL);
 }
 
 #endif
