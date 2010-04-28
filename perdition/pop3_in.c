@@ -326,9 +326,6 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
 #endif /* WITH_SSL_SUPPORT */
 
     if(strncasecmp((char *)token_buf(t), POP3_CMD_USER, token_len(t))==0){
-      if(return_pw->pw_name!=NULL){
-	      __POP3_IN_ERR(POP3_CMD_USER " is already set, mate");
-      }
       if(vanessa_queue_length(q)!=1){
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_USER " <username>");
       }
