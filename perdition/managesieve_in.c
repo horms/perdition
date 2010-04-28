@@ -6,6 +6,7 @@
 #include "acap_token.h"
 #include "queue_func.h"
 #include "unused.h"
+#include "options.h"
 
 #include <pwd.h>
 
@@ -221,6 +222,45 @@ err:
 	return status;
 }
 
+#ifdef WITH_SSL_SUPPORT
+/**********************************************************************
+ * managesieve_in_starttls_cmd
+ * Handle a STARTTLS command
+ * pre: io: io_t to write to and read from
+ *      q: queue of tokens read from client.
+ * post: q is destroyed
+ * return: 0 on MANAGESIEVE_OK
+ *         -1 on MANAGESIEVE_NO
+ *         -2 on MANAGESIEVE_BYE
+ *         -3 on internal error
+ **********************************************************************/
+
+static int managesieve_in_starttls_cmd(io_t *io, vanessa_queue_t *q)
+{
+	int status = -3;
+
+	if (vanessa_queue_length(q) != 0) {
+		if (managesieve_no(io, NULL, "Too many arguments, "
+			     "expected STARTTLS, mate") < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_no");
+			goto err;
+		}
+		status = -1;
+		goto err;
+	}
+
+	if (managesieve_ok(io, NULL, NULL) < 0) {
+		VANESSA_LOGGER_DEBUG("managesieve_ok");
+		goto err;
+	}
+
+	status = 0;
+err:
+	vanessa_queue_destroy(q);
+	return status;
+}
+#endif
+
 /**********************************************************************
  * managesieve_in_get_pw_loop
  * read USER and PASS commands and return them in a struct passwd *
@@ -232,7 +272,8 @@ err:
  *                 where username and password
  *                 will be returned if one is found
  * post: pw_return structure with pw_name and pw_passwd set
- * return: 2 logout
+ * return: 3 starttls
+ *	   2 logout
  *         1 pw obtained
  *         0 on MANAGESIEVE_OK
  *         -1 on MANAGESIEVE_NO
@@ -278,6 +319,16 @@ managesieve_in_get_pw_loop(io_t *io, flag_t tls_flags, flag_t tls_state,
 		q = NULL; /* managesieve_in_noop_cmd consumes q */
 		if (status < 0)
 			goto err;
+#ifdef WITH_SSL_SUPPORT
+	} else if (tls_flags & SSL_MODE_TLS_LISTEN &&
+		   io_get_type(io) != io_type_ssl &&
+		   token_casecmp_string(t, MANAGESIEVE_CMD_STARTTLS)) {
+		status = managesieve_in_starttls_cmd(io, q);
+		q = NULL; /* managesieve_in_starttls_cmd consumes q */
+		if (!status)
+			status = 3;
+		goto err;
+#endif
 	} else if (managesieve_no(io, NULL, "Unknown command, mate") < 0) {
 		VANESSA_LOGGER_DEBUG("managesieve_no");
 		status = -1;
@@ -305,6 +356,7 @@ err:
  * post: pw_return structure with pw_name and pw_passwd set
  * return: 0 on success
  *	   1 if user quits (LOGOUT command)
+ *	   2 if TLS negotiation should be done
  *	   -1 on error
  **********************************************************************/
 

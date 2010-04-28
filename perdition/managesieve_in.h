@@ -41,6 +41,7 @@ int managesieve_in_authenticate(const struct passwd *pw, io_t *io,
  * post: pw_return structure with pw_name and pw_passwd set
  * return: 0 on success
  *	   1 if user quits (LOGOUT command)
+ *	   2 if TLS negotiation should be done
  *	   -1 on error
  **********************************************************************/
 
