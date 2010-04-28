@@ -115,8 +115,8 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io,
 		goto ok;
 	}
 	
-	if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_CAPA, 0, "")<0){
-		VANESSA_LOGGER_DEBUG("pop3_write");
+	if (pop3_write_str(rs_io, NULL_FLAG, NULL, POP3_CMD_CAPA, NULL) < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write_str");
 		goto leave;
 	}
 	
@@ -199,8 +199,8 @@ int pop3_out_setup(io_t *rs_io, io_t *eu_io,
 		goto ok;
 	}
 
-	if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_STLS, 0, "")<0){
-		VANESSA_LOGGER_DEBUG("pop3_write");
+	if (pop3_write_str(rs_io, NULL_FLAG, NULL, POP3_CMD_STLS, NULL) < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write_str");
 		goto leave;
 	}
 
@@ -277,8 +277,8 @@ int pop3_out_authenticate(
   token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
   /* Send USER command */
-  if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_USER, 1, "%s", pw->pw_name)<0){
-    VANESSA_LOGGER_DEBUG("pop3_write");
+  if (pop3_write_str(rs_io, NULL_FLAG, NULL, POP3_CMD_USER, pw->pw_name) < 0) {
+    VANESSA_LOGGER_DEBUG("pop3_write_str");
     status = -1;
     goto leave;
   }
@@ -296,9 +296,9 @@ int pop3_out_authenticate(
   q = NULL;
 
   /* Send PASS command */
-  if(pop3_write(rs_io, NULL_FLAG, NULL, POP3_CMD_PASS, 1, "%s", 
-			  pw->pw_passwd)<0){
-    VANESSA_LOGGER_DEBUG("pop3_write pass");
+  if (pop3_write_str(rs_io, NULL_FLAG, NULL,
+		     POP3_CMD_PASS, pw->pw_passwd) < 0) {
+    VANESSA_LOGGER_DEBUG("pop3_write_str pass");
     status = -1;
     goto leave;
   }

@@ -72,9 +72,9 @@ int pop3_in_authenticate(
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(pop3_write(io, NULL_FLAG, NULL, POP3_ERR, 0,
-        "Authentication failure, mate")<0){
-      VANESSA_LOGGER_DEBUG("pop3_write");
+    if (pop3_write_str(io, NULL_FLAG, NULL, POP3_ERR,
+		       "Authentication failure, mate") < 0) {
+      VANESSA_LOGGER_DEBUG("pop3_write_str");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
     }
@@ -312,8 +312,8 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_STLS);
       }
       if(io_get_type(io) != io_type_ssl){
-        pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
-			"Begin TLS negotiation, mate");
+        pop3_write_str(io, NULL_FLAG, NULL, POP3_OK,
+		       "Begin TLS negotiation, mate");
         token_destroy(&t);
         vanessa_queue_destroy(q);
         return(2);
@@ -353,8 +353,8 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
       }
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, 1, "%s", message)<0){
-        VANESSA_LOGGER_DEBUG("pop3_write user set");
+      if (pop3_write_str(io, NULL_FLAG, NULL, POP3_OK, message) < 0) {
+        VANESSA_LOGGER_DEBUG("pop3_write_str user set");
         goto loop;
       }
     }
@@ -376,8 +376,8 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
       if(vanessa_queue_length(q)) {
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_QUIT);
       }
-      if(pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0, POP3_CMD_QUIT)<0){
-        VANESSA_LOGGER_DEBUG("pop3_write quit");
+      if(pop3_write_str(io, NULL_FLAG, NULL, POP3_OK, POP3_CMD_QUIT) < 0){
+        VANESSA_LOGGER_DEBUG("pop3_write_str quit");
         break;
       }
       vanessa_queue_destroy(q);

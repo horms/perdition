@@ -68,8 +68,8 @@ int pop3_greeting(io_t *io, flag_t flag)
 		return -1;
 	}
 
-	if (pop3_write(io, NULL_FLAG, NULL, POP3_OK, 1, "%s", message) < 0) {
-		VANESSA_LOGGER_DEBUG("pop3_write");
+	if (pop3_write_str(io, NULL_FLAG, NULL, POP3_OK, message) < 0) {
+		VANESSA_LOGGER_DEBUG("pop3_write_str");
 		goto err;
 	}
 

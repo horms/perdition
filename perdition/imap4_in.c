@@ -70,8 +70,8 @@
 
 static int imap4_in_noop_cmd(io_t *io, const token_t *tag)
 {
-	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0, IMAP4_CMD_NOOP) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write");
+	if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_OK, IMAP4_CMD_NOOP) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str");
 		return -1;
 	}
 
@@ -90,15 +90,15 @@ static int imap4_in_noop_cmd(io_t *io, const token_t *tag)
 
 static int imap4_in_logout_cmd(io_t *io, const token_t *tag)
 {
-	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_BYE, 0,
-			"IMAP4 server logging out, mate") < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write untagged");
+	if (imap4_write_str(io, NULL_FLAG, NULL, IMAP4_BYE,
+			    "IMAP4 server logging out, mate") < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str untagged");
 		return(-1);
 	}
 
-	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
-			IMAP4_CMD_LOGOUT) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write tagged");
+	if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_OK,
+			    IMAP4_CMD_LOGOUT) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str tagged");
 		return -1;
 	}
 
@@ -125,15 +125,15 @@ static int imap4_in_capability_cmd(io_t *io, const token_t *tag,
 	if (!capability)
 		 return -1;
 
-	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY, 0,
-			capability) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write untagged");
+	if (imap4_write_str(io, NULL_FLAG, NULL, IMAP4_CMD_CAPABILITY,
+			    capability) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str untagged");
 		goto err;
 	}
 
-	if (imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
-			IMAP4_CMD_CAPABILITY) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write tagged");
+	if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_OK,
+			    IMAP4_CMD_CAPABILITY) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str tagged");
 		goto err;
 	}
 
@@ -154,10 +154,10 @@ err:
 
 static int imap4_in_authenticate_cmd(io_t *io, const token_t *tag)
 {
-	if (imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0,
-			IMAP4_CMD_AUTHENTICATE
-			" mechanism not supported, mate") < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write");
+	if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_NO,
+			    IMAP4_CMD_AUTHENTICATE
+			    " mechanism not supported, mate") < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str");
 		return -1;
 	}
 
@@ -282,8 +282,8 @@ static int imap4_token_wrapper(io_t *io, vanessa_queue_t *q,
 			return(-1);
 		}
 		token_assign(*input_token, strdup(IMAP4_CONT_TAG), 1, 0);
-		imap4_write(io, NULL_FLAG, *input_token, IMAP4_OK, 
-				0, "ready for additional input");
+		imap4_write_str(io, NULL_FLAG, *input_token, IMAP4_OK,
+				"ready for additional input");
 		token_destroy(input_token);
 	}
 
@@ -364,8 +364,8 @@ int imap4_in_authenticate(
   }
   if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
     sleep(PERDITION_AUTH_FAIL_SLEEP);
-    if(imap4_write(io, NULL_FLAG, tag, IMAP4_NO, 0,
-			    "Authentication failure")<0){
+    if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_NO,
+			"Authentication failure") < 0){
       VANESSA_LOGGER_DEBUG("imap4_write");
       do_pam_end(pamh, EXIT_SUCCESS);
       return(-1);
@@ -471,9 +471,8 @@ static int imap4_in_verify_tag_str(const token_t *tag)
 
 #define __IMAP4_IN_BAD(_reason)                                             \
         sleep(VANESSA_LOGGER_ERR_SLEEP);                                    \
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_BAD,                       \
-				1, "%s", (_reason)) < 0) {                  \
-		VANESSA_LOGGER_DEBUG("imap4_write syntax error");           \
+        if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_BAD, (_reason)) < 0) {\
+		VANESSA_LOGGER_DEBUG("imap4_write_str syntax error");       \
 		break;                                                      \
         }                                                                   \
 	goto loop;
@@ -558,9 +557,9 @@ int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
 	__IMAP4_IN_BAD("STARTTLS disabled, mate");
       }
       if(io_get_type(io) != io_type_ssl){
-        if(imap4_write(io, NULL_FLAG, tag, IMAP4_OK, 0,
-				"Begin TLS negotiation now")<0){
-           VANESSA_LOGGER_DEBUG("imap4_write begin TLS");
+        if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_OK,
+			    "Begin TLS negotiation now") < 0) {
+          VANESSA_LOGGER_DEBUG("imap4_write_str begin TLS");
           return(-1);
         }
         vanessa_queue_destroy(q);

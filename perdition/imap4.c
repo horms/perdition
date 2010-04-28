@@ -114,8 +114,8 @@ int imap4_greeting(io_t *io, flag_t flag)
 		return -1;
 	}
 
-	if (imap4_write(io, NULL_FLAG, NULL, IMAP4_OK, 1, "%s", message) < 0) {
-		VANESSA_LOGGER_DEBUG("imap4_write");
+	if (imap4_write_str(io, NULL_FLAG, NULL, IMAP4_OK, message) < 0) {
+		VANESSA_LOGGER_DEBUG("imap4_write_str");
 		goto err;
 	}
 
