@@ -240,6 +240,7 @@ fi
 
 AC_SUBST(ssl_lib)
 AC_SUBST(ssl_includes)
+AM_CONDITIONAL(SSL_BUILD, test "${enable_ssl}" = "yes")
 
 
 ######################################################################
