@@ -653,6 +653,10 @@ __perdition_ssl_compare_key(const char *key, const void *val, size_t val_len)
 	if(strlen(key) == val_len && !memcmp(key, val, val_len))
 		return 0;
 
+	/* Need at lest "*." SOMETHING */
+	if (val_len < 3)
+		return -1;
+
 	/* A wild card common name is allowed
 	 * It should be of the form *.domain */
 	if (!memcmp(val, "*.", 2)) {
