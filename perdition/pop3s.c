@@ -61,6 +61,7 @@ protocol_t *pop3s_initialise_protocol(protocol_t *protocol){
   protocol->write_str = pop3_write_str;
   protocol->greeting = pop3_greeting;
   protocol->quit_string = POP3_QUIT;
+  protocol->bye = NULL;
   protocol->in_get_auth = pop3_in_get_auth;
 #ifdef WITH_PAM_SUPPORT
   protocol->in_authenticate= pop3_in_authenticate;

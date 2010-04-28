@@ -260,6 +260,11 @@ char *managesieve_capability(flag_t tls_flags, flag_t tls_state)
 	return capability;
 }
 
+static int managesieve_protocol_bye(io_t *io, const char *msg)
+{
+	return managesieve_bye(io, NULL, msg);
+}
+
 /**********************************************************************
  * managesieve_initialise_protocol
  * Initialise the protocol structure for the managesieve protocol
@@ -277,6 +282,7 @@ protocol_t *managesieve_initialise_protocol(protocol_t *protocol)
 	protocol->write_str = managesieve_write_str;
 	protocol->greeting = managesieve_greeting;
 	protocol->quit_string = MANAGESIEVE_QUIT;
+	protocol->bye = managesieve_protocol_bye;
 	protocol->in_get_auth = managesieve_in_get_auth;
 #ifdef WITH_PAM_SUPPORT
 	protocol->in_authenticate = managesieve_in_authenticate;

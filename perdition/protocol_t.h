@@ -51,6 +51,7 @@ struct protocol_t_struct {
 			 const char *command, const char *str);
 	int (*greeting)(io_t *io, flag_t flag);
 	char *quit_string;
+	int (*bye)(io_t *io, const char *msg);
 	int (*in_get_auth) (io_t *io, flag_t ssl_flags, flag_t ssl_state,
 			    struct auth *return_auth, token_t **return_tag);
 	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct auth *auth,
