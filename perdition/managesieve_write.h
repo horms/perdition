@@ -12,6 +12,43 @@
 #define MANAGESIEVE_OK	"OK"
 #define MANAGESIEVE_NO	"NO"
 #define MANAGESIEVE_BYE	"BYE"
+#define MANAGESIEVE_CAPA_DELIMITER "  "
+
+/* Reflect capabilities of
+ * dovecot-1.2.10 +
+ * dovecot-1.2-sieve-0.1.15 +
+ * dovecot-1.2-managesieve-0.11.11 */
+#define MANAGESIEVE_DEFAULT_CAPA \
+	"\"IMPLEMENTATION\" \"perdition\""		\
+	MANAGESIEVE_CAPA_DELIMITER			\
+	"\"SIEVE\" \"comparator-i;octet "		\
+		    "comparator-i;ascii-casemap "	\
+		    "fileinto "				\
+		    "reject "				\
+		    "envelope "				\
+		    "encoded-character "		\
+		    "vacation "				\
+		    "subaddress "			\
+		    "comparator-i;ascii-numeric "	\
+		    "relational "			\
+		    "regex "				\
+		    "imap4flags "			\
+		    "copy "				\
+		    "include "				\
+		    "variables "			\
+		    "body "				\
+		    "enotify "				\
+		    "environment "			\
+		    "mailbox "				\
+		    "date\""				\
+	MANAGESIEVE_CAPA_DELIMITER			\
+	"\"SASL\" \"PLAIN\""				\
+	MANAGESIEVE_CAPA_DELIMITER			\
+	"\"NOTIFY\" \"mailto\""				\
+	MANAGESIEVE_CAPA_DELIMITER			\
+	"\"VERSION\" \"" VERSION "\""
+
+#define MANAGESIEVE_CAPA_STARTTLS "\"STARTTLS\""
 
 #define MANAGESIEVE_DEFAULT_PORT "2000"
 

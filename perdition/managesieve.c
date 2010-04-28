@@ -4,7 +4,9 @@
 #include "managesieve_out.h"
 #include "managesieve_write.h"
 #include "protocol_t.h"
+#include "options.h"
 #include "unused.h"
+#include "perdition_globals.h"
 
 /**********************************************************************
  * managesieve_greeting
@@ -61,6 +63,63 @@ static flag_t managesieve_encryption(flag_t ssl_flags)
 }
 
 /**********************************************************************
+ * managesieve_mangle_capability
+ * Modify a capability by exchanging delimiters
+ * pre: capability: capability string that has been set
+ * return: mangled_capability suitable for sending on the wire,
+ *         caller should free this memory
+ *         NULL on error
+ **********************************************************************/
+
+static char *managesieve_mangle_capability(const char *capability)
+{
+	const char *start;
+	const char *end;
+	char *mangled_capability;
+	size_t n_len;
+	int count;
+
+	const char *old_delimiter = MANAGESIEVE_CAPA_DELIMITER;
+	const char *new_delimiter = "\r\n";
+
+	const size_t old_delimiter_len = strlen(old_delimiter);
+	const size_t new_delimiter_len = strlen(new_delimiter);
+
+	n_len = 0;
+	count = 0;
+	start = capability;
+	while ((start = strstr(start, old_delimiter))) {
+		start += old_delimiter_len;
+		count++;
+	}
+
+	n_len = strlen(capability) - (count * old_delimiter_len) +
+		(count * new_delimiter_len);
+
+	mangled_capability = (char *)malloc(n_len + 1);
+	if (!mangled_capability) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		return NULL;
+	}
+	memset(mangled_capability, 0, n_len + 1);
+
+	end = capability;
+	while (1) {
+		start = end;
+		end = strstr(start, old_delimiter);
+		if (!end)
+			break;
+		strncat(mangled_capability, start, end-start);
+		strcat(mangled_capability, new_delimiter);
+		end += old_delimiter_len;
+	}
+	strncat(mangled_capability, start, end-start);
+
+	return mangled_capability;
+}
+
+
+/**********************************************************************
  * managesieve_capability
  * Return the capability string to be used.
  * pre: tls_flags: the encryption flags that have been set
@@ -70,9 +129,39 @@ static flag_t managesieve_encryption(flag_t ssl_flags)
  *	   NULL on error
  **********************************************************************/
 
-char *managesieve_capability(flag_t UNUSED(tls_flags), flag_t UNUSED(tls_state))
+char *managesieve_capability(flag_t tls_flags, flag_t tls_state)
 {
-	return NULL;
+	flag_t mode;
+	char *capability;
+	char *old_capability;
+
+	capability = opt.managesieve_capability;
+	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT))
+		capability = MANAGESIEVE_DEFAULT_CAPA;
+
+	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
+	    !(tls_state & SSL_MODE_TLS_LISTEN))
+		mode = PROTOCOL_C_ADD;
+	else
+		mode = PROTOCOL_C_DEL;
+
+	capability = protocol_capability(mode, capability,
+					MANAGESIEVE_CAPA_STARTTLS,
+					MANAGESIEVE_CAPA_DELIMITER);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("protocol_capability");
+		return NULL;
+	}
+
+	old_capability = capability;
+	capability = managesieve_mangle_capability(old_capability);
+	free(old_capability);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("managesieve_mangle_capability");
+		return NULL;
+	}
+
+	return capability;
 }
 
 /**********************************************************************
