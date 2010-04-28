@@ -1,5 +1,6 @@
 #include "token.h"
 #include "io.h"
+#include "managesieve.h"
 #include "managesieve_in.h"
 #include "managesieve_write.h"
 #include "acap_token.h"
@@ -31,6 +32,55 @@ int managesieve_in_authenticate(const struct passwd *UNUSED(pw),
 	return -1;
 }
 #endif /* WITH_PAM_SUPPORT */
+
+/**********************************************************************
+ * managesieve_in_capability_cmd
+ * Handle a CAPABILITY command
+ * pre: io: io_t to write to and read from
+ *      q: queue of tokens read from client.
+ *      tls_flags: the encryption flags that have been set
+ *      tls_state: the current state of encryption for the session
+ * post: q is destroyed
+ * return: 0 on MANAGESIEVE_OK
+ *         -1 on MANAGESIEVE_NO
+ *         -2 on MANAGESIEVE_BYE
+ *         -3 on internal error
+ **********************************************************************/
+
+static int managesieve_in_capability_cmd(io_t *io, vanessa_queue_t *q,
+					 flag_t tls_flags, flag_t tls_state)
+{
+	int status = -3;
+	char *msg = NULL;
+
+	if (vanessa_queue_length(q) != 0) {
+		if (managesieve_no(io, NULL, "Too many arguments, "
+			     "expected CAPABILITY, mate") < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_no");
+			goto err;
+		}
+		status = -1;
+		goto err;
+	}
+
+	msg = managesieve_capability_msg(tls_flags, tls_state,
+				   "CAPABILITY completed, mate");
+	if (!msg) {
+		VANESSA_LOGGER_DEBUG("managesieve_capability_msg");
+		goto err;
+	}
+
+	if (managesieve_write_raw(io, msg) < 0) {
+		VANESSA_LOGGER_DEBUG("managesieve_write_raw");
+		goto err;
+	}
+
+	status = 0;
+err:
+	vanessa_queue_destroy(q);
+	free(msg);
+	return status;
+}
 
 /**********************************************************************
  * managesieve_in_logout_cmd
@@ -191,8 +241,7 @@ err:
  **********************************************************************/
 
 static int
-managesieve_in_get_pw_loop(io_t *io, flag_t UNUSED(tls_flags),
-			   flag_t UNUSED(tls_state),
+managesieve_in_get_pw_loop(io_t *io, flag_t tls_flags, flag_t tls_state,
 			   struct passwd *UNUSED(return_pw))
 {
 	vanessa_queue_t *q = NULL;
@@ -212,7 +261,13 @@ managesieve_in_get_pw_loop(io_t *io, flag_t UNUSED(tls_flags),
 		goto err;
 	}
 
-	if (token_casecmp_string(t, MANAGESIEVE_CMD_LOGOUT)) {
+	if (token_casecmp_string(t, MANAGESIEVE_CMD_CAPABILITY)) {
+		status = managesieve_in_capability_cmd(io, q,
+						       tls_flags, tls_state);
+		q = NULL; /* managesieve_in_capability_cmd consumes q */
+		if (status < 0)
+			goto err;
+	} else if (token_casecmp_string(t, MANAGESIEVE_CMD_LOGOUT)) {
 		status = managesieve_in_logout_cmd(io, q);
 		q = NULL; /* managesieve_in_logout_cmd consumes q */
 		if (!status)

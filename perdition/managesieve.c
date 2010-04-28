@@ -10,34 +10,24 @@
 #include "greeting.h"
 
 /**********************************************************************
- * managesieve_greeting_str
+ * managesieve_capability_msg
  * String for imap greeting
- * pre: flag: Flags as per greeting.h
- *      tls_flags: the encryption flags that have been set
- * return greeting string
+ * pre: tls_flags: the encryption flags that have been set
+ *      tls_state: the current state of encryption for the session
+ *      tail: string to append to the message
+ * return capability message, should be freed by caller
  *        NULL on error
  **********************************************************************/
 
-char *managesieve_greeting_str(flag_t flag)
+char *managesieve_capability_msg(flag_t tls_flags, flag_t tls_state,
+				 const char *tail)
 {
 	char *capability = NULL;;
-	char *tail = NULL;
 	char *message = NULL;
 
-	/* The tls_state argument to managesieve_capability() can be
-	 * SSL_MODE_EMPTY as the capability before any tls login has
-	 * occurred is desired. Its for the greeting, before anything has
-	 * happened.
-	 */
-	capability = managesieve_capability(SSL_MODE_EMPTY, opt.ssl_mode);
+	capability = managesieve_capability(tls_flags, tls_state);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("managesieve_capability");
-		goto err;
-	}
-
-	tail = greeting_str(MANAGESIEVE_GREETING, flag);
-	if (!tail) {
-		VANESSA_LOGGER_DEBUG("greeting_str");
 		goto err;
 	}
 
@@ -56,6 +46,43 @@ char *managesieve_greeting_str(flag_t flag)
 
 err:
 	free(capability);
+	return message;
+}
+
+
+/**********************************************************************
+ * managesieve_greeting_str
+ * String for imap greeting
+ * pre: flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * return greeting string
+ *        NULL on error
+ **********************************************************************/
+
+char *managesieve_greeting_str(flag_t flag)
+{
+	char *tail = NULL;
+	char *message = NULL;
+
+	tail = greeting_str(MANAGESIEVE_GREETING, flag);
+	if (!tail) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		goto err;
+	}
+
+	/* The tls_state argument to managesieve_capability() can be
+	 * SSL_MODE_EMPTY as the capability before any tls login has
+	 * occured is desired. Its for the greeting, before anything has
+	 * happend.
+	 */
+	message = managesieve_capability_msg(opt.ssl_mode, SSL_MODE_EMPTY,
+					     tail);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG("managesieve_capability_msg");
+		goto err;
+	}
+
+err:
 	free(tail);
 	return message;
 }

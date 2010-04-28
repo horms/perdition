@@ -6,6 +6,19 @@
 #include "perdition_types.h"
 
 /**********************************************************************
+ * managesieve_capability_msg
+ * String for imap greeting
+ * pre: tls_flags: the encryption flags that have been set
+ *      tls_state: the current state of encryption for the session
+ *      tail: string to append to the message
+ * return capabilituy message, should be freed by caller
+ *        NULL on error
+ **********************************************************************/
+
+char *managesieve_capability_msg(flag_t tls_flags, flag_t tls_state,
+				 const char *tail);
+
+/**********************************************************************
  * managesieve_greeting
  * Send a greeting to the user
  * pre: io_t: io_t to write to
