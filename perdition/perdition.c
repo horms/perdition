@@ -272,7 +272,7 @@ int main (int argc, char **argv, char **envp){
   token_t *our_tag=NULL;
   token_t *client_tag=NULL;
   size_t server_resp_buf_size=0;
-  flag_t tls_state=0;
+  flag_t tls_state = 0;
   timed_log_t auth_log;
   char from_to_host_str[(NI_MAXHOST*2)+2];
   char from_host_str[NI_MAXHOST];
@@ -876,6 +876,7 @@ int main (int argc, char **argv, char **envp){
     {
     struct auth auth2 = auth;
     char *id;
+    int sasl_mech = 0;
 
     /* Authenticate the user with the pop server */
     id = username_mangle(auth_get_authorisation_id(&auth), STATE_REMOTE_LOGIN);
@@ -889,6 +890,7 @@ int main (int argc, char **argv, char **envp){
     auth_set_authorisation_id(&auth2, id);
 
     status = (*(protocol->out_setup))(server_io, client_io, &auth2, our_tag);
+    sasl_mech = status & PROTOCOL_S_SASL_MASK;
     if(status==0){
 	    quit(server_io, protocol, our_tag);
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Connection Negotiation Failure");
@@ -931,9 +933,12 @@ int main (int argc, char **argv, char **envp){
       server_resp_buf_size=MAX_LINE_LENGTH-1;
     }
     token_flush();
-    status = (*(protocol->out_authenticate))(server_io, client_io, &auth2,
-		    our_tag, protocol, server_resp_buf, &server_resp_buf_size);
-    free(id);
+    status = (*(protocol->out_authenticate))(server_io, client_io, tls_state,
+					     &auth2, sasl_mech, our_tag,
+					     protocol, server_resp_buf,
+					     &server_resp_buf_size);
+    if (id != auth_get_authorisation_id(&auth))
+        free(id);
     if(status==0) {
 	    quit(server_io, protocol, our_tag);
             if(opt.server_resp_line){

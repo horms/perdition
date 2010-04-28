@@ -55,8 +55,9 @@ struct protocol_t_struct {
 			    struct auth *return_auth, token_t **return_tag);
 	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct auth *auth,
 				 token_t *tag);
-	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, 
-				 const struct auth *auth, token_t *tag,
+	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, flag_t ssl_state,
+				 const struct auth *auth, flag_t sasl_mech,
+				 token_t *tag,
 				 const struct protocol_t_struct *protocol,
 				 char *buf, size_t *n);
 	int (*in_authenticate) (const struct auth *auth, io_t *io,

@@ -37,7 +37,9 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct auth *auth,
  * You should call managesieve_setup() first
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
+ *	tls_state: the current state of encryption for the session
  *	auth:    structure with authentication credentials
+ *	sasl_mech: sasl_mechanisms reported by real-server
  *	tag:    ignored
  *	protocol: protocol structure for managesieve
  *	buf:    buffer to return response from server in
@@ -51,9 +53,9 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct auth *auth,
  *	   -1: on error
  **********************************************************************/
 
-int managesieve_out_authenticate(io_t *rs_io, io_t *eu_io,
-				 const struct auth *auth, token_t *tag,
-				 const protocol_t *protocol,
+int managesieve_out_authenticate(io_t *rs_io, io_t *eu_io, flag_t tls_state,
+				 const struct auth *auth, flag_t sasl_mech,
+				 token_t *tag, const protocol_t *protocol,
 				 char *buf, size_t *n);
 
 #define managesieve_out_response pop3_out_response

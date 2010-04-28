@@ -247,7 +247,9 @@ leave:
  * Authenticate user with backend pop3 server
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
+ *      tls_state: ignored
  *      auth:   structure with username and passwd
+ *      sasl_mech: ignored
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
  *      buf: buffer to return server response in
@@ -258,7 +260,8 @@ leave:
  *        -1: on error
  **********************************************************************/
 
-int pop3_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+int pop3_out_authenticate(io_t *rs_io, io_t *eu_io, flag_t UNUSED(tls_state),
+			  const struct auth *auth, flag_t UNUSED(ssl_mech),
 			  token_t *UNUSED(tag),
 			  const protocol_t *UNUSED(protocol),
 			  char *buf, size_t *n)

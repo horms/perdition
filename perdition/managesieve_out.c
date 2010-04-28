@@ -179,7 +179,9 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io,
  * You should call managesieve_setup() first
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
+ *	tls_state: the current state of encryption for the session
  *	auth:    structure with authentication credentials
+ *	sasl_mech: sasl_mechanisms reported by real-server
  *	tag:    ignored
  *	protocol: protocol structure for managesieve
  *	buf:    buffer to return response from server in
@@ -194,7 +196,9 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io,
  **********************************************************************/
 
 int managesieve_out_authenticate(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
+				 flag_t UNUSED(tls_state),
 				 const struct auth *UNUSED(auth),
+				 flag_t UNUSED(sasl_mech),
 				 token_t *UNUSED(tag),
 				 const protocol_t *UNUSED(protocol),
 				 char *UNUSED(buf), size_t *UNUSED(n))

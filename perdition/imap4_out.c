@@ -277,7 +277,9 @@ leave:
  * You should call imap4_setup() first
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
+ *      tls_state: ignored
  *      auth:   structure with username and passwd
+ *      sasl_mech: ignored
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structure for imap4
  *      buf:    buffer to return response from server in
@@ -291,7 +293,8 @@ leave:
  *        -1: on error
  **********************************************************************/
 
-int imap4_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+int imap4_out_authenticate(io_t *rs_io, io_t *eu_io, flag_t UNUSED(tls_state),
+			   const struct auth *auth, flag_t UNUSED(sasl_mech),
 			   token_t *tag, const protocol_t *UNUSED(protocol),
 			   char *buf, size_t *n)
 {
