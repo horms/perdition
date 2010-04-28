@@ -7,6 +7,58 @@
 #include "options.h"
 #include "unused.h"
 #include "perdition_globals.h"
+#include "greeting.h"
+
+/**********************************************************************
+ * managesieve_greeting_str
+ * String for imap greeting
+ * pre: flag: Flags as per greeting.h
+ *      tls_flags: the encryption flags that have been set
+ * return greeting string
+ *        NULL on error
+ **********************************************************************/
+
+char *managesieve_greeting_str(flag_t flag)
+{
+	char *capability = NULL;;
+	char *tail = NULL;
+	char *message = NULL;
+
+	/* The tls_state argument to managesieve_capability() can be
+	 * SSL_MODE_EMPTY as the capability before any tls login has
+	 * occurred is desired. Its for the greeting, before anything has
+	 * happened.
+	 */
+	capability = managesieve_capability(SSL_MODE_EMPTY, opt.ssl_mode);
+	if (!capability) {
+		VANESSA_LOGGER_DEBUG("managesieve_capability");
+		goto err;
+	}
+
+	tail = greeting_str(MANAGESIEVE_GREETING, flag);
+	if (!tail) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		goto err;
+	}
+
+	message = malloc(strlen(capability) + 2 +
+			 strlen(MANAGESIEVE_OK) + 2 +
+			 strlen(tail) + 2);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG_ERRNO("m alloc");
+		goto err;
+	}
+
+	strcpy(message, capability);
+	strcat(message, "\r\n" MANAGESIEVE_OK " \"");
+	strcat(message, tail);
+	strcat(message, "\"");
+
+err:
+	free(capability);
+	free(tail);
+	return message;
+}
 
 /**********************************************************************
  * managesieve_greeting
@@ -19,9 +71,26 @@
  *	  -1 on error
  **********************************************************************/
 
-int managesieve_greeting(io_t *UNUSED(io), flag_t UNUSED(flag))
+int managesieve_greeting(io_t *io, flag_t flag)
 {
-	return -1;
+	char *message = NULL;
+	int status = -1;
+
+	message = managesieve_greeting_str(flag);
+	if (!message) {
+		VANESSA_LOGGER_DEBUG("greeting_str");
+		return -1;
+	}
+
+	if (managesieve_write_raw(io, message) < 0) {
+		VANESSA_LOGGER_DEBUG("managesieve_write_raw");
+		goto err;
+	}
+
+	status = 0;
+err:
+	free(message);
+	return status;
 }
 
 /**********************************************************************
@@ -132,7 +201,7 @@ static char *managesieve_mangle_capability(const char *capability)
 char *managesieve_capability(flag_t tls_flags, flag_t tls_state)
 {
 	flag_t mode;
-	char *capability;
+	char *capability = NULL;
 	char *old_capability;
 
 	capability = opt.managesieve_capability;
