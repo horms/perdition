@@ -748,13 +748,13 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, char *buffer,
   if((bytes=vanessa_socket_pipe_func(io_get_rfd(io_a), io_get_wfd(io_a),
       io_get_rfd(io_b), io_get_wfd(io_b), buffer, buffer_length,
       timeout, return_a_read_bytes, return_b_read_bytes,
-      __io_pipe_read, __io_pipe_write, io_select, (void *)s))<0){
-	VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
+      __io_pipe_read, __io_pipe_write, io_select, (void *)s))) {
         if (bytes == 1) {
             /* timeout */
             io_a->err = io_err_timeout;
             io_b->err = io_err_timeout;
-        }
+        } else
+            VANESSA_LOGGER_DEBUG("vanessa_socket_pipe_func");
         goto err;
   }
 
@@ -763,9 +763,9 @@ ssize_t io_pipe(io_t *io_a, io_t *io_b, char *buffer,
   return(bytes);
 
 err:
-  if (io_a->err != io_err_none && io_b->err != io_err_none) {
+  if (io_a->err == io_err_none)
             io_a->err = io_err_other;
+  if (io_b->err == io_err_none)
             io_b->err = io_err_other;
-  }
   return -1;
 }

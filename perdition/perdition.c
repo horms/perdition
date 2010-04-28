@@ -1020,13 +1020,13 @@ int main (int argc, char **argv, char **envp){
   io_set_timeout(server_io, opt.timeout);
   if(io_pipe(server_io, client_io, buffer, BUFFER_SIZE,
         &bytes_written, &bytes_read, &auth_log)<0){
-    VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
     if (io_get_err(client_io) == io_err_timeout)
-      VANESSA_LOGGER_ERR("Fatal error: Timeout piping data. "
-			 "Exiting child.");
-    else
+      VANESSA_LOGGER_INFO("Timeout piping data.");
+    else {
+      VANESSA_LOGGER_DEBUG("vanessa_socket_pipe");
       VANESSA_LOGGER_ERR("Fatal error piping data. Exiting child.");
-    perdition_exit_cleanly(-1);
+      perdition_exit_cleanly(-1);
+    }
   }
 
   /*Time to leave*/
