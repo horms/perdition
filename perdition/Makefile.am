@@ -87,6 +87,9 @@ perdition_SOURCES = \
         username.c          username.h \
 	unused.h
 
+AM_CFLAGS = $(LIBIDN_CFLAGS)
+
+LIBS += $(LIBIDN_LIBS)
 
 INCLUDES= \
 -DPERDITION_LIBDIR=\"${libdir}\" \

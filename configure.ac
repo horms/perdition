@@ -106,6 +106,28 @@ AC_CHECK_HEADERS(sys/param.h)
 
 
 ######################################################################
+# Libidn
+
+AC_ARG_WITH(libidn, AC_HELP_STRING([--with-libidn=[DIR]],
+				   [Support IDN (needs GNU Libidn)]),
+	    libidn=$withval, libidn=yes)
+if test "$libidn" != "no" ; then
+	PKG_CHECK_MODULES(LIBIDN, libidn >= 0.0.0,
+			  [libidn=yes], [libidn=no])
+fi
+if test "$libidn" == "yes" ; then
+	AC_DEFINE(WITH_LIBIDN, 1, [Define to 1 if you want Libidn.])
+else
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Could not find libidn."
+"* Managesieve may not handle non-ascii userames correctly"
+"************************************************************"
+)
+fi
+
+######################################################################
 # OpenSSL
 
 
