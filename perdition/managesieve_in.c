@@ -2,6 +2,7 @@
 #include "io.h"
 #include "managesieve_in.h"
 #include "managesieve_write.h"
+#include "acap_token.h"
 #include "queue_func.h"
 #include "unused.h"
 
@@ -30,6 +31,108 @@ int managesieve_in_authenticate(const struct passwd *UNUSED(pw),
 	return -1;
 }
 #endif /* WITH_PAM_SUPPORT */
+
+/**********************************************************************
+ * managesieve_in_noop_cmd_str
+ * Handle the string argument of a NOOP command
+ * pre: io: io_t to write to and read from
+ *      q: queue of tokens read from client.
+ * post: q is destroyed
+ * return: 0 on MANAGESIEVE_OK
+ *         -1 on MANAGESIEVE_NO
+ *         -2 on MANAGESIEVE_BYE
+ *         -3 on internal error
+ **********************************************************************/
+
+static int managesieve_in_noop_cmd_str(io_t *io, vanessa_queue_t *q)
+{
+	int status = -3;
+	token_t *t = NULL;
+	char *rc_arg[2];
+	STRUCT_MANAGESIEVE_RESPONSE_CODE(rc);
+	STRUCT_ACAP_TOKEN_WRAPPER_STATUS(wrapper_status);
+
+	wrapper_status = acap_token_wrapper(io, PERDITION_CLIENT, q);
+	vanessa_queue_destroy(wrapper_status.q);
+	q = NULL; /* acap_token_wrapper() consumes q */
+
+	if (wrapper_status.status == -2) {
+		VANESSA_LOGGER_DEBUG("acap_token_wrapper");
+		goto err;
+	}
+	if (wrapper_status.status ||
+	    !acap_token_wrapper_status_is_eol(&wrapper_status) ||
+	    wrapper_status.type == acap_atom) {
+		if (managesieve_no(io, NULL, "Invalid AUTHENTICATE PLAIN "
+				   "challenge, mate") < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_no");
+			goto err;
+		}
+		status = -1;
+		goto err;
+	}
+
+	rc_arg[0] = wrapper_status.str;
+	rc_arg[1] = NULL;
+	rc.atom = "TAG";
+	rc.arg = rc_arg;
+	if (managesieve_ok(io, &rc, "NOOP completed, mate") < 0) {
+		VANESSA_LOGGER_DEBUG("managesieve_no");
+		goto err;
+	}
+
+	status = 0;
+err:
+	vanessa_queue_destroy(q);
+	token_destroy(&t);
+	free(wrapper_status.str);
+	return status;
+}
+
+/**********************************************************************
+ * managesieve_in_noop_cmd
+ * Handle a NOOP command
+ * pre: io: io_t to write to and read from
+ *      q: queue of tokens read from client.
+ * post: q is destroyed
+ * return: 0 on MANAGESIEVE_OK
+ *         -1 on MANAGESIEVE_NO
+ *         -2 on MANAGESIEVE_BYE
+ *         -3 on internal error
+ **********************************************************************/
+
+static int managesieve_in_noop_cmd(io_t *io, vanessa_queue_t *q)
+{
+	int status = -3;
+
+	if (vanessa_queue_length(q) == 0) {
+		if (managesieve_ok(io, NULL, "NOOP completed, mate") < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_ok");
+			goto err;
+		}
+	} else if (vanessa_queue_length(q) == 1) {
+		status = managesieve_in_noop_cmd_str(io, q);
+		q = NULL; /* managesieve_in_noop_cmd_str consumes q */
+		if (status < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_in_noop_cmd_str");
+			goto err;
+		}
+	} else {
+		if (managesieve_no(io, NULL,
+				   "Too many arguments, expected NOOP "
+				   "[String], mate") < 0) {
+			VANESSA_LOGGER_DEBUG("managesieve_no");
+			goto err;
+		}
+		status = -1;
+		goto err;
+	}
+
+	status = 0;
+err:
+	vanessa_queue_destroy(q);
+	return status;
+}
 
 /**********************************************************************
  * managesieve_in_get_pw_loop
@@ -71,7 +174,12 @@ managesieve_in_get_pw_loop(io_t *io, flag_t UNUSED(tls_flags),
 		goto err;
 	}
 
-	if (managesieve_no(io, NULL, "Unknown command, mate") < 0) {
+	if (token_casecmp_string(t, MANAGESIEVE_CMD_NOOP)) {
+		status = managesieve_in_noop_cmd(io, q);
+		q = NULL; /* managesieve_in_noop_cmd consumes q */
+		if (status < 0)
+			goto err;
+	} else if (managesieve_no(io, NULL, "Unknown command, mate") < 0) {
 		VANESSA_LOGGER_DEBUG("managesieve_no");
 		status = -1;
 		goto err;
