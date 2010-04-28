@@ -143,10 +143,10 @@ static int perdition_chown(const char *path, const char *username,
 static void 
 perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		struct auth *auth, const char *servername, const char *port,
-		const char *reason)
+		const char *reason, int ssl_mode, int tls_state)
 {
 	char *passwd;
-	const char *open, *id, *close;
+	const char *open, *id, *close, *eu_ssl, *rs_ssl;
 
 	if (!strcmp(reason, "ok")) {
 		if (opt.log_passwd & LOG_PASSWD_OK)
@@ -169,15 +169,30 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		id = "NONE";
 	}
 
+	if (ssl_mode & SSL_MODE_SSL_LISTEN)
+		eu_ssl = "ssl";
+	else if (tls_state & SSL_MODE_TLS_LISTEN)
+		eu_ssl = "starttls";
+	else
+		eu_ssl = "plaintext";
+
+	if (ssl_mode & SSL_MODE_SSL_OUTGOING)
+		rs_ssl = "ssl";
+	else if (tls_state & SSL_MODE_TLS_OUTGOING)
+		rs_ssl = "starttls";
+	else
+		rs_ssl = "plaintext";
+
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
-			"Auth:%s authorisation_id=%s%s%s "
+			"Auth:%s client-secure=%s authorisation_id=%s%s%s "
 			"authentication_id=\"%s\" passwd=\"%s\" "
-			"server=\"%s\" port=\"%s\" status=\"%s\"",
-			from_to_host_str, open, id, close,
+			"server=\"%s\" port=\"%s\" server-secure=%s "
+			"status=\"%s\"",
+			from_to_host_str, eu_ssl, open, id, close,
 			str_null_safe(auth->authentication_id),
 			str_null_safe(passwd), str_null_safe(servername),
-			str_null_safe(port), str_null_safe(reason));
+			str_null_safe(port), rs_ssl, str_null_safe(reason));
 	auth_log->log_time = time(NULL) + opt.connect_relog;
 
 	VANESSA_LOGGER_LOG(LOG_NOTICE, auth_log->log_str);
@@ -188,7 +203,7 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 #define PERDITION_LOG_AUTH(_reason)                                        \
 do {                                                                       \
 	perdition_log_auth(&auth_log, from_to_host_str, &auth, servername, \
-			port, _reason);                                    \
+			port, _reason, opt.ssl_mode, tls_state);           \
 } while(0)
 
 static void 
@@ -196,7 +211,7 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 		io_t *io, token_t *tag, timed_log_t *auth_log, 
 		const char *from_to_host_str, struct auth *auth,
 		const char *servername, const char *port,
-		const char *reason)
+		const char *reason, int ssl_mode, int tls_state)
 {
 	sleep(PERDITION_AUTH_FAIL_SLEEP);
 	if (protocol->write_str(io, NULL_FLAG, tag,
@@ -208,7 +223,7 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 	}
 
 	perdition_log_auth(auth_log, from_to_host_str, auth, servername, port,
-			   reason);
+			   reason, ssl_mode, tls_state);
 }
 
 void logger_init(void)
@@ -259,7 +274,7 @@ void logger_reopen(FILE *fh)
 do {                                                                        \
 	login_failed_protocol(protocol, _type, client_io, client_tag,       \
 			&auth_log, from_to_host_str, &auth, servername,     \
-			port, "failed: " _reason);                \
+			port, "failed: " _reason, opt.ssl_mode, tls_state); \
 } while(0)
 
 /**********************************************************************

@@ -761,17 +761,45 @@ Connect: <from_to> [inetd_pid=<pid>]
 .P
 When a user is authenticated
 .P
-Auth: <from_to> authorisation_id="<authorisation_id>"
+Auth: <from_to> client-secure=SECURE_STATUS
+authorisation_id="<authorisation_id>"
 authentication_id="<authentication_id>" password="<password>"
-server="<servername"> port="<port>" status=failed...|ok
+server="<servername"> port="<port>"
+server-secure=SECURE_STATUS status=failed...|ok
 .P
 When a user disconnects
 .P
 Close: <from_to> authorisation_id="<authorisation_id>"
 authentication_id="<authentication_id>" received=<bytes> sent=<bytes>
+
 .P
-Where: from_to is
-<src_ip_address>:<src_port>-><dest_ip_address>:<dest_port>
+Where:
+.sp
+.B from_to
+is <src_ip_address>:<src_port>-><dest_ip_address>:<dest_port>
+
+.sp
+.B SECURE_STATUS is one of:
+
+.P
+.sp
+.B ssl:
+Uses SSL/TLS from the beginning of the connection.
+That is, IMAPS or POP3S.
+
+.sp
+.B starttls:
+A STARTTLS or STLS command has been issued and
+SSL/TLS was subsequently negotiated.
+
+Note that if the message is logged before SSL/TLS negotiation
+completed then the status will be plaintext. Even
+if the connection would have used starttls if successful.
+For example, if connecting to the real-server fails.
+
+.sp
+.B plaintext:
+SSL/TLS is not in use.
 
 .SH LOGGING
 By default, logs are logged via syslog using the facility mail.  You should
