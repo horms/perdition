@@ -140,13 +140,33 @@ static int perdition_chown(const char *path, const char *username,
     perdition_exit_cleanly(-1); \
   }
 
+struct quoted_str {
+	const char *quote, *str;
+};
+
+static struct quoted_str quote_str(const char *in)
+{
+	struct quoted_str out;
+
+	if (in) {
+		out.quote = "\"";
+		out.str = in;
+	} else {
+		out.quote = "";
+		out.str = "NONE";
+	}
+
+	return out;
+}
+
 static void 
 perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		struct auth *auth, const char *servername, const char *port,
 		const char *reason, int ssl_mode, int tls_state)
 {
 	char *passwd;
-	const char *open, *id, *close, *eu_ssl, *rs_ssl;
+	const char *eu_ssl, *rs_ssl;
+	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
 
 	if (!strcmp(reason, "ok")) {
 		if (opt.log_passwd & LOG_PASSWD_OK)
@@ -159,14 +179,6 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 			passwd = auth->passwd;
 		else 
 			passwd = "XXXXXX";
-	}
-
-	if (auth->authorisation_id) {
-		open = close = "\"";
-		id = auth->authorisation_id;
-	} else {
-		open = close = "";
-		id = "NONE";
 	}
 
 	if (ssl_mode & SSL_MODE_SSL_LISTEN)
@@ -188,7 +200,8 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 			"Auth:%s client-secure=%s authorisation_id=%s%s%s "
 			"authentication_id=\"%s\" passwd=\"%s\" "
 			"server=\"%s:%s\" server-secure=%s status=\"%s\"",
-			from_to_host_str, eu_ssl, open, id, close,
+			from_to_host_str, eu_ssl, authorisation_id.quote,
+			authorisation_id.str, authorisation_id.quote,
 			str_null_safe(auth->authentication_id),
 			str_null_safe(passwd), str_null_safe(servername),
 			str_null_safe(port), rs_ssl, str_null_safe(reason));
@@ -275,6 +288,38 @@ do {                                                                        \
 			&auth_log, from_to_host_str, &auth, servername,     \
 			port, "failed: " _reason, opt.ssl_mode, tls_state); \
 } while(0)
+
+static void perdition_log_close_early(const char *from_to_host_str,
+				      struct auth *auth)
+{
+	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
+
+	VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s "
+				  "authorisation_id=%s%s%s "
+				  "authentication_id=\"%s\"",
+				  from_to_host_str,
+				  authorisation_id.quote,
+				  authorisation_id.str,
+				  authorisation_id.quote,
+				  str_null_safe(auth->authentication_id));
+}
+
+static void perdition_log_close(const char *from_to_host_str,
+				struct auth *auth, int received, int sent)
+{
+	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
+
+	VANESSA_LOGGER_ERR_UNSAFE("Closing session:%s "
+				  "authorisation_id=%s%s%s "
+				  "authentication_id=\"%s\" "
+				  "received=%d sent=%d",
+				  from_to_host_str,
+				  authorisation_id.quote,
+				  authorisation_id.str,
+				  authorisation_id.quote,
+				  str_null_safe(auth->authentication_id),
+				  received, sent);
+}
 
 /**********************************************************************
  * Muriel the main function
@@ -730,12 +775,7 @@ int main (int argc, char **argv, char **envp){
       perdition_exit_cleanly(-1);
     }
     else if(status == 1){
-      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s "
-				"authorisation_id=\"%s\" "
-				"authentication_id=\"%s\"",
-				from_to_host_str,
-				str_null_safe(auth_get_authorisation_id(&auth)),
-				str_null_safe(auth.authentication_id));
+      perdition_log_close_early(from_to_host_str, &auth);
       perdition_exit_cleanly(0);
     }
 #ifdef WITH_SSL_SUPPORT
@@ -1056,12 +1096,7 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Time to leave*/
-  VANESSA_LOGGER_INFO_UNSAFE("Close:%s authorisation_id=\"%s\" "
-			     "authentication_id=\"%s\" received=%d sent=%d",
-			     str_null_safe(from_to_host_str),
-			     str_null_safe(auth_get_authorisation_id(&auth)),
-			     str_null_safe(auth.authentication_id),
-			     bytes_read, bytes_written);
+  perdition_log_close(from_to_host_str, &auth, bytes_read, bytes_written);
   set_proc_title("%s: close", progname);
 
   getserver_closelib(handle);
