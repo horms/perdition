@@ -277,7 +277,7 @@ int main (int argc, char **argv, char **envp){
   size_t server_resp_buf_size=0;
   flag_t tls_state = 0;
   timed_log_t auth_log;
-  char from_to_host_str[(NI_MAXHOST*2)+2];
+  char from_to_host_str[((NI_MAXHOST+NI_MAXSERV)*2)+2];
   char from_host_str[NI_MAXHOST];
   char to_host_str[NI_MAXHOST];
   char from_serv_str[NI_MAXSERV];
@@ -655,8 +655,12 @@ int main (int argc, char **argv, char **envp){
   if(peername!=NULL && sockname!=NULL){
     strcat(from_to_host_str, " ");
     strcat(from_to_host_str, from_host_str);
+    strcat(from_to_host_str, ":");
+    strcat(from_to_host_str, from_serv_str);
     strcat(from_to_host_str, "->");
     strcat(from_to_host_str, to_host_str);
+    strcat(from_to_host_str, ":");
+    strcat(from_to_host_str, to_serv_str);
   }
 
   /*Seed rand*/

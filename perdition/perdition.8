@@ -757,18 +757,22 @@ by logging having logging the following messages:
 .P
 When a user connects:
 .P
-Connect: <source_ip_address>[inetd_pid=<pid>]
+Connect: <from_to> [inetd_pid=<pid>]
 .P
 When a user is authenticated
 .P
-Auth: <source_ip_address> authorisation_id="<authorisation_id>"
+Auth: <from_to> authorisation_id="<authorisation_id>"
 authentication_id="<authentication_id>" password="<password>"
 server="<servername"> port="<port>" status=failed...|ok
 .P
 When a user disconnects
 .P
-Close: <source_ip_address> authorisation_id="<authorisation_id>"
+Close: <from_to> authorisation_id="<authorisation_id>"
 authentication_id="<authentication_id>" received=<bytes> sent=<bytes>
+.P
+Where: from_to is
+<src_ip_address>:<src_port>-><dest_ip_address>:<dest_port>
+
 .SH LOGGING
 By default, logs are logged via syslog using the facility mail.  You should
 inspect /etc/syslog.conf to find where these logs are written.  Under
