@@ -94,6 +94,9 @@ struct sockaddr_storage *sockname;
 /* PID file that has been created */
 static char *pid_file;
 
+/* Programme name */
+static char *progname;
+
 /*
  * Used for opening dynamic server lookup library
  * Kept global so they can be used in signal handlers
@@ -140,7 +143,7 @@ static int perdition_chown(const char *path, const char *username,
 static void 
 perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		struct auth *auth, const char *servername, const char *port,
-		const char *progname, const char *reason)
+		const char *reason)
 {
 	char *passwd;
 	const char *open, *id, *close;
@@ -185,7 +188,7 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 #define PERDITION_LOG_AUTH(_reason)                                        \
 do {                                                                       \
 	perdition_log_auth(&auth_log, from_to_host_str, &auth, servername, \
-			port, progname, _reason);                          \
+			port, _reason);                                    \
 } while(0)
 
 static void 
@@ -193,7 +196,7 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 		io_t *io, token_t *tag, timed_log_t *auth_log, 
 		const char *from_to_host_str, struct auth *auth,
 		const char *servername, const char *port,
-		const char *progname, const char *reason)
+		const char *reason)
 {
 	sleep(PERDITION_AUTH_FAIL_SLEEP);
 	if (protocol->write_str(io, NULL_FLAG, tag,
@@ -205,14 +208,14 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 	}
 
 	perdition_log_auth(auth_log, from_to_host_str, auth, servername, port,
-			progname, reason);
+			   reason);
 }
 
 void logger_init(void)
 {
 	vanessa_logger_t *vl;
 
-	vl = vanessa_logger_openlog_filehandle(stderr, LOG_IDENT, LOG_DEBUG,
+	vl = vanessa_logger_openlog_filehandle(stderr, progname, LOG_DEBUG,
 		       VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_NO_IDENT_PID);
 	if (!vl) {
 		fprintf(stderr, "main: vanessa_logger_openlog_syslog\n"
@@ -228,17 +231,17 @@ void logger_reopen(FILE *fh)
 	vanessa_logger_t *vl;
 
 	if (fh != NULL)
-		vl = vanessa_logger_openlog_filehandle(fh, LOG_IDENT,
+		vl = vanessa_logger_openlog_filehandle(fh, progname,
 			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
 			VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
 	else if (opt.log_facility != NULL && *(opt.log_facility) == '/')
 		vl = vanessa_logger_openlog_filename(opt.log_facility,
-			LOG_IDENT,
+			progname,
 			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
 			VANESSA_LOGGER_F_CONS|VANESSA_LOGGER_F_TIMESTAMP);
 	else
 		vl = vanessa_logger_openlog_syslog_byname(opt.log_facility,
-			LOG_IDENT,
+			progname,
 			opt.debug?LOG_DEBUG:(opt.quiet?LOG_ERR:LOG_INFO),
 			LOG_CONS);
 
@@ -256,7 +259,7 @@ void logger_reopen(FILE *fh)
 do {                                                                        \
 	login_failed_protocol(protocol, _type, client_io, client_tag,       \
 			&auth_log, from_to_host_str, &auth, servername,     \
-			port, progname, "failed: " _reason);                \
+			port, "failed: " _reason);                \
 } while(0)
 
 /**********************************************************************
@@ -281,7 +284,6 @@ int main (int argc, char **argv, char **envp){
   char to_serv_str[NI_MAXSERV];
   char *servername=NULL;
   char *port=NULL;
-  char *progname=NULL;
   io_t *client_io=NULL;
   io_t *server_io=NULL;
   FILE *fh;
@@ -299,6 +301,7 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_SSL_SUPPORT */
 
   /* Create Logger */
+  progname = argv[0];
   logger_init();
 
   /*Parse options*/

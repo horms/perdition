@@ -41,8 +41,6 @@
 #include <string.h>
 #include <errno.h>
 
-#define LOG_IDENT "perdition"
-
 /*
  * Hooray for format string problems!
  *
