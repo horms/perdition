@@ -48,6 +48,7 @@ perdition_SOURCES = \
 	auth.h \
 	acap.c			acap.h \
 	acap_token.c		acap_token.h \
+	buf.h \
         config_file.c       config_file.h \
         getserver.c         getserver.h \
         greeting.c          greeting.h \
