@@ -13,7 +13,8 @@ struct auth {
 
 	enum {
 		auth_t_none = 0,
-		auth_t_passwd
+		auth_t_passwd,
+		auth_t_sasl_plain
 	} type;
 };
 
@@ -49,6 +50,7 @@ static inline void auth_free_data(const struct auth *auth)
 	case auth_t_none:
 		return;
 	case auth_t_passwd:
+	case auth_t_sasl_plain:
 		break;
 	}
 
@@ -62,6 +64,20 @@ static inline struct auth auth_set_pwd(char *name, char *passwd)
 	struct auth a = {
 		.type = auth_t_passwd,
 		.authentication_id = name,
+		.passwd = passwd
+	};
+
+	return a;
+}
+
+static inline struct auth auth_set_sasl_plain(char *authorisation_id,
+					      char *authentication_id,
+					      char *passwd)
+{
+	struct auth a = {
+		.type = auth_t_sasl_plain,
+		.authorisation_id = authorisation_id,
+		.authentication_id = authentication_id,
 		.passwd = passwd
 	};
 
