@@ -32,6 +32,7 @@
 #include "pop3s.h"
 #include "imap4.h"
 #include "imap4s.h"
+#include "managesieve.h"
 #include "protocol.h"
 
 #ifdef DMALLOC
@@ -40,15 +41,16 @@
 
 
 #ifdef WITH_SSL_SUPPORT
-char *protocol_known[] = {"4", "POP3", "IMAP4", "POP3S", "IMAP4S"};
+char *protocol_known[] = {"5", "POP3", "IMAP4", "POP3S", "IMAP4S",
+			  "MANAGESIEVE"};
 #else
-char *protocol_known[] = {"2", "POP3", "IMAP4"};
+char *protocol_known[] = {"3", "POP3", "IMAP4", "MANAGESIEVE"};
 #endif
 
 /**********************************************************************
  * protocol_initialise
  * initialise protocol structure
- * Pre: protocol_type: protocol type to use PROTOCOL_IMAP or PROTOCOL_POP3
+ * Pre: protocol_type: protocol type to use
  *      protocol: pointer to protocol structure to be initialised
  * Post: protocol is initialised
  *       NULL on error
@@ -84,6 +86,13 @@ protocol_t *protocol_initialise(const int protocol_type, protocol_t *protocol){
       if((protocol=imap4s_initialise_protocol(protocol))==NULL){
         VANESSA_LOGGER_DEBUG("imap4s_initialise_protocol");
 	return(NULL);
+      }
+      break;
+    case PROTOCOL_MANAGESIEVE:
+      protocol = managesieve_initialise_protocol(protocol);
+      if (!protocol) {
+        VANESSA_LOGGER_DEBUG("managesieve_initialise_protocol");
+	return NULL;
       }
       break;
     default:

@@ -121,6 +121,9 @@ char *config_file_name(const char *basename, int protocol)
 		case PROTOCOL_POP3S:
 			suffix = "pop3s";
 			break;
+		case PROTOCOL_MANAGESIEVE:
+			suffix = "managesieve";
+			break;
 	}
 	if(!suffix) {
 		VANESSA_LOGGER_DEBUG_UNSAFE("Unknown protocol \"%d\"",
