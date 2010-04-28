@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "auth.h"
 #include "imap4.h"
 #include "imap4_in.h"
 #include "options.h"
@@ -337,7 +338,7 @@ static char *imap4_token_to_string(token_t *t, int type)
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- * pre: pw: passwd structure with username and password to authenticate
+ * pre: auth: login credentials
  *      io: io_t to write errors to
  *      tag: Tag to use in (Error) responses
  * post: An attempt is made to authenticate the user locally
@@ -348,21 +349,19 @@ static char *imap4_token_to_string(token_t *t, int type)
  *         -1 if an error occurs
  **********************************************************************/
 
-int imap4_in_authenticate(
-  const struct passwd *pw, 
-  io_t *io,
-  const token_t *tag 
-){
+int imap4_in_authenticate(const struct auth *auth, io_t *io,
+			  const token_t *tag){
   pam_handle_t *pamh=NULL;
+  const char *name = auth_get_authorisation_id(auth);
 
   if((
-     pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
+     pam_retval = pam_start(SERVICE_NAME, name, &conv_struct, &pamh)
   )!=PAM_SUCCESS){
     VANESSA_LOGGER_DEBUG_ERRNO("pam_start");
     do_pam_end(pamh, EX_PAM_ERROR);
     return(-1);
   }
-  if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
+  if (do_pam_authentication(pamh, name, auth->passwd) < 0) {
     sleep(PERDITION_AUTH_FAIL_SLEEP);
     if (imap4_write_str(io, NULL_FLAG, tag, IMAP4_NO,
 			"Authentication failure") < 0){
@@ -452,17 +451,17 @@ static int imap4_in_verify_tag_str(const token_t *tag)
 
 
 /**********************************************************************
- * imap4_in_get_pw
+ * imap4_in_get_auth
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * Pre: io: io_t to read from and write to
  *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
- *      return_pw: pointer to an allocated struct pw, 
- *                 where username and password
- *                 will be returned if one is found
+ *      return_auth: pointer to an allocated struct auth,
+ *                   where login credentials will be returned
  *      return_tag: pointer to return clients tag
- * Post: pw_return structure with pw_name and pw_passwd set
+ * Post: auth_return is seeded
+ *       tag_return is seeded with the next IMAP tag to use
  * Return: 0: on success
  *         1: if user quits (LOGOUT command)
  *         2: if TLS negotiation should be done
@@ -479,14 +478,6 @@ static int imap4_in_verify_tag_str(const token_t *tag)
 	
 
 #define __IMAP4_IN_GET_PW_LOGIN_SYNTAX_ERROR                                \
-        if(return_pw->pw_name) {                                            \
-		free(return_pw->pw_name);                                   \
-		return_pw->pw_name=NULL;                                    \
-	}                                                                   \
-        if(return_pw->pw_passwd) {                                          \
-		free(return_pw->pw_passwd);                                 \
-		return_pw->pw_passwd=NULL;                                  \
-	}                                                                   \
 	__IMAP4_IN_BAD("Mate, try " IMAP4_CMD_LOGIN " <username> <passwd>");
 
 #define __IMAP4_IN_CHECK_NO_ARG(_cmd)                                       \
@@ -495,15 +486,14 @@ static int imap4_in_verify_tag_str(const token_t *tag)
 				" but there shouldn't be one, mate");       \
 	}
 
-int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
-		    struct passwd *return_pw, token_t **return_tag)
+int imap4_in_get_auth(io_t *io, flag_t tls_flags, flag_t tls_state,
+		      struct auth *return_auth, token_t **return_tag)
 {
   int status;
   vanessa_queue_t *q = NULL;
   token_t *tag = NULL;
   token_t *t = NULL;
-
-  return_pw->pw_name=NULL;
+  char *name = NULL, *passwd = NULL;
 
   while(1){
     q=read_line(io, NULL, NULL, TOKEN_IMAP4, 0, PERDITION_LOG_STR_CLIENT);
@@ -652,8 +642,8 @@ int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
         goto loop;
       }
 
-      return_pw->pw_name=imap4_token_to_string(t, status);
-      if(!return_pw->pw_name) {
+      name = imap4_token_to_string(t, status);
+      if (!name) {
         VANESSA_LOGGER_DEBUG("imap4_token_to_string");
         break;
       }
@@ -677,10 +667,9 @@ int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
 	  goto loop;
 	}
 
-        return_pw->pw_passwd=imap4_token_to_string(t, status);
-        if(!return_pw->pw_passwd) {
+        passwd = imap4_token_to_string(t, status);
+        if (!passwd) {
           VANESSA_LOGGER_DEBUG("imap4_token_to_string");
-	  free(return_pw->pw_name);
           break;
         }
       }
@@ -692,6 +681,7 @@ int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
       token_destroy(&t);
       vanessa_queue_destroy(q);
       *return_tag=tag;
+      *return_auth = auth_set_pwd(name, passwd);
       return(0);
     }
     else {
@@ -703,11 +693,16 @@ loop:
     token_destroy(&t);
     token_destroy(&tag);
     vanessa_queue_destroy(q);
+    free(name); name = NULL;
+    free(passwd); passwd = NULL;
   }
 
   /*If we get here clean up and bail*/
   token_destroy(&t);
   token_destroy(&tag);
   vanessa_queue_destroy(q);
+  free(name);
+  free(passwd);
+
   return(-1);
 }

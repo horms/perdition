@@ -46,7 +46,7 @@
  * the connection is ok and doing TLS if necessary.
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  * post: Read the greeting string from the server
  *       If tls_outgoing is set issue the CAPABILITY command and check
@@ -58,12 +58,8 @@
  *       -1 on error
  **********************************************************************/
 
-int imap4_out_setup(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *tag
-);
+int imap4_out_setup(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+		    token_t *tag);
 
 
 /**********************************************************************
@@ -72,7 +68,7 @@ int imap4_out_setup(
  * You should call imap4_setup() first
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structure for imap4
  *      buf:    buffer to return response from server in
@@ -86,16 +82,9 @@ int imap4_out_setup(
  *        -1: on error
  **********************************************************************/
 
-int imap4_out_authenticate(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol,
-  char *buf,
-  size_t *n
-);
-
+int imap4_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+			   token_t *tag, const protocol_t *protocol,
+			   char *buf, size_t *n);
 
 /**********************************************************************
  * imap4_out_response

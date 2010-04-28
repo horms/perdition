@@ -31,11 +31,11 @@
 #include "config.h" 
 #endif
 
-#include <pwd.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <vanessa_adt.h>
 
+#include "auth.h"
 #include "token.h"
 #include "pop3_write.h"
 #include "log.h"
@@ -51,7 +51,7 @@
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- * pre: pw: passwd struct with username and password to authenticate
+ * pre: auth: login credentials
  *      io: io_t to write any errors to
  *      tag: ignored
  * post: An attemped is made to authenticate the user locally.
@@ -62,32 +62,26 @@
  *         -1 on error
  **********************************************************************/
 
-int pop3_in_authenticate(
-  const struct passwd *pw, 
-  io_t *io,
-  const token_t *tag
-);
+int pop3_in_authenticate(const struct auth *auth, io_t *io,
+			 const token_t *tag);
 #endif /* WITH_PAM_SUPPORT */
 
-
 /**********************************************************************
- * pop3_in_get_pw
+ * pop3_in_get_auth
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * pre: io: io_t to write to and read from
  *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
- *      return_pw: pointer to an allocated struct pw, 
- *                 where username and password
- *                 will be returned if one is found
+ *      return_auth: pointer to an allocated struct auth,
+ *                   where login credentials will be returned
  *      return_tag: ignored 
- * post: pw_return structure with pw_name and pw_passwd set
+ * post: auth_return is seeded
  * return: 0 on success
  *         1 if user quits (QUIT command)
  *         -1 on error
  **********************************************************************/
 
-int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
-		   struct passwd *return_pw, token_t **return_tag);
-
+int pop3_in_get_auth(io_t *io, flag_t tls_flags, flag_t tls_state,
+		     struct auth *return_auth, token_t **return_tag);
 #endif

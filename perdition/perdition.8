@@ -761,12 +761,14 @@ Connect: <source_ip_address>[inetd_pid=<pid>]
 .P
 When a user is authenticated
 .P
-Auth: <source_ip_address> user="<username>" passwprd="<passwowd>" 
+Auth: <source_ip_address> authorisation_id="<authorisation_id>"
+authentication_id="<authentication_id>" password="<password>"
 server="<servername"> port="<port>" status=failed...|ok
 .P
 When a user disconnects
 .P
-Close: <source_ip_address> user="<username>" received=<bytes> sent=<bytes>
+Close: <source_ip_address> authorisation_id="<authorisation_id>"
+authentication_id="<authentication_id>" received=<bytes> sent=<bytes>
 .SH LOGGING
 By default, logs are logged via syslog using the facility mail.  You should
 inspect /etc/syslog.conf to find where these logs are written.  Under

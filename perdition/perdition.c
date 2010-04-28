@@ -114,21 +114,8 @@ static int perdition_chown(const char *path, const char *username,
 
 /* Macro to clean things up when we jump around in the main loop*/
 #define PERDITION_CLEAN_UP_MAIN \
-  if(username!=NULL && username!=pw.pw_name && username!=pw2.pw_name){ \
-    free(username); \
-  } \
-  username=NULL; \
-  if(pw2.pw_name!=NULL && pw2.pw_name!=pw.pw_name){ \
-    free(pw2.pw_name); \
-  } \
-  memset(&pw2, 0, sizeof(pw2)); \
-  if(pw.pw_name!=NULL){ \
-    free(pw.pw_name); \
-  } \
-  if(pw.pw_passwd!=NULL){ \
-    free(pw.pw_passwd); \
-  } \
-  memset(&pw, 0, sizeof(pw)); \
+  auth_free_data(&auth); \
+  auth_zero(&auth); \
   if (!round_robin_server){ \
     user_server_port_destroy(usp); \
   } \
@@ -152,29 +139,40 @@ static int perdition_chown(const char *path, const char *username,
 
 static void 
 perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
-		struct passwd *pw, const char *servername, const char *port, 
+		struct auth *auth, const char *servername, const char *port,
 		const char *progname, const char *reason)
 {
 	char *passwd;
+	const char *open, *id, *close;
 
 	if (!strcmp(reason, "ok")) {
 		if (opt.log_passwd & LOG_PASSWD_OK)
-			passwd = pw->pw_passwd;
+			passwd = auth->passwd;
 		else 
 			passwd = "XXXXXX";
 	}
 	else {
 		if (opt.log_passwd & LOG_PASSWD_FAIL)
-			passwd = pw->pw_passwd;
+			passwd = auth->passwd;
 		else 
 			passwd = "XXXXXX";
 	}
 
+	if (auth->authorisation_id) {
+		open = close = "\"";
+		id = auth->authorisation_id;
+	} else {
+		open = close = "";
+		id = "NONE";
+	}
+
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
-			"Auth:%s user=\"%s\" passwd=\"%s\" "
+			"Auth:%s authorisation_id=%s%s%s "
+			"authentication_id=\"%s\" passwd=\"%s\" "
 			"server=\"%s\" port=\"%s\" status=\"%s\"",
-			from_to_host_str, str_null_safe(pw->pw_name),
+			from_to_host_str, open, id, close,
+			str_null_safe(auth->authentication_id),
 			str_null_safe(passwd), str_null_safe(servername),
 			str_null_safe(port), str_null_safe(reason));
 	auth_log->log_time = time(NULL) + opt.connect_relog;
@@ -186,14 +184,14 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 
 #define PERDITION_LOG_AUTH(_reason)                                        \
 do {                                                                       \
-	perdition_log_auth(&auth_log, from_to_host_str, &pw, servername,   \
+	perdition_log_auth(&auth_log, from_to_host_str, &auth, servername, \
 			port, progname, _reason);                          \
 } while(0)
 
 static void 
 login_failed_protocol(protocol_t *protocol, int protocol_type, 
 		io_t *io, token_t *tag, timed_log_t *auth_log, 
-		const char *from_to_host_str, struct passwd *pw,
+		const char *from_to_host_str, struct auth *auth,
 		const char *servername, const char *port,
 		const char *progname, const char *reason)
 {
@@ -206,7 +204,7 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 		perdition_exit_cleanly(-1);
 	}
 
-	perdition_log_auth(auth_log, from_to_host_str, pw, servername, port,
+	perdition_log_auth(auth_log, from_to_host_str, auth, servername, port,
 			progname, reason);
 }
 
@@ -257,7 +255,7 @@ void logger_reopen(FILE *fh)
 #define LOGIN_FAILED_PROTOCOL(_type, _reason)                               \
 do {                                                                        \
 	login_failed_protocol(protocol, _type, client_io, client_tag,       \
-			&auth_log, from_to_host_str, &pw, servername,       \
+			&auth_log, from_to_host_str, &auth, servername,     \
 			port, progname, "failed: " _reason);                \
 } while(0)
 
@@ -266,7 +264,7 @@ do {                                                                        \
  **********************************************************************/
 
 int main (int argc, char **argv, char **envp){
-  struct passwd pw, pw2;
+  STRUCT_AUTH(auth);
   char *server_resp_buf = NULL;
   char *buffer;
   user_server_port_t *usp=NULL;
@@ -282,7 +280,6 @@ int main (int argc, char **argv, char **envp){
   char from_serv_str[NI_MAXSERV];
   char to_serv_str[NI_MAXSERV];
   char *servername=NULL;
-  char *username=NULL;
   char *port=NULL;
   char *progname=NULL;
   io_t *client_io=NULL;
@@ -300,9 +297,6 @@ int main (int argc, char **argv, char **envp){
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
 #endif /* WITH_SSL_SUPPORT */
-
-  memset(&pw, 0, sizeof(pw));
-  memset(&pw2, 0, sizeof(pw2));
 
   /* Create Logger */
   logger_init();
@@ -695,16 +689,14 @@ int main (int argc, char **argv, char **envp){
     perdition_exit_cleanly(-1);
   }
 
-  pw.pw_name=NULL;
-  pw.pw_passwd=NULL;
   /* Authenticate the user*/
   for(;;){
     /*Read the USER and PASS lines from the client */
-    status=(*(protocol->in_get_pw))(client_io, opt.ssl_mode, tls_state,
-				    &pw, &client_tag);
+    status = (*(protocol->in_get_auth))(client_io, opt.ssl_mode, tls_state,
+					&auth, &client_tag);
     token_flush();
     if(status<0){
-      VANESSA_LOGGER_DEBUG("protocol->in_get_pw");
+      VANESSA_LOGGER_DEBUG("protocol->in_get_auth");
       if (io_get_err(client_io) == io_err_timeout)
 	VANESSA_LOGGER_ERR_UNSAFE("Fatal Error: Timeout reading "
 				  "authentication information from "
@@ -717,8 +709,12 @@ int main (int argc, char **argv, char **envp){
       perdition_exit_cleanly(-1);
     }
     else if(status == 1){
-      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s username=%s",
-				from_to_host_str, str_null_safe(pw.pw_name));
+      VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s "
+				"authorisation_id=\"%s\" "
+				"authentication_id=\"%s\"",
+				from_to_host_str,
+				str_null_safe(auth_get_authorisation_id(&auth)),
+				str_null_safe(auth.authentication_id));
       perdition_exit_cleanly(0);
     }
 #ifdef WITH_SSL_SUPPORT
@@ -743,8 +739,10 @@ int main (int argc, char **argv, char **envp){
     }
 #endif /* WITH_SSL_SUPPORT */
 
-    username = username_mangle(pw.pw_name, STATE_GET_SERVER);
-    if (!username) {
+    {
+    char *id;
+    id = username_mangle(auth_get_authorisation_id(&auth), STATE_GET_SERVER);
+    if (!id) {
       VANESSA_LOGGER_DEBUG("username_mangle STATE_GET_SERVER");
       VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
 				"for client \"%s\": Exiting child",
@@ -754,25 +752,29 @@ int main (int argc, char **argv, char **envp){
 
     /*Read the server from the map, if we have a map*/
     if(dbserver_get || dbserver_get2 || opt.client_server_specification) {
-	usp = getserver(username, from_host_str, to_host_str,
+	usp = getserver(id, from_host_str, to_host_str,
 			from_serv_str, to_serv_str,
 			dbserver_get, dbserver_get2);
     }
+
+    if (id != auth_get_authorisation_id(&auth))
+      free(id);
+    }
+
     if(usp){
       port = usp->port;
       servername = usp->server;
     
       if(opt.username_from_database && usp->user){
-        if (pw.pw_name != username && pw.pw_name != NULL) {
-          free(pw.pw_name);
-          pw.pw_name = NULL;
-        }
-        if((pw.pw_name=strdup(usp->user))==NULL){
+      	char * new_id = strdup(usp->user);
+        if (!new_id) {
 	    VANESSA_LOGGER_DEBUG_ERRNO("strdup");
             VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
 				      "for client \"%s\": Exiting child",
 				      from_host_str);
         }
+        free(auth_get_authorisation_id(&auth));
+	auth_set_authorisation_id(&auth, new_id);
       }
     }
 
@@ -800,17 +802,23 @@ int main (int argc, char **argv, char **envp){
 
 #ifdef WITH_PAM_SUPPORT
     if(opt.authenticate_in){
-      pw2.pw_name = username_mangle(pw.pw_name, STATE_LOCAL_AUTH);
-      if (!pw2.pw_name) {
+      struct auth auth2 = auth;
+      char *id;
+
+      id = username_mangle(auth_get_authorisation_id(&auth), STATE_LOCAL_AUTH);
+      if (!id) {
         VANESSA_LOGGER_DEBUG("username_mangle STATE_LOCAL_AUTH");
         VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username for "
 				  "client \"%s\": Exiting child",
 				  from_host_str);
         perdition_exit_cleanly(-1);
       }
-      pw2.pw_passwd=pw.pw_passwd;
+      auth_set_authorisation_id(&auth2, id);
 
-      if((status=protocol->in_authenticate(&pw2, client_io, client_tag))==0){
+      status = protocol->in_authenticate(&auth2, client_io, client_tag);
+      if (id != auth_get_authorisation_id(&auth))
+      	free(id);
+      if (!status) {
         VANESSA_LOGGER_DEBUG("protocol->in_authenticate");
         VANESSA_LOGGER_INFO(
 	  "Local authentication failure for client: Allowing retry."
@@ -865,21 +873,27 @@ int main (int argc, char **argv, char **envp){
     }
 #endif /* WITH_SSL_SUPPORT */
 
+    {
+    struct auth auth2 = auth;
+    char *id;
+
     /* Authenticate the user with the pop server */
-    pw2.pw_name = username_mangle(pw.pw_name, STATE_REMOTE_LOGIN);
-    if(!pw2.pw_name) {
+    id = username_mangle(auth_get_authorisation_id(&auth), STATE_REMOTE_LOGIN);
+    if (!id) {
       VANESSA_LOGGER_DEBUG("username_mangle STATE_REMOTE_LOGIN");
       VANESSA_LOGGER_ERR_UNSAFE("Fatal error manipulating username "
 				"for client \"%s\": Exiting child",
 				from_host_str);
       perdition_exit_cleanly(-1);
     }
-    pw2.pw_passwd=pw.pw_passwd;
+    auth_set_authorisation_id(&auth2, id);
 
-    status = (*(protocol->out_setup))(server_io, client_io, &pw2, our_tag);
+    status = (*(protocol->out_setup))(server_io, client_io, &auth2, our_tag);
     if(status==0){
 	    quit(server_io, protocol, our_tag);
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "Connection Negotiation Failure");
+	    if (id != auth_get_authorisation_id(&auth))
+	      free(id);
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -888,6 +902,7 @@ int main (int argc, char **argv, char **envp){
       VANESSA_LOGGER_ERR("Fatal error negotiating setup. Exiting child.");
       perdition_exit_cleanly(-1);
     }
+
 #ifdef WITH_SSL_SUPPORT
     else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
           (status & PROTOCOL_S_STARTTLS)) {
@@ -905,6 +920,8 @@ int main (int argc, char **argv, char **envp){
 		    !(status & PROTOCOL_S_STARTTLS)) {
 	    quit(server_io, protocol, our_tag);
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "TLS not present");
+	    if (id != auth_get_authorisation_id(&auth))
+	        free(id);
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
@@ -914,8 +931,9 @@ int main (int argc, char **argv, char **envp){
       server_resp_buf_size=MAX_LINE_LENGTH-1;
     }
     token_flush();
-    status = (*(protocol->out_authenticate))(server_io, client_io, &pw2, 
+    status = (*(protocol->out_authenticate))(server_io, client_io, &auth2,
 		    our_tag, protocol, server_resp_buf, &server_resp_buf_size);
+    free(id);
     if(status==0) {
 	    quit(server_io, protocol, our_tag);
             if(opt.server_resp_line){
@@ -967,6 +985,7 @@ int main (int argc, char **argv, char **envp){
         perdition_exit_cleanly(-1);
       }
     }
+    }
 
     break;
   }
@@ -1000,9 +1019,11 @@ int main (int argc, char **argv, char **envp){
   }
 
   /*Time to leave*/
-  VANESSA_LOGGER_INFO_UNSAFE("Close:%s user=\"%s\" received=%d sent=%d",
+  VANESSA_LOGGER_INFO_UNSAFE("Close:%s authorisation_id=\"%s\" "
+			     "authentication_id=\"%s\" received=%d sent=%d",
 			     str_null_safe(from_to_host_str),
-			     str_null_safe(pw.pw_name),
+			     str_null_safe(auth_get_authorisation_id(&auth)),
+			     str_null_safe(auth.authentication_id),
 			     bytes_read, bytes_written);
   set_proc_title("%s: close", progname);
 

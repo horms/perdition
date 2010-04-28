@@ -13,7 +13,7 @@
  * the connection is ok and doing TLS if necessary.
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
- *	pw:     structure with username and passwd
+ *	auth:  structure with authentication credentials
  *	tag:    ignored
  * post: Read the greeting string from the server
  *	 If tls_outgoing is set issue the CAPABILITY command and check
@@ -25,7 +25,7 @@
  *	 -1 on error
  **********************************************************************/
 
-int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
+int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct auth *auth,
 			  token_t *tag);
 
 /**********************************************************************
@@ -34,7 +34,7 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
  * You should call managesieve_setup() first
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
- *	pw:     structure with username and passwd
+ *	auth:    structure with authentication credentials
  *	tag:    ignored
  *	protocol: protocol structure for managesieve
  *	buf:    buffer to return response from server in
@@ -49,7 +49,7 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io, const struct passwd *pw,
  **********************************************************************/
 
 int managesieve_out_authenticate(io_t *rs_io, io_t *eu_io,
-				 const struct passwd *pw, token_t *tag,
+				 const struct auth *auth, token_t *tag,
 				 const protocol_t *protocol,
 				 char *buf, size_t *n);
 

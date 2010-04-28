@@ -27,7 +27,6 @@
 #ifndef POP3_IN_BLUM
 #define POP3_IN_BLUM
 
-#include <pwd.h>
 #include <sys/types.h>
 #include <vanessa_adt.h>
 
@@ -35,6 +34,7 @@
 #include "config.h" 
 #endif
 
+#include "auth.h"
 #include "perdition_types.h"
 #include "token.h"
 #include "imap4_write.h"
@@ -52,7 +52,7 @@
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- * pre: pw: passwd structure with username and password to authenticate
+ * pre: auth: login credentials
  *      io: io_t to write errors to
  *      tag: Tag to use in (Error) responses
  * post: An attempt is made to authenticate the user locally
@@ -63,32 +63,30 @@
  *         -1 if an error occurs
  **********************************************************************/
 
-int imap4_in_authenticate(
-  const struct passwd *pw, 
-  io_t *io,
-  const token_t *tag 
-);
+int imap4_in_authenticate(const struct auth *auth, io_t *io,
+			  const token_t *tag);
 #endif /* WITH_PAM_SUPPORT */
 
 
 /**********************************************************************
- * imap4_in_get_pw
+ * imap4_in_get_auth
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * Pre: io: io_t to read from and write to
  *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
- *      return_pw: pointer to an allocated struct pw, 
- *                 where username and password
- *                 will be returned if one is found
+ *      return_auth: pointer to an allocated struct auth,
+ *                   where the login credentials will be returned
  *      return_tag: pointer to return clients tag
- * Post: pw_return structure with pw_name and pw_passwd set
- * Return: 0 on success
- *         1 if user quits (LOGOUT command)
- *         -1 on error
+ * Post: auth_return is seeded
+ *       tag_return is seeded with the next IMAP tag to use
+ * Return: 0: on success
+ *         1: if user quits (LOGOUT command)
+ *         2: if TLS negotiation should be done
+ *        -1: on error
  **********************************************************************/
 
-int imap4_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
-		    struct passwd *return_pw, token_t **return_tag);
+int imap4_in_get_auth(io_t *io, flag_t tls_flags, flag_t tls_state,
+		    struct auth *return_auth, token_t **return_tag);
 
 #endif

@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "auth.h"
 #include "pop3_in.h"
 #include "options.h"
 #include "perdition_globals.h"
@@ -45,7 +46,7 @@
  * Authenticate an incoming pop session
  * Not really needed if we are going to authenticate with an upstream
  * pop server but it may be useful in some cases
- * pre: pw: passwd struct with username and password to authenticate
+ * pre: auth: login credentials
  *      io: io_t to write any errors to
  *      tag: ignored
  * post: An attemped is made to authenticate the user locally.
@@ -56,21 +57,21 @@
  *         -1 on error
  **********************************************************************/
 
-int pop3_in_authenticate(
-  const struct passwd *pw, 
-  io_t *io,
-  const token_t *UNUSED(tag)
-){
+int pop3_in_authenticate(const struct auth *auth, io_t *io,
+			 const token_t *UNUSED(tag))
+{
   pam_handle_t *pamh=NULL;
+  const char *name = auth_get_authorisation_id(auth);
 
   if((
-     pam_retval=pam_start(SERVICE_NAME, pw->pw_name, &conv_struct, &pamh)
+     pam_retval = pam_start(SERVICE_NAME, auth->authentication_id,
+			    &conv_struct, &pamh)
   )!=PAM_SUCCESS){
     VANESSA_LOGGER_DEBUG_ERRNO("pam_start");
     do_pam_end(pamh, EX_PAM_ERROR);
     return(-1);
   }
-  if(do_pam_authentication(pamh, pw->pw_name, pw->pw_passwd)<0){
+  if (do_pam_authentication(pamh, name, auth->passwd) < 0) {
     sleep(PERDITION_AUTH_FAIL_SLEEP);
     if (pop3_write_str(io, NULL_FLAG, NULL, POP3_ERR,
 		       "Authentication failure, mate") < 0) {
@@ -218,10 +219,12 @@ static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
 }
 
 #define __POP3_IN_ERR(_reason)						\
+do {									\
 	if (pop3_in_err(io, 1, "%s", _reason) < 0) {			\
 		break;							\
 	}								\
-	goto loop;
+	goto loop;							\
+} while (0)
 
 static int pop3_in_invalid_cmd(io_t *io, const char *msg)
 {
@@ -243,31 +246,29 @@ static int pop3_in_invalid_cmd(io_t *io, const char *msg)
 	goto loop;
 
 /**********************************************************************
- * pop3_in_get_pw
+ * pop3_in_get_auth
  * read USER and PASS commands and return them in a struct passwd *
  * allocated by this function
  * pre: io: io_t to write to and read from
  *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
- *      return_pw: pointer to an allocated struct pw, 
- *                 where username and password
- *                 will be returned if one is found
+ *      return_auth: pointer to an allocated struct auth,
+ *                   where login credentials will be returned
  *      return_tag: ignored 
- * post: pw_return structure with pw_name and pw_passwd set
+ * post: auth_return is seeded
  * return: 0 on success
  *         1 if user quits (QUIT command)
  *         -1 on error
  **********************************************************************/
 
-int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
-		   struct passwd *return_pw, token_t **UNUSED(return_tag))
+int pop3_in_get_auth(io_t *io, flag_t tls_flags, flag_t tls_state,
+		     struct auth *return_auth, token_t **UNUSED(return_tag))
 {
   vanessa_queue_t *q = NULL;
   token_t *t = NULL;
   char *message=NULL;
   char *capability;
-
-  return_pw->pw_name=NULL;
+  char *name = NULL, *passwd = NULL;
 
   capability = pop3_in_capability(tls_flags, tls_state);
   if (!capability) {
@@ -339,13 +340,19 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_USER " <username>");
       }
 
-      if((return_pw->pw_name=token_to_string(t, TOKEN_NO_STRIP))==NULL){
+      if (name) {
+	      free(name);
+	      name = NULL;
+      }
+
+      name = token_to_string(t, TOKEN_NO_STRIP);
+      if (!name) {
         VANESSA_LOGGER_DEBUG("token_to_string");
         break;
       }
       token_destroy(&t);
       
-      message = str_cat(3, POP3_CMD_USER " ", return_pw->pw_name, " set, mate");
+      message = str_cat(3, POP3_CMD_USER " ", name, " set, mate");
       if (!message) {
         VANESSA_LOGGER_DEBUG("str_cat");
         goto loop;
@@ -356,17 +363,17 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
       }
     }
     else if(strncasecmp((char *)token_buf(t), POP3_CMD_PASS, token_len(t))==0){
-      if(return_pw->pw_name==NULL){
+      if (!name)
 	      __POP3_IN_ERR(POP3_CMD_USER " not yet set, mate");
-      }
       if(!vanessa_queue_length(q)){
 	      __POP3_IN_ERR("Mate, try: " POP3_CMD_PASS " <password>");
       }
-      if((return_pw->pw_passwd=queue_to_string(q))==NULL){
+      passwd = queue_to_string(q);
+      if (!passwd) {
         VANESSA_LOGGER_DEBUG("token_to_string");
-        free(return_pw->pw_name);
         break;
       }
+      *return_auth = auth_set_pwd(name, passwd);
       return(0);
     }
     else if(strncasecmp((char *)token_buf(t), POP3_CMD_QUIT, token_len(t))==0){
@@ -389,6 +396,7 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
     token_destroy(&t);
     vanessa_queue_destroy(q);
     str_free(message);
+    free(passwd); passwd = NULL;
   }
 
   /*If we get here clean up and bail*/
@@ -396,5 +404,6 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
   vanessa_queue_destroy(q);
   str_free(message);
   free(capability);
+  free(passwd);
   return(-1);
 }

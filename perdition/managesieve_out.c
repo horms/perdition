@@ -1,10 +1,9 @@
+#include "auth.h"
 #include "io.h"
 #include "token.h"
 #include "protocol_t.h"
 #include "managesieve_out.h"
 #include "unused.h"
-
-#include <pwd.h>
 
 /**********************************************************************
  * managesieve_out_setup
@@ -12,7 +11,7 @@
  * the connection is ok and doing TLS if necessary.
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
- *	pw:     structure with username and passwd
+ *	auth:  structure with authentication credentials
  *	tag:    ignored
  * post: Read the greeting string from the server
  *	 If tls_outgoing is set issue the CAPABILITY command and check
@@ -25,7 +24,7 @@
  **********************************************************************/
 
 int managesieve_out_setup(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
-			  const struct passwd *UNUSED(pw),
+			  const struct auth *UNUSED(auth),
 			  token_t *UNUSED(tag))
 {
 	return -1;
@@ -37,7 +36,7 @@ int managesieve_out_setup(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
  * You should call managesieve_setup() first
  * pre: rs_io: io to use to communicate with real server
  *	eu_io: io to use to communicate with end user
- *	pw:     structure with username and passwd
+ *	auth:    structure with authentication credentials
  *	tag:    ignored
  *	protocol: protocol structure for managesieve
  *	buf:    buffer to return response from server in
@@ -52,7 +51,7 @@ int managesieve_out_setup(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
  **********************************************************************/
 
 int managesieve_out_authenticate(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
-				 const struct passwd *UNUSED(pw),
+				 const struct auth *UNUSED(auth),
 				 token_t *UNUSED(tag),
 				 const protocol_t *UNUSED(protocol),
 				 char *UNUSED(buf), size_t *UNUSED(n))

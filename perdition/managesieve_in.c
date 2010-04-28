@@ -1,3 +1,4 @@
+#include "auth.h"
 #include "token.h"
 #include "io.h"
 #include "managesieve.h"
@@ -8,15 +9,13 @@
 #include "unused.h"
 #include "options.h"
 
-#include <pwd.h>
-
 #ifdef WITH_PAM_SUPPORT
 /**********************************************************************
  * managesieve_in_authenticate
  * Authenticate an incoming session
  * Not really needed if we are going to authenticate with a real-server,
  * but it may be useful in some cases
- * pre: pw: passwd struct with username and password to authenticate
+ * pre: auth: login credentials
  *	io: io_t to write any errors to
  *	tag: ignored
  * post: An attemped is made to authenticate the user locally.
@@ -27,7 +26,7 @@
  *	   -1 on error
  **********************************************************************/
 
-int managesieve_in_authenticate(const struct passwd *UNUSED(pw),
+int managesieve_in_authenticate(const struct auth *UNUSED(auth),
 				io_t *UNUSED(io), const token_t *UNUSED(tag))
 {
 	return -1;
@@ -262,19 +261,17 @@ err:
 #endif
 
 /**********************************************************************
- * managesieve_in_get_pw_loop
- * read USER and PASS commands and return them in a struct passwd *
+ * managesieve_in_get_auth_loop
  * allocated by this function
  * pre: io: io_t to write to and read from
  *      tls_flags: the encryption flags that have been set
  *      tls_state: the current state of encryption for the session
- *      return_pw: pointer to an allocated struct pw,
- *                 where username and password
- *                 will be returned if one is found
- * post: pw_return structure with pw_name and pw_passwd set
+ *      return_auth: pointer to an allocated struct auth,
+ *                   where login credentials will be returned
+ * post: auth_return is seeded
  * return: 3 starttls
  *	   2 logout
- *         1 pw obtained
+ *         1 auth obtained
  *         0 on MANAGESIEVE_OK
  *         -1 on MANAGESIEVE_NO
  *         -2 on MANAGESIEVE_BYE
@@ -282,8 +279,8 @@ err:
  **********************************************************************/
 
 static int
-managesieve_in_get_pw_loop(io_t *io, flag_t tls_flags, flag_t tls_state,
-			   struct passwd *UNUSED(return_pw))
+managesieve_in_get_auth_loop(io_t *io, flag_t tls_flags, flag_t tls_state,
+			     struct auth *UNUSED(return_auth))
 {
 	vanessa_queue_t *q = NULL;
 	token_t *t = NULL;
@@ -343,32 +340,30 @@ err:
 }
 
 /**********************************************************************
- * managesieve_in_get_pw
- * read USER and PASS commands and return them in a struct passwd *
+ * managesieve_in_get_auth
  * allocated by this function
  * pre: io: io_t to write to and read from
  *	tls_flags: the encryption flags that have been set
  *	tls_state: the current state of encryption for the session
- *	return_pw: pointer to an allocated struct pw,
- *		   where username and password
- *		   will be returned if one is found
+ *	return_auth: pointer to an allocated struct auth,
+ *		     where login credentials will be returned
  *	return_tag: ignored
- * post: pw_return structure with pw_name and pw_passwd set
+ * post: auth_return is seeded
  * return: 0 on success
  *	   1 if user quits (LOGOUT command)
  *	   2 if TLS negotiation should be done
  *	   -1 on error
  **********************************************************************/
 
-int managesieve_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
-			  struct passwd *return_pw,
-			  token_t **UNUSED(return_tag))
+int managesieve_in_get_auth(io_t *io, flag_t tls_flags, flag_t tls_state,
+			    struct auth *return_auth,
+			    token_t **UNUSED(return_tag))
 {
 	int status;
 
 	while (1) {
-		status = managesieve_in_get_pw_loop(io, tls_flags,
-						    tls_state, return_pw);
+		status = managesieve_in_get_auth_loop(io, tls_flags,
+						      tls_state, return_auth);
 		if (status != 0 && status != -1)
 			break;
 	}

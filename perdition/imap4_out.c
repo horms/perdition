@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "auth.h"
 #include "imap4.h"
 #include "imap4_out.h"
 #include "imap4_tag.h"
@@ -155,7 +156,7 @@ leave:
  * the connection is ok and doing TLS if necessary.
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  * post: Read the greeting string from the server
  *       If tls_outgoing is set issue the CAPABILITY command and check
@@ -167,12 +168,9 @@ leave:
  *       -1 on error
  **********************************************************************/
 
-int imap4_out_setup(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *UNUSED(pw),
-  token_t *tag
-){
+int imap4_out_setup(io_t *rs_io, io_t *eu_io,
+		    const struct auth *UNUSED(auth), token_t *tag)
+{
   token_t *ok = NULL;
   token_t *t = NULL;
   vanessa_queue_t *q = NULL;
@@ -279,7 +277,7 @@ leave:
  * You should call imap4_setup() first
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    tag to use when authenticating with back-end server
  *      protocol: protocol structure for imap4
  *      buf:    buffer to return response from server in
@@ -293,15 +291,10 @@ leave:
  *        -1: on error
  **********************************************************************/
 
-int imap4_out_authenticate(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *UNUSED(protocol),
-  char *buf,
-  size_t *n
-){
+int imap4_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+			   token_t *tag, const protocol_t *UNUSED(protocol),
+			   char *buf, size_t *n)
+{
   token_t *ok=NULL;
   token_t *cont=NULL;
   vanessa_queue_t *q;
@@ -337,7 +330,7 @@ int imap4_out_authenticate(
   }
 
   if(imap4_write(rs_io, NULL_FLAG, tag, IMAP4_CMD_LOGIN, 1, "{%d}",
-			  strlen(pw->pw_name))<0){
+			  strlen(auth->authentication_id)) < 0) {
 	  VANESSA_LOGGER_DEBUG("imap4_write login");
 	  status=-1;
 	  goto leave;
@@ -347,8 +340,8 @@ int imap4_out_authenticate(
   if (status < 0)
 	  VANESSA_LOGGER_DEBUG("imap4_out_response login");
 
-  if(imap4_write(rs_io, NULL_FLAG, NULL, NULL, 2, "%s {%d}", 
-			  pw->pw_name, strlen(pw->pw_passwd))<0){
+  if (imap4_write(rs_io, NULL_FLAG, NULL, NULL, 2, "%s {%d}",
+		   auth->authentication_id, strlen(auth->passwd)) < 0) {
 	  VANESSA_LOGGER_DEBUG("imap4_write name");
 	  status=-1;
 	  goto leave;
@@ -358,7 +351,7 @@ int imap4_out_authenticate(
   if (status < 0)
 	  VANESSA_LOGGER_DEBUG("imap4_out_response name");
 
-  if (imap4_write_str(rs_io, NULL_FLAG, NULL, NULL, pw->pw_passwd) < 0) {
+  if (imap4_write_str(rs_io, NULL_FLAG, NULL, NULL, auth->passwd) < 0) {
 	  VANESSA_LOGGER_DEBUG("imap4_write_str passwd");
 	  status=-1;
 	  goto leave;

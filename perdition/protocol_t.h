@@ -36,8 +36,8 @@
 #include "config.h"
 #endif
 
-#include <pwd.h>
 #include <sys/types.h>
+#include "auth.h"
 #include "token.h"
 
 #define PROTOCOL_OK  0
@@ -51,15 +51,15 @@ struct protocol_t_struct {
 			 const char *command, const char *str);
 	int (*greeting)(io_t *io, flag_t flag);
 	char *quit_string;
-	int (*in_get_pw) (io_t *io, flag_t ssl_flags, flag_t ssl_state,
-			  struct passwd *return_pw, token_t **return_tag);
-	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct passwd *pw,
+	int (*in_get_auth) (io_t *io, flag_t ssl_flags, flag_t ssl_state,
+			    struct auth *return_auth, token_t **return_tag);
+	int (*out_setup) (io_t *rs_io, io_t *eu_io, const struct auth *auth,
 				 token_t *tag);
 	int (*out_authenticate) (io_t *rs_io, io_t *eu_io, 
-				 const struct passwd *pw, token_t *tag,
+				 const struct auth *auth, token_t *tag,
 				 const struct protocol_t_struct *protocol,
 				 char *buf, size_t *n);
-	int (*in_authenticate) (const struct passwd *pw, io_t *io,
+	int (*in_authenticate) (const struct auth *auth, io_t *io,
 				const token_t * tag);
 	int (*out_response) (io_t *rs_io, io_t *eu_io, const token_t *tag, 
 			const token_t *desired_token,

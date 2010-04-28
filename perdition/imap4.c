@@ -140,7 +140,7 @@ protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->write_str = imap4_write_str;
   protocol->greeting = imap4_greeting;
   protocol->quit_string = IMAP4_QUIT;
-  protocol->in_get_pw= imap4_in_get_pw;
+  protocol->in_get_auth = imap4_in_get_auth;
 #ifdef WITH_PAM_SUPPORT
   protocol->in_authenticate= imap4_in_authenticate;
 #else

@@ -42,10 +42,10 @@
 /**********************************************************************
  * pop3_out_setup
  * Begin interaction with real server by checking that
- * the connection is ok and doing TLS if neccessar0
+ * the connection is ok and doing TLS if neccessar
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    ignored 
  * post: Read the vreeting string from the server
  *       It tls_outgoing is set then issue the CAPA command
@@ -59,12 +59,8 @@
  *       -1 on error
  **********************************************************************/
 
-int pop3_out_setup(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *tag
-);
+int pop3_out_setup(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+		token_t *tag);
 
 
 /**********************************************************************
@@ -72,7 +68,7 @@ int pop3_out_setup(
  * Authenticate user with backend pop3 server
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
  *      buf: buffer to return server response in
@@ -83,16 +79,9 @@ int pop3_out_setup(
  *        -1: on error
  **********************************************************************/
 
-int pop3_out_authenticate(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *tag,
-  const protocol_t *protocol,
-  char *buf,
-  size_t *n
-);
-
+int pop3_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+			  token_t *tag, const protocol_t *protocol,
+			  char *buf, size_t *n);
 
 /**********************************************************************
  * pop3_out_response

@@ -277,7 +277,7 @@ protocol_t *managesieve_initialise_protocol(protocol_t *protocol)
 	protocol->write_str = managesieve_write_str;
 	protocol->greeting = managesieve_greeting;
 	protocol->quit_string = MANAGESIEVE_QUIT;
-	protocol->in_get_pw = managesieve_in_get_pw;
+	protocol->in_get_auth = managesieve_in_get_auth;
 #ifdef WITH_PAM_SUPPORT
 	protocol->in_authenticate = managesieve_in_authenticate;
 #else

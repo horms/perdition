@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "auth.h"
 #include "options.h"
 #include "pop3_out.h"
 #include "perdition_globals.h"
@@ -44,7 +45,7 @@
  * the connection is ok and doing TLS if neccessar
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    ignored 
  * post: Read the vreeting string from the server
  *       It tls_outgoing is set then issue the CAPA command
@@ -59,7 +60,7 @@
  **********************************************************************/
 
 int pop3_out_setup(io_t *rs_io, io_t *eu_io,
-		   const struct passwd *UNUSED(pw), token_t *UNUSED(tag))
+		   const struct auth *UNUSED(auth), token_t *UNUSED(tag))
 {
 	token_t *ok;
 	token_t *capa_end = NULL;
@@ -246,7 +247,7 @@ leave:
  * Authenticate user with backend pop3 server
  * pre: rs_io: io to use to communicate with real server
  *      eu_io: io to use to communicate with end user
- *      pw:     structure with username and passwd
+ *      auth:   structure with username and passwd
  *      tag:    ignored 
  *      protocol: protocol structure for POP3
  *      buf: buffer to return server response in
@@ -257,15 +258,11 @@ leave:
  *        -1: on error
  **********************************************************************/
 
-int pop3_out_authenticate(
-  io_t *rs_io,
-  io_t *eu_io,
-  const struct passwd *pw,
-  token_t *UNUSED(tag),
-  const protocol_t *UNUSED(protocol),
-  char *buf,
-  size_t *n
-){
+int pop3_out_authenticate(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+			  token_t *UNUSED(tag),
+			  const protocol_t *UNUSED(protocol),
+			  char *buf, size_t *n)
+{
   token_t *ok;
   vanessa_queue_t *q = NULL;
   int status = -1;
@@ -277,7 +274,8 @@ int pop3_out_authenticate(
   token_assign(ok, POP3_OK, strlen(POP3_OK), TOKEN_DONT_CARE);
 
   /* Send USER command */
-  if (pop3_write_str(rs_io, NULL_FLAG, NULL, POP3_CMD_USER, pw->pw_name) < 0) {
+  if (pop3_write_str(rs_io, NULL_FLAG, NULL, POP3_CMD_USER,
+		     auth->authentication_id) < 0) {
     VANESSA_LOGGER_DEBUG("pop3_write_str");
     status = -1;
     goto leave;
@@ -297,7 +295,7 @@ int pop3_out_authenticate(
 
   /* Send PASS command */
   if (pop3_write_str(rs_io, NULL_FLAG, NULL,
-		     POP3_CMD_PASS, pw->pw_passwd) < 0) {
+		     POP3_CMD_PASS, auth->passwd) < 0) {
     VANESSA_LOGGER_DEBUG("pop3_write_str pass");
     status = -1;
     goto leave;
