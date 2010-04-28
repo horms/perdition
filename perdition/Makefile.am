@@ -58,6 +58,11 @@ perdition_SOURCES = \
         io.c                io.h \
         io_select.c         io_select.h \
         log.h \
+	managesieve.c		managesieve.h \
+	managesieve_in.c	managesieve_in.h \
+	managesieve_out.c	managesieve_out.h \
+	managesieve_write.c	managesieve_write.h \
+        token.c             token.h \
         options.c           options.h \
         pam.c               pam.h \
         perdition.c \
@@ -73,7 +78,6 @@ perdition_SOURCES = \
         quit.c              quit.h \
         sock.h \
         setproctitle.c      setproctitle.h \
-        token.c             token.h \
         server_port.c       server_port.h \
         str.c               str.h \
         ssl.c               ssl.h \
