@@ -187,8 +187,7 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
 			"Auth:%s client-secure=%s authorisation_id=%s%s%s "
 			"authentication_id=\"%s\" passwd=\"%s\" "
-			"server=\"%s\" port=\"%s\" server-secure=%s "
-			"status=\"%s\"",
+			"server=\"%s:%s\" server-secure=%s status=\"%s\"",
 			from_to_host_str, eu_ssl, open, id, close,
 			str_null_safe(auth->authentication_id),
 			str_null_safe(passwd), str_null_safe(servername),
