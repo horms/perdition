@@ -10,8 +10,8 @@
 # Should-Stop:       $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: POP and IMAP proxy
-# Description:       Starts perdition to allow proxied POP and IMAP access
+# Short-Description: POP, IMAP and managesieve proxy
+# Description:       Starts perdition to allow proxied POP, IMAP and managesieve access
 ### END INIT INFO
 
 # Source function library.
@@ -33,6 +33,8 @@ IMAP4="${IMAP4:=yes}"
 IMAP4_FLAGS="${IMAP4_FLAGS:=}"
 IMAP4S="${IMAP4S:=yes}"
 IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+MANAGESIEVE="${MANAGESIEVE:=yes}"
+MANAGESIEVE_FLAGS="${MANAGESIEVE_FLAGS:=}"
 
 if [ "$RUN_PERDITION" != "yes" ]; then
 	exit 0
@@ -68,6 +70,12 @@ case "$1" in
 		touch /var/lock/subsys/perdition.imaps
 		echo
 	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Starting perdition services (MANAGESIEVE): "
+		daemon @prefix@/sbin/perdition.imaps $FLAGS $SiEVE_FLAGS
+		touch /var/lock/subsys/perdition.imaps
+		echo
+	fi
 	;;
   status)
         if [ "$POP3" = "yes" ]; then
@@ -81,6 +89,9 @@ case "$1" in
 	fi
 	if [ "$IMAP4S" = "yes" ]; then
         	status perdition.imaps
+	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		status perdition.imaps
 	fi
 	;;
   restart|reload)
@@ -113,6 +124,12 @@ case "$1" in
         	echo -n "Shutting down perdition services (IMAP4S): "
 		killproc perdition.imaps
 		rm -f /var/lock/subsys/perdition.imaps
+		echo
+	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Shutting down perdition services (MANAGESIEVE): "
+		killproc perdition.managesieve
+		rm -f /var/lock/subsys/perdition.managesieve
 		echo
 	fi
 	;;

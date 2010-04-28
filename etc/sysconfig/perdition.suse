@@ -16,7 +16,7 @@ RUN_PERDITION="yes"
 #
 # This is in addition to any mode specific flags.
 # That is, it is in addition to any command line options supplied
-# by POP3_FLAGS, POP3S_FLAGS, IMAP4_FLAGS or IMAP4S_FLAGS
+# by POP3_FLAGS, POP3S_FLAGS, IMAP4_FLAGS, IMAP4S_FLAGS or MANAGESIEVE_FLAGS
 #
 FLAGS=""
 
@@ -77,3 +77,17 @@ IMAP4S="yes"
 # Command line parameters to pass to perdition when run in IMAP4S mode
 #
 IMAP4S_FLAGS=""
+
+## Type:	yesno
+## Default:	yes
+#
+# Should we run an instance of perdition in managesieve mode?
+#
+MANAGESIEVE="yes"
+
+## Type:	string
+## Default:	""
+#
+# Command line parameters to pass to perdition when run in managesieve mode
+#
+MANAGESIEVE_FLAGS=""

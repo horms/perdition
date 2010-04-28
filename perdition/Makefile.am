@@ -31,7 +31,7 @@ EXTRA_DIST = perdition.8 perditiondb.5
 sbin_PROGRAMS = perdition
 	          
 install-exec-hook: install-man8
-	for i in pop3 pop3s imap4 imap4s imaps; do \
+	for i in pop3 pop3s imap4 imap4s imaps managesieve; do \
 		(cd $(DESTDIR)$(sbindir) && rm -f perdition.$$i && \
 			ln -f perdition perdition.$$i); \
 		(cd $(DESTDIR)$(mandir)/man8 && rm -f perdition.$$i && \
@@ -39,7 +39,7 @@ install-exec-hook: install-man8
 	done
 
 uninstall-local:
-	for i in pop3 pop3s imap4 imap4s imaps; do \
+	for i in pop3 pop3s imap4 imap4s imaps managesieve; do \
 		rm -f $(DESTDIR)$(sbindir)/perdition.$$i; \
 		rm -f $(DESTDIR)$(mandir)/man8/perdition.$$i.8; \
 	done

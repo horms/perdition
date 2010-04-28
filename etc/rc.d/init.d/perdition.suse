@@ -10,8 +10,8 @@
 # Should-Stop:       $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: POP and IMAP proxy
-# Description:       Starts perdition to allow proxied POP and IMAP access
+# Short-Description: POP, IMAP and managesieve proxy
+# Description:       Starts perdition to allow proxied POP, IMAP and managesieve access
 ### END INIT INFO
 
 # Source function library.
@@ -33,6 +33,8 @@ IMAP4="${IMAP4:=yes}"
 IMAP4_FLAGS="${IMAP4_FLAGS:=}"
 IMAP4S="${IMAP4S:=yes}"
 IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+MANAGESIEVE="${MANAGESIEVE:=yes}"
+MANAGESIEVE_FLAGS="${MANAGESIEVE_FLAGS:=}"
 
 POP3_BIN="/usr/sbin/perdition.pop3"
 POP3_PID="/var/run/perdition.pop3/perdition.pop3.pid"
@@ -42,6 +44,8 @@ IMAP4_BIN="/usr/sbin/perdition.imap4"
 IMAP4_PID="/var/run/perdition.imap4/perdition.imap4.pid"
 IMAP4S_BIN="/usr/sbin/perdition.imaps"
 IMAP4S_PID="/var/run/perdition.imaps/perdition.imaps.pid"
+MANAGESIEVE_BIN="/usr/sbin/perdition.managesieve"
+MANAGESIEVE_PID="/var/run/perdition.managesieve/perdition.managesieve.pid"
 
 if [ "$RUN_PERDITION" != "yes" ]; then
 	exit 0
@@ -81,6 +85,13 @@ case "$1" in
 		checkproc -p $IMAP4S_PID $IMAP4S_BIN
 		rc_status -v
 	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Starting perdition daemon (MANAGESIEVE): "
+		$MANAGESIEVE_BIN $FLAGS $MANAGESIEVE_FLAGS --pid_file $MANAGESIEVE_PID && \
+		[ -e $MANAGESIEVE_PID ] && \
+		checkproc -p $MANAGESIEVE_PID $MANAGESIEVE_BIN
+		rc_status -v
+	fi
 	;;
   status)
         if [ "$POP3" = "yes" ]; then
@@ -101,6 +112,11 @@ case "$1" in
 	if [ "$IMAP4S" = "yes" ]; then
 		echo -n "Checking for perdition (IMAP4S): "
 		checkproc -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Checking for perdition (MANAGESIEVE): "
+		checkproc -p $MANAGESIEVE_PID $MANAGESIEVE_BIN
 		rc_status -v
 	fi
 	;;
@@ -133,6 +149,11 @@ case "$1" in
 		killproc -HUP -p $IMAP4S_PID $IMAP4S_BIN
 		rc_status -v
 	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Checking for perdition (MANAGESIEVE): "
+		killproc -HUP -p $MANAGESIEVE_PID $MANAGESIEVE_BIN
+		rc_status -v
+	fi
 	;;
   stop)
 	if [ "$POP3" = "yes" ]; then
@@ -156,6 +177,11 @@ case "$1" in
 	if [ "$IMAP4S" = "yes" ]; then
 		echo -n "Shutting down perdition services (IMAP4S): "
 		killproc -TERM -p $IMAP4S_PID $IMAP4S_BIN
+		rc_status -v
+	fi
+	if [ "$MANAGESIEVE" = "yes" ]; then
+		echo -n "Shutting down perdition services (MANAGESIEVE): "
+		killproc -TERM -p $MANAGESIEVE_PID $MANAGESIEVE_BIN
 		rc_status -v
 	fi
 	;;

@@ -10,8 +10,8 @@
 # Should-Stop:       $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: POP and IMAP proxy
-# Description:       Starts perdition to allow proxied POP and IMAP access
+# Short-Description: POP, IMAP and managesieve proxy
+# Description:       Starts perdition to allow proxied POP, IMAP and managesieve access
 ### END INIT INFO
 
 PATH=@prefix@/sbin:/bin:/usr/bin:/sbin:/usr/sbin
@@ -36,6 +36,8 @@ IMAP4="${IMAP4:=yes}"
 IMAP4_FLAGS="${IMAP4_FLAGS:=}"
 IMAP4S="${IMAP4S:=yes}"
 IMAP4S_FLAGS="${IMAP4S_FLAGS:=}"
+MANAGESIEVE="${MANAGESIEVE:=yes}"
+MANAGESIEVE_FLAGS="${MANAGESIEVE_FLAGS:=}"
 
 if [ "$RUN_PERDITION" != "yes" ]; then
         exit 0
@@ -78,6 +80,14 @@ case "$1" in
                  echo "Unable to start IMAP4S Daemon (maybe another process is listening to the same port?)"
          fi
     fi
+    if [ "$MANAGESIEVE" = "yes" ]; then
+      start-stop-daemon --start --verbose \
+        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
+        --exec @prefix@/sbin/perdition.managesieve -- $FLAGS $MANAGESIEVE_FLAGS
+         if [ ! -e /var/run/perdition.managesieve/perdition.managesieve.pid ]; then
+                 echo "Unable to start MANAGESIEVE Daemon (maybe another process is listening to the same port?)"
+         fi
+    fi
     ;;
   stop)
     if [ "$POP3" = "yes" ]; then 	
@@ -99,6 +109,11 @@ case "$1" in
       start-stop-daemon --stop --verbose \
         --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps
+    fi
+    if [ "$MANAGESIEVE" = "yes" ]; then
+      start-stop-daemon --stop --verbose \
+        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
+        --exec @prefix@/sbin/perdition.managesieve
     fi
     ;;
   restart)
@@ -126,6 +141,11 @@ case "$1" in
       start-stop-daemon --stop --signal 1 --quiet \
         --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
         --exec @prefix@/sbin/perdition.imaps
+    fi
+    if [ "$MANAGESIEVE" = "yes" ]; then
+      start-stop-daemon --stop --signal 1 --quiet \
+        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
+        --exec @prefix@/sbin/perdition.managesieve
     fi
     ;;
   *)

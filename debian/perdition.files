@@ -12,6 +12,7 @@ usr/sbin/perdition.imap4s
 usr/sbin/perdition.imaps
 usr/sbin/perdition.pop3
 usr/sbin/perdition.pop3s
+usr/sbin/perdition.managesieve
 usr/share/man/man8/perdition.8
 usr/share/man/man8/perdition.pop3.8
 usr/share/man/man8/perdition.pop3s.8

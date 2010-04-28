@@ -525,8 +525,9 @@ int options(int argc, char **argv, flag_t f){
     }
     else if(!(f&OPT_FILE) && !strcmp("perdition.pop3s", basename)){
       opt_i(&(opt.protocol), PROTOCOL_POP3S, &i, 0, OPT_NOT_SET);
-    }
-    else {
+    } else if (!(f&OPT_FILE) && !strcmp("perdition.managesieve", basename)) {
+      opt_i(&(opt.protocol), PROTOCOL_MANAGESIEVE, &i, 0, OPT_NOT_SET);
+    } else {
       opt_i(&(opt.protocol), DEFAULT_PROTOCOL, &i, 0, OPT_NOT_SET);
     }
     opt_i(&(opt.no_daemon), DEFAULT_NO_DAEMON, &i, 0, OPT_NOT_SET);

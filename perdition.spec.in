@@ -240,11 +240,7 @@ ldconfig
 %doc %attr(-, root, root) README
 %doc %attr(-, root, root) ChangeLog TODO
 %{_sbindir}/perdition
-%{_sbindir}/perdition.pop3
-%{_sbindir}/perdition.pop3s
-%{_sbindir}/perdition.imap4
-%{_sbindir}/perdition.imap4s
-%{_sbindir}/perdition.imaps
+%{_sbindir}/perdition.*
 %config /etc/pam.d/perdition
 %if 0%{?suse_version}
 %config /etc/init.d/perdition

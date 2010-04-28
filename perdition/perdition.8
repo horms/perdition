@@ -36,6 +36,9 @@ perdition \- POP3 and IMAP4 proxy server
 \fBperdition.imap4s\fP [options]
 .br
 \fBperdition.imaps\fP [options]
+.br
+\fBperdition.managesieve\fP [options]
+
 .SH DESCRIPTION
 \fBperdition\fP allows users to connect to a content\-free POP3 or IMAP4
 server that will redirect them to their real POP3 or IMAP4 server
@@ -58,12 +61,13 @@ No IMAP authentication schemes, other than the LOGIN command are
 accepted.
 .P
 When invoked as \fBperdition.pop3\fP, \fBperdition.pop3s\fP,
-\fBperdition.imap4\fP or \fBperdition.imap4s\fP then perdition will run in
-POP3, POP3S, IMAP4 or IMAP4S mode respectively, unless overridden on the
-command line or in the configuration file.  \fBperdition.imaps\fP also runs
-perdition in IMAP4S mode and is provided to get around the truncation of
-process names in the /proc filesystem on Linux which can cause init scripts
-to fail to stop perdition correctly.
+\fBperdition.imap4\fP, \fBperdition.imap4s\fP or \fBperdition.managesieve\fP then
+perdition will run in POP3, POP3S, IMAP4, IMAP4S or MANAGESIEVE mode respectively,
+unless overridden on the command line or in the configuration file.
+\fBperdition.imaps\fP also runs perdition in IMAP4S mode and is provided to
+get around the truncation of process names in the /proc filesystem on Linux
+which can cause init scripts to fail to stop perdition correctly.
+
 .SH OPTIONS
 .TP
 .B \-A|\-\-add_domain STATE[,STATE...][,STRIP_DEPTH]:
@@ -187,7 +191,7 @@ it will be used.
 .sp
 Next the sysconfig dir is checked for peridtion.<protocol>.conf,
 where protocol is the ASCII representation of the protocol
-being used, one of "imap4", "imap4s", "pop3", or "pop3s".
+being used, one of "imap4", "imap4s", "pop3", "pop3s" or "managesieve".
 So if perdition is being run in imap4 mode, and
 /etc/perdition/perdition.imap4.conf exists, then
 it is used. Note that the protocol name is lowercase.
