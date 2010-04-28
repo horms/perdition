@@ -963,6 +963,12 @@ int main (int argc, char **argv, char **envp){
 	    PERDITION_CLEAN_UP_MAIN;
 	    continue;
     }
+    if (status==3) {
+	    sleep(VANESSA_LOGGER_ERR_SLEEP);
+	    LOGIN_FAILED_PROTOCOL(PROTOCOL_NO, "SASL mechanism unavailable");
+	    PERDITION_CLEAN_UP_MAIN;
+	    continue;
+    }
     else if(status<0){
       VANESSA_LOGGER_DEBUG_UNSAFE("protocol->out_authenticate %d", status);
       if (io_get_err(client_io) == io_err_timeout)

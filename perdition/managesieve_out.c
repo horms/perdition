@@ -173,6 +173,33 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io,
 	return status;
 }
 
+static int sasl_plain(io_t *rs_io, io_t *eu_io, const struct auth *auth,
+		      char *buf, size_t *n)
+{
+	char *challenge = NULL;
+	int status = -1;
+
+	challenge = sasl_plain_challenge_encode(auth);
+	if (!challenge) {
+		VANESSA_LOGGER_DEBUG("sasl_plain_encode_challenge");
+		status = 0;
+		goto err;
+	}
+
+	if (managesieve_write(rs_io, PERDITION_CLIENT,
+			      MANAGESIEVE_CMD_AUTHENTICATE " \""
+			      SASL_MECHANISM_PLAIN "\"",
+			      NULL, challenge) < 0) {
+		VANESSA_LOGGER_DEBUG("managesieve_write");
+		goto err;
+	}
+
+	status = read_ok(rs_io, eu_io, buf, n);
+err:
+	free(challenge);
+	return status;
+}
+
 /**********************************************************************
  * managesieve_authenticate
  * Authenticate user with back-end managesieve server
@@ -189,19 +216,35 @@ int managesieve_out_setup(io_t *rs_io, io_t *eu_io,
  * post: The CAPABILITY command is sent to the server and the result is read
  *	 If the desired SASL mechanism is not available then processing stops.
  *	 Otherwise the AUTHENTICATE command is sent and the result is checked
- * return: 2: if the server does not support the desired SASL mechanism
+ * return: 3: if the server does not support the desired SASL mechanism
  *	   1: on success
  *	   0: on failure
  *	   -1: on error
  **********************************************************************/
 
-int managesieve_out_authenticate(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
-				 flag_t UNUSED(tls_state),
-				 const struct auth *UNUSED(auth),
-				 flag_t UNUSED(sasl_mech),
+int managesieve_out_authenticate(io_t *rs_io, io_t *eu_io, flag_t tls_state,
+				 const struct auth *auth, flag_t sasl_mech,
 				 token_t *UNUSED(tag),
 				 const protocol_t *UNUSED(protocol),
-				 char *UNUSED(buf), size_t *UNUSED(n))
+				 char *buf, size_t *n)
 {
-	return -1;
+	int status;
+
+	if (tls_state & SSL_MODE_TLS_OUTGOING) {
+		sasl_mech = managesieve_out_capability(rs_io);
+		if (sasl_mech < 1) {
+			VANESSA_LOGGER_DEBUG("managesieve_out_capability");
+			return sasl_mech;
+		}
+
+		sasl_mech &= PROTOCOL_S_SASL_MASK;
+	}
+
+	if (!(sasl_mech & PROTOCOL_S_SASL_PLAIN))
+		return 3;
+
+	status = sasl_plain(rs_io, eu_io, auth, buf, n);
+	if (status < 0)
+		VANESSA_LOGGER_DEBUG("sasl_plain");
+	return status;
 }
