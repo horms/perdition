@@ -7,10 +7,11 @@
 #include "token.h"
 #include "unused.h"
 
+#define MANAGESIEVE_CMD_LOGOUT		"LOGOUT"
 #define MANAGESIEVE_CMD_NOOP		"NOOP"
 
 #define MANAGESIEVE_GREETING	"predition ready on"
-#define MANAGESIEVE_QUIT	"LOGOUT"
+#define MANAGESIEVE_QUIT	MANAGESIEVE_CMD_LOGOUT
 #define MANAGESIEVE_OK	"OK"
 #define MANAGESIEVE_NO	"NO"
 #define MANAGESIEVE_BYE	"BYE"

@@ -40,7 +40,7 @@ int managesieve_in_authenticate(const struct passwd *pw, io_t *io,
  *	return_tag: ignored
  * post: pw_return structure with pw_name and pw_passwd set
  * return: 0 on success
- *	   1 if user quits (QUIT command)
+ *	   1 if user quits (LOGOUT command)
  *	   -1 on error
  **********************************************************************/
 
