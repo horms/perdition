@@ -649,7 +649,7 @@ int main (int argc, char **argv, char **envp){
   }
   else {
     *to_host_str='\0';
-    *from_host_str='\0';
+    *to_serv_str='\0';
   }
   *from_to_host_str='\0';
   if(peername!=NULL && sockname!=NULL){
