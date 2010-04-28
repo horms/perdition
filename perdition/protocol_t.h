@@ -47,9 +47,8 @@
 
 struct protocol_t_struct {
 	char **type;
-	int (*write)(io_t *io, flag_t flag, const token_t *tag,
-			const char *command, size_t nargs, 
-			const char *fmt, ...);
+	int (*write_str)(io_t *io, flag_t flag, const token_t *tag,
+			 const char *command, const char *str);
 	int (*greeting)(io_t *io, flag_t flag);
 	char *quit_string;
 	int (*in_get_pw) (io_t *io, flag_t ssl_flags, flag_t ssl_state,

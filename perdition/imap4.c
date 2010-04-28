@@ -137,7 +137,7 @@ char *imap4_type[]={IMAP4_OK, IMAP4_NO, IMAP4_BAD};
 
 protocol_t *imap4_initialise_protocol(protocol_t *protocol){
   protocol->type = imap4_type;
-  protocol->write = imap4_write;
+  protocol->write_str = imap4_write_str;
   protocol->greeting = imap4_greeting;
   protocol->quit_string = IMAP4_QUIT;
   protocol->in_get_pw= imap4_in_get_pw;

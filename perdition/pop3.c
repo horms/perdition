@@ -91,7 +91,7 @@ char *pop3_type[]={POP3_OK, POP3_ERR, POP3_ERR};
 
 protocol_t *pop3_initialise_protocol(protocol_t *protocol){
   protocol->type = pop3_type;
-  protocol->write = pop3_write;
+  protocol->write_str = pop3_write_str;
   protocol->greeting = pop3_greeting;
   protocol->quit_string = POP3_QUIT;
   protocol->in_get_pw= pop3_in_get_pw;

@@ -51,9 +51,9 @@ int quit(io_t * io, const protocol_t * protocol, token_t * tag)
 	vanessa_queue_t *q;
 	int status = -1;
 
-	if(protocol->write(io, NULL_FLAG, tag, 
-				protocol->quit_string, 0, "") < 0) {
-		VANESSA_LOGGER_DEBUG("protocol->write");
+	if (protocol->write_str(io, NULL_FLAG, tag, protocol->quit_string,
+				NULL) < 0) {
+		VANESSA_LOGGER_DEBUG("protocol->write_str");
 		return (-1);
 	}
 

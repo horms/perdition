@@ -198,8 +198,8 @@ login_failed_protocol(protocol_t *protocol, int protocol_type,
 		const char *progname, const char *reason)
 {
 	sleep(PERDITION_AUTH_FAIL_SLEEP);
-	if (protocol->write(io, NULL_FLAG, tag, protocol->type[protocol_type], 
-				0, reason) < 0) {
+	if (protocol->write_str(io, NULL_FLAG, tag,
+				protocol->type[protocol_type], reason) < 0) {
 		VANESSA_LOGGER_DEBUG("protocol->write");
 		VANESSA_LOGGER_ERR("Fatal error writing to client. "
 				"Exiting child.");
@@ -921,9 +921,9 @@ int main (int argc, char **argv, char **envp){
             if(opt.server_resp_line){
               sleep(PERDITION_AUTH_FAIL_SLEEP);
               *(server_resp_buf+server_resp_buf_size)='\0';
-              if(protocol->write(client_io, WRITE_STR_NO_CLLF, client_tag, 
-                    NULL, 1, "%s", server_resp_buf)<0){
-                VANESSA_LOGGER_DEBUG("protocol->write");
+              if (protocol->write_str(client_io, WRITE_STR_NO_CLLF, client_tag,
+				      NULL, server_resp_buf) < 0) {
+                VANESSA_LOGGER_DEBUG("protocol->write_str quit");
                 VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
                 perdition_exit_cleanly(-1);
               }
@@ -952,17 +952,17 @@ int main (int argc, char **argv, char **envp){
 
     if(opt.server_resp_line){
       *(server_resp_buf+server_resp_buf_size)='\0';
-      if(protocol->write(client_io, WRITE_STR_NO_CLLF, client_tag, 
-            NULL, 1, "%s", server_resp_buf)<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
+      if (protocol->write_str(client_io, WRITE_STR_NO_CLLF, client_tag,
+			      NULL, server_resp_buf) < 0) {
+        VANESSA_LOGGER_DEBUG("protocol->write_str logged in, server_resp");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         perdition_exit_cleanly(-1);
       }
     }
     else{
-      if(protocol->write(client_io, NULL_FLAG, client_tag, 
-            protocol->type[PROTOCOL_OK], 0, opt.ok_line)<0){
-        VANESSA_LOGGER_DEBUG("protocol->write");
+      if (protocol->write_str(client_io, NULL_FLAG, client_tag,
+			      protocol->type[PROTOCOL_OK], opt.ok_line) < 0) {
+        VANESSA_LOGGER_DEBUG("protocol->write_str logged in");
         VANESSA_LOGGER_ERR("Fatal error writing to client. Exiting child.");
         perdition_exit_cleanly(-1);
       }

@@ -82,5 +82,27 @@ int imap4_write(io_t *io, const flag_t flag, const token_t *tag,
 		const char *command, const size_t nargs, 
 		const char *fmt, ...);
 
+/**********************************************************************
+ * imap4_write_str
+ * Display an message of the form <command> [<string>]
+ * Pre: io: io_t to write to
+ *      flag: flag to pass to str_write as per str.h
+ *      tag: tag to display
+ *           if NULL, then IMAP4_UNTAGGED is used
+ *      command: command in message sent
+ *           if NULL then only string is written
+ *      string: string, omotted if NULL
+ *           At least one of tag, command and string must be non-NULL
+ * Return 0 on success
+ *        -1 otherwise
+ **********************************************************************/
+
+static inline int
+imap4_write_str(io_t *io, const flag_t flag, const token_t *tag,
+		const char *command, const char *str) {
+	if (str)
+		return imap4_write(io, flag, tag, command, 1, "%s", str);
+	return imap4_write(io, flag, tag, command, 0, NULL);
+}
 #endif
 
