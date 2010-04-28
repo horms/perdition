@@ -164,22 +164,21 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 		struct auth *auth, const char *servername, const char *port,
 		const char *reason, int ssl_mode, int tls_state)
 {
-	char *passwd;
-	const char *eu_ssl, *rs_ssl;
+	const char *eu_ssl, *rs_ssl, *pw_head, *pw_body, *pw_tail;
 	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
 
-	if (!strcmp(reason, "ok")) {
-		if (opt.log_passwd & LOG_PASSWD_OK)
-			passwd = auth->passwd;
-		else 
-			passwd = "XXXXXX";
+	if (opt.debug) {
+		if ((!strcmp(reason, "ok") &&
+		     (opt.log_passwd & LOG_PASSWD_OK)) ||
+		    (opt.log_passwd & LOG_PASSWD_FAIL))
+				pw_body = auth->passwd;
+		else
+				pw_body = "XXXXXX";
+		pw_head = " passwd=\"";
+		pw_tail = "\"";
 	}
-	else {
-		if (opt.log_passwd & LOG_PASSWD_FAIL)
-			passwd = auth->passwd;
-		else 
-			passwd = "XXXXXX";
-	}
+	else
+		pw_head = pw_body = pw_tail = "";
 
 	if (ssl_mode & SSL_MODE_SSL_LISTEN)
 		eu_ssl = "ssl";
@@ -198,12 +197,12 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
 			"Auth:%s client-secure=%s authorisation_id=%s%s%s "
-			"authentication_id=\"%s\" passwd=\"%s\" "
+			"authentication_id=\"%s\"%s%s%s "
 			"server=\"%s:%s\" server-secure=%s status=\"%s\"",
 			from_to_host_str, eu_ssl, authorisation_id.quote,
 			authorisation_id.str, authorisation_id.quote,
 			str_null_safe(auth->authentication_id),
-			str_null_safe(passwd), str_null_safe(servername),
+			pw_head, pw_body, pw_tail, str_null_safe(servername),
 			str_null_safe(port), rs_ssl, str_null_safe(reason));
 	auth_log->log_time = time(NULL) + opt.connect_relog;
 

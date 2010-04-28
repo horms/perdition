@@ -257,10 +257,10 @@ Log the users password, otherwise just report it as "XXXXXX".
 (default "never")
 .sp
 .B fail: 
-log the password on failed connection attepmts.
+log the password on failed connection attempts.
 .sp
 .B ok:
-log the password on successful connection attepmts.
+log the password on successful connection attempts.
 .sp
 .B
 never:
@@ -269,6 +269,10 @@ never log the password
 .B
 always:
 always log the password
+.sp
+\fBNote:\fP \-d|\-\-debug must be specified for this option to take effect.
+When in debug mode, the password is logged as "XXXXXX" unless log_passwd is
+in effect for the current STATE.
 .TP
 .B \-\-lower_case state[,state...]:
 Convert usernames to lower case according the the locale in given
