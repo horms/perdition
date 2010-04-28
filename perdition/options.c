@@ -402,6 +402,8 @@ int options(int argc, char **argv, flag_t f){
      'I', NULL, NULL},
     {"imap_capability",             '\0', POPT_ARG_STRING, NULL,
      TAG_IMAP_CAPABILITY, NULL, NULL},
+    {"managesieve_capability",      '\0', POPT_ARG_STRING, NULL,
+     TAG_MANAGESIEVE_CAPABILITY, NULL, NULL},
     {"pop_capability",              '\0', POPT_ARG_STRING, NULL,
      TAG_POP_CAPABILITY, NULL, NULL},
     {"connection_limit",            'L',  POPT_ARG_STRING, NULL,
@@ -556,6 +558,8 @@ int options(int argc, char **argv, flag_t f){
     opt_p(&(opt.imap_capability), DEFAULT_IMAP_CAPABILITY, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.listen_port), PERDITION_PROTOCOL_DEPENDANT, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.log_passwd), DEFAILT_LOG_PASSWD, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.managesieve_capability), DEFAULT_MANAGESIEVE_CAPABILITY,
+          &i, 0, OPT_NOT_SET);
     opt_p(&(opt.map_library), DEFAULT_MAP_LIB, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.map_library_opt), DEFAULT_MAP_LIB_OPT, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.outgoing_port), PERDITION_PROTOCOL_DEPENDANT, 
@@ -710,6 +714,9 @@ int options(int argc, char **argv, flag_t f){
 	if (options_set_mask(&opt.mask2, MASK2_IMAP_CAPABILITY, f))
 	  opt_p(&(opt.imap_capability), optarg, &(opt.mask2),
 		MASK2_IMAP_CAPABILITY, f);
+	if (options_set_mask(&opt.mask2, MASK2_MANAGESIEVE_CAPABILITY, f))
+	  opt_p(&(opt.managesieve_capability), optarg, &(opt.mask2),
+		MASK2_MANAGESIEVE_CAPABILITY, f);
 	if (options_set_mask(&opt.mask2, MASK2_POP_CAPABILITY, f))
 	  opt_p(&(opt.pop_capability), optarg, &(opt.mask2),
 		MASK2_POP_CAPABILITY, f);
@@ -717,6 +724,10 @@ int options(int argc, char **argv, flag_t f){
       case TAG_IMAP_CAPABILITY:
 	opt_p(&(opt.imap_capability), optarg, &(opt.mask2),
 	      MASK2_IMAP_CAPABILITY, f);
+	break;
+      case TAG_MANAGESIEVE_CAPABILITY:
+	opt_p(&(opt.managesieve_capability), optarg, &(opt.mask2),
+	      MASK2_MANAGESIEVE_CAPABILITY, f);
 	break;
       case TAG_POP_CAPABILITY:
 	opt_p(&(opt.pop_capability), optarg, &(opt.mask2),
@@ -1201,6 +1212,7 @@ static char *log_options_non_ssl_str(void)
     "log_passwd=\"%s\", "
     "login_disabled=%s, "
     "lower_case=\"%s\", "
+    "managesieve_capability=\"%s\", "
     "map_library=\"%s\", "
     "map_library_opt=\"%s\", "
     "no_bind_banner=%s, "
@@ -1243,6 +1255,7 @@ static char *log_options_non_ssl_str(void)
     OPT_STR(log_passwd_to_str(opt.log_passwd)),
     BIN_OPT_STR(opt.login_disabled),
     OPT_STR(lower_case),
+    OPT_STR(opt.managesieve_capability),
     OPT_STR(opt.map_library),
     OPT_STR(opt.map_library_opt),
     BIN_OPT_STR(opt.no_bind_banner),
@@ -1529,8 +1542,9 @@ void usage(int exit_status){
     "     Group to run as. (default \"%s\")\n"
     " -h|--help:\n"
     "    Display this message.\n"
-    " -I|--capability|--pop_capability|--imap_capability STRING:\n"
-    "    Deprecated in favour of --pop_capability and --imap_capability.\n"
+    " -I|--capability STRING:\n"
+    "    Deprecated in favour of --pop_capability, --managesieve_capability\n"
+    "    and --imap_capability.\n"
     " --imap_capability STRING:\n"
     "    Capabilities for imap4 and imap4s.\n"
     "    (default \"%s\")\n"
@@ -1549,6 +1563,9 @@ void usage(int exit_status){
     " --lower_case STATE[,STATE...]:\n"
     "    Convert usernames to lower case according the the locale in given\n"
     "    state(s). (default \"\")\n"
+    " --managesieve_capability STRING:\n"
+    "    Capabilities for managesieve.\n"
+    "    (default \"%s\")\n"
     " -M|--map_library FILENAME:\n"
     "    Library to open that provides functions to look up the server for a\n"
     "    user.\n"
@@ -1677,6 +1694,7 @@ void usage(int exit_status){
     DEFAULT_CONNECTION_LIMIT,
     OPT_STR(PERDITION_PROTOCOL_DEPENDANT),
     OPT_STR(log_passwd_to_str(DEFAILT_LOG_PASSWD)),
+    OPT_STR(DEFAULT_MANAGESIEVE_CAPABILITY),
     OPT_STR(DEFAULT_MAP_LIB),
     OPT_STR(DEFAULT_MAP_LIB_OPT),
     OPT_STR(DEFAULT_OK_LINE),

@@ -130,6 +130,7 @@
 #define DEFAULT_LOG_FACILITY                 "mail"
 #define DEFAULT_LOGIN_DISABLED               0
 #define DEFAULT_LOWER_CASE                   STATE_NONE
+#define DEFAULT_MANAGESIEVE_CAPABILITY       NULL
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
 #define DEFAULT_NO_DAEMON                    0
@@ -189,6 +190,7 @@ typedef struct {
   int             authenticate_timeout;
   vanessa_dynamic_array_t *bind_address;
   char            *pop_capability;
+  char            *managesieve_capability;
   char            *imap_capability;
   int             client_server_specification;
   char            *config_file;
@@ -287,7 +289,8 @@ typedef struct {
 #define MASK2_LOG_PASSWD                 (flag_t) 0x00000008
 #define MASK2_AUTHENTICATE_TIMEOUT       (flag_t) 0x00000010
 #define MASK2_IMAP_CAPABILITY            (flag_t) 0x00000020
-#define MASK2_POP_CAPABILITY             (flag_t) 0x00000040
+#define MASK2_MANAGESIEVE_CAPABILITY     (flag_t) 0x00000040
+#define MASK2_POP_CAPABILITY             (flag_t) 0x00000080
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -344,7 +347,8 @@ typedef struct {
 #define TAG_SSL_PASSPHRASE_FD                  (int) 152
 #define TAG_SSL_PASSPHRASE_FILE                (int) 153
 #define TAG_IMAP_CAPABILITY                    (int) 154
-#define TAG_POP_CAPABILITY                     (int) 155
+#define TAG_MANAGESIEVE_CAPABILITY             (int) 155
+#define TAG_POP_CAPABILITY                     (int) 156
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/
