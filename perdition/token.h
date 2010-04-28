@@ -63,8 +63,10 @@ typedef struct{
  */
 /* #define TOKEN_EOL, defined above */ 
 #define TOKEN_POP3            (flag_t) 0x02
+#define TOKEN_ACAP_ATOM       TOKEN_POP3
 #define TOKEN_IMAP4           (flag_t) 0x04
 #define TOKEN_IMAP4_LITERAL   (flag_t) 0x08
+#define TOKEN_ACAP_LITERAL    TOKEN_IMAP4_LITERAL
 
 #define TOKEN_NO_STRIP    (unsigned char) '\0'
 

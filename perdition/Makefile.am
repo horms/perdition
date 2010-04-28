@@ -46,6 +46,7 @@ uninstall-local:
 
 perdition_SOURCES = \
 	acap.c			acap.h \
+	acap_token.c		acap_token.h \
         config_file.c       config_file.h \
         getserver.c         getserver.h \
         greeting.c          greeting.h \
