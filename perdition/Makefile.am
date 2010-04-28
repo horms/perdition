@@ -63,6 +63,7 @@ perdition_SOURCES = \
 	managesieve.c		managesieve.h \
 	managesieve_in.c	managesieve_in.h \
 	managesieve_out.c	managesieve_out.h \
+	managesieve_response_code.c managesieve_response_code.h \
 	managesieve_write.c	managesieve_write.h \
         token.c             token.h \
         options.c           options.h \
