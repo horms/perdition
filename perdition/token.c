@@ -427,3 +427,24 @@ char *token_to_string(const token_t *t, const unsigned char strip){
   }
   return(string);
 }
+
+/**********************************************************************
+ * token_casecmp_string
+ * Compare a token with a null-terminated string
+ * pre: t: token
+ *      str: string
+ * return: 1 on match
+ *         0 otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+int token_casecmp_string(const token_t *t, const char *str)
+{
+	if (token_len(t) == strlen(str) &&
+	    !strncasecmp((char *)token_buf(t), str, token_len(t)))
+		return 1;
+
+	return 0;
+}
+

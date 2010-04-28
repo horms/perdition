@@ -291,5 +291,17 @@ int token_cmp(const token_t *a, const token_t *b);
 
 char *token_to_string(const token_t *t, const unsigned char strip);
 
+/**********************************************************************
+ * token_casecmp_string
+ * Compare a token with a null-terminated string
+ * pre: t: token
+ *      str: string
+ * return: 1 on match
+ *         0 otherwise
+ *
+ * Not 8 bit clean
+ **********************************************************************/
+
+int token_casecmp_string(const token_t *t, const char *str);
 
 #endif
