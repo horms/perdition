@@ -45,7 +45,7 @@
 #define TOKEN_DESTROY (void (*)(const void *))token_destroy
   
 typedef struct{
-  ssize_t n;
+  size_t n;
   char *buf;
   flag_t flag;
 }token_t;
