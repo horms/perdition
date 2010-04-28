@@ -16,12 +16,14 @@
  *	eu_io: io to use to communicate with end user
  *	auth:  structure with authentication credentials
  *	tag:    ignored
- * post: Read the greeting string from the server
- *	 If tls_outgoing is set issue the CAPABILITY command and check
- *	 for the STARTTLS capability.
- * return: Logical or of PROTOCOL_S_OK and
- *	   PROTOCOL_S_STARTTLS if ssl_mode is tls_outgoing (or tls_all)
- *	   and the STARTTLS capability was reported by the server
+ * post: Read the greeting string from the real-server.
+ *       Send an STARTTLS command if the ssl_mode is tls_outgoing
+ *       or tls_outgoing_force and the STARTTLS is supported by the
+ *       real-server.
+ * return:
+ *	  non-zero: success, will be the logical or of PROTOCOL_S_OK and any of:
+ *	   PROTOCOL_S_STARTTLS: STARTTLS has been issued
+ *	   PROTOCOL_S_SASL_PLAIN: has SASL PLAIN
  *	 0: on failure
  *	 -1 on error
  **********************************************************************/
