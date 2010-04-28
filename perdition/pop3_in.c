@@ -300,9 +300,8 @@ int pop3_in_get_pw(io_t *io, flag_t tls_flags, flag_t tls_state,
       if(vanessa_queue_length(q)!=0){
 	    __POP3_IN_ERR("Mate, try: " POP3_CMD_CAPA);
       }
-      pop3_write(io, NULL_FLAG, NULL, POP3_OK, 0,
-		      "Capability list follows, mate");
-      pop3_write(io, WRITE_STR_NO_CLLF, NULL, NULL, 1, "%s", capability);
+      pop3_write(io, WRITE_STR_NO_CLLF, NULL, POP3_OK, 1,
+		 "Capability list follows, mate\r\n%s", capability);
       goto loop;
     }
 
