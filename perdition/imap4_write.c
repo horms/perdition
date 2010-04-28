@@ -64,7 +64,6 @@ static const char *__imap4_write_fmt(io_t *UNUSED(io), flag_t *flag,
 	char *new_fmt_end = NULL;
 	size_t tag_str_len;
 	size_t command_len;
-	size_t fmt_len;
 
 	/* Fast Path */
 	if(!command && !tag) {
@@ -84,8 +83,6 @@ static const char *__imap4_write_fmt(io_t *UNUSED(io), flag_t *flag,
 		tag_str_len = token_len(tag);
 	}
 
-	fmt_len = strlen(fmt);
-
 	memcpy(__imap4_write_fmt_str, tag_str, tag_str_len);
 	new_fmt_end = __imap4_write_fmt_str + tag_str_len;
 
@@ -96,7 +93,8 @@ static const char *__imap4_write_fmt(io_t *UNUSED(io), flag_t *flag,
 		new_fmt_end += command_len + 1;
 	}
 
-	if(*fmt){
+	if (fmt && *fmt) {
+		size_t fmt_len = strlen(fmt);
 		*(new_fmt_end) = ' ';
 		memcpy(new_fmt_end + 1, fmt, fmt_len);
 	        new_fmt_end += fmt_len + 1;

@@ -61,7 +61,6 @@ static const char *__pop3_write_fmt(io_t *UNUSED(io), flag_t *flag,
 {
 	char *new_fmt_end = NULL;
 	size_t command_len;
-	size_t fmt_len;
 
 	/* Fast Path */
 	if(!command) {
@@ -73,12 +72,12 @@ static const char *__pop3_write_fmt(io_t *UNUSED(io), flag_t *flag,
 	memset(__pop3_write_fmt_str, 0, MAX_LINE_LENGTH);
 
 	command_len = strlen(command);
-	fmt_len = strlen(fmt);
 
 	memcpy(__pop3_write_fmt_str, command, command_len);
 	new_fmt_end = __pop3_write_fmt_str + command_len;
 
-	if(*fmt){
+	if (fmt && *fmt) {
+		size_t fmt_len = strlen(fmt);
 		*(new_fmt_end) = ' ';
 		memcpy(new_fmt_end + 1, fmt, fmt_len);
 	        new_fmt_end += fmt_len + 1;
