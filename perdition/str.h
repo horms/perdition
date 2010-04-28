@@ -334,4 +334,67 @@ uint32 str_rolling32(unsigned char *buf, size_t len);
 
 char *str_replace(char *str, size_t n, ...);
 
+/**********************************************************************
+ * strcasestring
+ * Find the first occurrence of string in a string, case insensitively
+ * pre: haystack: string to search in
+ *      needle: string to search for
+ * return: pointer to the first occurrence of needle
+ *         NULL on error
+ *
+ * Note: returns a const char* rather than a char * like strstr().
+ *       This seems more logical given the type of the inputs.
+ *
+ *       strcasestr() exists in gcc (and returns char *) but this
+ *       is a GNU extension. As an implementation is needed for when
+ *       perdition is compiled against other libcs, it may as be used all
+ *       the time.
+ **********************************************************************/
+
+const char *strcasestr(const char *haystack, const char *needle);
+
+/**********************************************************************
+ * strcasedelimword
+ * Find the first occurrence of a word in a string
+ * That is, find a needle in a haystack and make sure that;
+ * a) the needle is either at the beginning of the haystack or
+ *    preceded by a character present in delim and;
+ * b) the needle is either at the end of the haystack or
+ *     followed by a character present in delim
+ * pre: haystack: string to search in
+ *      needle: string to search for
+ *      delim: list of delimiter characters (case sensitive)
+ * return: pointer to the first occurrence of needle
+ *         NULL on error
+ *
+ * Note: returns a const char* rather than a char * like strstr().
+ *       This seems more logical given the type of the inputs.
+ **********************************************************************/
+
+const char *strcasedelimword(const char *haystack, const char *needle,
+			     const char *delim);
+
+/**********************************************************************
+ * strcaseword
+ * Find the first occurrence of a word in a string
+ * That is, find a needle in a haystack and make sure that;
+ * a) the needle is either at the beginning of the haystack or
+ *    preceded by a space and;
+ * b) the needle is either at the end of the haystack or
+ *     followed by a space
+ * pre: haystack: string to search in
+ *      needle: string to search for
+ * return: pointer to the first occurrence of needle
+ *         NULL on error
+ *
+ * Note: returns a const char* rather than a char * like strstr().
+ *       This seems more logical given the type of the inputs.
+ **********************************************************************/
+
+static inline const char *
+strcaseword(const char *haystack, const char *needle)
+{
+	return strcasedelimword(haystack, needle, " ");
+}
+
 #endif				/* _PERDITION_STR_H */
