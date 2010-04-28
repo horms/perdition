@@ -122,7 +122,9 @@ AC_MSG_WARN(
 ""
 "************************************************************"
 "* Could not find libidn."
-"* Managesieve may not handle non-ascii userames correctly"
+"* - SSL may not veify certificates with non-ASCII common names"
+"*   or subjectAltName dNSName entries correctly."
+"* - Managesieve may not handle non-ascii userames correctly"
 "************************************************************"
 )
 fi

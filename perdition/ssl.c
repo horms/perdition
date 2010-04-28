@@ -788,6 +788,43 @@ out:
 	return status;
 }
 
+#ifdef WITH_LIBIDN
+#include <idna.h>
+
+static char *idna_to_ascii(const char *in)
+{
+	char *out;
+	int status;
+
+	status = idna_to_ascii_8z(in, &out, IDNA_USE_STD3_ASCII_RULES);
+	if (status) {
+		puts(idna_strerror(status));
+		return NULL;
+	}
+
+	return out;
+}
+
+static void idna_str_free(char *out)
+{
+	free(out);
+}
+
+#define IDNA_STR(name) char *(name) = NULL
+
+#else
+static const char *idna_to_ascii(const char *in)
+{
+	return in;
+}
+
+static void idna_str_free(const char *UNUSED(out))
+{
+	;
+}
+
+#define IDNA_STR(name) const char *(name) = NULL
+#endif
 
 /**********************************************************************
  * __perdition_ssl_check_name
@@ -804,33 +841,45 @@ static int
 __perdition_ssl_check_name(X509 *cert, const char *key)
 {
 	int rc;
+	IDNA_STR(idna_key);
+	int status = -1;
 
 	if (opt.ssl_no_cn_verify || !key)
 		return 0;
 
-	if (!cert) {
-		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
-		return -2;
+	idna_key = idna_to_ascii(key);
+	if (!idna_key) {
+		VANESSA_LOGGER_DEBUG_RAW("idna_to_ascii");
+		goto err;
 	}
 
-	rc = __perdition_ssl_check_common_name(cert, key);
+	if (!cert) {
+		VANESSA_LOGGER_DEBUG_RAW("warning: no server certificate");
+		goto not_exist;
+	}
+
+	rc = __perdition_ssl_check_common_name(cert, idna_key);
 	if (rc == 0)
 	    return 0;
 	else if (rc == -1) {
 		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_common_name");
-		return -1;
+		goto err;
 	}
 
-	rc = __perdition_ssl_check_alt_subject(cert, key);
+	rc = __perdition_ssl_check_alt_subject(cert, idna_key);
 	if (rc == 0)
 	    return 0;
 	else if (rc == -1) {
 		VANESSA_LOGGER_DEBUG("__perdition_ssl_check_alt_subject");
-		return -1;
+		goto err;
 	}
 
 	VANESSA_LOGGER_DEBUG_RAW("error: common name mismatch");
-	return -2;
+not_exist:
+	status = -2;
+err:
+	idna_str_free(idna_key);
+	return status;
 }
 
 
