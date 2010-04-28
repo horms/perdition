@@ -84,4 +84,17 @@ static inline struct auth auth_set_sasl_plain(char *authorisation_id,
 	return a;
 }
 
+struct auth_status {
+	struct auth auth;
+	enum {
+		auth_status_ok = 0,
+		auth_status_invalid = -1, /* e.g. invalid input */
+		auth_status_error = -2    /* Internal error */
+	} status;
+	char *reason;
+};
+
+#define STRUCT_AUTH_STATUS(name) \
+        struct auth_status (name) = { .status = auth_status_error }
+
 #endif /* PERDITION_AUTH_H */

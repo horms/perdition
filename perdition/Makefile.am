@@ -86,6 +86,7 @@ perdition_SOURCES = \
         protocol_t.h \
         queue_func.c        queue_func.h \
         quit.c              quit.h \
+	sasl_plain.h	    sasl_plain.c \
         sock.h \
         setproctitle.c      setproctitle.h \
         server_port.c       server_port.h \
