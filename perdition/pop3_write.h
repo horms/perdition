@@ -46,6 +46,7 @@
 #define POP3S_DEFAULT_PORT "995"
 
 #define POP3_CMD_LEN  4
+#define POP3_CMD_AUTH "AUTH"
 #define POP3_CMD_CAPA "CAPA"
 #define POP3_CMD_STLS "STLS"
 #define POP3_CMD_USER "USER"

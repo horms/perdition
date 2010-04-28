@@ -199,12 +199,14 @@ static char *pop3_in_capability(flag_t tls_flags, flag_t tls_state)
 	return capability;
 }
 
-static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
+static int pop3_in_err(io_t *io, unsigned int pause,
+		       int nargs, const char *fmt, ...)
 {
 	va_list ap;
 	int rc;
 
-	sleep(VANESSA_LOGGER_ERR_SLEEP);
+	if (pause)
+		sleep(pause);
 
 	va_start(ap, fmt);
 	rc = pop3_vwrite(io, NULL_FLAG, POP3_ERR, nargs, fmt, ap);
@@ -220,27 +222,38 @@ static int pop3_in_err(io_t *io, int nargs, const char *fmt, ...)
 
 #define __POP3_IN_ERR(_reason)						\
 do {									\
-	if (pop3_in_err(io, 1, "%s", _reason) < 0) {			\
+	if (pop3_in_err(io, VANESSA_LOGGER_ERR_SLEEP,			\
+	    1, "%s", _reason) < 0) {					\
 		break;							\
 	}								\
 	goto loop;							\
 } while (0)
 
-static int pop3_in_invalid_cmd(io_t *io, const char *msg)
+static int pop3_in_invalid_cmd(io_t *io, token_t *t, const char *msg)
 {
 	char *extra = "";
+	unsigned int pause = VANESSA_LOGGER_ERR_SLEEP;
 
 	if (opt.ssl_mode & SSL_MODE_TLS_LISTEN &&
 	    io_get_type(io) != io_type_ssl)
 		extra = POP3_CMD_STLS ", ";
 
-	return pop3_in_err(io, 2, "Mate, %smust be one of %s"
+	/* At this time perdition does not support the POP3 AUTH command
+	 * as detailed in RFC5034. Some clients issue the command even
+	 * though AUTH is not present in the (default) capabilities
+	 * returned by perdition. This is legal, so just report an error
+	 * without sleeping. This allows the client to proceed to using
+	 * using USER/PASS authentication without delay. */
+	if (!strncasecmp((char *)token_buf(t), POP3_CMD_AUTH, token_len(t)))
+		pause = 0;
+
+	return pop3_in_err(io, pause, 2, "Mate, %smust be one of %s"
 			   POP3_CMD_CAPA ", " POP3_CMD_USER ", "
 			   POP3_CMD_PASS " or " POP3_CMD_QUIT, msg, extra);
 }
 
 #define __POP3_IN_INVALID_CMD(_reason)					\
-	if (pop3_in_invalid_cmd(io, _reason) < 0) {			\
+	if (pop3_in_invalid_cmd(io, t, _reason) < 0) {			\
 		break;							\
 	}								\
 	goto loop;
