@@ -4,6 +4,7 @@
 #include "io.h"
 #include "token.h"
 #include "protocol_t.h"
+#include "pop3_out.h"
 
 #include <pwd.h>
 
@@ -53,25 +54,7 @@ int managesieve_out_authenticate(io_t *rs_io, io_t *eu_io,
 				 const protocol_t *protocol,
 				 char *buf, size_t *n);
 
-/**********************************************************************
- * managesieve_out_response
- * Compare a response from a server with the desired response
- * pre: rs_io: io to use to communicate with real server
- *	eu_io: io to use to communicate with end user
- *	tag: ignored
- *	desired_token: token expected from server
- *	q: resulting queue is stored here
- *	buf: buffer to read server response in to
- *	n: size of buf
- * post: Response is read from the server
- * return: 1 : tag and desired token found
- *	   0: tag and desired token not found
- *	   -1: on error
- **********************************************************************/
-
-int managesieve_out_response(io_t *rs_io, io_t *eu_io, const token_t *tag,
-			     const token_t *desired_token, vanessa_queue_t **q,
-			     char *buf, size_t *n);
+#define managesieve_out_response pop3_out_response
 
 #endif /* PERDITION_MANAGESIEVE_OUT_H */
 

@@ -58,28 +58,3 @@ int managesieve_out_authenticate(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
 {
 	return -1;
 }
-
-/**********************************************************************
- * managesieve_out_response
- * Compare a response from a server with the desired response
- * pre: rs_io: io to use to communicate with real server
- *	eu_io: io to use to communicate with end user
- *	tag: ignored
- *	desired_token: token expected from server
- *	q: resulting queue is stored here
- *	buf: buffer to read server response in to
- *	n: size of buf
- * post: Response is read from the server
- * return: 1 : tag and desired token found
- *	   0: tag and desired token not found
- *	   -1: on error
- **********************************************************************/
-
-int managesieve_out_response(io_t *UNUSED(rs_io), io_t *UNUSED(eu_io),
-			     const token_t *UNUSED(tag),
-			     const token_t *UNUSED(desired_token),
-			     vanessa_queue_t **UNUSED(q),
-			     char *UNUSED(buf), size_t *UNUSED(n))
-{
-	return -1;
-}
