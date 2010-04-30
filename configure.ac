@@ -805,24 +805,19 @@ if test "$enable_ldap" = "yes"; then
 fi
 
 if test "$enable_ldap" = "yes"; then
-        AC_MSG_CHECKING(OpenLDAP lud_exts in LDAPURLDesc)
-	AC_TRY_COMPILE([#include <stdlib.h>
-			#include <lber.h>
-			#include <ldap.h>],
-		[LDAPURLDesc ludp; 
-		 ludp.lud_exts[0] = NULL;],
-		AC_MSG_RESULT("yes") 
+	AC_CHECK_MEMBER(LDAPURLDesc.lud_exts,
 		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts),
-		AC_MSG_RESULT("no")
-AC_MSG_WARN(
+		AC_MSG_WARN(
 ""
 "************************************************************"
 "* Password and Username support will not be built in the"
 "* LDAP module. For Password and Username support compile"
 "* openldap2. Available from openldap.org"
 "************************************************************"
-)
-	)
+		),
+		[ #include <stdlib.h>
+		  #include <lber.h>
+		  #include <ldap.h> ])
 fi
 
 if test "$enable_ldap" = "yes"; then
