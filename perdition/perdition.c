@@ -166,14 +166,12 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 {
 	const char *eu_ssl, *rs_ssl, *pw_head, *pw_body, *pw_tail;
 	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
+	char *protocol = NULL;
 
-	if (opt.debug) {
-		if ((!strcmp(reason, "ok") &&
-		     (opt.log_passwd & LOG_PASSWD_OK)) ||
-		    (opt.log_passwd & LOG_PASSWD_FAIL))
-				pw_body = auth->passwd;
-		else
-				pw_body = "XXXXXX";
+	if (opt.debug &&
+	    ((!strcmp(reason, "ok") && (opt.log_passwd & LOG_PASSWD_OK)) ||
+	     (opt.log_passwd & LOG_PASSWD_FAIL))) {
+		pw_body = auth->passwd;
 		pw_head = " passwd=\"";
 		pw_tail = "\"";
 	}
@@ -194,21 +192,28 @@ perdition_log_auth(timed_log_t *auth_log, const char *from_to_host_str,
 	else
 		rs_ssl = "plaintext";
 
+	protocol = protocol_list(protocol, NULL, opt.protocol);
+
 	memset(auth_log->log_str, 0, sizeof(auth_log->log_str));
 	snprintf(auth_log->log_str, sizeof(auth_log->log_str),
 			"Auth:%s client-secure=%s authorisation_id=%s%s%s "
 			"authentication_id=\"%s\"%s%s%s "
-			"server=\"%s:%s\" server-secure=%s status=\"%s\"",
+			"server=\"%s:%s\" protocol=%s "
+			"server-secure=%s status=\"%s\"",
 			from_to_host_str, eu_ssl, authorisation_id.quote,
 			authorisation_id.str, authorisation_id.quote,
 			str_null_safe(auth->authentication_id),
 			pw_head, pw_body, pw_tail, str_null_safe(servername),
-			str_null_safe(port), rs_ssl, str_null_safe(reason));
+			str_null_safe(port), str_null_safe(protocol),
+			rs_ssl, str_null_safe(reason));
 	auth_log->log_time = time(NULL) + opt.connect_relog;
+
+	free(protocol);
 
 	VANESSA_LOGGER_LOG(LOG_NOTICE, auth_log->log_str);
 
-	set_proc_title("%s: auth %s", progname, str_null_safe(reason));
+	set_proc_title("%s: connect (%s)", progname,
+		       str_null_safe(auth_get_authorisation_id(auth)));
 }
 
 #define PERDITION_LOG_AUTH(_reason)                                        \
@@ -373,7 +378,7 @@ int main (int argc, char **argv, char **envp){
 	  VANESSA_LOGGER_ERR("Error initialising process title\n");
 	  perdition_exit_cleanly(-1);
   }
-  set_proc_title(progname);
+  set_proc_title("%s: daemon", progname);
 
   /* Update Logger */
   if (!opt.debug)
@@ -727,13 +732,13 @@ int main (int argc, char **argv, char **envp){
 
   /*Log the session and change the proctitle*/
   if(opt.inetd_mode) {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect:%s inetd_pid=%d",
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s inetd_pid=%d",
           from_to_host_str, getppid());
   }
   else {
-    VANESSA_LOGGER_INFO_UNSAFE("Connect:%s", from_to_host_str);
+    VANESSA_LOGGER_INFO_UNSAFE("Connect: %s", from_to_host_str);
   }
-  set_proc_title("%s: connect", progname);
+  set_proc_title("%s: connect (%s)", progname, from_to_host_str);
 
 #ifdef WITH_SSL_SUPPORT
   if(opt.ssl_mode & SSL_MODE_SSL_LISTEN) {
@@ -749,7 +754,7 @@ int main (int argc, char **argv, char **envp){
   /*Speak to our client*/
   if(protocol->greeting(client_io, GREETING_ADD_NODENAME)){
     VANESSA_LOGGER_DEBUG("greeting");
-    VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client%s."
+    VANESSA_LOGGER_ERR_UNSAFE("Fatal error writing to client %s."
 			      "Exiting child.", from_to_host_str);
     perdition_exit_cleanly(-1);
   }
@@ -1096,7 +1101,8 @@ int main (int argc, char **argv, char **envp){
 
   /*Time to leave*/
   perdition_log_close(from_to_host_str, &auth, bytes_read, bytes_written);
-  set_proc_title("%s: close", progname);
+  set_proc_title("%s: close (%s)", progname,
+		 str_null_safe(auth_get_authorisation_id(&auth)));
 
   getserver_closelib(handle);
   perdition_exit_cleanly(0);

@@ -1088,7 +1088,30 @@ void log_options_str_free(char **a)
 
 static char *log_options_head_str(void)
 {
-	return strdup("version=" VERSION);
+	char *out = NULL;
+	char *protocol=NULL;
+
+	out = malloc(MAX_LINE_LENGTH);
+	if (!out) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		return NULL;
+	}
+
+	if((protocol=protocol_list(protocol, NULL, opt.protocol))==NULL) {
+		VANESSA_LOGGER_DEBUG("protocol_list");
+	}
+
+	snprintf(out, MAX_LINE_LENGTH - 1,
+		 "Starting %s version=%s protocol=%s",
+		 PACKAGE,
+		 VERSION,
+		 protocol
+	);
+	if (protocol!=NULL) {
+		free(protocol);
+		protocol=NULL;
+	}
+	return out;
 }
 
 #define LOG_OPTIONS_ADD_STR(str, dest, start) \
@@ -1445,8 +1468,15 @@ int log_options(void)
 		return -1;
 	}
 
-	for (p = a; *p; p++)
-		VANESSA_LOGGER_INFO(*p);
+	if (opt.debug) {
+		for (p = a; *p; p++) {
+			if (strlen(*p)) {
+				VANESSA_LOGGER_INFO(*p);
+			}
+		}
+	} else {
+		VANESSA_LOGGER_INFO(*a);
+	}
 
 	log_options_str_free(a);
 
