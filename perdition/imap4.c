@@ -63,7 +63,7 @@ char *imap4_greeting_str(flag_t flag)
 	 * occured is desired. Its for the greeting, before anything has
 	 * happend.
 	 */
-	capability = imap4_capability(SSL_MODE_EMPTY, opt.ssl_mode);
+	capability = imap4_capability(opt.ssl_mode, SSL_MODE_EMPTY);
 	if (!capability) {
 		VANESSA_LOGGER_DEBUG("imap4_capability");
 		goto err;
