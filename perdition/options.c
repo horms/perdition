@@ -450,6 +450,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_PID_FILE, NULL, NULL},
     {"no_daemon",                   '\0', POPT_ARG_NONE,   NULL,
       TAG_NO_DAEMON, NULL, NULL},
+    {"tcp_keepalive",               '\0', POPT_ARG_NONE,   NULL,
+      TAG_TCP_KEEPALIVE, NULL, NULL},
     {"ssl_mode",                    '\0', POPT_ARG_STRING, NULL,
       TAG_SSL_MODE, NULL, NULL},
     {"ssl_ca_chain_file",           '\0', POPT_ARG_STRING, NULL,
@@ -534,6 +536,7 @@ int options(int argc, char **argv, flag_t f){
     }
     opt_i(&(opt.no_daemon), DEFAULT_NO_DAEMON, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.no_lookup), DEFAULT_NO_LOOKUP, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.tcp_keepalive), DEFAULT_TCP_KEEPALIVE, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.login_disabled), DEFAULT_LOGIN_DISABLED, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.lower_case), DEFAULT_LOWER_CASE, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.server_resp_line), DEFAULT_SERVER_RESP_LINE, 
@@ -814,6 +817,9 @@ int options(int argc, char **argv, flag_t f){
         break;
       case TAG_NO_DAEMON:
 	opt_i(&(opt.no_daemon), 1, &(opt.mask), MASK_NO_DAEMON, f);
+        break;
+      case TAG_TCP_KEEPALIVE:
+	opt_i(&(opt.tcp_keepalive), 1, &(opt.mask2), MASK2_TCP_KEEPALIVE, f);
         break;
       case TAG_LOGIN_DISABLED:
 	opt_i(&(opt.login_disabled), 1, &(opt.mask), MASK_LOGIN_DISABLED, f);
@@ -1241,6 +1247,7 @@ static char *log_options_non_ssl_str(void)
     "no_bind_banner=%s, "
     "no_daemon=%s, "
     "no_lookup=%s, "
+    "tcp_keepalive=%s, "
     "nodename=\"%s\", "
     "ok_line=\"%s\", "
     "outgoing_port=\"%s\", "
@@ -1284,6 +1291,7 @@ static char *log_options_non_ssl_str(void)
     BIN_OPT_STR(opt.no_bind_banner),
     BIN_OPT_STR(opt.no_daemon),
     BIN_OPT_STR(opt.no_lookup),
+    BIN_OPT_STR(opt.tcp_keepalive),
     OPT_STR(system_uname->nodename),
     OPT_STR(opt.ok_line),
     OPT_STR(opt.outgoing_port),

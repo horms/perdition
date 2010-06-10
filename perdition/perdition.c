@@ -358,6 +358,7 @@ int main (int argc, char **argv, char **envp){
   int s=-1;
   int *g = NULL;
   int rc;
+  int flag;
 
 #ifdef WITH_SSL_SUPPORT
   SSL_CTX *ssl_ctx=NULL;
@@ -603,8 +604,12 @@ int main (int argc, char **argv, char **envp){
 	  	  fromv[1] = opt.listen_port;
 	  }
 	  fromv[nfrom * 2] = NULL;
-	  g = vanessa_socket_server_bindv(fromv, 
-	  			opt.no_lookup?VANESSA_SOCKET_NO_LOOKUP:0);
+	  flag = 0;
+    	  if (opt.no_lookup)
+	    	flag |= VANESSA_SOCKET_NO_LOOKUP;
+    	  if (opt.tcp_keepalive)
+	    	flag |= VANESSA_SOCKET_TCP_KEEPALIVE;
+	  g = vanessa_socket_server_bindv(fromv, flag);
 	  free(fromv);
 	  if(!g) {
 		  VANESSA_LOGGER_DEBUG("vanessa_socket_server_bindv");
@@ -653,9 +658,12 @@ int main (int argc, char **argv, char **envp){
     }
   }
   else{
+    flag = 0;
+    if (opt.tcp_keepalive)
+      flag |= VANESSA_SOCKET_TCP_KEEPALIVE;
     s = vanessa_socket_server_acceptv(g, opt.connection_limit,
 				      (struct sockaddr *) peername,
-				      (struct sockaddr *) sockname, 0);
+				      (struct sockaddr *) sockname, flag);
     if(s < 0){
       VANESSA_LOGGER_DEBUG("vanessa_socket_server_accept");
       VANESSA_LOGGER_ERR("Fatal error accepting child connection. Exiting.");
@@ -909,9 +917,12 @@ int main (int argc, char **argv, char **envp){
 #endif /* WITH_PAM_SUPPORT */
 
     /* Talk to the real pop server for the client*/
-    s = vanessa_socket_client_src_open(NULL, NULL, servername, port,
-				       opt.no_lookup ? 
-				       VANESSA_SOCKET_NO_LOOKUP : 0);
+    flag = 0;
+    if (opt.no_lookup)
+      flag |= VANESSA_SOCKET_NO_LOOKUP;
+    if (opt.tcp_keepalive)
+      flag |= VANESSA_SOCKET_TCP_KEEPALIVE;
+    s = vanessa_socket_client_src_open(NULL, NULL, servername, port, flag);
     if(s < 0) {
 	    VANESSA_LOGGER_DEBUG("vanessa_socket_client_open");
 	    LOGIN_FAILED_PROTOCOL(PROTOCOL_ERR, "Could not connect to server");

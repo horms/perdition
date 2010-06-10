@@ -135,6 +135,7 @@
 #define DEFAULT_NO_BIND_BANNER               0
 #define DEFAULT_NO_DAEMON                    0
 #define DEFAULT_NO_LOOKUP                    0
+#define DEFAULT_TCP_KEEPALIVE                0
 #define DEFAULT_OUTGOING_SERVER              NULL
 #define DEFAULT_OK_LINE                      "You are so in"
 #define DEFAULT_POP_CAPABILITY               "UIDL.USER"
@@ -213,6 +214,7 @@ typedef struct {
   int             no_bind_banner;
   int             no_daemon;
   int             no_lookup;
+  int             tcp_keepalive;
   char            *outgoing_port;
   vanessa_dynamic_array_t *outgoing_server;
   char            *ok_line;
@@ -291,6 +293,7 @@ typedef struct {
 #define MASK2_IMAP_CAPABILITY            (flag_t) 0x00000020
 #define MASK2_MANAGESIEVE_CAPABILITY     (flag_t) 0x00000040
 #define MASK2_POP_CAPABILITY             (flag_t) 0x00000080
+#define MASK2_TCP_KEEPALIVE              (flag_t) 0x00000100
 
 #ifdef WITH_SSL_SUPPORT
 /* options_t.ssl_mask entries */
@@ -349,6 +352,7 @@ typedef struct {
 #define TAG_IMAP_CAPABILITY                    (int) 154
 #define TAG_MANAGESIEVE_CAPABILITY             (int) 155
 #define TAG_POP_CAPABILITY                     (int) 156
+#define TAG_TCP_KEEPALIVE                      (int) 157
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/
