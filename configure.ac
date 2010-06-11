@@ -1113,7 +1113,6 @@ AC_CHECK_SIZEOF(long)
 
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
 AC_TYPE_UID_T
 AC_TYPE_SIZE_T
 
