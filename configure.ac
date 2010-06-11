@@ -27,6 +27,7 @@ AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(perdition, 1.18)
 
 AC_PROG_CC
+AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
@@ -83,21 +84,7 @@ AC_MSG_ERROR(
 ),
   -lvanessa_logger
 )
-AC_CHECK_LIB(
-  vanessa_socket,
-  vanessa_socket_client_open,
-  true,
-AC_MSG_ERROR(
-""
-"**********************************************************************"
-"* perdition requires the vanessa_socket TCP socket interface library"
-"* available from"
-"* http://www.vergenet.net/linux/vanessa/download/vanessa_socket/ and mirrors."
-"**********************************************************************"
-),
-  -lvanessa_logger
-)
-
+PKG_CHECK_MODULES(VANESSA_SOCKET,vanessa-socket)
 
 # Checks for header files.
 AC_HEADER_STDC
