@@ -84,7 +84,7 @@ static int safe_utf8_char(const char *buf, size_t n)
 	return 0;
 }
 
-static int quoted_char(char *buf, size_t n) {
+static int quoted_char(const char *buf, size_t n) {
 	int j;
 
 	j = safe_utf8_char(buf, n);
