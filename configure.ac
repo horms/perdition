@@ -84,7 +84,7 @@ AC_MSG_ERROR(
 ),
   -lvanessa_logger
 )
-PKG_CHECK_MODULES(VANESSA_SOCKET,vanessa-socket)
+PKG_CHECK_MODULES(VANESSA_SOCKET,vanessa-socket >= 0.0.12)
 
 # Checks for header files.
 AC_HEADER_STDC
