@@ -23,6 +23,7 @@ BuildRequires: pam-devel
 BuildRequires: zlib-devel
 BuildRequires: openssl-devel
 BuildRequires: unixODBC-devel
+BuildRequires: pkgconfig
 
 %if 0%{?suse_version} || 0%{?fedora_version}
 BuildRequires: popt-devel
