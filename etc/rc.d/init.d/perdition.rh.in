@@ -72,8 +72,8 @@ case "$1" in
 	fi
 	if [ "$MANAGESIEVE" = "yes" ]; then
 		echo -n "Starting perdition services (MANAGESIEVE): "
-		daemon @prefix@/sbin/perdition.imaps $FLAGS $SiEVE_FLAGS
-		touch /var/lock/subsys/perdition.imaps
+		daemon @prefix@/sbin/perdition.managesieve $FLAGS $SiEVE_FLAGS
+		touch /var/lock/subsys/perdition.managesieve
 		echo
 	fi
 	;;
