@@ -15,7 +15,7 @@ BuildRequires: gcc
 BuildRequires: make
 BuildRequires: libvanessa_logger0-devel >= 0.0.6
 BuildRequires: libvanessa_adt0-devel >= 0.0.6
-BuildRequires: libvanessa_socket1-devel >= 0.0.10
+BuildRequires: libvanessa_socket2-devel >= 0.0.12
 BuildRequires: gdbm-devel
 BuildRequires: mysql-devel
 BuildRequires: postgresql-devel
