@@ -1,5 +1,19 @@
 %define ver      @VERSION@
-%define rel      1
+%define rel      2
+
+## Our optional build-time flags.  Since the configuration script
+#  defaults to --enable-FEATURE we only set the --disable-FEATURE
+#  versions here.  NOTE: We default to ENABLE
+%{?_without_ldap: %define _without_ldap --disable-ldap}
+%{?_without_ldap: %define _without_ldap --disable-ldap}
+%{?_without_gdbm: %define _without_gdbm --disable-gdbm}
+%{?_without_mysql: %define _without_mysql --disable-mysql}
+%{?_without_pg: %define _without_pg --disable-pg}
+%{?_without_pam: %define _without_pam --disable-pam}
+%{?_without_ssl: %define _without_ssl --disable-ssl}
+%{?_without_odbc: %define _without_odbc --disable-odbc}
+%{?_without_bdb: %define _without_bdb --disable-bdb}
+%{?_without_cdb: %define _without_cdb --disable-cdb}
 
 Summary: Mail Retrieval Proxy
 Name: perdition
@@ -14,16 +28,16 @@ Provides: perdition-%{ver}-%{rel}
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: libvanessa_logger0-devel >= 0.0.6
-BuildRequires: libvanessa_adt0-devel >= 0.0.6
+BuildRequires: libvanessa_adt1-devel >= 0.0.9
 BuildRequires: libvanessa_socket2-devel >= 0.0.12
-BuildRequires: gdbm-devel
-BuildRequires: mysql-devel
-BuildRequires: postgresql-devel
-BuildRequires: pam-devel
 BuildRequires: zlib-devel
-BuildRequires: openssl-devel
-BuildRequires: unixODBC-devel
 BuildRequires: pkgconfig
+%{!?_without_gdbm:BuildRequires: gdbm-devel}
+%{!?_without_mysql:BuildRequires: mysql-devel}
+%{!?_without_pg:BuildRequires: postgresql-devel}
+%{!?_without_pam:BuildRequires: pam-devel}
+%{!?_without_ssl:BuildRequires: openssl-devel}
+%{!?_without_odbc:BuildRequires: unixODBC-devel}
 
 %if 0%{?suse_version} || 0%{?fedora_version}
 BuildRequires: popt-devel
@@ -35,6 +49,7 @@ BuildRequires: popt
 %endif
 %endif
 
+%if %{?_without_bdb:0}%{!?_without_bdb:1}
 %if 0%{?suse_version}
 BuildRequires: db-devel
 %else
@@ -44,11 +59,14 @@ BuildRequires: libdb4.6-devel
 %endif
 BuildRequires: db4-devel
 %endif
+%endif
 
+%if %{?_without_ldap:0}%{!?_without_ldap:1}
 %if 0%{?suse_version}
 BuildRequires: openldap2-devel
 %else
 BuildRequires: openldap-devel
+%endif
 %endif
 
 %if 0%{?suse_version}
@@ -74,6 +92,17 @@ Perdition can be used to: Create large mail systems where a users mailbox
 may be stored on one of several hosts.  Integrate different mail systems
 together. Migrate between different email infastructure. And in firewall
 applications.
+
+Accepted build-time options (i.e. # rpmbuild --without XXX -ba perdition.spec) are:
+  --without pam		Exclude PAM support
+  --without ssl		Exclude SSL support
+  --without cdb		Exclude CDB support
+  --without mysql	Do not build libperditiondb_mysql0 package
+  --without odbc	Do not build libperditiondb_odbc0 package
+  --without pg		Do not build libperditiondb_pg0 package
+  --without gdbm	Do not build libperditiondb_gdbm0 package
+  --without bdb		Do not build libperditiondb_bdb0 package
+  --without ldap	Do not build libperditiondb_ldap0 package
 
 %package devel
 Summary: Headers and static libraries for perditiondb library development
@@ -242,7 +271,12 @@ ldconfig
 %doc %attr(-, root, root) ChangeLog TODO
 %{_sbindir}/perdition
 %{_sbindir}/perdition.*
+
+# pam configuration
+%if %{?_without_pam:0}%{!?_without_pam:1}
 %config /etc/pam.d/perdition
+%endif
+
 %if 0%{?suse_version}
 %config /etc/init.d/perdition
 /var/adm/fillup-templates/sysconfig.perdition
@@ -254,6 +288,10 @@ ldconfig
 %{_mandir}/man8/perdition.*
 %{_mandir}/man5/perditiondb.*
 
+%config /etc/perdition/Makefile
+%config /etc/perdition/Makefile.popmap
+%config /etc/perdition/popmap
+
 # nis map
 %{_libdir}/libperditiondb_nis.so.0
 %{_libdir}/libperditiondb_nis.so.0.0.0
@@ -264,14 +302,13 @@ ldconfig
 %dir /etc/perdition
 %config /etc/perdition/popmap.re
 
-# gdbm map
+## gdbm map
+%if %{?_without_gdbm:0}%{!?_without_gdbm:1}
 %{_libdir}/libperditiondb_gdbm.so.0
 %{_libdir}/libperditiondb_gdbm.so.0.0.0
 %{_bindir}/makegdbm
-%config /etc/perdition/Makefile
-%config /etc/perdition/Makefile.popmap
-%config /etc/perdition/popmap
 %{_mandir}/man1/makegdbm.*
+%endif
 
 # daemon map
 %{_libdir}/libperditiondb_daemon.so.0
@@ -279,6 +316,8 @@ ldconfig
 %{_libdir}/libperditiondb_daemon_base.so.0
 %{_libdir}/libperditiondb_daemon_base.so.0.0.0
 
+## bdb map
+%if %{?_without_bdb:0}%{!?_without_bdb:1}
 %files -n libperditiondb_bdb0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_bdb.so.0
@@ -291,7 +330,10 @@ ldconfig
 
 %postun -n libperditiondb_bdb0
 ldconfig
+%endif
 
+## ldap map
+%if %{?_without_ldap:0}%{!?_without_ldap:1}
 %files -n libperditiondb_ldap0
 %defattr(-,root,root)
 %doc %attr(-, root, root) perdition/db/ldap/perdition.schema
@@ -305,7 +347,10 @@ ldconfig
 
 %postun -n libperditiondb_ldap0
 ldconfig
+%endif
 
+## mysql map
+%if %{?_without_mysql:0}%{!?_without_mysql:1}
 %files -n libperditiondb_mysql0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_mysql.so.0
@@ -318,7 +363,10 @@ ldconfig
 
 %postun -n libperditiondb_mysql0
 ldconfig
+%endif
 
+## postgresql map
+%if %{?_without_pg:0}%{!?_without_pg:1}
 %files -n libperditiondb_postgresql0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_postgresql.so.0
@@ -331,7 +379,10 @@ ldconfig
 
 %postun -n libperditiondb_postgresql0
 ldconfig
+%endif
 
+## odbc map
+%if %{?_without_odbc:0}%{!?_without_odbc:1}
 %files -n libperditiondb_odbc0
 %defattr(-,root,root)
 %{_libdir}/libperditiondb_odbc.so.0
@@ -346,5 +397,17 @@ ldconfig
 ldconfig
 
 %changelog
-* Sat Sep 20 2009 Simon Horman <horms@verge.net.au> (0.0.8-1)
+* Wed Jun 30 2010 Nic Bernstein <supprot@onlight.com> (0.0.18-2)
+- Removed dependency on mysql, odbc and pam and added build-time config flags:
+  --without pam       Exclude PAM support
+  --without ssl       Exclude SSL support
+  --without cdb       Exclude CDB support
+  --without mysql     Do not build libperditiondb_mysql0 package
+  --without odbc      Do not build libperditiondb_odbc0 package
+  --without pg        Do not build libperditiondb_pg0 package
+  --without gdbm      Do not build libperditiondb_gdbm0 package
+  --without bdb       Do not build libperditiondb_bdb0 package
+  --without ldap      Do not build libperditiondb_ldap0 package
+
+*  Fri 27 2010 Simon Horman <horms@verge.net.au> (0.0.18-1)
   new release
