@@ -56,7 +56,7 @@
 
 #define MANAGESIEVE_CAPA_STARTTLS "\"STARTTLS\""
 
-#define MANAGESIEVE_DEFAULT_PORT "2000"
+#define MANAGESIEVE_DEFAULT_PORT "4190"
 
 /**********************************************************************
   * managesieve_write_raw
