@@ -31,6 +31,7 @@
 #include "imap4.h"
 #include "imap4s.h"
 #include "options.h"
+#include "perdition_globals.h"
 #include "unused.h"
 
 #ifdef DMALLOC
@@ -96,11 +97,11 @@ static void imap4s_destroy_protocol(protocol_t *UNUSED(protocol))
 
 static char *imap4s_port(char *port)
 {
-  if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
-    return(IMAP4S_DEFAULT_PORT);
-  }
-
-  return(port);
+	if(strcmp(PERDITION_PROTOCOL_DEPENDANT, port))
+		return port;
+	if (opt.no_lookup)
+		return IMAP4S_DEFAULT_PORT_NUMBER;
+	return IMAP4S_DEFAULT_PORT_NAME;
 }
 
 

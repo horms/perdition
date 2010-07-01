@@ -56,7 +56,8 @@
 
 #define MANAGESIEVE_CAPA_STARTTLS "\"STARTTLS\""
 
-#define MANAGESIEVE_DEFAULT_PORT "4190"
+#define MANAGESIEVE_DEFAULT_PORT_NAME "sieve"
+#define MANAGESIEVE_DEFAULT_PORT_NUMBER "4190"
 
 /**********************************************************************
   * managesieve_write_raw

@@ -179,11 +179,11 @@ static void imap4_destroy_protocol(protocol_t *UNUSED(protocol))
 
 static char *imap4_port(char *port)
 {
-  if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
-    return(IMAP4_DEFAULT_PORT);
-  }
-
-  return(port);
+	if (strcmp(PERDITION_PROTOCOL_DEPENDANT, port))
+		return port;
+	if (opt.no_lookup)
+		return IMAP4_DEFAULT_PORT_NUMBER;
+	return IMAP4_DEFAULT_PORT_NAME;
 }
 
 

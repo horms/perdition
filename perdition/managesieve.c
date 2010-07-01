@@ -142,8 +142,9 @@ static char *managesieve_port(char *port)
 {
 	if (strcmp(PERDITION_PROTOCOL_DEPENDANT, port))
 		return port;
-
-	return MANAGESIEVE_DEFAULT_PORT;
+	if (opt.no_lookup)
+		return MANAGESIEVE_DEFAULT_PORT_NUMBER;
+	return MANAGESIEVE_DEFAULT_PORT_NAME;
 }
 
 /**********************************************************************

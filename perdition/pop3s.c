@@ -34,6 +34,7 @@
 #include "pop3_in.h"
 #include "pop3_out.h"
 #include "options.h"
+#include "perdition_globals.h"
 #include "protocol.h"
 #include "unused.h"
 
@@ -100,11 +101,11 @@ static void pop3s_destroy_protocol(protocol_t *UNUSED(protocol))
 
 static char *pop3s_port(char *port)
 {
-  if(!strcmp(PERDITION_PROTOCOL_DEPENDANT, port)){
-    return(POP3S_DEFAULT_PORT);
-  }
-
-  return(port);
+	if (strcmp(PERDITION_PROTOCOL_DEPENDANT, port))
+		return port;
+	if (opt.no_lookup)
+		return POP3S_DEFAULT_PORT_NUMBER;
+	return POP3S_DEFAULT_PORT_NAME;
 }
 
 
