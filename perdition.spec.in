@@ -421,5 +421,5 @@ ldconfig
   --without bdb       Do not build libperditiondb_bdb0 package
   --without ldap      Do not build libperditiondb_ldap0 package
 
-*  Fri 27 2010 Simon Horman <horms@verge.net.au> (0.0.18-1)
+* Fri Nov 27 2009 Simon Horman <horms@verge.net.au> (0.0.18-1)
   new release
