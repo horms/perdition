@@ -189,7 +189,18 @@ access databases via ODBC.
 
 %build
 
-%configure --with-ldap-schema-directory=no --enable-shared --disable-static
+%configure \
+  --with-ldap-schema-directory=no \
+  --enable-shared \
+  --disable-static \
+  %{?_without_mysql} \
+  %{?_without_odbc} \
+  %{?_without_pg} \
+  %{?_without_gdbm} \
+  %{?_without_bdb} \
+  %{?_without_cdb} \
+  %{?_without_ldap}
+
 make
 
 %install
@@ -395,6 +406,7 @@ ldconfig
 
 %postun -n libperditiondb_odbc0
 ldconfig
+%endif
 
 %changelog
 * Wed Jun 30 2010 Nic Bernstein <supprot@onlight.com> (0.0.18-2)
