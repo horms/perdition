@@ -1,12 +1,12 @@
-perdition (1.19~rc0-0) UNRELEASED; urgency=low
+perdition (1.19~rc1-1) unstable; urgency=low
 
   * New Upstream
-    - Separate pop_capability and imap_capability configuration patameters
+    - Separate pop_capability and imap_capability configuration parameters
       (closes: #564164)
     - Use "." as the delimiter for pop_capability
       (closes: #564164)
 
- -- Simon Horman <horms@debian.org>  Sun, 07 Feb 2010 18:06:08 +1100
+ -- Simon Horman <horms@debian.org>  Tue, 06 Jul 2010 09:54:24 +0900
 
 perdition (1.18-2) unstable; urgency=low
 
