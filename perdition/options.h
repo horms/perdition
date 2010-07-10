@@ -35,6 +35,8 @@
 #include <vanessa_adt.h>
 #include <popt.h>
 
+#include "managesieve_write.h"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -130,7 +132,7 @@
 #define DEFAULT_LOG_FACILITY                 "mail"
 #define DEFAULT_LOGIN_DISABLED               0
 #define DEFAULT_LOWER_CASE                   STATE_NONE
-#define DEFAULT_MANAGESIEVE_CAPABILITY       NULL
+#define DEFAULT_MANAGESIEVE_CAPABILITY       MANAGESIEVE_DEFAULT_CAPA
 #define DEFAULT_MAP_LIB_OPT                  NULL
 #define DEFAULT_NO_BIND_BANNER               0
 #define DEFAULT_NO_DAEMON                    0

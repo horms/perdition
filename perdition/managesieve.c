@@ -229,12 +229,8 @@ static char *managesieve_mangle_capability(const char *capability)
 char *managesieve_capability(flag_t tls_flags, flag_t tls_state)
 {
 	flag_t mode;
-	char *capability = NULL;
+	char *capability;
 	char *old_capability;
-
-	capability = opt.managesieve_capability;
-	if (!strcmp(capability, PERDITION_PROTOCOL_DEPENDANT))
-		capability = MANAGESIEVE_DEFAULT_CAPA;
 
 	if ((tls_flags & SSL_MODE_TLS_LISTEN) &&
 	    !(tls_state & SSL_MODE_TLS_LISTEN))
@@ -242,7 +238,7 @@ char *managesieve_capability(flag_t tls_flags, flag_t tls_state)
 	else
 		mode = PROTOCOL_C_DEL;
 
-	capability = protocol_capability(mode, capability,
+	capability = protocol_capability(mode, opt.managesieve_capability,
 					MANAGESIEVE_CAPA_STARTTLS,
 					MANAGESIEVE_CAPA_DELIMITER);
 	if (!capability) {
