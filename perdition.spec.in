@@ -409,6 +409,9 @@ ldconfig
 %endif
 
 %changelog
+* Sat Jul 10 2010 Simon Horman <horms@verge.net.au> (0.0.19rc2-1)
+  new release
+
 * Tue Jul  6 2010 Simon Horman <horms@verge.net.au> (0.0.19rc1-1)
   new release
 
