@@ -57,19 +57,7 @@ AC_MSG_ERROR(
 "**********************************************************************"
 ) ;\
 )
-AC_CHECK_LIB(
-  vanessa_logger,
-  vanessa_logger_closelog,
-  true,
-AC_MSG_ERROR(
-""
-"**********************************************************************"
-"* perdition requires the vanessa_logger generic logging library"
-"* available from"
-"* http://www.vergenet.net/linux/vanessa/download/vanessa_logger/ and mirrors."
-"**********************************************************************"
-)
-)
+PKG_CHECK_MODULES(VANESSA_LOGGER,vanessa-logger >= 0.0.10)
 AC_CHECK_LIB(
   vanessa_adt,
   vanessa_queue_create,
