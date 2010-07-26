@@ -884,7 +884,24 @@ AM_CONDITIONAL(DEAMON_MAP_BUILD, test "${enable_daemon_map}" = "yes")
 ######################################################################
 # PAM
 
-pam=yes
+AC_MSG_CHECKING([if PAM support has been disabled]);
+AC_ARG_ENABLE(
+  pam,
+  [  --disable-pam           DO not compile with pam support.  ],
+  [ 
+    if test "$enable_pam" = "no"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [ 
+    enable_pam="yes";
+    AC_MSG_RESULT("no") 
+  ]
+)
+
+if test "$enable_pam" == "yes"; then
 AC_CHECK_HEADERS(
   security/pam_appl.h, 
   true,
@@ -899,8 +916,9 @@ AC_MSG_WARN(
     sleep 5
   ]
 )
+fi
 
-if test $pam = yes; then
+if test "$enable_pam" == "yes"; then
 AC_CHECK_HEADERS(security/pam_misc.h)
 
 AC_CHECK_LIB(
@@ -921,14 +939,14 @@ AC_MSG_WARN(
 )
 fi
 
-if test "$pam" = "yes"; then
+if test "$enable_pam" == "yes"; then
   pam_lib="-lpam"
   AC_DEFINE(WITH_PAM_SUPPORT, 1, Compile with PAM support)
 else
   pam_lib=""
 fi
 
-AM_CONDITIONAL(PAM_BUILD, test "$pam" = "yes")
+AM_CONDITIONAL(PAM_BUILD, test "$enable_pam" = "yes")
 
 
 posix_regex_libs="-lvanessa_logger -lvanessa_adt"
