@@ -69,7 +69,7 @@ static int greeting_checksum(uint32 *csum)
 
 int getnameinfo_try_lookup(struct sockaddr *addr, char *host, size_t hostlen)
 {
-	int rc = 0;
+	int rc = EAI_AGAIN;
 
 	if (!opt.no_lookup)
 		rc = getnameinfo(addr, perdition_get_salen(addr),
