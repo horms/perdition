@@ -528,6 +528,14 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		return NULL;
 	}
 
+	/* Set context for session */
+	if (!SSL_CTX_set_session_id_context(ssl_ctx,
+					    (unsigned char *)PACKAGE,
+					    strlen(PACKAGE))) {
+		VANESSA_LOGGER_DEBUG("SSL_CTX_set_session_id_context");
+		goto err;
+	}
+
 	/*
 	 * Set the available ciphers
 	 */
