@@ -280,6 +280,35 @@ state(s). See A|add_domain for a description of the states.
 .br
 (default "(null)")
 .TP
+.B \-\-managesieve_capability STRING:
+Capabilities for ManageSieve
+.sp
+This string is taken as a string literal that will be returned when a
+client connects or issues the CAPABILITY command. As such the capabilities
+should be quoted, using escape char \\, and double space delimited.
+.sp
+If perdition is running with ssl_mode includes to ssl_listen then the
+capability STARTTLS will be appended to the list of capabilities if it is
+not already present. Similary this capability will be removed from the
+list of capabilities if present and perdition is not running with an
+ssl_mode that includes to ssl_listen.
+.sp
+Examples
+.sp
+Two options, each with a value
+.br
+"\\"OPTION1\\" \\"VALUE\\"  \\"OPTION2\\" \\"VALUE\\""
+.sp
+Two options, but only one with a value
+.br
+"\\"OPTION1\\"  \\"OPTION2\\" \\"VALUE\\""
+.sp
+(default ""IMPLEMENTATION" "perdition"  "SIEVE" "comparator-i;
+octet comparator-i;ascii-casemap fileinto reject envelope encoded-character
+vacation subaddress comparator-i;ascii-numeric relational regex imap4flags
+copy include variables body enotify environment mailbox date"  "SASL"
+"PLAIN"  "NOTIFY" "mailto"  "VERSION" "1.19-rc2"")
+.TP
 .B \-M, \-\-map_library FILENAME:
 Library to open that provides functions to look up the server for a
 user. An empty ("") library means that no library will be accessed 
