@@ -371,6 +371,11 @@ int main (int argc, char **argv, char **envp){
   /*Parse options*/
   options(argc, argv, OPT_FIRST_CALL);
 
+  /*Read config file*/
+  if(opt.config_file!=NULL){
+    config_file_to_opt(opt.config_file);
+  }
+
   /* Initialise setting of proctitle */
   init_set_proc_title(argc, argv, envp);
   progname = strdup(get_progname(argv[0]));
@@ -385,11 +390,6 @@ int main (int argc, char **argv, char **envp){
   if (!opt.debug)
     vanessa_logger_change_max_priority(vanessa_logger_get(),
 				       opt.quiet?LOG_ERR:LOG_INFO);
-
-  /*Read config file*/
-  if(opt.config_file!=NULL){
-    config_file_to_opt(opt.config_file);
-  }
 
   /*Open the dbserver_get library, if we have a library*/
   if(getserver_openlib(opt.map_library, opt.map_library_opt,
