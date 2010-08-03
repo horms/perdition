@@ -579,7 +579,7 @@ int main (int argc, char **argv, char **envp){
 	  else 
 		  nfrom = 1;
 	  
-	  fromv = malloc(((nfrom * 2) + 1));
+	  fromv = malloc(sizeof(*fromv) * ((nfrom * 2) + 1));
 	  if (!fromv) {
 		  VANESSA_LOGGER_DEBUG_ERRNO("malloc fromv");
 		  VANESSA_LOGGER_ERR("Fatal error allocating memory. Exiting.");
