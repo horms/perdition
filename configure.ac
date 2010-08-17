@@ -906,7 +906,7 @@ AC_CHECK_HEADERS(
   security/pam_appl.h, 
   true,
   [
-    pam=no
+    enable_pam=no
 AC_MSG_WARN(
 ""
 "**********************************************************************"
@@ -926,7 +926,7 @@ AC_CHECK_LIB(
   pam_authenticate,
   true,
   [ 
-    pam=no
+    enable_pam=no
 AC_MSG_WARN(
 ""
 "**********************************************************************"

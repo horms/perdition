@@ -492,7 +492,6 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		const char *cert, const char *privkey, 
 		const char *ca_chain_file, const char *ciphers, flag_t flag)
 {
-	SSL_METHOD *ssl_method;
 	SSL_CTX *ssl_ctx, *out = NULL;
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
@@ -519,10 +518,9 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	 * Initialise an SSL context
 	 */
 	SSLeay_add_ssl_algorithms();
-	ssl_method = SSLv23_method();
 	SSL_load_error_strings();
 
-	ssl_ctx = SSL_CTX_new(ssl_method);
+	ssl_ctx = SSL_CTX_new(SSLv23_method());
 	if (!ssl_ctx) {
 		PERDITION_DEBUG_SSL_ERR("SSL_CTX_new");
 		return NULL;
