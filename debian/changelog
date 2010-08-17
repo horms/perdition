@@ -1,3 +1,10 @@
+perdition (1.19~rc3-2) unstable; urgency=low
+
+  * BuildDepend on libvanessa-logger-dev (>= 0.0.12) instead of (>= 0.0.10).
+    (closes: #592459)
+
+ -- Simon Horman <horms@debian.org>  Tue, 17 Aug 2010 15:43:35 +0900
+
 perdition (1.19~rc3-1) unstable; urgency=low
 
   * New upstream
