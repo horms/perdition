@@ -40,24 +40,25 @@ perdition \- POP3 and IMAP4 proxy server
 \fBperdition.managesieve\fP [options]
 
 .SH DESCRIPTION
-\fBperdition\fP allows users to connect to a content\-free POP3 or IMAP4
-server that will redirect them to their real POP3 or IMAP4 server
-respectively. This enables mail retrieval for a domain to be split across
-multiple real mail servers on a per user basis.  This can also be used to
-as a POP3 or IMAP4 proxy especially in firewall applications.
+\fBperdition\fP allows users to connect to a content\-free POP3, IMAP4 or
+ManageSieve server that will redirect them to their real POP3, IMAP4 or
+ManageSieve server respectively. This enables mail retrieval and sieve
+management for a domain to be split across multiple real mail servers on a
+per user basis.  This can also be used to as a POP3, IMAP4 and ManageSieve
+proxy especially in firewall applications.  And as a method of migrating
+users to new servers.
 .P
-When a connection is made to perdition in POP3 mode, it reads the USER and
-PASS commands and then refers to its popmap to find the real-server that
-the user's connection should be forwarded to.  A connection is made to the
-real-server and perdition then enters the USER and PASS commands. If
-authentication is successful then perdition pipes data between the end-user
-and the real-server.  If authentication fails then the real-server
-connection is closed and the client connection is reset to the state it was
-in on initial connection. That is new USER and PASS commands are expected.
-Similarly in IMAP4 mode, perdition accepts the LOGIN command and passes the
-username and password onto the real-server or authentication.
+When a connection is made to perdition in POP3 mode, it reads the users
+authentication credentials and then refers to its popmap to find the
+real-server that the user's connection should be forwarded to.  A
+connection is made to the real-server and perdition then passes on the
+authentication credentials. If authentication is successful then perdition
+pipes data between the end-user and the real-server.  If authentication
+fails then the real-server connection is closed and the client connection
+is reset to the state it was in on initial connection. That is new
+authentication credentials are expected.
 .P
-No IMAP authentication schemes, other than the LOGIN command are
+N.B: No IMAP authentication schemes, other than the LOGIN command are
 accepted.
 .P
 When invoked as \fBperdition.pop3\fP, \fBperdition.pop3s\fP,
