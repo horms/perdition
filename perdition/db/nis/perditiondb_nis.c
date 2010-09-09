@@ -87,7 +87,7 @@ int dbserver_get(
   res = yp_match(domain, 
 	map,
 	key_str,
-	strlen(key_str) + 1,
+	strlen(key_str),
 	str_return,
 	len_return);
 
