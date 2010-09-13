@@ -80,6 +80,8 @@ Requires(preun): initscripts
 %endif
 %endif
 
+Requires: libvanessa_socket2 >= 0.0.12
+
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
 handle both SSL and non-SSL connections and redirect users to a
