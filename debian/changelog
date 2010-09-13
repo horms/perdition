@@ -1,3 +1,11 @@
+perdition (1.19~rc4-1) unstable; urgency=low
+
+  * There is a typo in the changelog for 1.19~rc3-2
+    "libvanessa-logger-dev (>= 0.0.12)" should be
+    "libvanessa-socket-dev (>= 0.0.12)".
+
+ -- Simon Horman <horms@debian.org>  Mon, 06 Sep 2010 10:55:07 +0900
+
 perdition (1.19~rc3-2) unstable; urgency=low
 
   * BuildDepend on libvanessa-logger-dev (>= 0.0.12) instead of (>= 0.0.10).
