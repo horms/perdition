@@ -411,16 +411,19 @@ ldconfig
 %endif
 
 %changelog
-* Sat Jul 29 2010 Simon Horman <horms@verge.net.au> (0.0.19rc3-1)
+* Mon Sep 13 2010 Simon Horman <horms@verge.net.au> (1.19rc4-1)
   new release
 
-* Sat Jul 10 2010 Simon Horman <horms@verge.net.au> (0.0.19rc2-1)
+* Sat Jul 29 2010 Simon Horman <horms@verge.net.au> (1.19rc3-1)
   new release
 
-* Tue Jul  6 2010 Simon Horman <horms@verge.net.au> (0.0.19rc1-1)
+* Sat Jul 10 2010 Simon Horman <horms@verge.net.au> (1.19rc2-1)
   new release
 
-* Wed Jun 30 2010 Nic Bernstein <supprot@onlight.com> (0.0.18-2)
+* Tue Jul  6 2010 Simon Horman <horms@verge.net.au> (1.19rc1-1)
+  new release
+
+* Wed Jun 30 2010 Nic Bernstein <supprot@onlight.com> (1.18-2)
 - Removed dependency on mysql, odbc and pam and added build-time config flags:
   --without pam       Exclude PAM support
   --without ssl       Exclude SSL support
@@ -432,5 +435,5 @@ ldconfig
   --without bdb       Do not build libperditiondb_bdb0 package
   --without ldap      Do not build libperditiondb_ldap0 package
 
-* Fri Nov 27 2009 Simon Horman <horms@verge.net.au> (0.0.18-1)
+* Fri Nov 27 2009 Simon Horman <horms@verge.net.au> (1.18-1)
   new release
