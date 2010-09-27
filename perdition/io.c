@@ -655,7 +655,7 @@ err:
  *         0 otherwise (one of io_a or io_b closes gracefully)
  **********************************************************************/
 
-static int __io_pipe_read(int fd, void *buf, size_t count, void *data){
+static ssize_t __io_pipe_read(int fd, void *buf, size_t count, void *data){
   io_t *io;
   io_select_t *s;
   ssize_t bytes;
@@ -693,7 +693,9 @@ err:
 }
          
 
-static int __io_pipe_write(int fd, const void *buf, size_t count, void *data){
+static ssize_t
+__io_pipe_write(int fd, const void *buf, size_t count, void *data)
+{
   io_t *io;
   io_select_t *s;
 

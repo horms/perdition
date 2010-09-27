@@ -214,7 +214,7 @@ int dbserver_get(const char *key_str, const char *UNUSED(options_str),
 		char **str_return, size_t * len_return)
 {
 	SQLINTEGER rc;
-	SQLINTEGER rc2;
+	SQLLEN rc2;
 	int status = -1;
 	SQLHENV env;
 	SQLHDBC hdbc;

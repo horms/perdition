@@ -309,14 +309,14 @@ static void perdition_log_close_early(const char *from_to_host_str,
 }
 
 static void perdition_log_close(const char *from_to_host_str,
-				struct auth *auth, int received, int sent)
+				struct auth *auth, size_t received, size_t sent)
 {
 	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
 
 	VANESSA_LOGGER_ERR_UNSAFE("Closing session:%s "
 				  "authorisation_id=%s%s%s "
 				  "authentication_id=\"%s\" "
-				  "received=%d sent=%d",
+				  "received=%zu sent=%zu",
 				  from_to_host_str,
 				  authorisation_id.quote,
 				  authorisation_id.str,
