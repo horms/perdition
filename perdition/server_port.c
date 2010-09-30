@@ -99,6 +99,15 @@ user_server_port_str_assign(user_server_port_t **usp, const char *str)
 	return user_server_port_strn_assign(usp, str, strlen(str));
 }
 
+#define FIX_IPV6_LITERAL \
+do {									\
+	char *l;							\
+	if (*(*usp)->server != IPV6_LITERAL_LEFT_DELIMITER)		\
+		break;							\
+	l = strchr((*usp)->server, IPV6_LITERAL_RIGHT_DELIMITER);	\
+	(*usp)->server++;						\
+	*l = '\0';							\
+} while(0);
 
 /**********************************************************************
  * user_server_port_strn_assign
@@ -119,6 +128,7 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str,
 		size_t str_len)
 {
 	int alloced = 0;
+	int ipv6_literal = 0;
 
 	if(!*usp) {
 		*usp = user_server_port_create();
@@ -139,7 +149,19 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str,
 	memset((*usp)->server, 0, str_len + 1);
 	strncpy((*usp)->server, str, str_len);
 
-	(*usp)->port = strrchr((*usp)->server, SERVER_PORT_DELIMITER);
+	(*usp)->port = strrchr((*usp)->server, IPV6_LITERAL_RIGHT_DELIMITER);
+	if((*usp)->port) {
+		char *l;
+
+		l = strchr((*usp)->server, IPV6_LITERAL_LEFT_DELIMITER);
+		if (l && (*usp)->port - l > 2) {	/* at least [::] */
+			ipv6_literal = 1;
+			if (*++(*usp)->port != SERVER_PORT_DELIMITER)
+				(*usp)->port = NULL;
+		}
+	}
+	if (!ipv6_literal)
+		(*usp)->port = strrchr((*usp)->server, SERVER_PORT_DELIMITER);
 	if((*usp)->port) {
 		*(*usp)->port = '\0';
 		(*usp)->port++;
@@ -154,6 +176,8 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str,
 	if((*usp)->server) {
 		*(*usp)->server = '\0';
 		(*usp)->server += strlen(opt.domain_delimiter);
+		if (ipv6_literal)
+			FIX_IPV6_LITERAL;
 		(*usp)->server = strdup((*usp)->server);
 		if(!(*usp)->server) {
 			goto strdup_fail;
@@ -161,6 +185,8 @@ user_server_port_strn_assign(user_server_port_t **usp, const char *str,
 	}
 	else {
 		(*usp)->server = (*usp)->user;
+		if (ipv6_literal)
+			FIX_IPV6_LITERAL;
 		(*usp)->user = NULL;
 	}
 

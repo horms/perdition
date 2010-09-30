@@ -32,6 +32,8 @@
 #include "str.h"
 
 #define SERVER_PORT_DELIMITER ':'
+#define IPV6_LITERAL_RIGHT_DELIMITER ']'
+#define IPV6_LITERAL_LEFT_DELIMITER '['
 
 /* #defines to destroy and duplicate strings */
 #define DESTROY_SP   user_server_port_destroy_cb
