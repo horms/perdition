@@ -7,15 +7,30 @@
 #include "log.h"
 #include "buf.h"
 
+
+/* Openssl's base64 encode places an '\n' after every 64 bytes of encoded
+ * text and at the end of the encoded test */
+
+static void base64_encode_clean(struct buf *buf)
+{
+	size_t i, o;
+
+	for (i = 65, o = 64; i < buf->len; i += 65, o += 64)
+		memmove(buf->data + o, buf->data + i, buf->len - i);
+
+	buf->len -= (buf->len / 65);
+	buf->data[buf->len - 1] = '\0';
+}
+
 /**********************************************************************
- * base64_decode
+ * base64_encode
  * pre: in: struct buf to decode
  * return: on success: { .buf = str, .len = len }
  *         on error: { .buf = NULL, .len = 0 }
  *         buf_is_err() can be used to test for { .buf == NULL }
  **********************************************************************/
 
-struct buf base64_encode(struct buf *in)
+struct buf base64_encode(const struct buf *in)
 {
 	char *b64_data;
 	BIO *mem_bio, *b64_bio = NULL;
@@ -64,17 +79,56 @@ struct buf base64_encode(struct buf *in)
 
 	out.data = malloc(out.len);
 	if (!out.data) {
-		VANESSA_LOGGER_DEBUG("BIO_new");
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 		goto err;
 	}
 
 	memcpy(out.data, b64_data, out.len);
+	base64_encode_clean(&out);
 
 err:
 	if (!out.data)
 		buf_zero(&out);
 	if (b64_bio)
 		BIO_free_all(b64_bio);
+	return out;
+}
+
+#define MIN(x, y) (x < y ? x : y)
+
+static struct buf base64_decode_clean(const struct const_buf *in)
+{
+	STRUCT_BUF(out);
+	int i, o;
+
+	/* As per RFC2045 the maximum encoded line length is 76,
+	 * the line separator is "\r\n" and
+	 * the encoded text must end with a line separator
+	 */
+	out.len = in->len + ((in->len / 76) + 1) * 2;
+
+	/* Overflow */
+	if (in->len > out.len) {
+		VANESSA_LOGGER_DEBUG("string is too long");
+		goto err;
+	}
+
+	out.data = malloc(out.len);
+	if (!out.data) {
+		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
+		goto err;
+	}
+
+	for (i = o = 0; o < out.len; i += 76, o += 78) {
+		size_t copy_len = MIN(76, in->len - i);
+		memcpy(out.data + o, in->data + i, copy_len);
+		out.data[o + copy_len] = '\r';
+		out.data[o + copy_len + 1] = '\n';
+	}
+
+err:
+	if (!out.data)
+		buf_zero(&out);
 	return out;
 }
 
@@ -87,19 +141,26 @@ err:
  *         buf_is_err() can be used to test for { .buf == NULL }
  **********************************************************************/
 
-struct buf base64_decode(struct buf *in)
+struct buf base64_decode(const struct const_buf *in)
 {
 	BIO *mem_bio = NULL, *b64_bio;
 	int ilen, error = 1;
 	STRUCT_BUF(out);
+	STRUCT_BUF(clean);
 
-	if (SIZE_MAX > INT_MAX && in->len > INT_MAX) {
+	clean = base64_decode_clean(in);
+	if (buf_is_err(&clean)) {
+		VANESSA_LOGGER_DEBUG("base64_decode_clean");
+		goto err;
+	}
+
+	if (SIZE_MAX > INT_MAX && clean.len > INT_MAX) {
 		VANESSA_LOGGER_DEBUG("str is too long");
 		goto err;
 	}
-	ilen = (int)in->len;
+	ilen = (int)clean.len;
 
-	mem_bio = BIO_new_mem_buf(in->data, in->len);
+	mem_bio = BIO_new_mem_buf(clean.data, ilen);
 	if (!mem_bio) {
 		VANESSA_LOGGER_DEBUG("BIO_new mem_bio");
 		goto err;
@@ -113,7 +174,7 @@ struct buf base64_decode(struct buf *in)
 
 	mem_bio = BIO_push(b64_bio, mem_bio);
 
-	out.data = calloc(1, in->len);
+	out.data = calloc(1, clean.len);
 	if (!out.data) {
 		VANESSA_LOGGER_DEBUG_ERRNO("malloc");
 		goto err;
@@ -141,5 +202,6 @@ err:
 	}
 	if (mem_bio)
 		BIO_free_all(mem_bio);
+	free(clean.data);
 	return out;
 }

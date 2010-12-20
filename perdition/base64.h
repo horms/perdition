@@ -11,7 +11,7 @@
  *         buf_is_err() can be used to test for { .buf == NULL }
  **********************************************************************/
 
-struct buf base64_encode(struct buf *in);
+struct buf base64_encode(const struct buf *in);
 
 /**********************************************************************
  * base64_decode
@@ -22,6 +22,6 @@ struct buf base64_encode(struct buf *in);
  *         buf_is_err() can be used to test for { .buf == NULL }
  **********************************************************************/
 
-struct buf base64_decode(struct buf *in);
+struct buf base64_decode(const struct const_buf *in);
 
 #endif /* PERDITION_BASE64_H */

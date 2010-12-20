@@ -51,23 +51,16 @@ static void saslprep_str_free(char *UNUSED(out))
  *                  auth_status_error on internal error
  **********************************************************************/
 
-struct auth_status sasl_plain_challenge_decode(const char *challenge)
+struct auth_status sasl_plain_challenge_decode(char *challenge)
 {
-	STRUCT_BUF(in);
+	STRUCT_CONST_BUF(in);
 	STRUCT_BUF(out);
 	STRUCT_AUTH_STATUS(as);
 	char *authorisation_id = NULL, *authentication_id = NULL;
 	char *passwd = NULL, *base64_data = NULL, *tmp = NULL;
 
-	/* The last byte of the input to base64_decode must be '\n' */
-	in.data = strdup(challenge);
-	if (!in.data) {
-		VANESSA_LOGGER_DEBUG_ERRNO("strdup in.data");
-		goto err;
-	}
-	in.len = strlen(in.data) + 1;
-	*(in.data + in.len - 1) = '\n';
-
+	in.data = challenge;
+	in.len = strlen(challenge);
 	out = base64_decode(&in);
 	if (buf_is_err(&out)) {
 		if (out.len) {
@@ -175,7 +168,6 @@ struct auth_status sasl_plain_challenge_decode(const char *challenge)
 	as.status = auth_status_ok;
 
 err:
-	free(in.data);
 	free(authorisation_id);
 	free(authentication_id);
 	free(passwd);
@@ -225,9 +217,6 @@ char * sasl_plain_challenge_encode(const struct auth *auth)
 		VANESSA_LOGGER_DEBUG("base64_encode");
 		goto err;
 	}
-
-	/* base64_encode ends the output with '\n' */
-	out.data[out.len - 1] = '\0';
 
 err:
 	free(in.data);

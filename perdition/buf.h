@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct const_buf {
+	size_t len;
+	const char *data;
+};
+
+#define STRUCT_CONST_BUF(name) \
+	struct const_buf name = { 0, NULL }
+
 struct buf {
 	size_t len;
 	char *data;
