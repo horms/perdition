@@ -728,7 +728,7 @@ const char *strcasestr(const char *haystack, const char *needle)
 	haystack_len = strlen(haystack);
 	needle_len = strlen(needle);
 
-	for (i = 0; haystack_len + i >= needle_len; i++)
+	for (i = 0; haystack_len - i >= needle_len; i++)
 		if (!strcasecmp(haystack + i, needle))
 			return haystack + i;
 
