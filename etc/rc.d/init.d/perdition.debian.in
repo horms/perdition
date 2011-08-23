@@ -2,6 +2,8 @@
 #
 # Author: Simon Horman <horms@verge.net.au>
 #
+# 2011-05-25 updated with current /etc/init.d/skeleon by Steven Kurylo <steven.kurylo@aviawest.com>
+#
 ### BEGIN INIT INFO
 # Provides:          perdition
 # Required-Start:    $remote_fs
@@ -14,15 +16,23 @@
 # Description:       Starts perdition to allow proxied POP, IMAP and managesieve access
 ### END INIT INFO
 
-PATH=@prefix@/sbin:/bin:/usr/bin:/sbin:/usr/sbin
+PATH=/usr/sbin:/bin:/usr/bin:/sbin:/usr/sbin
 NAME=perdition
 DAEMON=@prefix@/sbin/perdition
 
-test -f $DAEMON || exit 0
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
 
-if [ -e /etc/default/perdition ]; then
-	. /etc/default/perdition
-fi
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
 
 # Please do not edit the values below.
 # Rather, please edit /etc/default/perdition
@@ -43,77 +53,147 @@ if [ "$RUN_PERDITION" != "yes" ]; then
         exit 0
 fi
 
+do_start()
+{
+    # Return
+    #   0 if daemon has been started
+    #   1 if daemon was already running
+    #   2 if daemon could not be started
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+        || return 1
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+        $DAEMON_ARGS \
+        || return 2
+}
+
+do_stop() {
+    # Return
+    #   0 if daemon has been stopped
+    #   1 if daemon was already stopped
+    #   2 if daemon could not be stopped
+    #   other if a failure occurred
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --exec $DAEMON
+    #RETVAL="$?"
+    #[ "$RETVAL" = 2 ] && return 2
+    #rm -f $PIDFILE
+    #return "$RETVAL"
+    return $?
+
+}
+
+do_reload() {
+    start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --exec $DAEMON
+    return 0
+}
 
 case "$1" in
   start)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
-        --exec @prefix@/sbin/perdition.pop3 -- $FLAGS $POP3_FLAGS
-        if [ ! -e /var/run/perdition.pop3/perdition.pop3.pid ]; then
-                echo "Unable to start POP3 Daemon (maybe another process is listening to the same port?)"
-        fi
-
+        PIDFILE=/var/run/perdition.pop3/perdition.pop3.pid
+        DAEMON=@prefix@/sbin/perdition.pop3
+        DAEMON_ARGS="$FLAGS $POP3_FLAGS"
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting Perdition POP3 server"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$POP3S" = "yes" ]; then 	
-      start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
-        --exec @prefix@/sbin/perdition.pop3s -- $FLAGS $POP3S_FLAGS
-        if [ ! -e /var/run/perdition.pop3s/perdition.pop3s.pid ]; then
-                echo "Unable to start POP3S Daemon (maybe another process is listening to the same port?)"
-        fi
+        PIDFILE=/var/run/perdition.pop3s/perdition.pop3s.pid
+        DAEMON=@prefix@/sbin/perdition.pop3s
+        DAEMON_ARGS="$FLAGS $POP3S_FLAGS"
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting Perdition POP3S server"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
-        --exec @prefix@/sbin/perdition.imap4 -- $FLAGS $IMAP4_FLAGS
-        if [ ! -e /var/run/perdition.imap4/perdition.imap4.pid ]; then
-                echo "Unable to start IMAP4 Daemon (maybe another process is listening to the same port?)"
-        fi
-
+        PIDFILE=/var/run/perdition.imap4/perdition.imap4.pid
+        DAEMON=@prefix@/sbin/perdition.imap4
+        DAEMON_ARGS="$FLAGS $IMAP4_FLAGS"
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting Perdition IMAP4 server"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
-      start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
-        --exec @prefix@/sbin/perdition.imaps -- $FLAGS $IMAP4S_FLAGS
-         if [ ! -e /var/run/perdition.imaps/perdition.imaps.pid ]; then
-                 echo "Unable to start IMAP4S Daemon (maybe another process is listening to the same port?)"
-         fi
+        PIDFILE=/var/run/perdition.imaps/perdition.imaps.pid
+        DAEMON=@prefix@/sbin/perdition.imaps
+        DAEMON_ARGS="$FLAGS $IMAP4S_FLAGS"
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting Perdition IMAP4S server"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$MANAGESIEVE" = "yes" ]; then
-      start-stop-daemon --start --verbose \
-        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
-        --exec @prefix@/sbin/perdition.managesieve -- $FLAGS $MANAGESIEVE_FLAGS
-         if [ ! -e /var/run/perdition.managesieve/perdition.managesieve.pid ]; then
-                 echo "Unable to start MANAGESIEVE Daemon (maybe another process is listening to the same port?)"
-         fi
+        PIDFILE=/var/run/perdition.managesieve/perdition.managesieve.pid
+        DAEMON=@prefix@/sbin/perdition.managesieve
+        DAEMON_ARGS="$FLAGS $MANAGESIEVE_FLAGS"
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting Perdition manage sieve server"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     ;;
   stop)
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
-        --exec @prefix@/sbin/perdition.pop3
+        PIDFILE=/var/run/perdition.pop3/perdition.pop3.pid
+        DAEMON=@prefix@/sbin/perdition.pop3
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping Perdition POP3 server"
+	do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$POP3S" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
-        --exec @prefix@/sbin/perdition.pop3s
+        PIDFILE=/var/run/perdition.pop3s/perdition.pop3s.pid
+        DAEMON=@prefix@/sbin/perdition.pop3s
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping Perdition POP3S server"
+	do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
-        --exec @prefix@/sbin/perdition.imap4
+        PIDFILE=/var/run/perdition.imap4/perdition.imap4.pid
+        DAEMON=@prefix@/sbin/perdition.imap4
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping Perdition IMAP4 server"
+	do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
-      start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
-        --exec @prefix@/sbin/perdition.imaps
+        PIDFILE=/var/run/perdition.imaps/perdition.imaps.pid
+        DAEMON=@prefix@/sbin/perdition.imaps
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping Perdition IMAP4S server"
+	do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     if [ "$MANAGESIEVE" = "yes" ]; then
-      start-stop-daemon --stop --verbose \
-        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
-        --exec @prefix@/sbin/perdition.managesieve
+        PIDFILE=/var/run/perdition.managesieve/perdition.managesieve.pid
+        DAEMON=@prefix@/sbin/perdition.managesieve
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping Perdition manage sieve server"
+	do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
     fi
     ;;
   restart)
@@ -121,31 +201,40 @@ case "$1" in
     $0 start 
     ;;
   force-reload|reload)
-    echo "Reloading $NAME configuration files"
     if [ "$POP3" = "yes" ]; then 	
-      start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.pop3/perdition.pop3.pid \
-        --exec @prefix@/sbin/perdition.pop3
+        PIDFILE=/var/run/perdition.pop3/perdition.pop3.pid
+        DAEMON=@prefix@/sbin/perdition.pop3
+        [ "$VERBOSE" != no ] && log_daemon_msg "Reloading Perdition POP3 server"
+        do_reload
+        [ "$VERBOSE" != no ] && log_end_msg $?
     fi
     if [ "$POP3S" = "yes" ]; then 	
-      start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.pop3s/perdition.pop3s.pid \
-        --exec @prefix@/sbin/perdition.pop3s
+        PIDFILE=/var/run/perdition.pop3s/perdition.pop3s.pid
+        DAEMON=@prefix@/sbin/perdition.pop3s
+        [ "$VERBOSE" != no ] && log_daemon_msg "Reloading Perdition POP3S server"
+        do_reload
+        [ "$VERBOSE" != no ] && log_end_msg $?
     fi
     if [ "$IMAP4" = "yes" ]; then 	
-      start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.imap4/perdition.imap4.pid \
-        --exec @prefix@/sbin/perdition.imap4
+        PIDFILE=/var/run/perdition.imap4/perdition.imap4.pid
+        DAEMON=@prefix@/sbin/perdition.imap4
+        [ "$VERBOSE" != no ] && log_daemon_msg "Reloading Perdition IMAP4 server"
+        do_reload
+        [ "$VERBOSE" != no ] && log_end_msg $?
     fi
     if [ "$IMAP4S" = "yes" ]; then 	
-      start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.imaps/perdition.imaps.pid \
-        --exec @prefix@/sbin/perdition.imaps
+        PIDFILE=/var/run/perdition.imaps/perdition.imaps.pid
+        DAEMON=@prefix@/sbin/perdition.imaps
+        [ "$VERBOSE" != no ] && log_daemon_msg "Reloading Perdition IMAP4S server"
+        do_reload
+        [ "$VERBOSE" != no ] && log_end_msg $?
     fi
     if [ "$MANAGESIEVE" = "yes" ]; then
-      start-stop-daemon --stop --signal 1 --quiet \
-        --pidfile /var/run/perdition.managesieve/perdition.managesieve.pid \
-        --exec @prefix@/sbin/perdition.managesieve
+        PIDFILE=/var/run/perdition.managesieve/perdition.managesieve.pid
+        DAEMON=@prefix@/sbin/perdition.managesieve
+        [ "$VERBOSE" != no ] && log_daemon_msg "Reloading Perdition manage sieve server"
+        do_reload
+        [ "$VERBOSE" != no ] && log_end_msg $?
     fi
     ;;
   *)
