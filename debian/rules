@@ -5,7 +5,12 @@
 pwd:=$(shell pwd)
 cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=no --disable-ldap-doc --enable-shared
 
-build: build-stamp
+build: build-arch build-indep
+
+build-arch: build-stamp
+
+build-indep: build-stamp
+
 build-stamp:
 	dh_testdir
 	./configure $(cfg)
