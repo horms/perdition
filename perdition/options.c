@@ -1417,7 +1417,7 @@ static char *log_options_ssl_str(void)
 		 BIN_OPT_STR(opt.ssl_no_client_cert_verify),
 		 BIN_OPT_STR(opt.ssl_no_cn_verify),
 		 opt.ssl_passphrase_fd,
-		 opt.ssl_passphrase_file,
+		 OPT_STR(opt.ssl_passphrase_file),
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
