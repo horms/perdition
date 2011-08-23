@@ -2,8 +2,10 @@ perdition (1.19~rc4-2) unstable; urgency=low
 
   * Updated init script based on current /etc/inti.d/skeleton
    (closes: #609653)
+  * Remove .la files
+   (closes: #633184)
 
- -- Simon Horman <horms@debian.org>  Tue, 23 Aug 2011 14:09:12 +0900
+ -- Simon Horman <horms@debian.org>  Tue, 23 Aug 2011 14:30:45 +0900
 
 perdition (1.19~rc4-1) unstable; urgency=low
 

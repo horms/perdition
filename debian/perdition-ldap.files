@@ -1,6 +1,5 @@
 usr/sbin/perditiondb_ldap_makedb
 usr/lib/libperditiondb_ldap.a
-usr/lib/libperditiondb_ldap.la
 usr/lib/libperditiondb_ldap.so.0
 usr/lib/libperditiondb_ldap.so.0.0.0
 usr/share/man/man8/perditiondb_ldap_makedb.8

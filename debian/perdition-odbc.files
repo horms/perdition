@@ -1,6 +1,5 @@
 usr/sbin/perditiondb_odbc_makedb
 usr/share/man/man8/perditiondb_odbc_makedb.8
 usr/lib/libperditiondb_odbc.a
-usr/lib/libperditiondb_odbc.la
 usr/lib/libperditiondb_odbc.so.0
 usr/lib/libperditiondb_odbc.so.0.0.0
