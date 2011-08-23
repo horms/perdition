@@ -590,7 +590,8 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	ber = NULL;
 
 	/* Build the return string */
-	if (returns[0] && !returns[1] && !returns[2]) {
+	if (returns[0] && (attrcount < 2 || !returns[1]) &&
+	    (attrcount < 3 || !returns[2])) {
 		user_server_port_t *usp = NULL;
 		if (user_server_port_str_assign(&usp, returns[0]) < 0) {
 			VANESSA_LOGGER_DEBUG("user_server_port_str_assign");
@@ -606,9 +607,9 @@ int dbserver_get2(const char *key_str, const char *UNUSED(options_str),
 	else {
 		if (returns[0])
 			*user_str = returns[0];
-		if (returns[1])
+		if (attrcount > 1 && returns[1])
 			*server_str = returns[1];
-		if (returns[2])
+		if (attrcount > 2 && returns[2])
 			*port_str = returns[2];
 	}
 
