@@ -46,8 +46,7 @@ perdition.postrm \
 perdition.preinst \
 perdition.prerm \
 perdition.shlibs \
-rules \
-dpkg-checkbuild
+rules
 
 clean-local:
 	rm -f *.substvars *.debhelper files
