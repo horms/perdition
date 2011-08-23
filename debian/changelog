@@ -1,11 +1,35 @@
-perdition (1.19~rc4-2) unstable; urgency=low
+perdition (1.19~rc4-4) unstable; urgency=low
 
   * Updated init script based on current /etc/inti.d/skeleton
    (closes: #609653)
   * Remove .la files
    (closes: #633184)
 
- -- Simon Horman <horms@debian.org>  Tue, 23 Aug 2011 14:30:45 +0900
+ -- Simon Horman <horms@debian.org>  Tue, 23 Aug 2011 15:12:08 +0900
+
+perdition (1.19~rc4-3) unstable; urgency=low
+
+  * Handle IPv6 address literals in --bind-address
+    - Upstream patch
+      http://hg.vergenet.net/perdition/perdition/rev/06e0c2cdb64f
+  * managesieve: Fix handling of long authentication hashes
+    - Upstream patch
+      http://hg.vergenet.net/perdition/perdition/rev/6544c58ec144
+    - (closes: 630499)
+
+ -- Simon Horman <horms@debian.org>  Wed, 15 Jun 2011 08:25:44 +0900
+
+perdition (1.19~rc4-2) unstable; urgency=low
+
+  * Clean up use of 4/8 byte types on architectures such as amd64
+    where ssize_t and long are 8 bytes white but int is only 4 bytes wide.
+    - Fix possible premature connection closure.
+    - Fix possible stack corruption in odbc module.
+    - Critical portions of upstream patch
+      http://hg.vergenet.net/perdition/perdition/rev/57268f4aaa94
+    - (closes: 59791)
+
+ -- Simon Horman <horms@debian.org>  Mon, 27 Sep 2010 23:30:21 +0900
 
 perdition (1.19~rc4-1) unstable; urgency=low
 
