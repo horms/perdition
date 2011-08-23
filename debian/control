@@ -7,7 +7,7 @@ Standards-Version: 3.9.1
 
 Package: perdition
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libvanessa-socket2 (>= 0.0.12)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libvanessa-socket2 (>= 0.0.12), lsb-base (>= 3.2-14)
 Conflicts: perdition-bdb
 Replaces: perdition-bdb
 Provides: perdition-bdb
