@@ -9,7 +9,7 @@
 
 
 /* Openssl's base64 encode places an '\n' after every 64 bytes of encoded
- * text and at the end of the encoded test */
+ * text and at the end of the encoded text */
 
 static void base64_encode_clean(struct buf *buf)
 {
@@ -18,8 +18,8 @@ static void base64_encode_clean(struct buf *buf)
 	for (i = 65, o = 64; i < buf->len; i += 65, o += 64)
 		memmove(buf->data + o, buf->data + i, buf->len - i);
 
-	buf->len -= (buf->len / 65);
-	buf->data[buf->len - 1] = '\0';
+	buf->len -= (buf->len + 64) / 65;
+	buf->data[buf->len] = '\0';
 }
 
 /**********************************************************************
