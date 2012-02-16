@@ -259,7 +259,6 @@ __perdition_verify_result_time(const char *key, ASN1_TIME *time)
 	BIO *tmp_bio;
 	char *tmp_str;
 	long len;
-	int status = 0;
 
 	tmp_bio = BIO_new(BIO_s_mem());
 	if (!tmp_bio) {
@@ -279,7 +278,6 @@ __perdition_verify_result_time(const char *key, ASN1_TIME *time)
 
 	VANESSA_LOGGER_DEBUG_RAW_UNSAFE("%s:\"%s\"", key, tmp_str);
 
-	status = 1;
 err:
 	if (!BIO_free(tmp_bio)) {
 		VANESSA_LOGGER_DEBUG("BIO_free");
@@ -690,7 +688,6 @@ static int
 __perdition_ssl_check_common_name(X509 *cert, const char *key)
 {
 	int i;
-	size_t key_len;
 	X509_NAME_ENTRY *e;
 	X509_NAME *name;
 
@@ -700,8 +697,6 @@ __perdition_ssl_check_common_name(X509 *cert, const char *key)
 					 "name from certificate");
 		return -1;
 	}
-
-	key_len = strlen(key);
 
 	i = -1;
 	while (1) {
