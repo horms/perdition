@@ -13,7 +13,7 @@ build-indep: build-stamp
 
 build-stamp:
 	dh_testdir
-	./configure $(cfg)
+	./configure $(shell dpkg-buildflags --export=configure) $(cfg)
 	# Lame libtool workaround that lintian seems keen on
 	sed < libtool > libtool-2 \
 		-e 's/^hardcode_libdir_flag_spec.*$$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' \
