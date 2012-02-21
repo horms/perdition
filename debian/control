@@ -4,6 +4,7 @@ Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@debian.org>
 Standards-Version: 3.9.2
+Homepage: http://horms.net/projects/perdition/
 
 Package: perdition
 Architecture: any

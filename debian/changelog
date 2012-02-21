@@ -4,8 +4,10 @@ perdition (1.19~rc4-5) unstable; urgency=low
     (closes: #655412)
   * Fix segmentation fault in strcasestr()
     (closes: #660735)
+  * Added homepage to control file
+    (closes: #594026)
 
- -- Simon Horman <horms@debian.org>  Tue, 21 Feb 2012 22:15:34 +0900
+ -- Simon Horman <horms@debian.org>  Tue, 21 Feb 2012 22:21:11 +0900
 
 perdition (1.19~rc4-4) unstable; urgency=low
 
