@@ -41,7 +41,7 @@ perditiondb_ldap_makedb(8) perditiondb_postgresql_makedb(8)
 perditiondb_odbc_makedb(8)
 
 Other useful information, including suplementry documentation 
-can be found on the web site, http://www.vergenet.net/linux/perdition/
+can be found on the web site, http://horms.net/projects/perdition/
 
 
 LIBRARY REQUIREMENTS
@@ -54,12 +54,12 @@ ftp://ftp.gnu.org/pub/gnu/gettext/ and mirrors.
     
 perdition requires the vanessa_logger generic logging library
 available from
-http://www.vergenet.net/linux/vanessa/download/vanessa_logger/ and mirrors.
+http://horms.net/projects/vanessa/download/vanessa_logger/ and mirrors.
     
 perdition requires the vanessa_adt abstract data type library
 available from
-http://www.vergenet.net/linux/vanessa/download/vanessa_adt/ and mirrors.
+http://horms.net/projects/vanessa/download/vanessa_adt/ and mirrors.
     
 perdition requires the vanessa_socket TCP socket interface library
 available from
-http://www.vergenet.net/linux/vanessa/download/vanessa_socket/ and mirrors.
+http://horms.net/projects/vanessa/download/vanessa_socket/ and mirrors.

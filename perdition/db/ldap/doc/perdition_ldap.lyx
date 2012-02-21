@@ -50,7 +50,7 @@ The Perdition proxy server software was designed by Simon Horman as part
 \layout Standard
 
 The main perdition web site is 
-\begin_inset LatexCommand \url{http://www.vergenet.net/linux/perdition/}
+\begin_inset LatexCommand \url{http://horms.net/projects/perdition/}
 
 \end_inset 
 
@@ -63,7 +63,7 @@ The author's email address is: horms@verge.net.au
 Perdition also requires that the VAnessa (VA Network Enhanced Scalable Server
  Architecture) libraries be installed.
  The VAnessa web site is at: 
-\begin_inset LatexCommand \url{http://www.vergenet.net/linux/vanessa/}
+\begin_inset LatexCommand \url{http://horms.net/projects/vanessa/}
 
 \end_inset 
 

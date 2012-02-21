@@ -67,7 +67,7 @@ AC_MSG_ERROR(
 "**********************************************************************"
 "* perdition requires the vanessa_adt abstract data type library"
 "* available from"
-"* http://www.vergenet.net/linux/vanessa/download/vanessa_adt/ and mirrors."
+"* http://horms.net/projects/vanessa/download/vanessa_adt/ and mirrors."
 "**********************************************************************"
 ),
   -lvanessa_logger
