@@ -411,6 +411,9 @@ ldconfig
 %endif
 
 %changelog
+* Tue Mar 20 2012 Simon Horman <horms@verge.net.au> (1.19rc5-1)
+  new release
+
 * Mon Sep 13 2010 Simon Horman <horms@verge.net.au> (1.19rc4-1)
   new release
 

@@ -24,7 +24,7 @@
 
 AC_INIT(makegdbm/makegdbm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(perdition, 1.19-rc4)
+AM_INIT_AUTOMAKE(perdition, 1.19-rc5)
 
 AC_PROG_CC
 AM_PROG_CC_C_O
