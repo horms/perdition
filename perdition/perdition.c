@@ -298,14 +298,14 @@ static void perdition_log_close_early(const char *from_to_host_str,
 {
 	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
 
-	VANESSA_LOGGER_ERR_UNSAFE("Closing NULL session:%s "
-				  "authorisation_id=%s%s%s "
-				  "authentication_id=\"%s\"",
-				  from_to_host_str,
-				  authorisation_id.quote,
-				  authorisation_id.str,
-				  authorisation_id.quote,
-				  str_null_safe(auth->authentication_id));
+	VANESSA_LOGGER_INFO_UNSAFE("Closing NULL session:%s "
+				   "authorisation_id=%s%s%s "
+				   "authentication_id=\"%s\"",
+				   from_to_host_str,
+				   authorisation_id.quote,
+				   authorisation_id.str,
+				   authorisation_id.quote,
+				   str_null_safe(auth->authentication_id));
 }
 
 static void perdition_log_close(const char *from_to_host_str,
@@ -313,16 +313,16 @@ static void perdition_log_close(const char *from_to_host_str,
 {
 	struct quoted_str authorisation_id = quote_str(auth->authorisation_id);
 
-	VANESSA_LOGGER_ERR_UNSAFE("Closing session:%s "
-				  "authorisation_id=%s%s%s "
-				  "authentication_id=\"%s\" "
-				  "received=%zu sent=%zu",
-				  from_to_host_str,
-				  authorisation_id.quote,
-				  authorisation_id.str,
-				  authorisation_id.quote,
-				  str_null_safe(auth->authentication_id),
-				  received, sent);
+	VANESSA_LOGGER_INFO_UNSAFE("Closing session:%s "
+				   "authorisation_id=%s%s%s "
+				   "authentication_id=\"%s\" "
+				   "received=%zu sent=%zu",
+				   from_to_host_str,
+				   authorisation_id.quote,
+				   authorisation_id.str,
+				   authorisation_id.quote,
+				   str_null_safe(auth->authentication_id),
+				   received, sent);
 }
 
 /**********************************************************************
