@@ -46,6 +46,7 @@ perdition.postrm \
 perdition.preinst \
 perdition.prerm \
 perdition.shlibs \
+source/format \
 rules
 
 clean-local:
