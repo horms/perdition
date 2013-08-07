@@ -77,7 +77,7 @@ static struct acap acap_any_literal_from_str(const char *str,
 		return out;
 	}
 
-	sprintf(out.a, "{%d%s}", n, extra);
+	sprintf(out.a, "{%zd%s}", n, extra);
 
 	out.b = str;
 
