@@ -23,7 +23,7 @@ struct auth {
 
 static inline void auth_zero(struct auth *auth)
 {
-	memset(auth, 0, sizeof(auth));
+	memset(auth, 0, sizeof *auth);
 }
 
 static inline void auth_set_authorisation_id(struct auth *auth, char *id)
