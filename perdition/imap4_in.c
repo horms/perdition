@@ -120,7 +120,6 @@ static int imap4_in_capability_cmd(io_t *io, const token_t *tag,
 				   flag_t tls_flags, flag_t tls_state)
 {
 	char *capability;
-	int status = -1;
 
 	capability = imap4_capability(tls_flags, tls_state);
 	if (!capability)
@@ -138,7 +137,6 @@ static int imap4_in_capability_cmd(io_t *io, const token_t *tag,
 		goto err;
 	}
 
-	status = 0;
 err:
 	free(capability);
 	return 0;
