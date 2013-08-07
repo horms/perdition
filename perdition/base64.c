@@ -99,7 +99,8 @@ err:
 static struct buf base64_decode_clean(const struct const_buf *in)
 {
 	STRUCT_BUF(out);
-	int i, o;
+	int i;
+	size_t o;
 
 	/* As per RFC2045 the maximum encoded line length is 76,
 	 * the line separator is "\r\n" and
