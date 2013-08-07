@@ -1309,7 +1309,7 @@ write_pid_file(const char *pidfilename, const char *username,
 
 	int     pidfilefd;
 	char    pidbuf[11];
-	pid_t   pid;
+	unsigned long	pid;
 	ssize_t  bytes;
 
 	if (create_pid_directory(pidfilename, username, group) < 0) {
@@ -1366,11 +1366,18 @@ write_pid_file(const char *pidfilename, const char *username,
 			return -1;
 		}
 
-		pid = strtol(pidbuf, NULL, 10);
-		if (pid == LONG_MAX && errno == ERANGE) {
+		pid = strtoul(pidbuf, NULL, 10);
+		if (pid == ULONG_MAX && errno == ERANGE) {
 			VANESSA_LOGGER_DEBUG_UNSAFE("Invalid pid in pid-file "
 	 				"[%s]: %s", pidfilename, 
 					strerror(errno));
+			return -1;
+		}
+
+		if ((long)pid != (pid_t)pid) {
+			VANESSA_LOGGER_DEBUG_UNSAFE("Invalid pid in pid-file "
+	 				"[%s]: larger than maximum pid",
+					pidfilename);
 			return -1;
 		}
 
