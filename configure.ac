@@ -22,7 +22,7 @@
 #
 ######################################################################
 
-AC_INIT(perdition, 1.19-rc5)
+AC_INIT(perdition, 2.0)
 AC_CONFIG_SRCDIR(makegdbm/makegdbm.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
