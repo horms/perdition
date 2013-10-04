@@ -187,7 +187,7 @@ char * sasl_plain_challenge_encode(const struct auth *auth)
 {
 	STRUCT_BUF(in);
 	STRUCT_BUF(out);
-	char *p;
+	char *p, *out_str = NULL;
 
 	if (auth->authorisation_id)
 		in.len += strlen(auth->authorisation_id);
@@ -218,7 +218,14 @@ char * sasl_plain_challenge_encode(const struct auth *auth)
 		goto err;
 	}
 
+	out_str = strn_to_str(out.data, out.len);
+	if (!out_str) {
+		VANESSA_LOGGER_DEBUG("strn_to_str");
+		goto err;
+	}
+
 err:
+	free(out.data);
 	free(in.data);
-	return out.data;
+	return out_str;
 }
