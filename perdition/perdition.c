@@ -985,7 +985,7 @@ int main (int argc, char **argv, char **envp){
     else if((opt.ssl_mode & SSL_MODE_TLS_OUTGOING) &&
           (status & PROTOCOL_S_STARTTLS)) {
       server_io=perdition_ssl_client_connection(server_io, opt.ssl_ca_file, 
-		      opt.ssl_ca_path, opt.ssl_listen_ciphers, servername);
+		      opt.ssl_ca_path, opt.ssl_outgoing_ciphers, servername);
       if(!server_io) {
         VANESSA_LOGGER_DEBUG("perdition_ssl_connection outgoing");
         VANESSA_LOGGER_ERR("Fatal error establishing SSL connection");
