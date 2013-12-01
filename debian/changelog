@@ -1,4 +1,4 @@
-perdition (2.1-3) UNRELEASED; urgency=low
+perdition (2.1-1) UNRELEASED; urgency=low
 
   * New Upstream Release
   * Fix for CVE-2013-4584
