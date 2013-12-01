@@ -1,3 +1,25 @@
+perdition (2.1-1) UNRELEASED; urgency=low
+
+  * New Upstream Release
+  * Fix for CVE-2013-4584
+
+    Perdition fails to apply the administrator's specified ciphersuite
+    preferences when making outbound connections to IMAP and POP servers
+    using STARTTLS.  For these outbound connections, it applies the
+    administrator's listening ciphersuite preferences, which in many cases
+    may be significantly weaker.
+
+    This is not a critical vulnerability (it can be mitigated, for example,
+    by enforcing a strict minimalist ciphersuite on the backend server),
+    but in the absence of any such mitigation, it may cause the connections
+    between the proxy server and the backend server to negotiate a weaker
+    ciphersuite than the administrator's stated intent.
+
+    a
+    (closes: #729028)
+
+ -- Simon Horman <horms@debian.org>  Sun, 01 Dec 2013 16:53:22 +0900
+
 perdition (2.0-1) unstable; urgency=low
 
   * New upstream release
