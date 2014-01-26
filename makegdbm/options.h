@@ -38,9 +38,6 @@
 #include "config.h"
 #endif
 
-extern gdbm_error gdbm_errno;
-extern char *gdbm_version;
-
 #define COPYRIGHT \
   "(c) 1999 Horms <horms@verge.net.au>\nReleased under the GNU GPL\n"
 
@@ -48,9 +45,6 @@ typedef struct {
   char *mapname;
   int undo;
 } makegdbm_options_t; 
-
-extern char *optarg;
-extern int optind, opterr, optopt;
 
 makegdbm_options_t makegdbm_options(int argc, char **argv);
 void usage(int exit_status);

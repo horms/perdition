@@ -30,9 +30,6 @@
 #include <ctype.h>
 #include <gdbm.h>
 
-extern gdbm_error gdbm_errno;
-extern char *gdbm_version;
-
 #ifndef PERDITIONDB_GDBM_SYSCONFDIR
 #define PERDITIONDB_GDBM_SYSCONFDIR "/usr/local/etc/perdition"
 #endif
