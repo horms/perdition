@@ -2,6 +2,9 @@
 # Sample debian/rules that uses debhelper.
 # GNU copyright 1997 to 1999 by Joey Hess.
 
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
 pwd:=$(shell pwd)
 cfg:=--prefix=/usr --sysconfdir=/etc --localstatedir=/var --with-group=nogroup --mandir=/usr/share/man --with-ldap-schema-directory=no --disable-ldap-doc --enable-shared
 
