@@ -24,7 +24,7 @@ build-stamp:
 		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 	mv libtool-2 libtool 
 	chmod 755 libtool
-	$(MAKE)
+	$(MAKE) V=1
 	touch build-stamp
 
 clean:
