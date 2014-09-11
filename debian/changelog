@@ -1,6 +1,7 @@
-perdition (2.1-1) UNRELEASED; urgency=low
+perdition (2.1-1) unstable; urgency=low
 
   * New Upstream Release
+    (closes: #751430)
   * Fix for CVE-2013-4584
 
     Perdition fails to apply the administrator's specified ciphersuite
@@ -20,6 +21,11 @@ perdition (2.1-1) UNRELEASED; urgency=low
     (closes: #680086)
   * Use 1.0 as Managesieve version
     (closes: #726175)
+  * Use autoreconf
+    (closes: #737666)
+  * Harden build flags
+  * Build verbosely
+  * Update standards version to 3.9.5
 
  -- Simon Horman <horms@debian.org>  Sun, 01 Dec 2013 17:10:57 +0900
 
