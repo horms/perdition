@@ -571,6 +571,12 @@ Should be in PEM format.
 .br
 (default "/etc/perdition/perdition.crt.pem")
 .TP 
+.B \-\-ssl_dh_params_file FILENAME:
+Diffie-Hellman parameters to use when offering EDH ciphersuites to clients.
+Should be in PEM format.
+.br
+(default: look for DH parameters in ssl_cert_file)
+.TP 
 .B \-\-ssl_cert_accept_self_signed:
 Accept self-signed certificates.
 Used for SSL or TLS outgoing connections.

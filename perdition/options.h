@@ -167,6 +167,7 @@
 #define DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED    0
 #define DEFAULT_SSL_CERT_FILE                PERDITION_SYSCONFDIR \
 					     "/perdition.crt.pem"
+#define DEFAULT_SSL_DH_PARAMS_FILE           NULL
 #define DEFAULT_SSL_CERT_ACCEPT_EXPIRED      0
 #define DEFAULT_SSL_CERT_ACCEPT_SELF_SIGNED  0
 #define DEFAULT_SSL_CERT_ACCEPT_NOT_YET_VALID 0
@@ -236,6 +237,7 @@ typedef struct {
   char            *ssl_ca_path;
   int             ssl_ca_accept_self_signed;
   char            *ssl_cert_file;
+  char            *ssl_dh_params_file;
   int             ssl_cert_accept_self_signed;
   int             ssl_cert_accept_expired;
   int             ssl_cert_accept_not_yet_valid;
@@ -317,6 +319,7 @@ typedef struct {
 #define MASK_SSL_NO_CN_VERIFY                  (flag_t) 0x00004000
 #define MASK_SSL_PASSPHRASE_FD                 (flag_t) 0x00008000
 #define MASK_SSL_PASSPHRASE_FILE               (flag_t) 0x00010000
+#define MASK_SSL_DH_PARAMS_FILE                (flag_t) 0x00020000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -355,6 +358,7 @@ typedef struct {
 #define TAG_MANAGESIEVE_CAPABILITY             (int) 155
 #define TAG_POP_CAPABILITY                     (int) 156
 #define TAG_TCP_KEEPALIVE                      (int) 157
+#define TAG_SSL_DH_PARAMS_FILE                 (int) 158
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

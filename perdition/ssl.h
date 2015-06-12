@@ -62,6 +62,11 @@
  *               the root CA certificate. Such a file is simply the
  *               concatenation of the various PEM-encoded CA Certificate 
  *               files, usually in certificate chain order.  
+ *      dh_params_file: Diffie-Hellman parameters to use as a server
+ *               May be NULL if not a server, if the DH params are
+ *               appended to the cert file, or if EDH ciphersuites are
+ *               not desired.  Should be the path to a PEM file that
+ *               contains DH PARAMETERS
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  *      flag: PERDITION_SSL_CLIENT or PERDITION_SSL_SERVER
@@ -79,7 +84,8 @@
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 		const char *cert, const char *privkey, 
-		const char *ca_chain_file, const char *ciphers, flag_t flag);
+		const char *ca_chain_file, const char *dh_params_file,
+		const char *ciphers, flag_t flag);
 
 
 /**********************************************************************

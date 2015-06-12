@@ -464,6 +464,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_CA_ACCEPT_SELF_SIGNED, NULL, NULL},
     {"ssl_cert_file",               '\0', POPT_ARG_STRING, NULL,
       TAG_SSL_CERT_FILE, NULL, NULL},
+    {"ssl_dh_params_file",          '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_DH_PARAMS_FILE, NULL, NULL},
     {"ssl_cert_accept_expired",     '\0', POPT_ARG_NONE,   NULL,
       TAG_SSL_CERT_ACCEPT_EXPIRED, NULL, NULL},
     {"ssl_cert_accept_not_yet_valid", '\0', POPT_ARG_NONE, NULL,
@@ -594,6 +596,7 @@ int options(int argc, char **argv, flag_t f){
     opt_i(&(opt.ssl_ca_accept_self_signed), DEFAULT_SSL_CA_ACCEPT_SELF_SIGNED, 
 		    &i, 0, OPT_NOT_SET);
     opt_p(&(opt.ssl_cert_file), DEFAULT_SSL_CERT_FILE, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_dh_params_file), DEFAULT_SSL_DH_PARAMS_FILE, &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_cert_accept_expired), DEFAULT_SSL_CERT_ACCEPT_EXPIRED, 
 	       	    &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_cert_accept_not_yet_valid), 
@@ -918,6 +921,14 @@ int options(int argc, char **argv, flag_t f){
 			MASK_SSL_CERT_FILE, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_cert_file");
+#endif /* WITH_SSL_SUPPORT */
+        break; 
+      case TAG_SSL_DH_PARAMS_FILE:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_dh_params_file), optarg, &(opt.ssl_mask), 
+			MASK_SSL_DH_PARAMS_FILE, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_dh_params_file");
 #endif /* WITH_SSL_SUPPORT */
         break; 
       case TAG_SSL_CERT_ACCEPT_EXPIRED:
@@ -1755,6 +1766,7 @@ void usage(int exit_status){
     OPT_STR(RECOMMENDED_SSL_CA_FILE),
     OPT_STR(DEFAULT_SSL_CA_PATH),
     OPT_STR(DEFAULT_SSL_CERT_FILE),
+    OPT_STR(DEFAULT_SSL_DH_PARAMS_FILE),
     DEFAULT_SSL_CERT_VERIFY_DEPTH,
     OPT_STR(DEFAULT_SSL_KEY_FILE),
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),

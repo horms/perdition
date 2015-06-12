@@ -166,6 +166,11 @@ __perdition_ssl_passwd_cb(char *buf, int size,
  *               concatenation of the various PEM-encoded CA Certificate 
  *               files, usually in certificate chain order.  
  *               Overrides ca_pat and ca_file
+ *      dh_params_file: Diffie-Hellman parameters to use as a server
+ *               May be NULL if not a server, if the DH params are
+ *               appended to the cert file, or if EDH ciphersuites are
+ *               not desired.  Should be the path to a PEM file that
+ *               contains DH PARAMETERS
  *      ciphers: cipher list to use as per ciphers(1). 
  *               May be NULL in which case openssl's default is used.
  *      flag: PERDITION_SSL_CLIENT or PERDITION_SSL_SERVER
@@ -488,9 +493,14 @@ static long __perdition_verify_result(long verify, X509 *cert)
 
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
 		const char *cert, const char *privkey, 
-		const char *ca_chain_file, const char *ciphers, flag_t flag)
+		const char *ca_chain_file, const char *dh_params_file,
+		const char *ciphers, flag_t flag)
 {
 	SSL_CTX *ssl_ctx, *out = NULL;
+	const char *dhfile = NULL;
+	FILE* dhfp = NULL;
+	DH* dh = NULL;
+	EC_KEY* ecdh = NULL;
 	const char *use_ca_file = NULL;
 	const char *use_ca_path = NULL;
 	struct passwd_cb_data pw_data;
@@ -530,6 +540,65 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 					    strlen(PACKAGE))) {
 		VANESSA_LOGGER_DEBUG("SSL_CTX_set_session_id_context");
 		goto err;
+	}
+
+	/*
+	 * Load the Diffie-Hellman parameters:
+	 */
+	if (flag & PERDITION_SSL_SERVER &&
+		(dh_params_file || cert)) {
+		dhfile = (dh_params_file ? dh_params_file : cert);
+		dhfp = fopen(dhfile, "r");
+		if (dhfp == NULL) {
+			if (dh_params_file) {
+				VANESSA_LOGGER_ERR_UNSAFE
+					("Error opening Diffie-Hellman parameters file \"%s\"", dhfile);
+				SSL_CTX_free(ssl_ctx);
+				return NULL;
+			} else {
+				VANESSA_LOGGER_DEBUG_UNSAFE("could not open cert file for reading DH params \"%s\"", dhfile);
+			}
+		} else {
+			dh = PEM_read_DHparams(dhfp, NULL, NULL, NULL);
+			fclose(dhfp);
+			if (dh == NULL) {
+				if (dh_params_file) {
+					PERDITION_DEBUG_SSL_ERR("PEM_read_DHparams");
+					VANESSA_LOGGER_ERR_UNSAFE
+						("Error reading Diffie-Hellman parameters from file \"%s\"", dhfile);
+					SSL_CTX_free(ssl_ctx);
+					return NULL;
+				} else {
+					VANESSA_LOGGER_ERR_UNSAFE("could not read DH params from cert file \"%s\"", dhfile);
+				}
+			} else {
+				if (1 != SSL_CTX_set_tmp_dh(ssl_ctx, dh)) {
+					PERDITION_DEBUG_SSL_ERR("SSL_CTX_set_tmp_dh");
+					VANESSA_LOGGER_ERR_UNSAFE
+					("Error loading Diffie-Hellman parameters: \"%s\"", dhfile);
+				} else {
+					VANESSA_LOGGER_INFO_UNSAFE
+					("Loaded Diffie-Hellman parameters: \"%s\"", dhfile);
+				}
+				DH_free(dh);
+			}
+		}
+	}		  
+
+
+	/*
+	 * Load the EC Diffie-Hellman parameters:
+	 */
+	if (flag & PERDITION_SSL_SERVER) {
+		EC_KEY *ecdh = EC_KEY_new_by_curve_name (NID_X9_62_prime256v1);
+		if (!ecdh) {
+			VANESSA_LOGGER_ERR("Error generating ECDH parameters");
+		} else {
+			if (!SSL_CTX_set_tmp_ecdh (ssl_ctx, ecdh)) {
+				VANESSA_LOGGER_ERR("Error setting ECDH parameters");
+		 	}
+			EC_KEY_free (ecdh);
+		}
 	}
 
 	/*
@@ -1154,7 +1223,7 @@ perdition_ssl_client_connection(io_t * io, const char *ca_file,
 	io_t *new_io;
 
 	ssl_ctx = perdition_ssl_ctx(ca_file, ca_path, NULL, NULL, NULL,
-			ciphers, PERDITION_SSL_CLIENT);
+			NULL, ciphers, PERDITION_SSL_CLIENT);
 	if (!ssl_ctx) {
 		PERDITION_DEBUG_SSL_ERR("perdition_ssl_ctx");
 		io_destroy(io);
