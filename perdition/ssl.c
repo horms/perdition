@@ -581,6 +581,7 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 					("Loaded Diffie-Hellman parameters: \"%s\"", dhfile);
 				}
 				DH_free(dh);
+				SSL_CTX_set_options(ssl_ctx, SSL_OP_SINGLE_DH_USE);
 			}
 		}
 	}		  
