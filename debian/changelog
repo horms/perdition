@@ -1,3 +1,10 @@
+perdition (2.1-3) UNRELEASED; urgency=medium
+
+  * Add support for forward secrecy
+    (closes: #765867)
+
+ -- Simon Horman <horms@debian.org>  Sat, 13 Jun 2015 09:05:34 +0900
+
 perdition (2.1-2) unstable; urgency=medium
 
   * Add missing call to dh_autoreconf
