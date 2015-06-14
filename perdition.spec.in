@@ -23,7 +23,7 @@ License: GPL
 Group: Applications/Internet
 Source: http://horms.net/projects/perdition/download/%{ver}/perdition-%{ver}.tar.bz2
 BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
-URL: http://vergenet.net/linux/perdition/
+URL: http://horms.net/projects/perdition/
 Provides: perdition-%{ver}-%{rel}
 BuildRequires: gcc
 BuildRequires: make
