@@ -34,6 +34,7 @@
 #include "options.h"
 #include "config_file.h"
 #include "perdition_globals.h"
+#include "ssl.h"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -490,6 +491,14 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_PASSPHRASE_FD, NULL, NULL},
     {"ssl_passphrase_file",         '\0', POPT_ARG_STRING, NULL,
       TAG_SSL_PASSPHRASE_FILE, NULL, NULL},
+    {"ssl_listen_min_proto_version", '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_LISTEN_MIN_PROTO_VERSION, NULL, NULL},
+    {"ssl_outgoing_min_proto_version", '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_OUTGOING_MIN_PROTO_VERSION, NULL, NULL},
+    {"ssl_listen_max_proto_version", '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_LISTEN_MAX_PROTO_VERSION, NULL, NULL},
+    {"ssl_outgoing_max_proto_version", '\0', POPT_ARG_STRING, NULL,
+      TAG_SSL_OUTGOING_MAX_PROTO_VERSION, NULL, NULL},
     {NULL,                           0,   0,               NULL,
      0, NULL, NULL}
   };
@@ -621,6 +630,14 @@ int options(int argc, char **argv, flag_t f){
 		    &i, 0, OPT_NOT_SET);
     opt_p(&(opt.ssl_passphrase_file),DEFAULT_SSL_PASSPHRASE_FILE,
 		    &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_listen_min_proto_version),
+	  DEFAULT_SSL_LISTEN_MIN_PROTO_VERSION, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_outgoing_min_proto_version),
+	  DEFAULT_SSL_OUTGOING_MIN_PROTO_VERSION, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_listen_max_proto_version),
+	  DEFAULT_SSL_LISTEN_MAX_PROTO_VERSION, &i, 0, OPT_NOT_SET);
+    opt_p(&(opt.ssl_outgoing_max_proto_version),
+	  DEFAULT_SSL_OUTGOING_MAX_PROTO_VERSION, &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -1021,6 +1038,38 @@ int options(int argc, char **argv, flag_t f){
 	NO_SSL_OPT("ssl_passphrase_file");
 #endif /* WITH_SSL_SUPPORT */
         break;
+      case TAG_SSL_LISTEN_MIN_PROTO_VERSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_listen_min_proto_version), optarg, &(opt.ssl_mask),
+			MASK_SSL_LISTEN_MIN_PROTO_VERSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_listen_min_proto_version");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_OUTGOING_MIN_PROTO_VERSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_outgoing_min_proto_version), optarg, &(opt.ssl_mask),
+			MASK_SSL_OUTGOING_MIN_PROTO_VERSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_outgoing_min_proto_version");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_LISTEN_MAX_PROTO_VERSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_listen_max_proto_version), optarg, &(opt.ssl_mask),
+			MASK_SSL_LISTEN_MAX_PROTO_VERSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_listen_max_proto_version");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_OUTGOING_MAX_PROTO_VERSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_p(&(opt.ssl_outgoing_max_proto_version), optarg, &(opt.ssl_mask),
+			MASK_SSL_OUTGOING_MAX_PROTO_VERSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_outgoing_max_proto_version");
+#endif /* WITH_SSL_SUPPORT */
+        break;
       default:
         VANESSA_LOGGER_DEBUG_RAW("Unknown Option");
         break;
@@ -1038,6 +1087,128 @@ int options(int argc, char **argv, flag_t f){
         poptFreeContext(context);
         return -1;
     }
+  }
+
+  {
+	int min_ver = 0;
+	int max_ver = 0;
+
+	if (opt.ssl_listen_min_proto_version) {
+		VANESSA_LOGGER_DEBUG_RAW("min");
+		min_ver = perdition_parse_ssl_proto_version(
+				opt.ssl_listen_min_proto_version);
+		if (min_ver < 0) {
+			VANESSA_LOGGER_DEBUG_RAW("Unknown ssl_listen_min_proto_version");
+			if (f & OPT_ERR) {
+				usage(-1);
+			} else {
+				poptFreeContext(context);
+				return -1;
+			}
+		}
+	}
+
+	/*
+	 * Translate empty max proto version to NULL which results in
+	 * OpenSSL's defaults being used.
+	 * This differs from min proto version handling where "" is
+	 * not translated and rejected by
+	 * perdition_parse_ssl_proto_version() so that a minimum protocol
+	 * version of at least SSLv3 is enforced.
+	 */
+	if (opt.ssl_listen_max_proto_version &&
+	    *opt.ssl_listen_max_proto_version == '\0') {
+		free(opt.ssl_listen_max_proto_version);
+		opt.ssl_listen_max_proto_version = NULL;
+	}
+
+	if (opt.ssl_listen_max_proto_version) {
+		max_ver = perdition_parse_ssl_proto_version(
+				opt.ssl_listen_max_proto_version);
+		if (max_ver < 0) {
+			VANESSA_LOGGER_DEBUG_RAW("Unknown ssl_listen_max_proto_version");
+			if (f & OPT_ERR) {
+				usage(-1);
+			} else {
+				poptFreeContext(context);
+				return -1;
+			}
+		}
+	}
+
+	if (opt.ssl_listen_min_proto_version &&
+	    opt.ssl_listen_max_proto_version && min_ver > max_ver) {
+		VANESSA_LOGGER_DEBUG_RAW("ssl_listen_min_proto_version is "
+					 "greater than "
+					 "ssl_listen_max_proto_version");
+		if (f&OPT_ERR) {
+			usage(-1);
+		} else {
+			poptFreeContext(context);
+			return -1;
+		}
+	}
+
+  }
+
+  {
+	int min_ver = 0;
+	int max_ver = 0;
+
+	if (opt.ssl_listen_min_proto_version) {
+		min_ver = perdition_parse_ssl_proto_version(
+				opt.ssl_listen_min_proto_version);
+		if (min_ver < 0) {
+			VANESSA_LOGGER_DEBUG_RAW("Unknown ssl_outgoing_min_proto_version");
+			if (f & OPT_ERR) {
+				usage(-1);
+			} else {
+				poptFreeContext(context);
+				return -1;
+			}
+		}
+	}
+
+	/*
+	 * Translate empty max proto version to NULL which results in
+	 * OpenSSL's defaults being used.
+	 * This differs from min proto version handling where "" is
+	 * not translated and rejected by
+	 * perdition_parse_ssl_proto_version() so that a minimum protocol
+	 * version of at least SSLv3 is enforced.
+	 */
+	if (opt.ssl_outgoing_max_proto_version &&
+	    *opt.ssl_outgoing_max_proto_version == '\0') {
+		free(opt.ssl_outgoing_max_proto_version);
+		opt.ssl_outgoing_max_proto_version = NULL;
+	}
+
+	if (opt.ssl_outgoing_max_proto_version) {
+		max_ver = perdition_parse_ssl_proto_version(
+				opt.ssl_outgoing_max_proto_version);
+		if (max_ver < 0) {
+			VANESSA_LOGGER_DEBUG_RAW("Unknown ssl_outgoing_max_proto_version");
+			if (f & OPT_ERR) {
+				usage(-1);
+			} else {
+				poptFreeContext(context);
+				return -1;
+			}
+		}
+	}
+
+	if (opt.ssl_listen_min_proto_version &&
+	    opt.ssl_outgoing_max_proto_version && min_ver > max_ver) {
+		VANESSA_LOGGER_DEBUG_RAW("ssl_outgoing_min_proto_version is "
+					 "greater than "
+					 "ssl_outgoing_max_proto_version");
+		if (f & OPT_ERR) {
+			usage(-1);
+		} else {
+			poptFreeContext(context);
+			return -1;
+		}
+	}
   }
 
   if (c < -1) {
@@ -1411,6 +1582,10 @@ static char *log_options_ssl_str(void)
 		 "ssl_no_cn_verify=\"%s\" "
 		 "ssl_passphrase_fd=%d, "
 		 "ssl_passphrase_file=\"%s\", "
+		 "ssl_listen_min_proto_version=\"%s\", "
+		 "ssl_outgoing_min_proto_version=\"%s\", "
+		 "ssl_listen_max_proto_version=\"%s\", "
+		 "ssl_outgoing_max_proto_version=\"%s\", "
 		 "(ssl_mask=0x%08x) ",
 		 ssl_mode,
 		 OPT_STR(opt.ssl_ca_file),
@@ -1429,6 +1604,10 @@ static char *log_options_ssl_str(void)
 		 BIN_OPT_STR(opt.ssl_no_cn_verify),
 		 opt.ssl_passphrase_fd,
 		 OPT_STR(opt.ssl_passphrase_file),
+		 OPT_STR(opt.ssl_listen_min_proto_version),
+		 OPT_STR(opt.ssl_outgoing_min_proto_version),
+		 OPT_STR(opt.ssl_listen_max_proto_version),
+		 OPT_STR(opt.ssl_outgoing_max_proto_version),
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
@@ -1727,6 +1906,26 @@ void usage(int exit_status){
     " --ssl_passphrase_file FILENAME:\n"
     "    File from with the passphrase for the certificate is read.\n"
     "    (default \"%s\")\n"
+    " --ssl_listen_min_proto_version PROTOCOL_VERSION:\n"
+    "    Minimum permited SSL/TLS protocol version when accepting incomming\n"
+    "    connections.\n"
+    "    May not be empty (\"\").\n"
+    "    (default \"%s\")\n"
+    " --ssl_outgoing_min_proto_version PROTOCOL_VERSION:\n"
+    "    Minimum permited SSL/TLS protocol version when making outgoing\n"
+    "    connections.\n"
+    "    May not be empty (\"\").\n"
+    "    (default \"%s\")\n"
+    " --ssl_listen_max_proto_version PROTOCOL_VERSION:\n"
+    "    Maximum permited SSL/TLS protocol version when accepting incoming\n"
+    "    connections.\n"
+    "    If empty (\"\") then openssl's default will be used.\n"
+    "    (default \"%s\")\n"
+    " --ssl_outgoing_max_proto_version PROTOCOL_VERSION:\n"
+    "    Maximum permited SSL/TLS protocol version when making outgoing\n"
+    "    connections.\n"
+    "    If empty (\"\") then openssl's default will be used.\n"
+    "    (default \"%s\")\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Notes: Default value for binary flags is off.\n"
@@ -1772,7 +1971,11 @@ void usage(int exit_status){
     OPT_STR(DEFAULT_SSL_LISTEN_CIPHERS),
     OPT_STR(DEFAULT_SSL_OUTGOING_CIPHERS),
     DEFAULT_SSL_PASSPHRASE_FD,
-    OPT_STR(DEFAULT_SSL_PASSPHRASE_FILE)
+    OPT_STR(DEFAULT_SSL_PASSPHRASE_FILE),
+    OPT_STR(DEFAULT_SSL_LISTEN_MIN_PROTO_VERSION),
+    OPT_STR(DEFAULT_SSL_OUTGOING_MIN_PROTO_VERSION),
+    OPT_STR(DEFAULT_SSL_LISTEN_MAX_PROTO_VERSION),
+    OPT_STR(DEFAULT_SSL_OUTGOING_MAX_PROTO_VERSION)
 #endif /* WITH_SSL_SUPPORT */
   );
 

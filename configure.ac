@@ -211,6 +211,9 @@ fi
 
 if test "$enable_ssl" = "yes"; then
    AC_DEFINE(WITH_SSL_SUPPORT, 1, Compile with SSL/TLS support)
+   AC_CHECK_LIB(ssl, SSL_CTX_set_min_proto_version)
+   AC_CHECK_DECLS([SSL_CTX_set_min_proto_version], [], [], [[#include <openssl/ssl.h>]])
+   AC_CHECK_DECLS([SSL_CTX_set_max_proto_version], [], [], [[#include <openssl/ssl.h>]])
 else
   ssl_lib=""
   ssl_includes=""

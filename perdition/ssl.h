@@ -39,6 +39,8 @@
 #define PERDITION_SSL_CLIENT (flag_t) 0x1
 #define PERDITION_SSL_SERVER (flag_t) 0x2
 
+int perdition_parse_ssl_proto_version(const char *str);
+
 /**********************************************************************
  * perdition_ssl_ctx
  * Create an SSL context

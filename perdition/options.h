@@ -182,6 +182,10 @@
 #define DEFAULT_SSL_NO_CN_VERIFY             0
 #define DEFAULT_SSL_PASSPHRASE_FD            0
 #define DEFAULT_SSL_PASSPHRASE_FILE          NULL
+#define DEFAULT_SSL_LISTEN_MIN_PROTO_VERSION "tlsv1"
+#define DEFAULT_SSL_OUTGOING_MIN_PROTO_VERSION "tlsv1"
+#define DEFAULT_SSL_LISTEN_MAX_PROTO_VERSION NULL
+#define DEFAULT_SSL_OUTGOING_MAX_PROTO_VERSION NULL
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -251,6 +255,10 @@ typedef struct {
   int             ssl_no_cn_verify;
   int             ssl_passphrase_fd;
   char            *ssl_passphrase_file;
+  char            *ssl_listen_min_proto_version;
+  char            *ssl_outgoing_min_proto_version;
+  char            *ssl_listen_max_proto_version;
+  char            *ssl_outgoing_max_proto_version;
   flag_t          ssl_mask;
 } options_t;
 
@@ -320,6 +328,10 @@ typedef struct {
 #define MASK_SSL_PASSPHRASE_FD                 (flag_t) 0x00008000
 #define MASK_SSL_PASSPHRASE_FILE               (flag_t) 0x00010000
 #define MASK_SSL_DH_PARAMS_FILE                (flag_t) 0x00020000
+#define MASK_SSL_LISTEN_MIN_PROTO_VERSION      (flag_t) 0x00040000
+#define MASK_SSL_OUTGOING_MIN_PROTO_VERSION    (flag_t) 0x00080000
+#define MASK_SSL_LISTEN_MAX_PROTO_VERSION      (flag_t) 0x00100000
+#define MASK_SSL_OUTGOING_MAX_PROTO_VERSION    (flag_t) 0x00200000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -359,6 +371,10 @@ typedef struct {
 #define TAG_POP_CAPABILITY                     (int) 156
 #define TAG_TCP_KEEPALIVE                      (int) 157
 #define TAG_SSL_DH_PARAMS_FILE                 (int) 158
+#define TAG_SSL_LISTEN_MIN_PROTO_VERSION       (int) 159
+#define TAG_SSL_OUTGOING_MIN_PROTO_VERSION     (int) 160
+#define TAG_SSL_LISTEN_MAX_PROTO_VERSION       (int) 161
+#define TAG_SSL_OUTGOING_MAX_PROTO_VERSION     (int) 162
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

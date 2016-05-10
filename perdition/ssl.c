@@ -139,6 +139,23 @@ __perdition_ssl_passwd_cb(char *buf, int size,
 	return strlen(buf);
 }
 
+int perdition_parse_ssl_proto_version(const char *str)
+{
+	if (!strcasecmp(str, "sslv3")) {
+		return SSL3_VERSION;
+	}
+	if (!strcasecmp(str, "tlsv1")) {
+		return TLS1_VERSION;
+	}
+	if (!strcasecmp(str, "tlsv1.1")) {
+		return TLS1_1_VERSION;
+	}
+	if (!strcasecmp(str, "tlsv1.2")) {
+		return TLS1_2_VERSION;
+	}
+
+	return -1;
+}
 
 /**********************************************************************
  * perdition_ssl_ctx
@@ -491,6 +508,72 @@ static long __perdition_verify_result(long verify, X509 *cert)
 	return(verify);
 }
 
+#if HAVE_DECL_SSL_CTX_SET_MIN_PROTO_VERSION == 0
+static int
+perdition_ssl_ctx_set_min_proto_version(SSL_CTX *ssl_ctx, int min_version)
+{
+	long options = SSL_OP_NO_SSLv2;
+
+	switch (min_version) {
+	case TLS1_2_VERSION:
+		options |= SSL_OP_NO_TLSv1_1;
+		/* fall-through */
+	case TLS1_1_VERSION:
+		options |= SSL_OP_NO_TLSv1;
+		/* fall-through */
+	case TLS1_VERSION:
+		options |= SSL_OP_NO_SSLv3;
+		/* fall-through */
+	case SSL3_VERSION:
+		/* Nothing more to do */
+		break;
+	default:
+		PERDITION_DEBUG_SSL_ERR("Unknown minumum version");
+		return 0;
+	}
+
+	SSL_CTX_set_options(ssl_ctx, options);
+	return 1;
+}
+
+#define SSL_CTX_set_min_proto_version perdition_ssl_ctx_set_min_proto_version
+#endif
+
+#if HAVE_DECL_SSL_CTX_SET_MAX_PROTO_VERSION == 0
+static int
+perdition_ssl_ctx_set_max_proto_version(SSL_CTX *ssl_ctx, int max_version)
+{
+	long options = 0;
+
+	switch (max_version) {
+	case SSL3_VERSION:
+		options |= SSL_OP_NO_TLSv1;
+		/* fall-through */
+	case TLS1_VERSION:
+		options |= SSL_OP_NO_TLSv1_1;
+		/* fall-through */
+	case TLS1_1_VERSION:
+		options |= SSL_OP_NO_TLSv1_2;
+		/* fall-through */
+	case TLS1_2_VERSION:
+		/* Nothing more to do */
+		break;
+	default:
+		PERDITION_DEBUG_SSL_ERR("Unknown maximum version");
+		return 0;
+	}
+
+	SSL_CTX_set_options(ssl_ctx, options);
+
+	VANESSA_LOGGER_ERR("warning: protocol versions greater than tlsv1.2 "
+			   "may still be allowed if supported by the SSL/TLS "
+			   "implementation");
+	return 1;
+}
+
+#define SSL_CTX_set_max_proto_version perdition_ssl_ctx_set_max_proto_version
+#endif
+
 SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path, 
 		const char *cert, const char *privkey, 
 		const char *ca_chain_file, const char *dh_params_file,
@@ -540,6 +623,60 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 					    strlen(PACKAGE))) {
 		VANESSA_LOGGER_DEBUG("SSL_CTX_set_session_id_context");
 		goto err;
+	}
+
+	/*
+	 * Set minimum protocol version
+	 */
+	{
+		const char *ver_str;
+
+		if (flag == PERDITION_SSL_CLIENT)
+			ver_str = opt.ssl_outgoing_min_proto_version;
+		else
+			ver_str = opt.ssl_listen_min_proto_version;
+
+		if (ver_str) {
+			int ver_no = perdition_parse_ssl_proto_version(ver_str);
+
+
+			if (ver_no < 0) {
+				VANESSA_LOGGER_DEBUG("perdition_parse_ssl_proto_version");
+				goto err;
+			}
+
+			if (!SSL_CTX_set_min_proto_version(ssl_ctx, ver_no)) {
+				VANESSA_LOGGER_DEBUG("SSL_CTX_set_min_proto_version");
+				goto err;
+			}
+		}
+	}
+
+	/*
+	 * Set maximum protocol version
+	 */
+	{
+		const char *ver_str;
+
+		if (flag == PERDITION_SSL_CLIENT)
+			ver_str = opt.ssl_outgoing_max_proto_version;
+		else
+			ver_str = opt.ssl_listen_max_proto_version;
+
+		if (ver_str) {
+			int ver_no = perdition_parse_ssl_proto_version(ver_str);
+
+
+			if (ver_no < 0) {
+				VANESSA_LOGGER_DEBUG("perdition_parse_ssl_proto_version");
+				goto err;
+			}
+
+			if (!SSL_CTX_set_max_proto_version(ssl_ctx, ver_no)) {
+				VANESSA_LOGGER_DEBUG("SSL_CTX_set_max_proto_version");
+				goto err;
+			}
+		}
 	}
 
 	/*
