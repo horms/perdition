@@ -503,6 +503,8 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_LISTEN_COMPRESSION, NULL, NULL},
     {"ssl_outgoing_compression", '\0', POPT_ARG_NONE, NULL,
       TAG_SSL_OUTGOING_COMPRESSION, NULL, NULL},
+    {"ssl_no_cipher_server_preference", '\0', POPT_ARG_NONE, NULL,
+      TAG_SSL_NO_CIPHER_SERVER_PREFERENCE, NULL, NULL},
     {NULL,                           0,   0,               NULL,
      0, NULL, NULL}
   };
@@ -646,6 +648,8 @@ int options(int argc, char **argv, flag_t f){
 	  &i, 0, OPT_NOT_SET);
     opt_i(&(opt.ssl_outgoing_compression), DEFAULT_SSL_OUTGOING_COMPRESSION,
 	  &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_no_cipher_server_preference),
+	  DEFAULT_SSL_NO_CIPHER_SERVER_PREFERENCE, &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -1092,6 +1096,14 @@ int options(int argc, char **argv, flag_t f){
 			MASK_SSL_OUTGOING_COMPRESSION, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_outgoing_compression");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_NO_CIPHER_SERVER_PREFERENCE:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(&(opt.ssl_no_cipher_server_preference), 1, &(opt.ssl_mask),
+			MASK_SSL_NO_CIPHER_SERVER_PREFERENCE, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_no_cipher_server_preference");
 #endif /* WITH_SSL_SUPPORT */
         break;
       default:
@@ -1612,6 +1624,7 @@ static char *log_options_ssl_str(void)
 		 "ssl_outgoing_max_proto_version=\"%s\", "
 		 "ssl_listen_compression=\"%s\", "
 		 "ssl_outgoing_compression=\"%s\", "
+		 "ssl_no_cipher_server_preference=\"%s\", "
 		 "(ssl_mask=0x%08x) ",
 		 ssl_mode,
 		 OPT_STR(opt.ssl_ca_file),
@@ -1636,6 +1649,7 @@ static char *log_options_ssl_str(void)
 		 OPT_STR(opt.ssl_outgoing_max_proto_version),
 		 BIN_OPT_STR(opt.ssl_listen_compression),
 		 BIN_OPT_STR(opt.ssl_outgoing_compression),
+		 BIN_OPT_STR(opt.ssl_no_cipher_server_preference),
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
@@ -1958,6 +1972,9 @@ void usage(int exit_status){
     "    Allow SSL/TLS compression when accepting incoming connections.\n"
     " --ssl_outgoing_compression\n"
     "    Allow SSL/TLS compression when making outgoing connections.\n"
+    " --ssl_no_cipher_server_preference\n"
+    "    Disable SSL/TLS cipher server preference when accepting incoming\n"
+    "    connections.\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Notes: Default value for binary flags is off.\n"

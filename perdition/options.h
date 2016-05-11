@@ -188,6 +188,7 @@
 #define DEFAULT_SSL_OUTGOING_MAX_PROTO_VERSION NULL
 #define DEFAULT_SSL_LISTEN_COMPRESSION       0
 #define DEFAULT_SSL_OUTGOING_COMPRESSION     0
+#define DEFAULT_SSL_NO_CIPHER_SERVER_PREFERENCE 0
 #endif /* WITH_SSL_SUPPORT */
 
 
@@ -263,6 +264,7 @@ typedef struct {
   char            *ssl_outgoing_max_proto_version;
   int             ssl_listen_compression;
   int             ssl_outgoing_compression;
+  int             ssl_no_cipher_server_preference;
   flag_t          ssl_mask;
 } options_t;
 
@@ -338,6 +340,7 @@ typedef struct {
 #define MASK_SSL_OUTGOING_MAX_PROTO_VERSION    (flag_t) 0x00200000
 #define MASK_SSL_LISTEN_COMPRESSION            (flag_t) 0x00400000
 #define MASK_SSL_OUTGOING_COMPRESSION          (flag_t) 0x00800000
+#define MASK_SSL_NO_CIPHER_SERVER_PREFERENCE   (flag_t) 0x01000000
 #endif /* WITH_SSL_SUPPORT */
 
 /* 
@@ -383,6 +386,7 @@ typedef struct {
 #define TAG_SSL_OUTGOING_MAX_PROTO_VERSION     (int) 162
 #define TAG_SSL_LISTEN_COMPRESSION             (int) 163
 #define TAG_SSL_OUTGOING_COMPRESSION           (int) 164
+#define TAG_SSL_NO_CIPHER_SERVER_PREFERENCE    (int) 165
 
 /*Flag values for options()*/
 #define OPT_ERR         (flag_t) 0x1  /*Print error to stderr, enable help*/

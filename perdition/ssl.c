@@ -688,6 +688,13 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 
 	/*
+	 * Set cipher server preference
+	 */
+	if ((flag == PERDITION_SSL_SERVER &&
+	     !opt.ssl_no_cipher_server_preference))
+		SSL_CTX_set_options(ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+
+	/*
 	 * Load the Diffie-Hellman parameters:
 	 */
 	if (flag & PERDITION_SSL_SERVER &&
