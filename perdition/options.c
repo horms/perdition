@@ -499,6 +499,10 @@ int options(int argc, char **argv, flag_t f){
       TAG_SSL_LISTEN_MAX_PROTO_VERSION, NULL, NULL},
     {"ssl_outgoing_max_proto_version", '\0', POPT_ARG_STRING, NULL,
       TAG_SSL_OUTGOING_MAX_PROTO_VERSION, NULL, NULL},
+    {"ssl_listen_compression", '\0', POPT_ARG_NONE, NULL,
+      TAG_SSL_LISTEN_COMPRESSION, NULL, NULL},
+    {"ssl_outgoing_compression", '\0', POPT_ARG_NONE, NULL,
+      TAG_SSL_OUTGOING_COMPRESSION, NULL, NULL},
     {NULL,                           0,   0,               NULL,
      0, NULL, NULL}
   };
@@ -638,6 +642,10 @@ int options(int argc, char **argv, flag_t f){
 	  DEFAULT_SSL_LISTEN_MAX_PROTO_VERSION, &i, 0, OPT_NOT_SET);
     opt_p(&(opt.ssl_outgoing_max_proto_version),
 	  DEFAULT_SSL_OUTGOING_MAX_PROTO_VERSION, &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_listen_compression), DEFAULT_SSL_LISTEN_COMPRESSION,
+	  &i, 0, OPT_NOT_SET);
+    opt_i(&(opt.ssl_outgoing_compression), DEFAULT_SSL_OUTGOING_COMPRESSION,
+	  &i, 0, OPT_NOT_SET);
 #endif /* WITH_SSL_SUPPORT */
   }
 
@@ -1068,6 +1076,22 @@ int options(int argc, char **argv, flag_t f){
 			MASK_SSL_OUTGOING_MAX_PROTO_VERSION, f);
 #else /* WITH_SSL_SUPPORT */
 	NO_SSL_OPT("ssl_outgoing_max_proto_version");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_LISTEN_COMPRESSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(&(opt.ssl_listen_compression), 1, &(opt.ssl_mask),
+			MASK_SSL_LISTEN_COMPRESSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_listen_compression");
+#endif /* WITH_SSL_SUPPORT */
+        break;
+      case TAG_SSL_OUTGOING_COMPRESSION:
+#ifdef WITH_SSL_SUPPORT
+        opt_i(&(opt.ssl_outgoing_compression), 1, &(opt.ssl_mask),
+			MASK_SSL_OUTGOING_COMPRESSION, f);
+#else /* WITH_SSL_SUPPORT */
+	NO_SSL_OPT("ssl_outgoing_compression");
 #endif /* WITH_SSL_SUPPORT */
         break;
       default:
@@ -1586,6 +1610,8 @@ static char *log_options_ssl_str(void)
 		 "ssl_outgoing_min_proto_version=\"%s\", "
 		 "ssl_listen_max_proto_version=\"%s\", "
 		 "ssl_outgoing_max_proto_version=\"%s\", "
+		 "ssl_listen_compression=\"%s\", "
+		 "ssl_outgoing_compression=\"%s\", "
 		 "(ssl_mask=0x%08x) ",
 		 ssl_mode,
 		 OPT_STR(opt.ssl_ca_file),
@@ -1608,6 +1634,8 @@ static char *log_options_ssl_str(void)
 		 OPT_STR(opt.ssl_outgoing_min_proto_version),
 		 OPT_STR(opt.ssl_listen_max_proto_version),
 		 OPT_STR(opt.ssl_outgoing_max_proto_version),
+		 BIN_OPT_STR(opt.ssl_listen_compression),
+		 BIN_OPT_STR(opt.ssl_outgoing_compression),
 		 opt.ssl_mask);
 	out[MAX_LINE_LENGTH - 1] = '\0';
 
@@ -1926,6 +1954,10 @@ void usage(int exit_status){
     "    connections.\n"
     "    If empty (\"\") then openssl's default will be used.\n"
     "    (default \"%s\")\n"
+    " --ssl_listen_compression\n"
+    "    Allow SSL/TLS compression when accepting incoming connections.\n"
+    " --ssl_outgoing_compression\n"
+    "    Allow SSL/TLS compression when making outgoing connections.\n"
 #endif /* WITH_SSL_SUPPORT */
     "\n"
     " Notes: Default value for binary flags is off.\n"

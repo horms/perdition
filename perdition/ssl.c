@@ -680,6 +680,14 @@ SSL_CTX *perdition_ssl_ctx(const char *ca_file, const char *ca_path,
 	}
 
 	/*
+	 * Set compression
+	 */
+	if ((flag == PERDITION_SSL_CLIENT && !opt.ssl_outgoing_compression) &&
+	    (flag != PERDITION_SSL_CLIENT && !opt.ssl_listen_compression)) {
+		SSL_CTX_set_options(ssl_ctx, SSL_OP_NO_COMPRESSION);
+	}
+
+	/*
 	 * Load the Diffie-Hellman parameters:
 	 */
 	if (flag & PERDITION_SSL_SERVER &&
