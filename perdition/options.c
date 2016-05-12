@@ -1130,7 +1130,6 @@ int options(int argc, char **argv, flag_t f){
 	int max_ver = 0;
 
 	if (opt.ssl_listen_min_proto_version) {
-		VANESSA_LOGGER_DEBUG_RAW("min");
 		min_ver = perdition_parse_ssl_proto_version(
 				opt.ssl_listen_min_proto_version);
 		if (min_ver < 0) {
