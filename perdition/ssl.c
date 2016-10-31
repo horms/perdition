@@ -262,10 +262,9 @@ __perdition_verify_callback(int ok, X509_STORE_CTX *ctx)
 		return 0;
 	}
 
-	if (__perdition_verify_result(ctx->error, cert) 
-			== X509_V_OK) {
+	if (__perdition_verify_result(X509_STORE_CTX_get_error(ctx),
+				      cert) == X509_V_OK)
 		return 1;
-	}
 
 	return ok;
 }
@@ -910,7 +909,6 @@ static int
 __perdition_ssl_check_common_name(X509 *cert, const char *key)
 {
 	int i;
-	X509_NAME_ENTRY *e;
 	X509_NAME *name;
 
 	name = X509_get_subject_name(cert);
@@ -922,6 +920,9 @@ __perdition_ssl_check_common_name(X509 *cert, const char *key)
 
 	i = -1;
 	while (1) {
+		X509_NAME_ENTRY *e;
+		ASN1_STRING *data;
+
 		i = X509_NAME_get_index_by_NID(name, NID_commonName, i);
 		if (i == -1)
 			break;
@@ -933,8 +934,14 @@ __perdition_ssl_check_common_name(X509 *cert, const char *key)
 			return -1;
 		}
 
-		if (!__perdition_ssl_compare_key(key, e->value->data,
-						 e->value->length))
+		data = X509_NAME_ENTRY_get_data(e);
+		if (!data) {
+			VANESSA_LOGGER_DEBUG_RAW_UNSAFE("warning: could not "
+				"extract data for name entry %d", i);
+			return -1;
+		}
+
+		if (!__perdition_ssl_compare_key(key, data->data, data->length))
 			return 0;
 	}
 
