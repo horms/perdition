@@ -1,6 +1,8 @@
 %define ver      @VERSION@
 %define rel      1
 
+%global debug_package %{nil}
+
 ## Our optional build-time flags.  Since the configuration script
 #  defaults to --enable-FEATURE we only set the --disable-FEATURE
 #  versions here.  NOTE: We default to ENABLE
@@ -21,7 +23,7 @@ Version: %ver
 Release: %rel
 License: GPL
 Group: Applications/Internet
-Source: http://horms.net/projects/perdition/download/%{ver}/perdition-%{ver}.tar.bz2
+Source: http://horms.net/projects/perdition/download/%{ver}/perdition-%{ver}.tar.xz
 BuildRoot: %{_tmppath}/perdition-%{PACKAGE_VERSION}-root
 URL: http://horms.net/projects/perdition/
 Provides: perdition-%{ver}-%{rel}
@@ -39,25 +41,37 @@ BuildRequires: pkgconfig
 %{!?_without_ssl:BuildRequires: openssl-devel}
 %{!?_without_odbc:BuildRequires: unixODBC-devel}
 
-%if 0%{?suse_version} || 0%{?fedora_version} || 0%{?centos_version} >= 600 || 0%{?rhel_version} >= 600
-BuildRequires: popt-devel
+%if 0%{?centos_version} && 0%{?centos_version} < 600 || 0%{?rhel_version} && 0%{?rhel_version} < 600
+BuildRequires: popt
 %else
 %if 0%{?mandriva_version}
 BuildRequires: libpopt-devel
 %else
-BuildRequires: popt
+BuildRequires: popt-devel
 %endif
 %endif
 
 %if %{?_without_bdb:0}%{!?_without_bdb:1}
+%if 0%{?centos_version} && 0%{?centos_version} < 700
+BuildRequires: db-devel
+%else
+%if 0%{?rhel_version} && 0%{?rhel_version} < 700
+BuildRequires: db-devel
+%else
 %if 0%{?suse_version}
 BuildRequires: db-devel
 %else
 %if 0%{?mandriva_version}
 BuildRequires: libdb4.6-devel
 %else
-%endif
+%if 0%{?scientificlinux_version} == 600
 BuildRequires: db4-devel
+%else
+BuildRequires: libdb-devel
+%endif
+%endif
+%endif
+%endif
 %endif
 %endif
 
@@ -66,6 +80,12 @@ BuildRequires: db4-devel
 BuildRequires: openldap2-devel
 %else
 BuildRequires: openldap-devel
+%endif
+%endif
+
+%if %{?_without_odbc:0}%{!?_without_odbc:1}
+%if 0%{?suse_version} >= 1200 && 0%{?suse_version} <= 1320
+BuildRequires: libtool-ltdl-devel
 %endif
 %endif
 
@@ -79,6 +99,8 @@ Requires(preun): chkconfig
 Requires(preun): initscripts
 %endif
 %endif
+
+Requires: libvanessa_socket2 >= 0.0.12
 
 %description
 Perdition is a fully featured POP3 and IMAP4 proxy server. It is able to
