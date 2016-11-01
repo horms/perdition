@@ -431,6 +431,9 @@ ldconfig
 %endif
 
 %changelog
+* Tue Nov  1 2016 Simon Horman <horms@verge.net.au> (2.2)
+  new release
+
 * Sun Dec  1 2013 Simon Horman <horms@verge.net.au> (2.1)
   new release
 

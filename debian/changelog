@@ -9,7 +9,7 @@ perdition (2.2-1) UNRELEASED; urgency=medium
     (closes: #828494)
   * Update standards version to 3.9.6
 
- -- Simon Horman <horms@debian.org>  Mon, 31 Oct 2016 13:55:18 +0100
+ -- Simon Horman <horms@debian.org>  Tue, 01 Nov 2016 10:49:21 +0100
 
 perdition (2.1-2) unstable; urgency=medium
 
