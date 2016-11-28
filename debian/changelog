@@ -3,6 +3,7 @@ perdition (2.2-2) UNRELEASED; urgency=medium
   * Switch to build depend on the metapackage default-libmysqlclient-dev
     (closes: #845889)
   * Update from standards version 3.9.6 to 3.9.8
+  * Update from compat level 7 to 9
 
  -- Simon Horman <horms@debian.org>  Mon, 28 Nov 2016 09:56:25 +0100
 
