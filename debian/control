@@ -3,7 +3,7 @@ Build-Depends: libvanessa-logger-dev (>= 0.0.10), libvanessa-adt-dev (>= 0.0.6),
 Section: mail
 Priority: optional
 Maintainer: Simon Horman <horms@debian.org>
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: http://horms.net/projects/perdition/
 
 Package: perdition
