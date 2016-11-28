@@ -1,4 +1,4 @@
-perdition (2.2-1) UNRELEASED; urgency=medium
+perdition (2.2-1) unstable; urgency=medium
 
   * New Upstream
   * Add support for forward secrecy
