@@ -1,3 +1,10 @@
+perdition (2.2-3) UNRELEASED; urgency=medium
+
+  * Correct syntax of ldconfig trigger
+    (closes: #http://bugs.debian.org/847214)
+
+ -- Simon Horman <horms@debian.org>  Tue, 06 Dec 2016 17:08:39 +0100
+
 perdition (2.2-2) unstable; urgency=medium
 
   * Switch to build depend on the metapackage default-libmysqlclient-dev
