@@ -1,4 +1,4 @@
-perdition (2.2-3) UNRELEASED; urgency=medium
+perdition (2.2-3) unstable; urgency=high
 
   * Correct syntax of ldconfig trigger
     (closes: #http://bugs.debian.org/847214)
