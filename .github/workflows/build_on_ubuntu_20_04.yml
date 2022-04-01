@@ -1,0 +1,50 @@
+name: Ubuntu 20.04
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build_gcc:
+    name: gcc
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run:  "sudo apt-get update && sudo apt-get install -y --fix-broken
+               git make libtool pkg-config 
+               autoconf automake gcc make pkg-config 
+               libpq-dev libcdb-dev libpam0g-dev libpopt-dev libssl-dev libidn11-dev libltdl-dev
+               libmysqlclient-dev libldap2-dev unixodbc-dev libgdbm-dev"
+      - name: Install vanessa_logger
+        run:  "git clone https://github.com/horms/vanessa_logger.git vanessa_logger &&
+               cd vanessa_logger &&
+               autoreconf --install --force --verbose && 
+               ./configure --prefix=/usr && 
+               sudo make -j $(nproc) install"
+      - name: Install vanessa_socket
+        run:  "git clone https://github.com/horms/vanessa_socket.git vanessa_socket &&
+               cd vanessa_socket &&
+               autoreconf --install --force --verbose && 
+               ./configure --prefix=/usr && 
+               sudo make -j $(nproc) install"
+      - name: Install vanessa_adt
+        run:  "git clone https://github.com/horms/vanessa_adt.git vanessa_adt &&
+               cd vanessa_adt &&
+               autoreconf --install --force --verbose && 
+               ./configure --prefix=/usr && 
+               sudo make -j $(nproc) install"
+      - name: Configure perdition
+        run: "autoreconf --install --force --verbose &&
+              ./configure --prefix=/usr"
+      - name: Build perdition
+        run: "sudo make -j $(nproc) install"
+      - name: Basic test
+        run: "perdition --help"
